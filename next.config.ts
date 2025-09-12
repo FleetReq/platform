@@ -6,6 +6,25 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+  // Performance optimizations
+  compress: true,
+  experimental: {
+    optimizeCss: true,
+  },
+  // Bundle analyzer
+  ...(process.env.ANALYZE === 'true' && {
+    bundleAnalyzer: {
+      enabled: true,
+      openAnalyzer: true,
+    }
+  }),
 };
 
-export default nextConfig;
+// Bundle analyzer wrapper
+const withBundleAnalyzer = process.env.ANALYZE === 'true' 
+  ? require('@next/bundle-analyzer')({
+      enabled: true,
+    })
+  : (config: NextConfig) => config;
+
+export default withBundleAnalyzer(nextConfig);

@@ -2,6 +2,8 @@ import Link from "next/link";
 import Image from "next/image";
 import BackgroundAnimation from './components/BackgroundAnimation';
 import HeroSection from './components/HeroSection';
+import Testimonials from './components/Testimonials';
+import AnimatedCounter from './components/AnimatedCounter';
 
 const structuredData = {
   "@context": "https://schema.org",
@@ -153,7 +155,9 @@ export default function Home() {
                 </div>
               </div>
               <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                Leading MongoDB migration of <strong className="text-green-600 dark:text-green-400">60+ billion documents</strong> to cloud infrastructure with comprehensive automation and testing
+                Leading MongoDB migration of <strong className="text-green-600 dark:text-green-400">
+                  <AnimatedCounter value={60} suffix="+ billion documents" className="font-bold" />
+                </strong> to cloud infrastructure with comprehensive automation and testing
               </p>
             </div>
             
@@ -201,6 +205,57 @@ export default function Home() {
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">Impact by the Numbers</h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300">Measurable results from infrastructure and automation work</p>
+          </div>
+          
+          <div className="grid md:grid-cols-4 gap-8">
+            <div className="text-center">
+              <div className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2">
+                <AnimatedCounter value={60} suffix="B+" className="text-4xl font-bold" />
+              </div>
+              <p className="text-gray-600 dark:text-gray-300 font-medium">Documents Migrated</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">MongoDB to Atlas Cloud</p>
+            </div>
+            
+            <div className="text-center">
+              <div className="text-4xl font-bold text-green-600 dark:text-green-400 mb-2">
+                <AnimatedCounter value={5} suffix="+" className="text-4xl font-bold" />
+              </div>
+              <p className="text-gray-600 dark:text-gray-300 font-medium">Team Members Led</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Capstone Project Leadership</p>
+            </div>
+            
+            <div className="text-center">
+              <div className="text-4xl font-bold text-purple-600 dark:text-purple-400 mb-2">
+                <AnimatedCounter value={9} suffix="+ months" className="text-4xl font-bold" />
+              </div>
+              <p className="text-gray-600 dark:text-gray-300 font-medium">SRE Experience</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Production Systems</p>
+            </div>
+            
+            <div className="text-center">
+              <div className="text-4xl font-bold text-orange-600 dark:text-orange-400 mb-2">
+                <AnimatedCounter value={100} suffix="%" className="text-4xl font-bold" />
+              </div>
+              <p className="text-gray-600 dark:text-gray-300 font-medium">Client Satisfaction</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Project Delivery</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          <Testimonials />
         </div>
       </section>
 

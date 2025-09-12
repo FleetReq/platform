@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { ThemeToggle } from "../theme-toggle";
+import Search from "./Search";
 
 const navigationItems = [
   { name: "Home", href: "/" },
@@ -47,6 +48,11 @@ export function Navigation() {
           </div>
 
           <div className="flex items-center space-x-4">
+            {/* Search - Desktop */}
+            <div className="hidden md:block">
+              <Search className="w-64" />
+            </div>
+            
             <ThemeToggle />
             
             {/* Mobile menu button */}
@@ -75,7 +81,12 @@ export function Navigation() {
       {/* Mobile menu */}
       {isOpen && (
         <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-50 dark:bg-gray-800">
+          <div className="px-2 pt-2 pb-3 space-y-3 sm:px-3 bg-gray-50 dark:bg-gray-800">
+            {/* Search - Mobile */}
+            <div className="px-3">
+              <Search className="w-full" />
+            </div>
+            
             {navigationItems.map((item) => (
               <Link
                 key={item.name}

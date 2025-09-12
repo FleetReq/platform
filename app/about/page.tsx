@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import Image from 'next/image'
 import BackgroundAnimation from '../components/BackgroundAnimation'
+import PhotographyGallery from '../components/PhotographyGallery'
 
 export const metadata: Metadata = {
   title: 'About - Bruce Truong',
@@ -17,6 +18,25 @@ export const metadata: Metadata = {
 }
 
 export default function AboutPage() {
+  // Photography data - currently empty until you add your photos
+  // To enable: add photos to /public/images/photography/ and uncomment below
+  const samplePhotos: any[] = [
+    // Uncomment and update with your actual photos:
+    // {
+    //   id: '1',
+    //   src: '/images/photography/your-photo1.jpg',
+    //   alt: 'Your photo description',
+    //   caption: 'Your photo caption',
+    //   instagramUrl: 'https://instagram.com/p/your-post'
+    // },
+    // {
+    //   id: '2',
+    //   src: '/images/photography/your-photo2.jpg',
+    //   alt: 'Your photo description',
+    //   caption: 'Your photo caption',
+    // },
+  ]
+
   return (
     <div className="relative overflow-hidden min-h-screen">
       <BackgroundAnimation />
@@ -158,6 +178,16 @@ export default function AboutPage() {
             </div>
           </div>
         </div>
+
+        {/* Photography Section - Only show if photos are available */}
+        {samplePhotos.length > 0 && (
+          <PhotographyGallery 
+            photos={samplePhotos}
+            title="Through My Lens"
+            subtitle="Photography has been a creative outlet alongside my technical work, developing my eye for detail and composition"
+            instagramHandle="deeahtee"
+          />
+        )}
 
         <div className="text-center">
           <h2 className="text-3xl font-bold mb-6">Let&apos;s Connect</h2>
