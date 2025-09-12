@@ -78,7 +78,7 @@ export function PlausibleAnalytics({ domain }: PlausibleProps) {
 }
 
 // Event tracking helper
-export const trackEvent = (eventName: string, properties?: Record<string, any>) => {
+export const trackEvent = (eventName: string, properties?: Record<string, unknown>) => {
   if (typeof window !== 'undefined' && window.gtag) {
     window.gtag('event', eventName, properties)
   }
@@ -97,7 +97,7 @@ export const trackPageView = (url: string, title?: string) => {
 // TypeScript declarations
 declare global {
   interface Window {
-    gtag: (...args: any[]) => void
-    dataLayer: any[]
+    gtag: (...args: unknown[]) => void
+    dataLayer: unknown[]
   }
 }

@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   // Photography data - currently empty until you add your photos
   // To enable: add photos to /public/images/photography/ and uncomment below
-  const samplePhotos: any[] = [
+  const samplePhotos: Array<{id: string; src: string; alt: string; caption?: string; instagramUrl?: string}> = [
     // Uncomment and update with your actual photos:
     // {
     //   id: '1',

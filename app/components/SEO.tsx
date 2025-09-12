@@ -47,7 +47,7 @@ export function generateSEO({
       },
     },
     openGraph: {
-      type: type as any,
+      type: type as 'website' | 'article',
       locale: 'en_US',
       url,
       title,

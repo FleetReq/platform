@@ -176,7 +176,7 @@ export default function Search({ className = '' }: SearchProps) {
             </div>
           ) : query.length >= 2 ? (
             <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-              No results found for "{query}"
+              No results found for &quot;{query}&quot;
             </div>
           ) : null}
         </div>

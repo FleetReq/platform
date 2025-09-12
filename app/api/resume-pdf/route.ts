@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server'
 import { renderToBuffer } from '@react-pdf/renderer'
 import { createElement } from 'react'
-
-// Import the component as a module instead of JSX
-const ResumePDF = require('../../components/ResumePDF').default
+import ResumePDF from '../../components/ResumePDF'
 
 export async function GET() {
   try {

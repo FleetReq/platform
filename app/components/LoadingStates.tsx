@@ -59,7 +59,7 @@ export function CardSkeleton({ className = '' }: { className?: string }) {
 export function ButtonLoading({ children, isLoading, ...props }: {
   children: React.ReactNode
   isLoading: boolean
-  [key: string]: any
+  [key: string]: unknown
 }) {
   return (
     <button 
