@@ -9,7 +9,10 @@ export async function GET() {
     const pdfElement = createElement(ResumePDF)
     const buffer = await renderToBuffer(pdfElement)
     
-    return new NextResponse(buffer, {
+    // Convert Buffer to Uint8Array for NextResponse compatibility
+    const uint8Array = new Uint8Array(buffer)
+    
+    return new NextResponse(uint8Array, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'attachment; filename="Bruce_Truong_Resume.pdf"'
