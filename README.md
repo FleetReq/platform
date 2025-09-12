@@ -1,30 +1,143 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Bruce Truong - Resume Website
 
-## Getting Started
+A modern, responsive resume website built with Next.js, showcasing my experience as a Site Reliability Engineer. Features dark/light mode, dynamic PDF generation, search functionality, and privacy-focused analytics.
 
-First, run the development server:
+🌐 **Live Site**: [brucetruong.com](https://brucetruong.com)
 
-```bash
-npm run dev
+## ✨ Features
+
+- **Responsive Design** - Optimized for mobile, tablet, and desktop
+- **Dark/Light Mode** - System-aware theme switching with manual toggle
+- **Dynamic PDF Resume** - Generate and download PDF version of resume
+- **Contact Form** - Functional contact form with validation
+- **Search Functionality** - Site-wide search with keyboard shortcuts (Ctrl/Cmd+K)
+- **Privacy-First Analytics** - Plausible Analytics integration
+- **SEO Optimized** - Structured data, meta tags, and sitemap
+- **Performance Focused** - Loading states, image optimization, and caching
+
+## 🚀 Quick Start
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/my-resume-site.git
+   cd my-resume-site
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp .env.local.example .env.local
+   # Edit .env.local with your configuration
+   ```
+
+4. **Run the development server**
+   ```bash
+   npm run dev
+   ```
+
+5. **Open in browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+## 📁 Project Structure
+
+```
+app/
+├── components/          # Reusable UI components
+│   ├── Analytics.tsx   # Plausible Analytics integration
+│   ├── ContactForm.tsx # Contact form with validation
+│   ├── Search.tsx      # Site-wide search functionality
+│   └── ...
+├── api/                # API routes
+│   ├── contact/        # Contact form handler
+│   └── resume-pdf/     # PDF generation endpoint
+├── about/              # About page
+├── contact/            # Contact page
+├── resume/             # Resume page
+└── ...
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Framework**: Next.js 15 (App Router)
+- **Styling**: Tailwind CSS
+- **TypeScript**: Full type safety
+- **PDF Generation**: @react-pdf/renderer
+- **Analytics**: Plausible Analytics
+- **Deployment**: GitHub Pages
+- **CI/CD**: GitHub Actions
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🔧 Configuration
 
-## Learn More
+### Environment Variables
 
-To learn more about Next.js, take a look at the following resources:
+Create a `.env.local` file with:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```env
+# Plausible Analytics
+NEXT_PUBLIC_PLAUSIBLE_DOMAIN=yourdomain.com
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Optional: Google Analytics (fallback)
+# NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
+```
 
-## Deploy on Vercel
+### Analytics Setup
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The site is configured for [Plausible Analytics](https://plausible.io/). See `PLAUSIBLE_SETUP.md` for detailed setup instructions.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📱 Features Overview
+
+### Dynamic PDF Resume
+- Server-side PDF generation
+- Matches website styling
+- Automatic download functionality
+
+### Search Functionality
+- Full-site content search
+- Keyboard shortcuts (Ctrl/Cmd+K)
+- Categorized results
+- Mobile-friendly
+
+### Contact Form
+- Client-side validation
+- Loading states
+- Success/error feedback
+- Accessible design
+
+### Performance
+- Image optimization
+- Loading skeletons
+- Lazy loading
+- Static generation
+
+## 🚀 Deployment
+
+The site deploys automatically to GitHub Pages via GitHub Actions when pushing to the main branch.
+
+### Manual Deployment
+
+```bash
+npm run build
+npm run deploy
+```
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+## 🤝 Contributing
+
+This is a personal resume website, but feel free to fork it for your own use or submit improvements via pull requests.
+
+## 📞 Contact
+
+- **Website**: [brucetruong.com](https://brucetruong.com)
+- **Email**: careers@brucetruong.com
+- **LinkedIn**: [linkedin.com/in/brucetruong](https://linkedin.com/in/brucetruong)
+
+---
+
+Built with ❤️ using Next.js and deployed on GitHub Pages

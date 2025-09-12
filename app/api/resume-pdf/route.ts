@@ -1,12 +1,17 @@
 import { NextResponse } from 'next/server'
-import { renderToStream } from '@react-pdf/renderer'
-import ResumePDF from '../../components/ResumePDF'
+import { renderToBuffer } from '@react-pdf/renderer'
+import { createElement } from 'react'
+
+// Import the component as a module instead of JSX
+const ResumePDF = require('../../components/ResumePDF').default
 
 export async function GET() {
   try {
-    const stream = await renderToStream(<ResumePDF />)
+    // Use createElement instead of JSX syntax
+    const pdfElement = createElement(ResumePDF)
+    const buffer = await renderToBuffer(pdfElement)
     
-    return new NextResponse(stream as any, {
+    return new NextResponse(buffer, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'attachment; filename="Bruce_Truong_Resume.pdf"'
