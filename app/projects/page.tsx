@@ -4,64 +4,62 @@ import BackgroundAnimation from '../components/BackgroundAnimation'
 
 export const metadata: Metadata = {
   title: 'Projects - Bruce Truong',
-  description: 'Explore projects and work by Bruce Truong, showcasing full-stack development, React applications, and innovative web solutions.',
+  description: 'Explore projects and work by Bruce Truong, showcasing infrastructure automation, monitoring solutions, and SRE tooling.',
   openGraph: {
     title: 'Projects by Bruce Truong',
-    description: 'Explore projects and work by Bruce Truong, showcasing full-stack development and web solutions.',
+    description: 'Explore projects and work by Bruce Truong, showcasing infrastructure automation and SRE solutions.',
     url: 'https://brucetruong.com/projects',
   },
   twitter: {
     title: 'Projects by Bruce Truong',
-    description: 'Explore projects and work by Bruce Truong, showcasing full-stack development and web solutions.',
+    description: 'Explore projects and work by Bruce Truong, showcasing infrastructure automation and SRE solutions.',
   },
 }
 
-const projects = [
+const workExperience = [
   {
     id: 1,
-    title: 'E-Commerce Platform',
-    description: 'A full-featured e-commerce platform built with Next.js, featuring user authentication, payment processing, and admin dashboard.',
-    technologies: ['Next.js', 'TypeScript', 'Stripe', 'PostgreSQL', 'Tailwind CSS'],
-    image: '/api/placeholder/400/300',
-    github: 'https://github.com/username/ecommerce-platform',
-    demo: 'https://ecommerce-demo.example.com',
+    title: 'Production Infrastructure Monitoring',
+    description: 'Maintained and enhanced monitoring systems for high-scale production environments. Worked with Kubernetes clusters, configured DataDog dashboards, and participated in incident response for systems handling billions of operations.',
+    technologies: ['Kubernetes', 'DataDog', 'GCP', 'MongoDB', 'Kafka'],
+    type: 'Professional Work',
+    company: 'Production SRE Role',
     featured: true,
   },
   {
     id: 2,
-    title: 'Task Management App',
-    description: 'A collaborative task management application with real-time updates, drag-and-drop functionality, and team collaboration features.',
-    technologies: ['React', 'Node.js', 'Socket.io', 'MongoDB', 'Express'],
-    image: '/api/placeholder/400/300',
-    github: 'https://github.com/username/task-manager',
-    demo: 'https://task-manager-demo.example.com',
+    title: 'Message Queue Infrastructure',
+    description: 'Supported message processing systems using Kafka, RabbitMQ, and IBM MQ. Assisted with capacity planning, performance monitoring, and troubleshooting connectivity issues across distributed systems.',
+    technologies: ['Kafka', 'RabbitMQ', 'IBM MQ', 'Go', 'PostgreSQL'],
+    type: 'Professional Work',
+    company: 'Production SRE Role',
     featured: true,
   },
   {
     id: 3,
-    title: 'Weather Dashboard',
-    description: 'A responsive weather dashboard with location-based forecasts, interactive maps, and historical weather data visualization.',
-    technologies: ['React', 'Chart.js', 'OpenWeather API', 'CSS Grid'],
-    image: '/api/placeholder/400/300',
-    github: 'https://github.com/username/weather-dashboard',
-    demo: 'https://weather-dashboard-demo.example.com',
+    title: 'Infrastructure as Code',
+    description: 'Collaborated on Infrastructure as Code initiatives using Terraform and Helm. Contributed to deployment automation and configuration management for cloud-native applications.',
+    technologies: ['Terraform', 'Helm', 'GitHub Actions', 'Docker', 'Ubuntu'],
+    type: 'Professional Work',
+    company: 'Production SRE Role',
     featured: false,
   },
   {
     id: 4,
-    title: 'Portfolio Website',
-    description: 'A modern, responsive portfolio website built with Next.js, featuring dark mode, animations, and optimized performance.',
-    technologies: ['Next.js', 'TypeScript', 'Tailwind CSS', 'Framer Motion'],
-    image: '/api/placeholder/400/300',
-    github: 'https://github.com/username/portfolio',
+    title: 'Personal Portfolio Site',
+    description: 'Built and deployed this portfolio website using modern web technologies and CI/CD best practices. Showcases technical skills while demonstrating infrastructure automation concepts.',
+    technologies: ['Next.js', 'TypeScript', 'Tailwind CSS', 'GitHub Actions'],
+    type: 'Personal Project',
+    company: 'Open Source',
+    github: 'https://github.com/DeeAhTee/my-resume-site',
     demo: 'https://brucetruong.com',
     featured: false,
   },
 ]
 
 export default function ProjectsPage() {
-  const featuredProjects = projects.filter(project => project.featured)
-  const otherProjects = projects.filter(project => !project.featured)
+  const featuredProjects = workExperience.filter(project => project.featured)
+  const otherProjects = workExperience.filter(project => !project.featured)
 
   return (
     <div className="relative overflow-hidden min-h-screen">
@@ -69,10 +67,10 @@ export default function ProjectsPage() {
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            My Projects
+            My Experience
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            A showcase of my recent work, featuring full-stack applications and innovative web solutions
+            Professional SRE work and personal projects showcasing infrastructure automation, monitoring, and system reliability
           </p>
         </div>
 
@@ -89,6 +87,16 @@ export default function ProjectsPage() {
                   <span className="text-gray-500 dark:text-gray-400">Project Screenshot</span>
                 </div>
                 <div className="p-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                      project.type === 'Professional Work' 
+                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                        : 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
+                    }`}>
+                      {project.type}
+                    </span>
+                    <span className="text-gray-500 dark:text-gray-400 text-sm">{project.company}</span>
+                  </div>
                   <h3 className="text-2xl font-bold mb-3">{project.title}</h3>
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
                     {project.description}
