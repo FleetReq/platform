@@ -42,17 +42,20 @@ export default function Resume() {
               </p>
               <div className="ml-4">
                 <h4 className="font-semibold text-gray-800 dark:text-gray-200">
-                  PSU Capstone - Bike Threat Platform Team Lead
+                  PSU Capstone - Bike Index Platform Team Lead
                 </h4>
                 <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 mt-2 space-y-1">
                   <li>
-                    Organized and led a 5-member team to create software that
-                    would facilitate information transfer pertaining to bike
-                    threats around the world
+                    Organized and led a 5-member team to create, edit, and search through theft information on the Bike Index Platform
                   </li>
                   <li>
                     Collaborated via Scrum methodology to navigate through
                     bi-weekly project sprints
+                  </li>
+                  <li>
+                    <a href="https://github.com/impeccKable/bike-index-platform" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">
+                      View project on GitHub
+                    </a>
                   </li>
                 </ul>
               </div>

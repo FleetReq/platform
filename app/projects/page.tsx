@@ -46,6 +46,16 @@ const workExperience = [
   },
   {
     id: 4,
+    title: 'Bike Index Platform',
+    description: 'Led a 5-member capstone team to develop a platform for creating, editing, and searching through bike theft information. Implemented using Scrum methodology with bi-weekly sprints.',
+    technologies: ['Team Leadership', 'Scrum', 'Full Stack Development', 'Database Design'],
+    type: 'Personal Project', 
+    company: 'PSU Capstone',
+    github: 'https://github.com/impeccKable/bike-index-platform',
+    featured: false,
+  },
+  {
+    id: 5,
     title: 'Personal Portfolio Site',
     description: 'Built and deployed this portfolio website using modern web technologies and CI/CD best practices. Showcases technical skills while demonstrating infrastructure automation concepts.',
     technologies: ['Next.js', 'TypeScript', 'Tailwind CSS', 'GitHub Actions'],
@@ -59,7 +69,7 @@ const workExperience = [
 
 export default function ProjectsPage() {
   const featuredProjects = workExperience.filter(project => project.featured)
-  const otherProjects = workExperience.filter(project => !project.featured)
+  const otherProjects = workExperience.filter(project => !project.featured) 
 
   return (
     <div className="relative overflow-hidden min-h-screen">
@@ -74,34 +84,35 @@ export default function ProjectsPage() {
           </p>
         </div>
 
-        {/* Featured Projects */}
+        {/* Featured Experience */}
         <div className="mb-16">
-          <h2 className="text-3xl font-bold mb-8">Featured Projects</h2>
+          <h2 className="text-3xl font-bold mb-8">Featured Experience</h2>
           <div className="grid md:grid-cols-2 gap-8">
             {featuredProjects.map((project) => (
               <div
                 key={project.id}
-                className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200 dark:border-gray-700"
+                className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 p-6"
               >
-                <div className="aspect-video bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                  <span className="text-gray-500 dark:text-gray-400">Project Screenshot</span>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    project.type === 'Professional Work' 
+                      ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                      : 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
+                  }`}>
+                    {project.type}
+                  </span>
+                  <span className="text-gray-500 dark:text-gray-400 text-sm">{project.company}</span>
                 </div>
-                <div className="p-6">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                      project.type === 'Professional Work' 
-                        ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                        : 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
-                    }`}>
-                      {project.type}
-                    </span>
-                    <span className="text-gray-500 dark:text-gray-400 text-sm">{project.company}</span>
-                  </div>
-                  <h3 className="text-2xl font-bold mb-3">{project.title}</h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    {project.description}
-                  </p>
-                  <div className="flex flex-wrap gap-2 mb-4">
+                
+                <h3 className="text-2xl font-bold mb-4">{project.title}</h3>
+                
+                <p className="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
+                  {project.description}
+                </p>
+                
+                <div className="mb-6">
+                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Technologies Used:</h4>
+                  <div className="flex flex-wrap gap-2">
                     {project.technologies.map((tech) => (
                       <span
                         key={tech}
@@ -111,27 +122,42 @@ export default function ProjectsPage() {
                       </span>
                     ))}
                   </div>
-                  <div className="flex gap-4">
-                    <a
-                      href={project.github}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                    >
-                      <span>📱</span>
-                      GitHub
-                    </a>
-                    <a
-                      href={project.demo}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
-                    >
-                      <span>🚀</span>
-                      Live Demo
-                    </a>
-                  </div>
                 </div>
+                
+                {project.type === 'Personal Project' && (
+                  <div className="flex gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    {project.github && (
+                      <a
+                        href={project.github}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                      >
+                        <span>🔗</span>
+                        Source Code
+                      </a>
+                    )}
+                    {project.demo && (
+                      <a
+                        href={project.demo}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+                      >
+                        <span>🚀</span>
+                        Live Site
+                      </a>
+                    )}
+                  </div>
+                )}
+                
+                {project.type === 'Professional Work' && (
+                  <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                      * Proprietary work - source code not available for public viewing
+                    </p>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -165,24 +191,38 @@ export default function ProjectsPage() {
                     </span>
                   )}
                 </div>
-                <div className="flex gap-4">
-                  <a
-                    href={project.github}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                  >
-                    GitHub
-                  </a>
-                  <a
-                    href={project.demo}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
-                  >
-                    Demo
-                  </a>
-                </div>
+                {project.type === 'Personal Project' && (
+                  <div className="flex gap-4">
+                    {project.github && (
+                      <a
+                        href={project.github}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                      >
+                        GitHub
+                      </a>
+                    )}
+                    {project.demo && (
+                      <a
+                        href={project.demo}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+                      >
+                        Demo
+                      </a>
+                    )}
+                  </div>
+                )}
+                
+                {project.type === 'Professional Work' && (
+                  <div className="pt-2">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+                      * Proprietary work - source code not available for public viewing
+                    </p>
+                  </div>
+                )}
               </div>
             ))}
           </div>
