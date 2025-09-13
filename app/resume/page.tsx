@@ -378,11 +378,26 @@ export default function Resume() {
           </div>
         </section>
 
-        {/* Download Resume Button */}
+        {/* Contact for Resume */}
         <div className="text-center">
-          <p className="text-gray-600 dark:text-gray-400 text-sm">
-            PDF resume available upon request - please contact me
-          </p>
+          <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg border border-blue-200 dark:border-blue-800">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              Ready to Discuss Opportunities
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-4">
+              Formatted PDF resume and references available for qualified positions
+            </p>
+            <a 
+              href="mailto:careers@brucetruong.com?subject=Resume Request - SRE Position"
+              className="inline-flex items-center bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-lg hover:shadow-xl transform hover:scale-105 duration-300"
+            >
+              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+              </svg>
+              Contact for Full Resume
+            </a>
+          </div>
         </div>
       </div>
     </div>
