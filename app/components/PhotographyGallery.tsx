@@ -80,11 +80,12 @@ export default function PhotographyGallery({
               className="group cursor-pointer rounded-lg overflow-hidden hover:scale-105 transition-transform duration-300"
               onClick={() => openLightbox(photo)}
             >
-              <img
+              <Image
                 src={photo.src}
                 alt={photo.alt}
+                width={400}
+                height={256}
                 className="w-full h-64 object-cover group-hover:brightness-110 transition-all duration-300"
-                loading="lazy"
               />
             </div>
           ))}
