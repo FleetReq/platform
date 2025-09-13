@@ -21,26 +21,57 @@ export default function AboutPage() {
   // Photography data - currently empty until you add your photos
   // To enable: add photos to /public/images/photography/ and uncomment below
   const samplePhotos: Array<{id: string; src: string; alt: string; caption?: string; instagramUrl?: string}> = [
-    // Uncomment and update with your actual photos:
-    // {
-    //   id: '1',
-    //   src: '/images/photography/your-photo1.jpg',
-    //   alt: 'Your photo description',
-    //   caption: 'Your photo caption',
-    //   instagramUrl: 'https://instagram.com/p/your-post'
-    // },
-    // {
-    //   id: '2',
-    //   src: '/images/photography/your-photo2.jpg',
-    //   alt: 'Your photo description',
-    //   caption: 'Your photo caption',
-    // },
+    {
+      id: '1',
+      src: '/images/photography/bee-orchid.jpg',
+      alt: 'Bee orchid flower in natural setting'
+    },
+    {
+      id: '2', 
+      src: '/images/photography/bird-branch.jpg',
+      alt: 'Bird perched on tree branch'
+    },
+    {
+      id: '3',
+      src: '/images/photography/deer-forage.jpg', 
+      alt: 'Deer foraging in natural habitat'
+    },
+    {
+      id: '4',
+      src: '/images/photography/squirrel-fly.jpg',
+      alt: 'Squirrel in mid-leap between trees'
+    },
+    {
+      id: '5',
+      src: '/images/photography/water-lantern.jpg',
+      alt: 'Illuminated lantern reflected in water'
+    },
+    {
+      id: '6',
+      src: '/images/photography/dance-performance.jpg',
+      alt: 'Dance performance captured in motion'
+    },
+    {
+      id: '7',
+      src: '/images/photography/volleyball-spike.jpg',
+      alt: 'Volleyball player executing spike'
+    },
+    {
+      id: '8',
+      src: '/images/photography/beer-glow.jpg',
+      alt: 'Atmospheric beverage photography'
+    },
+    {
+      id: '9',
+      src: '/images/photography/girl-climb.jpg',
+      alt: 'Climber ascending rock face'
+    }
   ]
 
   return (
     <div className="relative overflow-hidden min-h-screen">
       <BackgroundAnimation />
-      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             About Me
@@ -50,11 +81,11 @@ export default function AboutPage() {
           </p>
         </div>
 
-        <div className="mb-16">
-          <div className="relative">
+        <section className="mb-16 py-12 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50">
+          <div className="relative px-8">
             {/* Floating image on the right */}
             <div className="md:float-right md:ml-8 md:mb-6 mb-8 md:w-80 w-full">
-              <div className="relative rounded-2xl overflow-hidden shadow-xl">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-gray-200/30 dark:border-gray-700/30">
                 <Image
                   src="/images/about-profile.jpg"
                   alt="Bruce Truong"
@@ -118,11 +149,11 @@ export default function AboutPage() {
             {/* Clear float */}
             <div className="clear-both"></div>
           </div>
-        </div>
+        </section>
 
         {/* Quick Facts in a separate section */}
-        <div className="mb-16">
-          <div className="bg-gray-50/80 dark:bg-gray-800/80 backdrop-blur-sm p-8 rounded-2xl max-w-2xl mx-auto">
+        <section className="mb-16 py-12 bg-gradient-to-r from-gray-50/80 to-blue-50/80 dark:from-gray-800/40 dark:to-blue-900/20 backdrop-blur-sm rounded-2xl">
+          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-8 rounded-2xl max-w-2xl mx-auto shadow-lg border border-gray-200/50 dark:border-gray-700/50">
             <h3 className="text-2xl font-bold mb-6 text-center">Quick Facts</h3>
             <ul className="grid md:grid-cols-2 gap-4">
               <li className="flex items-center">
@@ -143,64 +174,87 @@ export default function AboutPage() {
               </li>
             </ul>
           </div>
-        </div>
+        </section>
 
-
-        <div className="mb-16">
-          <h2 className="text-3xl font-bold mb-8 text-center">Core Values</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">🚀</span>
+        <section className="mb-16 py-12 bg-gradient-to-br from-purple-50/80 to-indigo-50/80 dark:from-purple-900/20 dark:to-indigo-900/20 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50">
+          <div className="px-8">
+            <h2 className="text-3xl font-bold mb-8 text-center text-gray-900 dark:text-white">Core Values</h2>
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="text-center group">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/50 dark:to-blue-800/50 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg border border-blue-200/50 dark:border-blue-700/50 group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Innovation</h3>
+                <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                  Constantly exploring new technologies and approaches to solve problems more effectively.
+                </p>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Innovation</h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Constantly exploring new technologies and approaches to solve problems more effectively.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">💬</span>
+              <div className="text-center group">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/50 dark:to-purple-800/50 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg border border-purple-200/50 dark:border-purple-700/50 group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-8 h-8 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Communication</h3>
+                <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                  Translating complex technical concepts into clear, actionable insights for diverse audiences.
+                </p>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Communication</h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Translating complex technical concepts into clear, actionable insights for diverse audiences.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">🤔</span>
+              <div className="text-center group">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/50 dark:to-green-800/50 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg border border-green-200/50 dark:border-green-700/50 group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Intellectual Humility</h3>
+                <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                  Embracing curiosity, asking the right questions, and adapting when better solutions emerge.
+                </p>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Intellectual Humility</h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Embracing curiosity, asking the right questions, and adapting when better solutions emerge.
-              </p>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Photography Section - Only show if photos are available */}
         {samplePhotos.length > 0 && (
           <PhotographyGallery 
             photos={samplePhotos}
             title="Through My Lens"
-            subtitle="Photography has been a creative outlet alongside my technical work, developing my eye for detail and composition"
+            subtitle="Capturing moments that inspire and tell stories"
             instagramHandle="deeahtee"
           />
         )}
 
-        <div className="text-center">
-          <h2 className="text-3xl font-bold mb-6">Let&apos;s Connect</h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-8">
-            I&apos;m always interested in new opportunities and interesting conversations.
-          </p>
-          <a
-            href="/contact"
-            className="inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105"
-          >
-            Get In Touch
-          </a>
-        </div>
+        {/* Call to Action */}
+        <section className="mt-16 py-12 bg-gradient-to-r from-blue-50/80 to-purple-50/80 dark:from-blue-900/20 dark:to-purple-900/20 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50">
+          <div className="text-center max-w-3xl mx-auto px-6">
+            <h2 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white">Ready to Collaborate?</h2>
+            <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+              I&apos;m always open to discussing new opportunities, technical challenges, and innovative projects.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <a
+                href="/contact"
+                className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 inline-flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                Get In Touch
+                <svg className="ml-2 -mr-1 w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                </svg>
+              </a>
+              
+              <a
+                href="/resume"
+                className="border-2 border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-400 dark:hover:text-gray-900 px-8 py-3 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+              >
+                View Resume
+              </a>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   )

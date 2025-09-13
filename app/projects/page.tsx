@@ -85,9 +85,10 @@ export default function ProjectsPage() {
         </div>
 
         {/* Featured Experience */}
-        <div className="mb-16">
-          <h2 className="text-3xl font-bold mb-8">Featured Experience</h2>
-          <div className="grid md:grid-cols-2 gap-8">
+        <section className="mb-16 py-12 bg-gradient-to-br from-blue-50/80 to-indigo-50/80 dark:from-blue-900/20 dark:to-indigo-900/20 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50">
+          <div className="px-8">
+            <h2 className="text-3xl font-bold mb-8 text-center text-gray-900 dark:text-white">Featured Experience</h2>
+            <div className="grid md:grid-cols-2 gap-8">
             {featuredProjects.map((project) => (
               <div
                 key={project.id}
@@ -160,13 +161,15 @@ export default function ProjectsPage() {
                 )}
               </div>
             ))}
+            </div>
           </div>
-        </div>
+        </section>
 
         {/* Other Projects */}
-        <div className="mb-16">
-          <h2 className="text-3xl font-bold mb-8">More Projects</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <section className="mb-16 py-12 bg-gradient-to-br from-purple-50/80 to-pink-50/80 dark:from-purple-900/20 dark:to-pink-900/20 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50">
+          <div className="px-8">
+            <h2 className="text-3xl font-bold mb-8 text-center text-gray-900 dark:text-white">More Projects</h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {otherProjects.map((project) => (
               <div
                 key={project.id}
@@ -225,8 +228,9 @@ export default function ProjectsPage() {
                 )}
               </div>
             ))}
+            </div>
           </div>
-        </div>
+        </section>
 
         {/* Call to Action */}
         <div className="text-center bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-2xl p-12">

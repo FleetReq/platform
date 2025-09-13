@@ -19,7 +19,7 @@ export default function Resume() {
   return (
     <div className="relative overflow-hidden min-h-screen">
       <BackgroundAnimation />
-      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Header */}
         <header className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -39,11 +39,11 @@ export default function Resume() {
         </header>
 
         {/* Professional Summary Section */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 border-b-2 border-blue-500 dark:border-blue-400 pb-2">
+        <section className="mb-12 py-8 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 dark:from-blue-900/20 dark:to-indigo-900/20 backdrop-blur-sm rounded-2xl">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 border-b-2 border-blue-500 dark:border-blue-400 pb-2 text-center">
             PROFESSIONAL SUMMARY
           </h2>
-          <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg">
+          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-6 rounded-lg shadow-lg border border-gray-200/50 dark:border-gray-700/50 mx-4">
             <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
               Experienced Site Reliability Engineer with proven expertise in large-scale infrastructure automation, cloud migration, and system monitoring. Successfully architected and executed critical MongoDB migration of 60+ billion documents to production, demonstrating strong technical leadership and problem-solving abilities. Proficient in DevOps practices, container orchestration, infrastructure as code, and observability platforms. Combines solid computer science foundation with hands-on experience in high-availability systems, CI/CD pipelines, and cross-functional team collaboration.
             </p>
@@ -73,10 +73,11 @@ export default function Resume() {
         </section>
 
         {/* Education Section */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 border-b-2 border-blue-500 dark:border-blue-400 pb-2">
+        <section className="mb-12 py-8 bg-gradient-to-r from-purple-50/80 to-indigo-50/80 dark:from-purple-900/20 dark:to-indigo-900/20 backdrop-blur-sm rounded-2xl">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 border-b-2 border-blue-500 dark:border-blue-400 pb-2 text-center">
             EDUCATION
           </h2>
+          <div className="px-4">
 
           <div className="space-y-6">
             <div>
@@ -127,13 +128,15 @@ export default function Resume() {
               </p>
             </div>
           </div>
+          </div>
         </section>
 
         {/* Technical Skills Section */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 border-b-2 border-blue-500 dark:border-blue-400 pb-2">
+        <section className="mb-12 py-8 bg-gradient-to-r from-green-50/80 to-blue-50/80 dark:from-green-900/20 dark:to-blue-900/20 backdrop-blur-sm rounded-2xl">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 border-b-2 border-blue-500 dark:border-blue-400 pb-2 text-center">
             TECHNICAL SKILLS
           </h2>
+          <div className="px-4">
 
           <div className="grid md:grid-cols-3 gap-6">
             <div>
@@ -232,6 +235,7 @@ export default function Resume() {
                 </span>
               ))}
             </div>
+          </div>
           </div>
         </section>
 

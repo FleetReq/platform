@@ -12,16 +12,15 @@ export default function Testimonials() {
       highlight: "The team absolutely knocked it out of the park!",
       articleLink: "https://bikeindex.org/news/bike-indexs-new-tool-in-the-fight-against-bike-crimes"
     },
-    // Placeholder for additional testimonials - uncomment and fill when you get more
-    // {
-    //   id: 2,
-    //   name: "Your Coworker Name",
-    //   title: "Their Title",
-    //   company: "Company Name",
-    //   content: "Add their testimonial content here...",
-    //   project: "Project Name",
-    //   highlight: "Key quote from them"
-    // },
+    {
+      id: 2,
+      name: "Cristian Salazar",
+      title: "Software Engineering Student",
+      company: "Portland State University",
+      content: "Unlike other project managers I've worked with, Bruce approaches leadership differently. When he has an idea for the main design, he brings it to the team for discussion. We take time to consider all thoughts and considerations together. He's genuinely open to feedback and willing to admit when someone else has an idea he really likes. His collaborative approach to design decisions makes him an exceptional team lead.",
+      project: "Senior Capstone Project",
+      highlight: "His collaborative approach to design decisions makes him an exceptional team lead."
+    },
     // {
     //   id: 3,
     //   name: "Another Reference",
