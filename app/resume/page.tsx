@@ -1,22 +1,40 @@
 import type { Metadata } from "next";
+import BackgroundAnimation from '../components/BackgroundAnimation'
 
 export const metadata: Metadata = {
   title: "Resume - Bruce Truong",
   description: "Professional resume of Bruce Truong, Site Reliability Engineer",
+  openGraph: {
+    title: 'Resume - Bruce Truong',
+    description: 'Professional resume of Bruce Truong, Site Reliability Engineer',
+    url: 'https://brucetruong.com/resume',
+  },
+  twitter: {
+    title: 'Resume - Bruce Truong',
+    description: 'Professional resume of Bruce Truong, Site Reliability Engineer',
+  },
 };
 
 export default function Resume() {
   return (
-    <div className="bg-white dark:bg-gray-900 py-12 transition-colors duration-300">
-      <div className="max-w-4xl mx-auto px-6">
+    <div className="relative overflow-hidden min-h-screen">
+      <BackgroundAnimation />
+      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Header */}
-        <header className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Bruce Truong
+        <header className="text-center mb-16">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Resume
           </h1>
-          <div className="text-lg text-gray-600 dark:text-gray-300 space-y-1">
-            <p>Beaverton, OR</p>
-            <p>careers@brucetruong.com | 971.444.8816</p>
+          <div className="text-xl text-gray-600 dark:text-gray-300 space-y-2 max-w-2xl mx-auto">
+            <p className="font-semibold text-gray-900 dark:text-white">Bruce Truong</p>
+            <p>Site Reliability Engineer</p>
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-4 text-lg">
+              <span>Beaverton, OR</span>
+              <span className="hidden sm:block">•</span>
+              <a href="mailto:careers@brucetruong.com" className="text-blue-600 dark:text-blue-400 hover:underline">careers@brucetruong.com</a>
+              <span className="hidden sm:block">•</span>
+              <a href="tel:+19714448816" className="text-blue-600 dark:text-blue-400 hover:underline">971.444.8816</a>
+            </div>
           </div>
         </header>
 

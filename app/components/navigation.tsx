@@ -17,6 +17,9 @@ const navigationItems = [
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
+  
+  // Debug: log pathname for troubleshooting
+  console.log('Current pathname:', pathname);
 
   return (
     <nav className="bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-800">
@@ -36,10 +39,10 @@ export function Navigation() {
               <Link
                 key={item.name}
                 href={item.href}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                   pathname === item.href
-                    ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20"
-                    : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-b-2 border-blue-600 dark:border-blue-400"
+                    : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 border-b-2 border-transparent hover:border-blue-300 dark:hover:border-blue-500"
                 }`}
               >
                 {item.name}
@@ -91,10 +94,10 @@ export function Navigation() {
               <Link
                 key={item.name}
                 href={item.href}
-                className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                className={`block px-3 py-2 rounded-md text-base font-medium transition-all duration-200 ${
                   pathname === item.href
-                    ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20"
-                    : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 dark:border-blue-400"
+                    : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 border-l-4 border-transparent hover:border-blue-300 dark:hover:border-blue-500"
                 }`}
                 onClick={() => setIsOpen(false)}
               >
