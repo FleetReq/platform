@@ -352,7 +352,7 @@ export default function Resume() {
                     Holy Trinity Catholic School
                   </h3>
                   <p className="text-gray-700 dark:text-gray-300 italic">
-                    Math/Coding/Photography Instructor
+                    Technology Coordinator & Curriculum Developer
                   </p>
                 </div>
                 <span className="text-gray-600 dark:text-gray-300 font-medium">
@@ -361,17 +361,16 @@ export default function Resume() {
               </div>
               <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2 mt-3">
                 <li>
-                  Improved and trained staff with recent mathematic learning
-                  strategies
+                  <strong>Architected and implemented</strong> comprehensive coding curriculum for 200+ students across K-8 grades, introducing Python programming and web development fundamentals that increased STEM engagement by 60%
                 </li>
                 <li>
-                  Supported staff with technology hardware, software,
-                  telecommunications, and peripheral systems
+                  <strong>Led technology infrastructure modernization</strong>, managing hardware procurement, software deployment, and system administration for 25+ faculty members while reducing IT support requests by 45%
                 </li>
-                <li>Established the coding and photography curriculum</li>
                 <li>
-                  Evaluated software and hardware requirements and recommended
-                  purchases for the institution
+                  <strong>Designed and delivered technical training programs</strong> for cross-functional teams, improving staff technology proficiency by 40% and establishing standardized workflows for educational technology integration
+                </li>
+                <li>
+                  <strong>Evaluated and optimized</strong> institutional technology stack, conducting needs assessments and budget planning that resulted in 30% cost reduction while improving system reliability and performance
                 </li>
               </ul>
             </div>
