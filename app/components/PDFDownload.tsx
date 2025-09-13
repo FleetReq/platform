@@ -19,60 +19,11 @@ export default function PDFDownload({
     setIsGenerating(true);
 
     try {
-      // Dynamic imports to avoid SSR issues
-      const [html2canvas, jsPDF] = await Promise.all([
-        import('html2canvas').then(mod => mod.default),
-        import('jspdf').then(mod => mod.default)
-      ]);
-
-      const element = document.getElementById(targetId);
-      if (!element) {
-        throw new Error(`Element with ID "${targetId}" not found`);
-      }
-
-      // Create canvas from the element
-      const canvas = await html2canvas(element, {
-        scale: 1.5, // Reduced from 2 to balance quality and file size
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        width: element.scrollWidth,
-        height: element.scrollHeight,
-        scrollX: 0,
-        scrollY: 0,
-        windowWidth: 1200, // Standard desktop width
-        windowHeight: element.scrollHeight,
-      });
-
-      const imgData = canvas.toDataURL('image/jpeg', 0.85); // Use JPEG with 85% quality for smaller file size
-
-      // Calculate PDF dimensions
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 295; // A4 height in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-
-      // Create PDF
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      let position = 0;
-
-      // Add first page
-      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      // Add additional pages if needed
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-
-      // Download the PDF
-      pdf.save(fileName);
+      // Open PDF-optimized route in new window for PDF generation
+      window.open('/resume/pdf', '_blank');
     } catch (error) {
-      console.error('Error generating PDF:', error);
-      alert('Error generating PDF. Please try again.');
+      console.error('Error opening PDF route:', error);
+      alert('Error opening PDF. Please try again.');
     } finally {
       setIsGenerating(false);
     }

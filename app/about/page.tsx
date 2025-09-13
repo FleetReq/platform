@@ -151,28 +151,76 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Quick Facts in a separate section */}
-        <section className="mb-16 py-12 bg-gradient-to-r from-gray-50/80 to-blue-50/80 dark:from-gray-800/40 dark:to-blue-900/20 backdrop-blur-sm rounded-2xl">
-          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-8 rounded-2xl max-w-2xl mx-auto shadow-lg border border-gray-200/50 dark:border-gray-700/50">
-            <h3 className="text-2xl font-bold mb-6 text-center">Quick Facts</h3>
-            <ul className="grid md:grid-cols-2 gap-4">
-              <li className="flex items-center">
-                <span className="w-3 h-3 bg-blue-600 rounded-full mr-3 flex-shrink-0"></span>
-                <span>Site Reliability Engineer</span>
-              </li>
-              <li className="flex items-center">
-                <span className="w-3 h-3 bg-purple-600 rounded-full mr-3 flex-shrink-0"></span>
-                <span>Go & Kubernetes Specialist</span>
-              </li>
-              <li className="flex items-center">
-                <span className="w-3 h-3 bg-green-600 rounded-full mr-3 flex-shrink-0"></span>
-                <span>Infrastructure Automation Enthusiast</span>
-              </li>
-              <li className="flex items-center">
-                <span className="w-3 h-3 bg-red-600 rounded-full mr-3 flex-shrink-0"></span>
-                <span>Pickleball Coach & Competitor</span>
-              </li>
-            </ul>
+        {/* Personal Highlights - Focus on character and soft skills */}
+        <section className="mb-16">
+          <div className="max-w-4xl mx-auto">
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-10 text-center">What Drives Me</h3>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-blue-900/10 dark:to-indigo-900/10 p-6 rounded-2xl">
+                <div className="flex items-start mb-4">
+                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mr-4 mt-1 flex-shrink-0">
+                    <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C20.832 18.477 19.246 18 17.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Educator at Heart</h4>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+                      4+ years teaching mathematics shaped my approach to complex problems. I believe the best solutions are the ones everyone can understand and build upon.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-br from-purple-50/50 to-pink-50/50 dark:from-purple-900/10 dark:to-pink-900/10 p-6 rounded-2xl">
+                <div className="flex items-start mb-4">
+                  <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mr-4 mt-1 flex-shrink-0">
+                    <svg className="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Strategic Collaborator</h4>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+                      From chess strategy to team dynamics, I thrive on building bridges between different perspectives and finding win-win solutions.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-br from-green-50/50 to-emerald-50/50 dark:from-green-900/10 dark:to-emerald-900/10 p-6 rounded-2xl">
+                <div className="flex items-start mb-4">
+                  <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mr-4 mt-1 flex-shrink-0">
+                    <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Growth Mindset</h4>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+                      Every challenge is a learning opportunity. I'm comfortable saying "I don't know" and excited to figure it out together with the team.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-br from-orange-50/50 to-red-50/50 dark:from-orange-900/10 dark:to-red-900/10 p-6 rounded-2xl">
+                <div className="flex items-start mb-4">
+                  <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center mr-4 mt-1 flex-shrink-0">
+                    <svg className="w-4 h-4 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h8m-5-10V3m0 3V3m0 0V1m0 2h4M7 7h10" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Community Builder</h4>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+                      Whether coaching pickleball or leading engineering initiatives, I love creating environments where people can do their best work.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 

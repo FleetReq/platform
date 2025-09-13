@@ -43,9 +43,9 @@ export default function HeroSection() {
           {/* Content */}
           <div className="flex-1 text-center lg:text-left">
             <div className="mb-6">
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight leading-tight">
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
                 <span className="animate-fade-in-up block">Bruce</span>
-                <span className="animate-fade-in-up-delayed block text-gradient-primary">Truong</span>
+                <span className="animate-fade-in-up-delayed block text-blue-600 dark:text-blue-400">Truong</span>
               </h1>
               <div className="h-1.5 w-32 bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 mx-auto lg:mx-0 mb-6 rounded-full animate-scale-in"></div>
             </div>

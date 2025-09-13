@@ -360,6 +360,10 @@ body {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  padding-right: 0.2em; /* Increased padding to prevent clipping */
+  padding-left: 0.05em; /* Add left padding for balance */
+  display: inline-block; /* Ensure proper rendering */
+  overflow: visible; /* Ensure text doesn't get clipped */
 }
 
 .text-gradient-secondary {
