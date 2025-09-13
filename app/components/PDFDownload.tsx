@@ -32,7 +32,7 @@ export default function PDFDownload({
 
       // Create canvas from the element
       const canvas = await html2canvas(element, {
-        scale: 2, // Higher quality
+        scale: 1.5, // Reduced from 2 to balance quality and file size
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
@@ -44,7 +44,7 @@ export default function PDFDownload({
         windowHeight: element.scrollHeight,
       });
 
-      const imgData = canvas.toDataURL('image/png');
+      const imgData = canvas.toDataURL('image/jpeg', 0.85); // Use JPEG with 85% quality for smaller file size
 
       // Calculate PDF dimensions
       const imgWidth = 210; // A4 width in mm
@@ -57,14 +57,14 @@ export default function PDFDownload({
       let position = 0;
 
       // Add first page
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
 
       // Add additional pages if needed
       while (heightLeft >= 0) {
         position = heightLeft - imgHeight;
         pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
       }
 
