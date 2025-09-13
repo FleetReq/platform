@@ -34,6 +34,8 @@ jobs:
     
     - name: Build
       run: npm run build
+      env:
+        NEXT_PUBLIC_PLAUSIBLE_DOMAIN: ${{ vars.NEXT_PUBLIC_PLAUSIBLE_DOMAIN }}
     
     - name: Setup Pages
       uses: actions/configure-pages@v4
