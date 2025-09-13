@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import dynamic from 'next/dynamic';
 
 interface PDFDownloadProps {
   targetId: string;
@@ -21,6 +20,12 @@ export default function PDFDownload({
     setIsGenerating(true);
 
     try {
+      // Dynamic imports to avoid SSR issues
+      const [html2canvas, jsPDF] = await Promise.all([
+        import('html2canvas').then(mod => mod.default),
+        import('jspdf').then(mod => mod.default)
+      ]);
+
       const element = document.getElementById(targetId);
       if (!element) {
         throw new Error(`Element with ID "${targetId}" not found`);
