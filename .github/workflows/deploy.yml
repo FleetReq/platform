@@ -35,7 +35,7 @@ jobs:
     - name: Build
       run: npm run build
       env:
-        NEXT_PUBLIC_PLAUSIBLE_DOMAIN: ${{ vars.NEXT_PUBLIC_PLAUSIBLE_DOMAIN }}
+        NEXT_PUBLIC_GA_ID: ${{ vars.NEXT_PUBLIC_GA_ID }}
     
     - name: Setup Pages
       uses: actions/configure-pages@v4

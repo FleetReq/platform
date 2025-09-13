@@ -122,7 +122,7 @@ export default function RootLayout({
             {children}
           </main>
         </ThemeProvider>
-        <Analytics plausibleDomain={process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN} />
+        <Analytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
       </body>
     </html>
   );
