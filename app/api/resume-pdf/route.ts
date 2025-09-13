@@ -8,15 +8,16 @@ export async function GET() {
     const pdfElement = createElement(ResumePDF)
     const buffer = await renderToBuffer(pdfElement)
     
-    // Convert Buffer to ArrayBuffer for Response compatibility
-    const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
+    // Convert Buffer to Uint8Array for Response compatibility
+    const bytes = new Uint8Array(buffer)
     
-    return new Response(arrayBuffer, {
+    return new Response(bytes, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'attachment; filename="Bruce_Truong_Resume.pdf"',
-        'Cache-Control': 'no-cache'
+        'Cache-Control': 'no-cache',
+        'Content-Length': bytes.length.toString()
       }
     })
   } catch (error) {
