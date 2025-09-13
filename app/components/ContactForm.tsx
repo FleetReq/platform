@@ -68,13 +68,26 @@ export default function ContactForm() {
     setIsSubmitting(true)
     setSubmitStatus('idle')
     
-    // Simulate form submission for static site
+    // For static sites, we'll create a mailto link and copy to clipboard
     try {
-      // For static sites, we'll show success and log the form data
-      console.log('Contact form submission:', formData)
+      const emailSubject = encodeURIComponent(`${formData.subject} - Contact from ${formData.name}`)
+      const emailBody = encodeURIComponent(
+        `From: ${formData.name} (${formData.email})\n` +
+        `Company: ${formData.company || 'Not specified'}\n\n` +
+        `Message:\n${formData.message}`
+      )
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const mailtoLink = `mailto:careers@brucetruong.com?subject=${emailSubject}&body=${emailBody}`
+      
+      // Open email client
+      window.location.href = mailtoLink
+      
+      // Also copy message to clipboard as backup
+      const clipboardText = `Subject: ${formData.subject}\n\nFrom: ${formData.name} (${formData.email})\nCompany: ${formData.company || 'Not specified'}\n\nMessage:\n${formData.message}`
+      
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(clipboardText)
+      }
       
       setSubmitStatus('success')
       setFormData({
@@ -85,7 +98,7 @@ export default function ContactForm() {
         message: ''
       })
     } catch (error) {
-      console.error('Error submitting form:', error)
+      console.error('Error creating email:', error)
       setSubmitStatus('error')
     } finally {
       setIsSubmitting(false)
@@ -113,7 +126,7 @@ export default function ContactForm() {
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
             </svg>
             <p className="text-green-700 dark:text-green-300 font-medium">
-              Thank you for your message! Please email me directly at careers@brucetruong.com
+              Your email client should open with your message pre-filled. Message also copied to clipboard!
             </p>
           </div>
         </div>
@@ -237,7 +250,7 @@ export default function ContactForm() {
           isLoading={isSubmitting}
           className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-8 py-3 rounded-lg font-medium transition-colors shadow-lg hover:shadow-xl transform hover:scale-105 duration-300"
         >
-          Send Message
+          Open Email Client
         </ButtonLoading>
       </form>
     </div>
