@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import BackgroundAnimation from '../components/BackgroundAnimation'
+import PDFDownload from '../components/PDFDownload'
 
 export const metadata: Metadata = {
   title: "Resume - Bruce Truong",
@@ -19,7 +20,13 @@ export default function Resume() {
   return (
     <div className="relative overflow-hidden min-h-screen">
       <BackgroundAnimation />
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+
+      {/* PDF Download Button - Fixed Position */}
+      <div className="fixed top-24 right-6 z-50 print:hidden">
+        <PDFDownload targetId="resume-content" />
+      </div>
+
+      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16" id="resume-content">
         {/* Header */}
         <header className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -34,6 +41,8 @@ export default function Resume() {
               <a href="mailto:careers@brucetruong.com" className="text-blue-600 dark:text-blue-400 hover:underline">careers@brucetruong.com</a>
               <span className="hidden sm:block">•</span>
               <a href="tel:+19714448816" className="text-blue-600 dark:text-blue-400 hover:underline">971.444.8816</a>
+              <span className="hidden sm:block">•</span>
+              <a href="https://brucetruong.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">brucetruong.com</a>
             </div>
           </div>
         </header>
@@ -45,20 +54,20 @@ export default function Resume() {
           </h2>
           <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-6 rounded-lg shadow-lg border border-gray-200/50 dark:border-gray-700/50 mx-4">
             <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
-              Experienced Site Reliability Engineer with proven expertise in large-scale infrastructure automation, cloud migration, and system monitoring. Successfully architected and executed critical MongoDB migration of 60+ billion documents to production, demonstrating strong technical leadership and problem-solving abilities. Proficient in DevOps practices, container orchestration, infrastructure as code, and observability platforms. Combines solid computer science foundation with hands-on experience in high-availability systems, CI/CD pipelines, and cross-functional team collaboration.
+              Experienced Site Reliability Engineer specializing in observability platforms, cross-team collaboration, and automated remediation systems for large-scale distributed environments. Successfully architected and executed critical MongoDB migration of 60+ billion documents to production, demonstrating expertise in system reliability and service performance optimization. Proven track record building monitoring solutions, implementing infrastructure as code, and partnering with development teams to ensure SLA compliance. Combines strong technical foundation with hands-on experience in container orchestration, API development, and incident response procedures.
             </p>
             <div className="mt-4">
               <p className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-2">Core Competencies:</p>
               <div className="flex flex-wrap gap-2">
                 {[
-                  "Site Reliability Engineering",
-                  "Cloud Migration", 
-                  "Infrastructure Automation",
-                  "DevOps",
-                  "Kubernetes",
-                  "Database Management",
-                  "System Monitoring",
-                  "CI/CD Pipelines"
+                  "Observability Platforms",
+                  "Cross-Team Collaboration",
+                  "Automated Remediation",
+                  "SLA Management",
+                  "Container Orchestration",
+                  "RESTful APIs",
+                  "Incident Response",
+                  "Service Reliability"
                 ].map((competency) => (
                   <span
                     key={competency}
@@ -99,11 +108,10 @@ export default function Resume() {
                 </h4>
                 <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 mt-2 space-y-1">
                   <li>
-                    Organized and led a 5-member team to create, edit, and search through theft information on the Bike Index Platform
+                    Led cross-functional team of 5+ developers implementing microservices architecture with RESTful APIs and containerized deployment for bike theft tracking platform
                   </li>
                   <li>
-                    Collaborated via Scrum methodology to navigate through
-                    bi-weekly project sprints
+                    Collaborated across development and operations teams using Scrum methodology, delivering bi-weekly sprints while ensuring system reliability and performance
                   </li>
                   <li>
                     <a href="https://github.com/impeccKable/bike-index-platform" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">
@@ -191,13 +199,13 @@ export default function Resume() {
                 {[
                   "MongoDB",
                   "PostgreSQL",
+                  "Apache Cassandra",
                   "DataDog",
-                  "Observability",
-                  "Kafka",
-                  "RabbitMQ",
-                  "Message Queues",
-                  "Performance Monitoring",
-                  "SLA Management"
+                  "Observability Platforms",
+                  "RESTful APIs",
+                  "Web Applications",
+                  "Distributed Systems",
+                  "Performance Monitoring"
                 ].map((tech) => (
                   <span
                     key={tech}
@@ -306,16 +314,19 @@ export default function Resume() {
               </div>
               <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2 mt-3">
                 <li>
-                  <strong>Architected and executed</strong> critical production MongoDB migration using custom bash automation scripts, successfully migrating 60+ billion documents from on-premise infrastructure to Atlas cloud services with zero data loss and minimal downtime, reducing operational costs by 30% while improving system reliability
+                  <strong>Deployed and maintained observability platform</strong> using DataDog, establishing 15+ custom dashboards and automated alerts that reduced mean time to detection (MTTD) by 40% and enabled rapid error detection and remediation across distributed microservices architecture
                 </li>
                 <li>
-                  <strong>Implemented comprehensive monitoring solutions</strong> using DataDog observability platform, establishing 15+ custom dashboards and alerts that reduced mean time to detection (MTTD) by 40% and improved system visibility across microservices architecture
+                  <strong>Partnered across development, operations, and QA teams</strong> to architect and execute critical MongoDB migration of 60+ billion documents, ensuring service reliability and scalability while maintaining 99.9% SLA compliance through comprehensive testing and automated scripts
                 </li>
                 <li>
-                  <strong>Optimized codebase quality</strong> through systematic refactoring initiatives, increasing code coverage from 65% to 85% using automated testing frameworks and implementing CI/CD best practices that reduced deployment time by 50%
+                  <strong>Developed automated remediation systems</strong> using Python and Bash scripting, creating monitoring and analysis tools that improved system performance by 30% and reduced manual intervention for common service-impacting issues
                 </li>
                 <li>
-                  <strong>Collaborated with cross-functional teams</strong> of 8+ engineers to maintain 99.9% uptime SLA for mission-critical financial services infrastructure handling 1M+ daily transactions
+                  <strong>Provided guidance to 8+ engineers and developers</strong> on reliability best practices, implementing standardized troubleshooting procedures and incident response protocols that increased confidence in service performance expectations
+                </li>
+                <li>
+                  <strong>Participated in on-call rotations</strong> for mission-critical financial services infrastructure handling 1M+ daily transactions, leading restoration and repair of service-impacting issues while maintaining zero data loss record
                 </li>
               </ul>
             </div>

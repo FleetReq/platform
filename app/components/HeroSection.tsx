@@ -3,37 +3,37 @@ import Image from 'next/image'
 
 export default function HeroSection() {
   return (
-    <section id="hero" className="relative py-20 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto">
-        <div className="flex flex-col lg:flex-row items-center gap-12">
+    <section id="hero" className="relative py-24 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-20">
           {/* Profile Image */}
           <div className="flex-shrink-0 group relative">
             {/* Subtle background glow */}
             <div className="absolute -inset-4 bg-gradient-to-br from-blue-400/20 to-blue-600/20 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
             
             {/* Main image container */}
-            <div className="relative w-64 h-64 lg:w-80 lg:h-80">
-              {/* Gradient border ring */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400 via-blue-500 to-blue-600 p-1 shadow-xl">
-                {/* Inner shadow ring */}
-                <div className="absolute inset-1 rounded-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 p-2 transition-colors duration-500">
-                  {/* Image container */}
-                  <div className="w-full h-full rounded-full overflow-hidden shadow-inner">
+            <div className="relative w-72 h-72 lg:w-96 lg:h-96">
+              {/* Enhanced gradient border ring */}
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-500 via-blue-600 to-purple-600 p-1.5 shadow-elegant-xl">
+                {/* Inner shadow ring with better contrast */}
+                <div className="absolute inset-1.5 rounded-full bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 p-3 transition-all duration-500 shadow-inner">
+                  {/* Image container with better shadows */}
+                  <div className="w-full h-full rounded-full overflow-hidden ring-1 ring-gray-200/50 dark:ring-gray-700/50">
                     <Image
                       src="/images/profile.jpg"
                       alt="Bruce Truong - Site Reliability Engineer"
-                      width={320}
-                      height={320}
-                      className="w-full h-full object-cover filter group-hover:brightness-105 transition-all duration-500"
+                      width={384}
+                      height={384}
+                      className="w-full h-full object-cover filter group-hover:brightness-105 group-hover:contrast-105 transition-all duration-500"
                       priority
                     />
                   </div>
                 </div>
               </div>
-              
-              {/* Professional badge */}
-              <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-green-500 rounded-full border-4 border-white dark:border-gray-900 shadow-lg flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
-                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+
+              {/* Enhanced professional badge */}
+              <div className="absolute -bottom-3 -right-3 w-14 h-14 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full border-4 border-white dark:border-gray-900 shadow-elegant-lg flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:-rotate-12">
+                <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -42,46 +42,52 @@ export default function HeroSection() {
           
           {/* Content */}
           <div className="flex-1 text-center lg:text-left">
-            <div className="mb-4">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-2">
-                Bruce Truong
+            <div className="mb-6">
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight leading-tight">
+                <span className="animate-fade-in-up block">Bruce</span>
+                <span className="animate-fade-in-up-delayed block text-gradient-primary">Truong</span>
               </h1>
-              <div className="h-1 w-24 bg-gradient-to-r from-blue-500 to-blue-600 mx-auto lg:mx-0 mb-4"></div>
+              <div className="h-1.5 w-32 bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 mx-auto lg:mx-0 mb-6 rounded-full animate-scale-in"></div>
             </div>
-            
-            <p className="text-2xl font-semibold text-blue-600 dark:text-blue-400 mb-2">
+
+            <p className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400 mb-3 animate-slide-in-left">
               Site Reliability Engineer
             </p>
-            
-            <p className="text-xl text-gray-700 dark:text-gray-200 mb-6 font-medium">
+
+            <p className="text-xl sm:text-2xl text-gray-700 dark:text-gray-200 mb-8 font-medium leading-relaxed animate-slide-in-right">
               Building resilient systems that scale with confidence
             </p>
-            
-            <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl leading-relaxed">
-              Transforming complex infrastructure challenges into scalable solutions. 
-              Specialized in cloud migration, automation, and high-availability systems 
-              with <strong className="text-blue-600 dark:text-blue-400">60+ billion documents</strong> successfully migrated to production.
+
+            <p className="text-lg text-gray-600 dark:text-gray-300 mb-10 max-w-2xl leading-loose mx-auto lg:mx-0 animate-fade-in-up" style={{ animationDelay: '0.6s', animationFillMode: 'both', opacity: 0 }}>
+              Transforming complex infrastructure challenges into scalable solutions.
+              Specialized in cloud migration, automation, and high-availability systems
+              with <strong className="text-gradient-secondary font-bold">60+ billion documents</strong> successfully migrated to production.
             </p>
             
             {/* Core Skills */}
-            <div className="mb-8">
-              <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">Core Technologies</p>
-              <div className="flex flex-wrap gap-3">
+            <div className="mb-10 animate-fade-in-up" style={{ animationDelay: '0.8s', animationFillMode: 'both', opacity: 0 }}>
+              <p className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-6 text-center lg:text-left">Core Technologies</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto lg:mx-0">
                 {[
-                  { name: "Go", icon: "🔷" },
-                  { name: "Kubernetes", icon: "⚡" },
-                  { name: "MongoDB", icon: "🍃" },
-                  { name: "GCP", icon: "☁️" },
-                  { name: "Terraform", icon: "🏗️" },
-                  { name: "DataDog", icon: "📊" }
+                  { name: "Go", icon: "🔷", color: "from-blue-500 to-blue-600" },
+                  { name: "Kubernetes", icon: "⚡", color: "from-purple-500 to-purple-600" },
+                  { name: "MongoDB", icon: "🍃", color: "from-green-500 to-green-600" },
+                  { name: "GCP", icon: "☁️", color: "from-blue-600 to-indigo-600" },
+                  { name: "Python", icon: "🐍", color: "from-green-600 to-emerald-600" },
+                  { name: "Docker", icon: "🐋", color: "from-cyan-500 to-blue-500" },
+                  { name: "Terraform", icon: "🏗️", color: "from-orange-500 to-orange-600" },
+                  { name: "DataDog", icon: "📊", color: "from-violet-500 to-violet-600" }
                 ].map((skill, index) => (
                   <div
                     key={skill.name}
-                    className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm px-4 py-2 rounded-full border border-gray-200/50 dark:border-gray-700/50 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
-                    style={{ animationDelay: `${index * 100}ms` }}
+                    className="group relative bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm px-4 py-3 rounded-full border border-gray-200/60 dark:border-gray-700/60 shadow-elegant hover:shadow-elegant-lg hover:-translate-y-1 transition-all duration-300 cursor-default animate-scale-in"
+                    style={{ animationDelay: `${0.9 + index * 0.1}s`, animationFillMode: 'both', opacity: 0 }}
                   >
-                    <span className="text-lg mr-2">{skill.icon}</span>
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{skill.name}</span>
+                    <div className={`absolute inset-0 bg-gradient-to-r ${skill.color} opacity-0 group-hover:opacity-10 rounded-full transition-opacity duration-300`}></div>
+                    <div className="relative flex items-center justify-center">
+                      <span className="text-lg mr-2 group-hover:scale-110 transition-transform duration-300">{skill.icon}</span>
+                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-300 whitespace-nowrap">{skill.name}</span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -110,29 +116,31 @@ export default function HeroSection() {
             </div>
             
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-10 animate-fade-in-up" style={{ animationDelay: '1.4s', animationFillMode: 'both', opacity: 0 }}>
               <Link
                 href="/resume"
-                className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold transition-all duration-200 inline-flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-1 group"
+                className="group relative bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 dark:from-blue-500 dark:to-blue-600 dark:hover:from-blue-600 dark:hover:to-blue-700 text-white px-8 py-4 rounded-xl font-bold transition-all duration-300 inline-flex items-center justify-center shadow-elegant-lg hover:shadow-elegant-xl transform hover:-translate-y-2 hover:scale-105 focus-visible-ring overflow-hidden"
               >
-                <svg className="mr-2 w-5 h-5 transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 20 20">
+                <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <svg className="mr-3 w-5 h-5 transition-transform group-hover:scale-110 group-hover:rotate-6 relative z-10" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
                 </svg>
-                View Full Resume
-                <svg className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" fill="currentColor" viewBox="0 0 20 20">
+                <span className="relative z-10">View Full Resume</span>
+                <svg className="ml-3 w-4 h-4 transition-transform group-hover:translate-x-1 relative z-10" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
                 </svg>
               </Link>
-              
+
               <Link
                 href="/contact"
-                className="border-2 border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-400 dark:hover:text-gray-900 px-8 py-4 rounded-lg font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1 group inline-flex items-center justify-center"
+                className="group relative border-2 border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-400 dark:hover:text-gray-900 px-8 py-4 rounded-xl font-bold transition-all duration-300 shadow-elegant hover:shadow-elegant-lg transform hover:-translate-y-2 hover:scale-105 group inline-flex items-center justify-center focus-visible-ring overflow-hidden"
               >
-                <svg className="mr-2 w-5 h-5 transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 20 20">
+                <div className="absolute inset-0 bg-blue-600 dark:bg-blue-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+                <svg className="mr-3 w-5 h-5 transition-transform group-hover:scale-110 group-hover:-rotate-6 relative z-10" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                   <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                 </svg>
-                Let&#39;s Connect
+                <span className="relative z-10">Let's Connect</span>
               </Link>
             </div>
             

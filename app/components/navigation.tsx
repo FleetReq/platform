@@ -27,56 +27,79 @@ export function Navigation() {
   };
 
   return (
-    <nav className="bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-800">
+    <nav className="bg-white/98 dark:bg-gray-900/98 backdrop-blur-2xl border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <Link href="/" className="flex-shrink-0">
-              <span className="text-xl font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200">
-                BT
-              </span>
+        <div className="flex items-center justify-between h-20 gap-4">
+          {/* Left: Logo */}
+          <div className="flex items-center flex-shrink-0 min-w-0">
+            <Link href="/" className="group">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gray-900 dark:bg-white rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-105 flex-shrink-0">
+                  <span className="text-base font-bold text-white dark:text-gray-900">BT</span>
+                </div>
+                <div className="hidden sm:block min-w-0">
+                  <div className="text-lg font-bold text-gray-900 dark:text-white tracking-tight truncate">Bruce Truong</div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 truncate">Site Reliability Engineer</div>
+                </div>
+              </div>
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navigationItems.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={`relative px-3 py-2 text-sm font-medium transition-all duration-300 ease-in-out ${
-                  isCurrentPage(item.href)
-                    ? "text-blue-600 dark:text-blue-400 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-gradient-to-r after:from-blue-600 after:to-blue-500 dark:after:from-blue-400 dark:after:to-blue-300 after:rounded-full"
-                    : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 after:absolute after:bottom-0 after:left-1/2 after:w-0 after:h-0.5 after:bg-gradient-to-r after:from-blue-600 after:to-blue-500 dark:after:from-blue-400 dark:after:to-blue-300 after:transition-all after:duration-300 after:rounded-full hover:after:left-0 hover:after:w-full"
-                }`}
-              >
-                {item.name}
-              </Link>
-            ))}
+          {/* Center: Desktop Navigation */}
+          <div className="hidden md:flex justify-center flex-1 max-w-md">
+            <div className="flex items-center space-x-1 bg-gray-50/80 dark:bg-gray-800/50 rounded-full px-2 py-2 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
+              {navigationItems.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`relative px-3 py-2 text-sm font-medium rounded-full transition-all duration-300 ease-out whitespace-nowrap ${
+                    isCurrentPage(item.href)
+                      ? "text-white bg-gray-900 dark:text-gray-900 dark:bg-white shadow-sm"
+                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/70 dark:hover:bg-gray-700/70"
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </div>
           </div>
 
-          <div className="flex items-center space-x-4">
+          {/* Right: Search, CTA, Theme Toggle */}
+          <div className="flex items-center flex-shrink-0 space-x-2">
             {/* Search - Desktop */}
-            <div className="hidden md:block">
-              <Search className="w-64" />
+            <div className="hidden lg:block">
+              <Search className="w-48" />
             </div>
-            
+
+            {/* CTA Button */}
+            <div className="hidden xl:block">
+              <Link
+                href="/contact"
+                className="inline-flex items-center px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-medium rounded-full hover:bg-gray-800 dark:hover:bg-gray-100 transition-all duration-300 shadow-sm hover:shadow-md whitespace-nowrap"
+              >
+                Contact
+                <svg className="ml-1.5 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+            </div>
+
             <ThemeToggle />
-            
+
             {/* Mobile menu button */}
             <div className="md:hidden">
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="inline-flex items-center justify-center p-2 rounded-full text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
                 aria-expanded="false"
               >
                 <span className="sr-only">Open main menu</span>
                 {!isOpen ? (
-                  <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                  <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                   </svg>
                 ) : (
-                  <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                  <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 )}
@@ -88,27 +111,44 @@ export function Navigation() {
 
       {/* Mobile menu */}
       {isOpen && (
-        <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-3 sm:px-3 bg-gray-50 dark:bg-gray-800">
+        <div className="md:hidden border-t border-gray-100 dark:border-gray-800">
+          <div className="px-6 py-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl">
             {/* Search - Mobile */}
-            <div className="px-3">
+            <div className="mb-6">
               <Search className="w-full" />
             </div>
-            
-            {navigationItems.map((item) => (
+
+            {/* Mobile Navigation Links */}
+            <div className="space-y-2 mb-6">
+              {navigationItems.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`block px-4 py-3 text-base font-medium rounded-xl transition-all duration-200 ${
+                    isCurrentPage(item.href)
+                      ? "text-white bg-gray-900 dark:text-gray-900 dark:bg-white"
+                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800"
+                  }`}
+                  onClick={() => setIsOpen(false)}
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </div>
+
+            {/* Mobile CTA */}
+            <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
               <Link
-                key={item.name}
-                href={item.href}
-                className={`relative block px-3 py-2 rounded-md text-base font-medium transition-all duration-300 ease-in-out ${
-                  isCurrentPage(item.href)
-                    ? "text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/20 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-gradient-to-b before:from-blue-600 before:to-blue-500 dark:before:from-blue-400 dark:before:to-blue-300 before:rounded-r-full"
-                    : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 before:absolute before:left-0 before:top-1/2 before:w-0 before:h-0 before:bg-gradient-to-b before:from-blue-600 before:to-blue-500 dark:before:from-blue-400 dark:before:to-blue-300 before:transition-all before:duration-300 before:rounded-r-full hover:before:top-0 hover:before:bottom-0 hover:before:w-1"
-                }`}
+                href="/contact"
+                className="w-full inline-flex items-center justify-center px-6 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-base font-medium rounded-xl hover:bg-gray-800 dark:hover:bg-gray-100 transition-all duration-300"
                 onClick={() => setIsOpen(false)}
               >
-                {item.name}
+                Get In Touch
+                <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
               </Link>
-            ))}
+            </div>
           </div>
         </div>
       )}
