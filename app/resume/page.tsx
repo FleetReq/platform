@@ -344,6 +344,68 @@ export default function Resume() {
               </ul>
             </div>
 
+            {/* Portland State University - CS Tutoring */}
+            <div>
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <h3 className="text-xl font-semibold dark:text-white">
+                    Portland State University
+                  </h3>
+                  <p className="text-gray-700 dark:text-gray-300 italic">
+                    Computer Science Co-Tutoring Coordinator
+                  </p>
+                </div>
+                <span className="text-gray-600 dark:text-gray-300 font-medium">
+                  Jun 2022 - Dec 2023
+                </span>
+              </div>
+              <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2 mt-3">
+                <li>
+                  <strong>Mentored 50+ computer science students</strong> in algorithms, data structures, and programming fundamentals, improving student success rates by 25% through personalized debugging and code review sessions
+                </li>
+                <li>
+                  <strong>Diagnosed and resolved complex technical issues</strong> including compiler errors, runtime bugs, and performance bottlenecks across multiple programming languages (C++, Python, Java)
+                </li>
+                <li>
+                  <strong>Facilitated collaborative learning environments</strong> by leading group tutoring sessions and developing standardized troubleshooting methodologies for common programming challenges
+                </li>
+                <li>
+                  <strong>Enhanced technical communication skills</strong> by translating complex algorithmic concepts into accessible explanations, demonstrating ability to bridge technical and non-technical stakeholders
+                </li>
+              </ul>
+            </div>
+
+            {/* Precision Castparts Corporation */}
+            <div>
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <h3 className="text-xl font-semibold dark:text-white">
+                    Precision Castparts Corporation
+                  </h3>
+                  <p className="text-gray-700 dark:text-gray-300 italic">
+                    Supply Coordinating Manager
+                  </p>
+                </div>
+                <span className="text-gray-600 dark:text-gray-300 font-medium">
+                  Nov 2021 - Jun 2022
+                </span>
+              </div>
+              <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2 mt-3">
+                <li>
+                  <strong>Automated data analysis workflows</strong> using SQL and custom scripts, streamlining regulatory compliance processes and reducing manual reporting time by 60%
+                </li>
+                <li>
+                  <strong>Managed enterprise database systems</strong> (CMMS) for supply chain operations, ensuring data integrity and optimizing query performance for 100+ daily users
+                </li>
+                <li>
+                  <strong>Led cross-functional facility improvement projects</strong> with budgets exceeding $500K, coordinating between engineering, operations, and compliance teams to deliver on-time results
+                </li>
+                <li>
+                  <strong>Developed training programs</strong> for 20+ employees on database software and operational procedures, improving team efficiency and reducing onboarding time by 40%
+                </li>
+              </ul>
+            </div>
+
             {/* Holy Trinity Catholic School */}
             <div>
               <div className="flex justify-between items-start mb-2">
