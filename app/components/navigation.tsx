@@ -18,9 +18,6 @@ export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   
-  // Debug: log pathname for troubleshooting
-  console.log('Current pathname:', pathname);
-  
   // Helper function to check if current page matches navigation item
   const isCurrentPage = (href: string) => {
     // Remove trailing slash from pathname for comparison
@@ -47,10 +44,10 @@ export function Navigation() {
               <Link
                 key={item.name}
                 href={item.href}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                className={`relative px-3 py-2 text-sm font-medium transition-all duration-300 ease-in-out ${
                   isCurrentPage(item.href)
-                    ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-b-2 border-blue-600 dark:border-blue-400"
-                    : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 border-b-2 border-transparent hover:border-blue-300 dark:hover:border-blue-500"
+                    ? "text-blue-600 dark:text-blue-400 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-gradient-to-r after:from-blue-600 after:to-blue-500 dark:after:from-blue-400 dark:after:to-blue-300 after:rounded-full"
+                    : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 after:absolute after:bottom-0 after:left-1/2 after:w-0 after:h-0.5 after:bg-gradient-to-r after:from-blue-600 after:to-blue-500 dark:after:from-blue-400 dark:after:to-blue-300 after:transition-all after:duration-300 after:rounded-full hover:after:left-0 hover:after:w-full"
                 }`}
               >
                 {item.name}
@@ -102,10 +99,10 @@ export function Navigation() {
               <Link
                 key={item.name}
                 href={item.href}
-                className={`block px-3 py-2 rounded-md text-base font-medium transition-all duration-200 ${
+                className={`relative block px-3 py-2 rounded-md text-base font-medium transition-all duration-300 ease-in-out ${
                   isCurrentPage(item.href)
-                    ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 dark:border-blue-400"
-                    : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700 border-l-4 border-transparent hover:border-blue-300 dark:hover:border-blue-500"
+                    ? "text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/20 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-gradient-to-b before:from-blue-600 before:to-blue-500 dark:before:from-blue-400 dark:before:to-blue-300 before:rounded-r-full"
+                    : "text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 before:absolute before:left-0 before:top-1/2 before:w-0 before:h-0 before:bg-gradient-to-b before:from-blue-600 before:to-blue-500 dark:before:from-blue-400 dark:before:to-blue-300 before:transition-all before:duration-300 before:rounded-r-full hover:before:top-0 hover:before:bottom-0 hover:before:w-1"
                 }`}
                 onClick={() => setIsOpen(false)}
               >
