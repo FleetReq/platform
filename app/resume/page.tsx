@@ -27,7 +27,7 @@ export default function Resume() {
           </h1>
           <div className="text-xl text-gray-600 dark:text-gray-300 space-y-2 max-w-2xl mx-auto">
             <p className="font-semibold text-gray-900 dark:text-white">Bruce Truong</p>
-            <p>Site Reliability Engineer | DevOps Engineer | Infrastructure Automation Specialist</p>
+            <p className="whitespace-nowrap">Site Reliability Engineer | DevOps Engineer | Infrastructure Automation Specialist</p>
             <div className="flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-4 text-lg">
               <span>Beaverton, OR</span>
               <span className="hidden sm:block">•</span>
