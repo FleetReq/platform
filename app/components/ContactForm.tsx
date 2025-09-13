@@ -68,27 +68,22 @@ export default function ContactForm() {
     setIsSubmitting(true)
     setSubmitStatus('idle')
     
+    // Simulate form submission for static site
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      })
+      // For static sites, we'll show success and log the form data
+      console.log('Contact form submission:', formData)
       
-      if (response.ok) {
-        setSubmitStatus('success')
-        setFormData({
-          name: '',
-          email: '',
-          company: '',
-          subject: '',
-          message: ''
-        })
-      } else {
-        setSubmitStatus('error')
-      }
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      setSubmitStatus('success')
+      setFormData({
+        name: '',
+        email: '',
+        company: '',
+        subject: '',
+        message: ''
+      })
     } catch (error) {
       console.error('Error submitting form:', error)
       setSubmitStatus('error')
@@ -118,7 +113,7 @@ export default function ContactForm() {
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
             </svg>
             <p className="text-green-700 dark:text-green-300 font-medium">
-              Message sent successfully! I&apos;ll get back to you soon.
+              Thank you for your message! Please email me directly at careers@brucetruong.com
             </p>
           </div>
         </div>
