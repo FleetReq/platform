@@ -1,15 +1,17 @@
-import { NextRequest } from 'next/server'
 import { renderToBuffer } from '@react-pdf/renderer'
 import { createElement } from 'react'
 import ResumePDF from '../../components/ResumePDF'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Use createElement instead of JSX syntax
     const pdfElement = createElement(ResumePDF)
     const buffer = await renderToBuffer(pdfElement)
     
-    return new Response(buffer, {
+    // Convert Buffer to ArrayBuffer for Response compatibility
+    const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
+    
+    return new Response(arrayBuffer, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
