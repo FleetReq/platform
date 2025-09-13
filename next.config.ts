@@ -8,9 +8,6 @@ const nextConfig: NextConfig = {
   },
   // Performance optimizations
   compress: true,
-  experimental: {
-    optimizeCss: true,
-  },
   // Bundle analyzer
   ...(process.env.ANALYZE === 'true' && {
     bundleAnalyzer: {
