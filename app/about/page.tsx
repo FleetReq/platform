@@ -5,15 +5,15 @@ import PhotographyGallery from '../components/PhotographyGallery'
 
 export const metadata: Metadata = {
   title: 'About - Bruce Truong',
-  description: 'Learn more about Bruce Truong, Full Stack Developer and Software Engineer with expertise in React, Node.js, and modern web technologies.',
+  description: 'Learn more about Bruce Truong, Software Engineer with a passion for teaching, community building, and capturing authentic moments through photography.',
   openGraph: {
     title: 'About Bruce Truong',
-    description: 'Learn more about Bruce Truong, Full Stack Developer and Software Engineer.',
+    description: 'Learn more about Bruce Truong, Software Engineer, educator, and community leader.',
     url: 'https://brucetruong.com/about',
   },
   twitter: {
     title: 'About Bruce Truong',
-    description: 'Learn more about Bruce Truong, Full Stack Developer and Software Engineer.',
+    description: 'Learn more about Bruce Truong, Software Engineer, educator, and community leader.',
   },
 }
 
@@ -77,7 +77,7 @@ export default function AboutPage() {
             About Me
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Site Reliability Engineer with strong technical foundations and exceptional communication skills, eager to contribute to resilient systems and collaborative teams
+            Software Engineer, educator at heart, and community builder who brings curiosity, strategic thinking, and genuine human connection to everything I do
           </p>
         </div>
 
@@ -101,21 +101,24 @@ export default function AboutPage() {
               <h2 className="text-3xl font-bold mb-6 text-gray-900 dark:text-white">My Story</h2>
               
               <p className="mb-6 text-lg">
-                I&apos;m a Site Reliability Engineer building foundational expertise in resilient, scalable infrastructure systems. 
-                My background in education—including 4 years teaching mathematics and extensive tutoring experience—has cultivated 
-                a systematic approach to complex problem-solving and knowledge transfer that enhances my technical growth and collaboration.
+                I&apos;m a Software Engineer who discovered my love for teaching at an early age—even in 4th grade, I was helping
+                classmates with their math homework. This passion led me through roles as a chess instructor (complete with wizard costume),
+                a mathematics teacher at Holy Trinity Catholic School where students nicknamed me &quot;Batman,&quot; and eventually into
+                software engineering where I continue to find joy in making complex concepts accessible.
               </p>
-              
+
               <p className="mb-6 text-lg">
-                Developing expertise in cloud platforms, Kubernetes, Go development, and infrastructure automation through hands-on 
-                experience and continuous learning. My strength in translating complex technical concepts into clear, actionable insights—honed 
-                through years of teaching and coaching—enables effective collaboration across engineering teams and stakeholders.
+                My teaching philosophy has always been simple: meet people where they are and show them why it matters. I remember
+                explaining exponents through Minecraft&apos;s stack limit of 64—the kids went absolutely wild with excitement about math.
+                Some students even came up afterward wanting to create their own lessons connecting area calculations to Minecraft blocks.
+                This ability to bridge the gap between complex ideas and real-world applications drives my approach to software engineering.
               </p>
-              
+
               <p className="mb-6 text-lg">
-                My communication skills—developed through years of tutoring, coaching athletes, and coordinating team strategy—enhance 
-                my ability to collaborate during incident response, participate in post-mortems, and explain technical concepts to peers. 
-                Whether learning about distributed systems or coaching pickleball strategy, I focus on making complex ideas clear and actionable.
+                Currently, I&apos;m diving deep into strategic thinking through books like Modern Poker Theory and The Pickleball Mindset,
+                while serving as a Six Zero pickleball ambassador and coaching local players. Named after Bruce Lee, I practice martial arts
+                and embrace the philosophy of continuous improvement—whether debugging code, perfecting a serve, or volunteering at the
+                Oregon Food Bank where my personal experience with homelessness helps me connect authentically with those we serve.
               </p>
               
               {/* Integrated pickleball photo */}
@@ -132,17 +135,17 @@ export default function AboutPage() {
               </div>
               
               <p className="mb-6 text-lg">
-                As former Program Director for Chess Wizards Oregon, I developed systematic approaches to strategic thinking and instruction 
-                that directly inform my infrastructure architecture decisions. The analytical frameworks from competitive strategy games, 
-                combined with hands-on coaching experience, provide distinctive insights for building fault-tolerant systems and leading 
-                high-performing engineering teams.
+                At Holy Trinity, I became so beloved by students that eating lunch with me became a coveted privilege—even kids who&apos;d
+                never been in my class would work to earn that opportunity. The secret wasn&apos;t just making learning fun; it was making
+                every single student feel heard and valued. When the school needed fundraising, I didn&apos;t hesitate to dress up as Batman
+                and run through the neighborhood, because sometimes the best solutions require a little creativity and a lot of heart.
               </p>
-              
+
               <p className="text-lg">
-                I approach challenges with intellectual curiosity and humility—always ready to ask the right questions, adapt when presented 
-                with better solutions, and acknowledge when I&apos;ve been wrong. This growth mindset, essential in rapidly evolving 
-                infrastructure landscapes, enables me to build systems that truly serve user needs rather than defending predetermined approaches. 
-                In SRE work, the best solution wins, regardless of whose idea it was.
+                I approach challenges with intellectual curiosity and humility—always ready to ask the right questions, adapt when presented
+                with better solutions, and acknowledge when I&apos;ve been wrong. This growth mindset, whether applied to mastering a new
+                programming language, analyzing poker hands, or perfecting pickleball strategy, enables me to build solutions that truly
+                serve people&apos;s needs rather than defending predetermined approaches. The best idea wins, regardless of whose it was.
               </p>
             </div>
             
@@ -167,7 +170,7 @@ export default function AboutPage() {
                   <div>
                     <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Educator at Heart</h4>
                     <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-                      4+ years teaching mathematics shaped my approach to complex problems. I believe the best solutions are the ones everyone can understand and build upon.
+                      From helping classmates in 4th grade to teaching as a wizard chess instructor and beloved "Batman" math teacher, I believe the best solutions are the ones everyone can understand and build upon.
                     </p>
                   </div>
                 </div>
@@ -181,9 +184,9 @@ export default function AboutPage() {
                     </svg>
                   </div>
                   <div>
-                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Strategic Collaborator</h4>
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Strategic Thinker</h4>
                     <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-                      From chess strategy to team dynamics, I thrive on building bridges between different perspectives and finding win-win solutions.
+                      From chess and poker strategy to pickleball coaching and martial arts training, I apply analytical frameworks and strategic thinking to solve complex problems creatively.
                     </p>
                   </div>
                 </div>
@@ -215,7 +218,7 @@ export default function AboutPage() {
                   <div>
                     <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Community Builder</h4>
                     <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-                      Whether coaching pickleball or leading engineering initiatives, I love creating environments where people can do their best work.
+                      As a Six Zero ambassador, pickleball coach, and Oregon Food Bank volunteer, I love creating environments where people feel valued and can do their best work.
                     </p>
                   </div>
                 </div>
@@ -265,15 +268,46 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Photography Section - Only show if photos are available */}
-        {samplePhotos.length > 0 && (
-          <PhotographyGallery 
-            photos={samplePhotos}
-            title="Through My Lens"
-            subtitle="Capturing moments that inspire and tell stories"
-            instagramHandle="deeahtee"
-          />
-        )}
+        {/* Photography Section */}
+        <section className="mb-16 py-12 bg-gradient-to-br from-amber-50/80 to-orange-50/80 dark:from-amber-900/20 dark:to-orange-900/20 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50">
+          <div className="px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">Through My Lens</h2>
+              <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
+                I love capturing people when their genuine emotions are shining—not when they&apos;re posing.
+                Photography is my way of memorializing the small events that are incredibly powerful,
+                preserving those authentic moments that tell the real story.
+              </p>
+            </div>
+
+            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-8 rounded-xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 max-w-2xl mx-auto text-center">
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-pink-100 to-orange-200 dark:from-pink-900/50 dark:to-orange-800/50 rounded-xl flex items-center justify-center">
+                  <svg className="w-6 h-6 text-pink-600 dark:text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">Authentic Moments</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
+                Each photograph captures a genuine emotion, an unguarded smile, or a candid interaction that reveals the true essence of the moment.
+                These are the memories that matter most.
+              </p>
+              <a
+                href="https://www.instagram.com/deeahtee/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-orange-500 text-white px-6 py-3 rounded-lg font-medium hover:from-pink-600 hover:to-orange-600 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+                View My Photography
+              </a>
+            </div>
+          </div>
+        </section>
 
 
         {/* Call to Action */}
