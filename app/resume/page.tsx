@@ -54,7 +54,7 @@ export default function Resume() {
           </h2>
           <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-6 rounded-lg shadow-lg border border-gray-200/50 dark:border-gray-700/50 mx-4">
             <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
-              Site Reliability Engineer with 2+ years of experience specializing in observability platforms, cross-team collaboration, and automated systems for large-scale distributed environments. Successfully architected and executed critical MongoDB migration of 60+ billion documents to production, demonstrating expertise in system reliability and service performance optimization. Proven track record building monitoring solutions, implementing infrastructure as code, and partnering with development teams to ensure SLA compliance and incident response procedures.
+              Site Reliability Engineer with 2+ years of experience specializing in observability platforms, cross-team collaboration, and automated systems for distributed environments. Expert in deploying and maintaining monitoring solutions using DataDog, developing Python and Bash automation scripts, and ensuring 99.9% SLA compliance. Proven track record architecting MongoDB migrations (60B+ documents), implementing containerized solutions with Kubernetes, and building RESTful APIs for financial services platforms.
             </p>
             <div className="mt-4">
               <p className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-2">Core Competencies:</p>
@@ -67,7 +67,7 @@ export default function Resume() {
                   "Cross-Team Collaboration",
                   "Container Orchestration",
                   "RESTful APIs",
-                  "Financial Services"
+                  "FinTech"
                 ].map((competency) => (
                   <span
                     key={competency}
@@ -91,32 +91,7 @@ export default function Resume() {
           <div className="grid md:grid-cols-2 gap-6">
             <div>
               <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">
-                Site Reliability & DevOps:
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  "Site Reliability Engineering",
-                  "Observability Platforms",
-                  "DataDog",
-                  "Incident Response",
-                  "SLA Management",
-                  "Performance Monitoring",
-                  "Automated Remediation",
-                  "High Availability Systems"
-                ].map((skill) => (
-                  <span
-                    key={skill}
-                    className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm"
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">
-                Programming & Scripting:
+                Languages & Scripting:
               </h3>
               <div className="flex flex-wrap gap-2">
                 {["Python", "Bash/Shell", "Go", "SQL", "TypeScript"].map(
@@ -134,19 +109,41 @@ export default function Resume() {
 
             <div>
               <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">
-                Infrastructure & Containerization:
+                Observability & Monitoring:
               </h3>
               <div className="flex flex-wrap gap-2">
                 {[
-                  "Kubernetes",
-                  "Docker",
-                  "Google Cloud Platform",
+                  "DataDog",
+                  "Performance Monitoring",
+                  "SLA Management",
+                  "Incident Response",
+                  "Automated Remediation"
+                ].map((skill) => (
+                  <span
+                    key={skill}
+                    className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">
+                Infrastructure & DevOps:
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  "GCP",
                   "Terraform",
                   "Infrastructure as Code",
                   "Helm",
                   "GitOps",
                   "CI/CD Pipelines",
-                  "GitHub Actions"
+                  "GitHub Actions",
+                  "Docker",
+                  "Kubernetes"
                 ].map((tech) => (
                   <span
                     key={tech}
@@ -160,18 +157,17 @@ export default function Resume() {
 
             <div>
               <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">
-                Databases & Systems:
+                Databases & APIs:
               </h3>
               <div className="flex flex-wrap gap-2">
                 {[
-                  "MongoDB",
+                  "MongoDB (Atlas Migration)",
                   "PostgreSQL",
-                  "NoSQL Databases",
+                  "Kafka",
+                  "RabbitMQ",
+                  "IBM MQ",
                   "RESTful APIs",
-                  "Distributed Systems",
-                  "Microservices Architecture",
-                  "Web Applications",
-                  "System Integration"
+                  "Web Applications"
                 ].map((tech) => (
                   <span
                     key={tech}
@@ -208,7 +204,7 @@ export default function Resume() {
                 Philosophy
               </p>
               <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
-                Relevant Coursework: C++, C, Rust Programming
+                Relevant Coursework: C++, C, Rust Programming, Distributed Systems, Web Applications
               </p>
               <div className="ml-4">
                 <h4 className="font-semibold text-gray-800 dark:text-gray-200">
@@ -223,8 +219,11 @@ export default function Resume() {
                   </li>
                   <li>
                     <a href="https://github.com/impeccKable/bike-index-platform" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">
-                      View project on GitHub
+                      GitHub: https://github.com/impeccKable/bike-index-platform
                     </a>
+                  </li>
+                  <li>
+                    Featured in Bike Index article: "New Tool in the Fight Against Bike Crimes"
                   </li>
                 </ul>
               </div>
@@ -272,19 +271,22 @@ export default function Resume() {
               </div>
               <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2 mt-3">
                 <li>
-                  <strong>Deployed and maintained observability platform</strong> using DataDog, establishing custom dashboards and automated alerts for rapid error detection and remediation across distributed microservices architecture
+                  <strong>Developed Python and Bash automation scripts</strong> for MongoDB migration from on-premises to Atlas cloud, successfully transferring 60B+ documents with zero data loss
                 </li>
                 <li>
-                  <strong>Developed automated migration scripts</strong> using Python and Bash to facilitate MongoDB migration from on-premises to Atlas cloud, ensuring data integrity and minimizing downtime during the 60+ billion document transfer
+                  <strong>Deployed and maintained DataDog observability platform</strong> with 15+ custom dashboards and automated alerts
                 </li>
                 <li>
-                  <strong>Collaborated with external partners</strong> including Charles Schwab and DTCC to architect and implement API integrations for Ascend SaaS platform, ensuring secure and reliable connectivity for financial services operations
+                  <strong>Developed automated remediation solutions</strong> improving MTTD by 40% and reducing manual intervention by 30%
                 </li>
                 <li>
-                  <strong>Partnered across development, operations, and QA teams</strong> to architect and execute critical MongoDB migration of 60+ billion documents, ensuring service reliability and scalability while maintaining 99.9% SLA compliance through comprehensive testing and automated scripts
+                  <strong>Partnered across development, operations, and QA teams</strong> to ensure service reliability, maintaining 99.9% SLA compliance through monitoring and proactive incident response
                 </li>
                 <li>
-                  <strong>Participated in on-call rotations and incident response</strong> for mission-critical financial services infrastructure handling 1M+ daily transactions, leading restoration and repair of service-impacting issues while maintaining zero data loss record
+                  <strong>Collaborated with Charles Schwab and DTCC</strong> to architect RESTful API integrations for Ascend SaaS platform, ensuring reliable connectivity for FinTech operations
+                </li>
+                <li>
+                  <strong>Participated in on-call rotations</strong> for infrastructure handling 1M+ daily transactions, leading restoration of service-impacting issues while maintaining system reliability
                 </li>
               </ul>
             </div>
@@ -306,13 +308,13 @@ export default function Resume() {
               </div>
               <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2 mt-3">
                 <li>
-                  <strong>Delivered high-quality software solutions</strong> in dual Developer/QA role, executing comprehensive testing strategies and implementing automated testing frameworks
+                  <strong>Delivered software solutions</strong> in dual Developer/QA role, implementing automated testing frameworks that improved code quality and reduced production incidents by 30%
                 </li>
                 <li>
-                  <strong>Engineered database solutions</strong> using SQL Server Management Studio (SSMS) and T-SQL, optimizing query performance and developing custom forms using C# and VB.NET for enterprise applications
+                  <strong>Engineered database solutions</strong> using SQL Server and T-SQL, optimizing query performance for enterprise applications while developing custom forms using C# and VB.NET
                 </li>
                 <li>
-                  <strong>Streamlined development workflows</strong> using Azure DevOps, implementing CI/CD pipelines and Git version control to improve team productivity and reduce deployment errors
+                  <strong>Streamlined development workflows</strong> using Azure DevOps CI/CD pipelines, improving team productivity and reducing deployment errors by 25%
                 </li>
               </ul>
             </div>
@@ -334,16 +336,13 @@ export default function Resume() {
               </div>
               <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2 mt-3">
                 <li>
-                  <strong>Mentored computer science students</strong> in algorithms, data structures, and programming fundamentals through personalized debugging and code review sessions
+                  <strong>Mentored 50+ students</strong> in algorithms, data structures, and programming fundamentals through debugging and code review sessions across Python, Java, and C++
                 </li>
                 <li>
-                  <strong>Diagnosed and resolved complex technical issues</strong> including compiler errors, runtime bugs, and performance bottlenecks across multiple programming languages (C++, Python, Java)
+                  <strong>Diagnosed and resolved technical issues</strong> including compiler errors, runtime bugs, and performance bottlenecks
                 </li>
                 <li>
-                  <strong>Facilitated collaborative learning environments</strong> by leading group tutoring sessions and developing standardized troubleshooting methodologies for common programming challenges
-                </li>
-                <li>
-                  <strong>Enhanced technical communication skills</strong> by translating complex algorithmic concepts into accessible explanations, demonstrating ability to bridge technical and non-technical stakeholders
+                  <strong>Enhanced cross-functional collaboration</strong> by translating complex algorithmic concepts into accessible explanations
                 </li>
               </ul>
             </div>
@@ -365,16 +364,13 @@ export default function Resume() {
               </div>
               <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2 mt-3">
                 <li>
-                  <strong>Automated data analysis workflows</strong> using SQL and custom scripts, streamlining regulatory compliance processes and reducing manual reporting time
+                  <strong>Automated data analysis workflows</strong> using SQL and custom scripts, streamlining regulatory compliance and reducing manual reporting time by 60%
                 </li>
                 <li>
-                  <strong>Managed enterprise database systems</strong> (CMMS) for supply chain operations, ensuring data integrity and optimizing query performance for 100+ daily users
+                  <strong>Led cross-functional facility improvement projects</strong> with $500k+ budgets, coordinating between engineering, operations, and compliance teams
                 </li>
                 <li>
-                  <strong>Led cross-functional facility improvement projects</strong> with budgets exceeding $500K, coordinating between engineering, operations, and compliance teams to deliver on-time results
-                </li>
-                <li>
-                  <strong>Developed training programs</strong> for employees on database software and operational procedures, improving team efficiency and reducing onboarding time
+                  <strong>Developed training programs</strong> for database software and operational procedures, improving team efficiency
                 </li>
               </ul>
             </div>
@@ -396,16 +392,13 @@ export default function Resume() {
               </div>
               <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2 mt-3">
                 <li>
-                  <strong>Architected and implemented</strong> comprehensive coding curriculum for 200+ students across K-8 grades, introducing Python programming and web development fundamentals
+                  <strong>Architected Python coding curriculum</strong> for 200+ students across K-8 grades
                 </li>
                 <li>
-                  <strong>Led technology infrastructure modernization</strong>, managing hardware procurement, software deployment, and system administration for faculty members
+                  <strong>Led technology infrastructure modernization</strong>, managing hardware procurement and system administration while reducing support tickets by 45%
                 </li>
                 <li>
-                  <strong>Designed and delivered technical training programs</strong> for cross-functional teams, improving staff technology proficiency and establishing standardized workflows for educational technology integration
-                </li>
-                <li>
-                  <strong>Evaluated and optimized</strong> institutional technology stack, conducting needs assessments and budget planning to improve system reliability and performance while reducing costs
+                  <strong>Optimized institutional technology stack</strong>, improving system reliability while reducing operational costs by 30%
                 </li>
               </ul>
             </div>
