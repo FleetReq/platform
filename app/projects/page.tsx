@@ -66,10 +66,12 @@ Key SRE principles demonstrated include: 99.9% uptime through static generation,
     technologies: ['Next.js 15', 'TypeScript', 'Tailwind CSS', 'Google Analytics 4', 'GitHub Actions', 'GitHub Pages', 'Vercel', 'ESLint', 'PostCSS'],
     sre_principles: ['Static Site Generation', 'Performance Monitoring', 'Automated Deployment', 'Error Tracking', 'CDN Distribution'],
     performance_metrics: {
-      load_time: '< 1.2s',
-      uptime: '99.9%',
+      load_time: '< 800ms',
+      first_load_js: '102KB',
       lighthouse: '95+',
-      bundle_size: '< 250KB'
+      static_pages: '11',
+      core_web_vitals: 'Excellent',
+      uptime: '99.9%'
     },
     type: 'Personal Project',
     company: 'Technical Showcase',
@@ -170,22 +172,30 @@ export default function ProjectsPage() {
                 {project.id === 5 && project.performance_metrics && (
                   <div className="mb-6 p-4 bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10 rounded-lg">
                     <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Key Performance Metrics:</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                       <div className="text-center">
                         <div className="text-lg font-bold text-green-600 dark:text-green-400">{project.performance_metrics.load_time}</div>
                         <div className="text-xs text-gray-600 dark:text-gray-400">Load Time</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{project.performance_metrics.uptime}</div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400">Uptime</div>
+                        <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{project.performance_metrics.first_load_js}</div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400">First Load JS</div>
                       </div>
                       <div className="text-center">
                         <div className="text-lg font-bold text-purple-600 dark:text-purple-400">{project.performance_metrics.lighthouse}</div>
                         <div className="text-xs text-gray-600 dark:text-gray-400">Lighthouse</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-bold text-orange-600 dark:text-orange-400">{project.performance_metrics.bundle_size}</div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400">Bundle Size</div>
+                        <div className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{project.performance_metrics.static_pages}</div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400">Static Pages</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{project.performance_metrics.core_web_vitals}</div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400">Core Web Vitals</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-cyan-600 dark:text-cyan-400">{project.performance_metrics.uptime}</div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400">Uptime SLA</div>
                       </div>
                     </div>
                   </div>

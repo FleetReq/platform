@@ -2,7 +2,6 @@ import { Metadata } from 'next'
 import Image from 'next/image'
 import BackgroundAnimation from '../components/BackgroundAnimation'
 import PhotographyGallery from '../components/PhotographyGallery'
-import PerformanceMetrics from '../components/PerformanceMetrics'
 
 export const metadata: Metadata = {
   title: 'About - Bruce Truong',
@@ -264,11 +263,6 @@ export default function AboutPage() {
               </div>
             </div>
           </div>
-        </section>
-
-        {/* Performance Metrics */}
-        <section className="mb-16">
-          <PerformanceMetrics />
         </section>
 
         {/* Photography Section - Only show if photos are available */}
