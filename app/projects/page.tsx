@@ -19,29 +19,29 @@ export const metadata: Metadata = {
 const workExperience = [
   {
     id: 1,
-    title: 'Production Infrastructure Monitoring',
-    description: 'Maintained and enhanced monitoring systems for high-scale production environments. Worked with Kubernetes clusters, configured DataDog dashboards, and participated in incident response for systems handling billions of operations.',
-    technologies: ['Kubernetes', 'DataDog', 'GCP', 'MongoDB', 'Kafka'],
+    title: 'MongoDB Atlas Cloud Migration - 60B+ Documents',
+    description: 'Architected and executed production migration of 60+ billion documents from on-premises MongoDB to Atlas cloud infrastructure. Developed Python and Bash automation scripts with automated validation, rollback procedures, and achieved zero data loss during the migration.',
+    technologies: ['Python', 'Bash/Shell', 'MongoDB', 'Atlas Cloud', 'Automation Scripts'],
     type: 'Professional Work',
-    company: 'Production SRE Role',
+    company: 'Apex Fintech Solutions',
     featured: true,
   },
   {
     id: 2,
-    title: 'Message Queue Infrastructure',
-    description: 'Supported message processing systems using Kafka, RabbitMQ, and IBM MQ. Assisted with capacity planning, performance monitoring, and troubleshooting connectivity issues across distributed systems.',
-    technologies: ['Kafka', 'RabbitMQ', 'IBM MQ', 'Go', 'PostgreSQL'],
+    title: 'DataDog Observability Platform - 40% MTTD Improvement',
+    description: 'Deployed and maintained comprehensive DataDog observability platform with 15+ custom dashboards and automated alerts. Developed automated remediation solutions that improved MTTD by 40% and reduced manual intervention by 30% across distributed microservices architecture.',
+    technologies: ['DataDog', 'Python', 'Automated Remediation', 'Custom Dashboards', 'SLA Management'],
     type: 'Professional Work',
-    company: 'Production SRE Role',
+    company: 'Apex Fintech Solutions',
     featured: true,
   },
   {
     id: 3,
-    title: 'Infrastructure as Code',
-    description: 'Collaborated on Infrastructure as Code initiatives using Terraform and Helm. Contributed to deployment automation and configuration management for cloud-native applications.',
-    technologies: ['Terraform', 'Helm', 'GitHub Actions', 'Docker', 'Ubuntu'],
+    title: 'FinTech API Integrations - Charles Schwab & DTCC',
+    description: 'Collaborated with Charles Schwab and DTCC to architect RESTful API integrations for Ascend SaaS platform. Ensured reliable connectivity for FinTech operations handling 1M+ daily transactions while maintaining 99.9% SLA compliance.',
+    technologies: ['RESTful APIs', 'FinTech Systems', 'SLA Management', 'Financial Services', 'System Integration'],
     type: 'Professional Work',
-    company: 'Production SRE Role',
+    company: 'Apex Fintech Solutions',
     featured: false,
   },
   {
@@ -208,10 +208,12 @@ export default function ProjectsPage() {
                         href={project.github}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                        className="inline-flex items-center gap-2 bg-gray-900 dark:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-800 dark:hover:bg-gray-600 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                       >
-                        <span>🔗</span>
-                        Source Code
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clipRule="evenodd" />
+                        </svg>
+                        GitHub
                       </a>
                     )}
                     {project.demo && (
@@ -219,9 +221,11 @@ export default function ProjectsPage() {
                         href={project.demo}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+                        className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                       >
-                        <span>🚀</span>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
                         Live Site
                       </a>
                     )}
@@ -277,8 +281,11 @@ export default function ProjectsPage() {
                         href={project.github}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                        className="inline-flex items-center gap-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200"
                       >
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clipRule="evenodd" />
+                        </svg>
                         GitHub
                       </a>
                     )}
@@ -287,8 +294,11 @@ export default function ProjectsPage() {
                         href={project.demo}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+                        className="inline-flex items-center gap-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded-md text-sm font-medium hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all duration-200"
                       >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
                         Demo
                       </a>
                     )}
