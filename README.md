@@ -11,7 +11,7 @@ A modern, responsive resume website built with Next.js, showcasing my experience
 - **PDF Resume Download** - Static PDF resume download functionality
 - **Contact Form** - Functional contact form with validation
 - **Search Functionality** - Site-wide search with keyboard shortcuts (Ctrl/Cmd+K)
-- **Privacy-First Analytics** - Plausible Analytics integration
+- **Google Analytics** - GA4 analytics integration with privacy focus
 - **SEO Optimized** - Structured data, meta tags, and sitemap
 - **Performance Focused** - Loading states, image optimization, and caching
 
@@ -77,7 +77,7 @@ public/
 - **Styling**: Tailwind CSS
 - **TypeScript**: Full type safety
 - **File Serving**: Static PDF serving
-- **Analytics**: Plausible Analytics
+- **Analytics**: Google Analytics 4 (GA4)
 - **Deployment**: GitHub Pages
 - **CI/CD**: GitHub Actions
 
@@ -88,16 +88,37 @@ public/
 Create a `.env.local` file with:
 
 ```env
-# Plausible Analytics
-NEXT_PUBLIC_PLAUSIBLE_DOMAIN=yourdomain.com
+# Google Analytics 4 Configuration
+NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
 
-# Optional: Google Analytics (fallback)
-# NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
+# Optional: Plausible Analytics (fallback)
+# NEXT_PUBLIC_PLAUSIBLE_DOMAIN=yourdomain.com
 ```
 
 ### Analytics Setup
 
-The site is configured for [Plausible Analytics](https://plausible.io/). See `ANALYTICS_SETUP.md` for detailed setup instructions.
+The site is configured for [Google Analytics 4](https://analytics.google.com). See `GOOGLE_ANALYTICS_SETUP.md` for detailed instructions, or follow these quick steps:
+
+1. **Create Google Analytics Account**
+   - Go to [https://analytics.google.com](https://analytics.google.com)
+   - Create a new account and property for your domain
+   - Get your Measurement ID (format: G-XXXXXXXXXX)
+
+2. **Configure Environment Variable**
+   ```bash
+   # Add to .env.local
+   NEXT_PUBLIC_GA_ID=your-measurement-id-here
+   ```
+
+3. **Deploy Configuration**
+   - Add `NEXT_PUBLIC_GA_ID` as a repository secret/variable in GitHub
+   - The Analytics component will automatically load GA4 in production
+
+**Features Included:**
+- ✅ Privacy-focused (only loads in production)
+- ✅ Page view tracking
+- ✅ Event tracking helpers
+- ✅ Automatic fallback to Plausible if GA ID not provided
 
 ### PDF Resume Setup
 

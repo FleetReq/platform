@@ -9,8 +9,33 @@ interface AnalyticsProps {
 
 export default function Analytics({ gaId, plausibleDomain }: AnalyticsProps) {
   const isProduction = process.env.NODE_ENV === 'production'
-  
-  // Prefer Plausible if domain is provided
+
+  // Prefer Google Analytics if GA ID is provided
+  const shouldLoadGA = gaId && isProduction
+
+  if (shouldLoadGA) {
+    return (
+      <>
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${gaId}', {
+              page_title: document.title,
+              page_location: window.location.href,
+            });
+          `}
+        </Script>
+      </>
+    )
+  }
+
+  // Fallback to Plausible if domain is provided and no GA
   if (plausibleDomain && isProduction) {
     return (
       <>
@@ -27,32 +52,7 @@ export default function Analytics({ gaId, plausibleDomain }: AnalyticsProps) {
     )
   }
 
-  // Fallback to Google Analytics if GA ID is provided
-  const shouldLoadGA = gaId && isProduction
-
-  if (!shouldLoadGA) {
-    return null
-  }
-
-  return (
-    <>
-      <Script
-        src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-        strategy="afterInteractive"
-      />
-      <Script id="google-analytics" strategy="afterInteractive">
-        {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', '${gaId}', {
-            page_title: document.title,
-            page_location: window.location.href,
-          });
-        `}
-      </Script>
-    </>
-  )
+  return null
 }
 
 // Alternative: Privacy-focused Plausible Analytics
