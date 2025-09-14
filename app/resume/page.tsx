@@ -54,20 +54,20 @@ export default function Resume() {
           </h2>
           <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-6 rounded-lg shadow-lg border border-gray-200/50 dark:border-gray-700/50 mx-4">
             <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
-              Experienced Site Reliability Engineer specializing in observability platforms, cross-team collaboration, and automated remediation systems for large-scale distributed environments. Successfully architected and executed critical MongoDB migration of 60+ billion documents to production, demonstrating expertise in system reliability and service performance optimization. Proven track record building monitoring solutions, implementing infrastructure as code, and partnering with development teams to ensure SLA compliance. Combines strong technical foundation with hands-on experience in container orchestration, API development, and incident response procedures.
+              Site Reliability Engineer with 2+ years of experience specializing in observability platforms, cross-team collaboration, and automated systems for large-scale distributed environments. Successfully architected and executed critical MongoDB migration of 60+ billion documents to production, demonstrating expertise in system reliability and service performance optimization. Proven track record building monitoring solutions, implementing infrastructure as code, and partnering with development teams to ensure SLA compliance and incident response procedures.
             </p>
             <div className="mt-4">
               <p className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-2">Core Competencies:</p>
               <div className="flex flex-wrap gap-2">
                 {[
+                  "Site Reliability Engineering",
                   "Observability Platforms",
+                  "SLA Management & Compliance",
+                  "Incident Response",
                   "Cross-Team Collaboration",
-                  "Automated Remediation",
-                  "SLA Management",
                   "Container Orchestration",
                   "RESTful APIs",
-                  "Incident Response",
-                  "Service Reliability"
+                  "Financial Services"
                 ].map((competency) => (
                   <span
                     key={competency}
@@ -78,6 +78,111 @@ export default function Resume() {
                 ))}
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Technical Skills Section */}
+        <section className="mb-12 py-8 bg-gradient-to-r from-green-50/80 to-blue-50/80 dark:from-green-900/20 dark:to-blue-900/20 backdrop-blur-sm rounded-2xl">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 border-b-2 border-blue-500 dark:border-blue-400 pb-2 text-center">
+            TECHNICAL SKILLS
+          </h2>
+          <div className="px-4">
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">
+                Site Reliability & DevOps:
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  "Site Reliability Engineering",
+                  "Observability Platforms",
+                  "DataDog",
+                  "Incident Response",
+                  "SLA Management",
+                  "Performance Monitoring",
+                  "Automated Remediation",
+                  "High Availability Systems"
+                ].map((skill) => (
+                  <span
+                    key={skill}
+                    className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">
+                Programming & Scripting:
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {["Python", "Bash/Shell", "Go", "SQL", "TypeScript"].map(
+                  (skill) => (
+                    <span
+                      key={skill}
+                      className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-3 py-1 rounded-full text-sm"
+                    >
+                      {skill}
+                    </span>
+                  )
+                )}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">
+                Infrastructure & Containerization:
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  "Kubernetes",
+                  "Docker",
+                  "Google Cloud Platform",
+                  "Terraform",
+                  "Infrastructure as Code",
+                  "Helm",
+                  "GitOps",
+                  "CI/CD Pipelines",
+                  "GitHub Actions"
+                ].map((tech) => (
+                  <span
+                    key={tech}
+                    className="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 px-3 py-1 rounded-full text-sm"
+                  >
+                    {tech}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">
+                Databases & Systems:
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  "MongoDB",
+                  "PostgreSQL",
+                  "NoSQL Databases",
+                  "RESTful APIs",
+                  "Distributed Systems",
+                  "Microservices Architecture",
+                  "Web Applications",
+                  "System Integration"
+                ].map((tech) => (
+                  <span
+                    key={tech}
+                    className="bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 px-3 py-1 rounded-full text-sm"
+                  >
+                    {tech}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
           </div>
         </section>
 
@@ -142,119 +247,12 @@ export default function Resume() {
           </div>
         </section>
 
-        {/* Technical Skills Section */}
-        <section className="mb-12 py-8 bg-gradient-to-r from-green-50/80 to-blue-50/80 dark:from-green-900/20 dark:to-blue-900/20 backdrop-blur-sm rounded-2xl">
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 border-b-2 border-blue-500 dark:border-blue-400 pb-2 text-center">
-            TECHNICAL SKILLS
-          </h2>
-          <div className="px-4">
-
-          <div className="grid md:grid-cols-3 gap-6">
-            <div>
-              <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">
-                Programming & Scripting:
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {["Go", "Python", "Bash/Shell", "SQL", "TypeScript"].map(
-                  (skill) => (
-                    <span
-                      key={skill}
-                      className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm"
-                    >
-                      {skill}
-                    </span>
-                  )
-                )}
-              </div>
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">
-                Cloud & Infrastructure:
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  "Google Cloud Platform",
-                  "Kubernetes",
-                  "Docker",
-                  "Terraform",
-                  "Infrastructure as Code",
-                  "Helm",
-                  "GitOps",
-                  "CI/CD Pipelines",
-                  "GitHub Actions"
-                ].map((tech) => (
-                  <span
-                    key={tech}
-                    className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-3 py-1 rounded-full text-sm"
-                  >
-                    {tech}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">
-                Databases & Monitoring:
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  "MongoDB",
-                  "PostgreSQL",
-                  "DataDog",
-                  "Observability Platforms",
-                  "RESTful APIs",
-                  "Web Applications",
-                  "Distributed Systems",
-                  "Performance Monitoring"
-                ].map((tech) => (
-                  <span
-                    key={tech}
-                    className="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 px-3 py-1 rounded-full text-sm"
-                  >
-                    {tech}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">
-              DevOps & SRE Practices:
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {[
-                "Site Reliability Engineering",
-                "DevOps",
-                "Microservices Architecture",
-                "High Availability Systems",
-                "Disaster Recovery",
-                "Incident Response",
-                "Automation",
-                "Load Balancing",
-                "Scalability",
-                "System Performance Optimization"
-              ].map((practice) => (
-                <span
-                  key={practice}
-                  className="bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 px-3 py-1 rounded-full text-sm"
-                >
-                  {practice}
-                </span>
-              ))}
-            </div>
-          </div>
-          </div>
-        </section>
-
-
         {/* Experience Section */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 border-b-2 border-blue-500 dark:border-blue-400 pb-2">
+        <section className="mb-12 py-8 bg-gradient-to-r from-gray-50/80 to-blue-50/80 dark:from-gray-900/20 dark:to-blue-900/20 backdrop-blur-sm rounded-2xl">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 border-b-2 border-blue-500 dark:border-blue-400 pb-2 text-center">
             EXPERIENCE
           </h2>
+          <div className="px-4">
 
           <div className="space-y-8">
             {/* Apex Fintech Solutions */}
@@ -277,16 +275,16 @@ export default function Resume() {
                   <strong>Deployed and maintained observability platform</strong> using DataDog, establishing custom dashboards and automated alerts for rapid error detection and remediation across distributed microservices architecture
                 </li>
                 <li>
-                  <strong>Partnered across development, operations, and QA teams</strong> to architect and execute critical MongoDB migration of 60+ billion documents, ensuring service reliability and scalability while maintaining 99.9% SLA compliance through comprehensive testing and automated scripts
-                </li>
-                <li>
                   <strong>Developed automated migration scripts</strong> using Python and Bash to facilitate MongoDB migration from on-premises to Atlas cloud, ensuring data integrity and minimizing downtime during the 60+ billion document transfer
                 </li>
                 <li>
                   <strong>Collaborated with external partners</strong> including Charles Schwab and DTCC to architect and implement API integrations for Ascend SaaS platform, ensuring secure and reliable connectivity for financial services operations
                 </li>
                 <li>
-                  <strong>Participated in on-call rotations</strong> for mission-critical financial services infrastructure handling 1M+ daily transactions, leading restoration and repair of service-impacting issues while maintaining zero data loss record
+                  <strong>Partnered across development, operations, and QA teams</strong> to architect and execute critical MongoDB migration of 60+ billion documents, ensuring service reliability and scalability while maintaining 99.9% SLA compliance through comprehensive testing and automated scripts
+                </li>
+                <li>
+                  <strong>Participated in on-call rotations and incident response</strong> for mission-critical financial services infrastructure handling 1M+ daily transactions, leading restoration and repair of service-impacting issues while maintaining zero data loss record
                 </li>
               </ul>
             </div>
@@ -412,29 +410,32 @@ export default function Resume() {
               </ul>
             </div>
           </div>
+          </div>
         </section>
 
         {/* Contact for Resume */}
-        <div className="text-center">
-          <div className="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-lg border border-blue-200 dark:border-blue-800">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              Ready to Discuss Opportunities
-            </h3>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">
-              Formatted PDF resume and references available for qualified positions
-            </p>
-            <a 
-              href="mailto:careers@brucetruong.com?subject=Resume Request - SRE Position"
-              className="inline-flex items-center bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-lg hover:shadow-xl transform hover:scale-105 duration-300"
-            >
-              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-              </svg>
-              Contact for Full Resume
-            </a>
+        <section className="py-8 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 dark:from-blue-900/20 dark:to-indigo-900/20 backdrop-blur-sm rounded-2xl">
+          <div className="text-center px-4">
+            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-8 rounded-lg shadow-lg border border-gray-200/50 dark:border-gray-700/50 max-w-2xl mx-auto">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                Ready to Discuss Opportunities
+              </h3>
+              <p className="text-gray-700 dark:text-gray-300 mb-6">
+                Formatted PDF resume and references available for qualified positions
+              </p>
+              <a
+                href="mailto:careers@brucetruong.com?subject=Resume Request - SRE Position"
+                className="inline-flex items-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+              >
+                <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                </svg>
+                Contact for Full Resume
+              </a>
+            </div>
           </div>
-        </div>
+        </section>
       </div>
     </div>
   );
