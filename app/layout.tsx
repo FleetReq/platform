@@ -94,6 +94,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        <meta name="theme-color" content="#2563eb" />
+        <meta name="color-scheme" content="light dark" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -164,6 +169,33 @@ export default function RootLayout({
           </footer>
         </ThemeProvider>
         <Analytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+
+        {/* Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Person',
+              name: 'Bruce Truong',
+              jobTitle: 'Site Reliability Engineer',
+              description: 'Site Reliability Engineer specializing in cloud migration, infrastructure automation, and high-availability systems.',
+              url: 'https://brucetruong.com',
+              sameAs: [
+                'https://www.linkedin.com/in/brucentruong/',
+                'https://github.com/DeeAhTee'
+              ],
+              worksFor: {
+                '@type': 'Organization',
+                name: 'Apex Fintech Solutions'
+              },
+              alumniOf: {
+                '@type': 'Organization',
+                name: 'Portland State University'
+              }
+            })
+          }}
+        />
       </body>
     </html>
   );
