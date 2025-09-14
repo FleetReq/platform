@@ -182,70 +182,6 @@ export default function Resume() {
           </div>
         </section>
 
-        {/* Education Section */}
-        <section className="mb-12 py-8 bg-gradient-to-r from-purple-50/80 to-indigo-50/80 dark:from-purple-900/20 dark:to-indigo-900/20 backdrop-blur-sm rounded-2xl">
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 border-b-2 border-blue-500 dark:border-blue-400 pb-2 text-center">
-            EDUCATION
-          </h2>
-          <div className="px-4">
-
-          <div className="space-y-6">
-            <div>
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="text-xl font-semibold dark:text-white">
-                  Portland State University
-                </h3>
-                <span className="text-gray-600 dark:text-gray-300 font-medium">
-                  Jan 2015 – Jun 2024
-                </span>
-              </div>
-              <p className="text-gray-700 dark:text-gray-300 italic mb-3">
-                Bachelor of Science - Major in Computer Science, Minor in
-                Philosophy
-              </p>
-              <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
-                Relevant Coursework: C++, C, Rust Programming, Distributed Systems, Web Applications
-              </p>
-              <div className="ml-4">
-                <h4 className="font-semibold text-gray-800 dark:text-gray-200">
-                  PSU Capstone - Bike Index Platform Team Lead
-                </h4>
-                <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 mt-2 space-y-1">
-                  <li>
-                    Led cross-functional team of 5+ developers implementing microservices architecture with RESTful APIs and containerized deployment for bike theft tracking platform
-                  </li>
-                  <li>
-                    Collaborated across development and operations teams using Scrum methodology, delivering bi-weekly sprints while ensuring system reliability and performance
-                  </li>
-                  <li>
-                    <a href="https://github.com/impeccKable/bike-index-platform" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">
-                      GitHub: https://github.com/impeccKable/bike-index-platform
-                    </a>
-                  </li>
-                  <li>
-                    Featured in Bike Index article: "New Tool in the Fight Against Bike Crimes"
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="text-xl font-semibold dark:text-white">
-                  Portland Community College
-                </h3>
-                <span className="text-gray-600 dark:text-gray-300 font-medium">
-                  Jan 2008 – Mar 2023
-                </span>
-              </div>
-              <p className="text-gray-700 dark:text-gray-300 italic">
-                Associate of Science – Oregon Transfer
-              </p>
-            </div>
-          </div>
-          </div>
-        </section>
-
         {/* Experience Section */}
         <section className="mb-12 py-8 bg-gradient-to-r from-gray-50/80 to-blue-50/80 dark:from-gray-900/20 dark:to-blue-900/20 backdrop-blur-sm rounded-2xl">
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 border-b-2 border-blue-500 dark:border-blue-400 pb-2 text-center">
@@ -401,6 +337,70 @@ export default function Resume() {
                   <strong>Optimized institutional technology stack</strong>, improving system reliability while reducing operational costs by 30%
                 </li>
               </ul>
+            </div>
+          </div>
+          </div>
+        </section>
+
+        {/* Education Section */}
+        <section className="mb-12 py-8 bg-gradient-to-r from-purple-50/80 to-indigo-50/80 dark:from-purple-900/20 dark:to-indigo-900/20 backdrop-blur-sm rounded-2xl">
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 border-b-2 border-blue-500 dark:border-blue-400 pb-2 text-center">
+            EDUCATION
+          </h2>
+          <div className="px-4">
+
+          <div className="space-y-6">
+            <div>
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="text-xl font-semibold dark:text-white">
+                  Portland State University
+                </h3>
+                <span className="text-gray-600 dark:text-gray-300 font-medium">
+                  Jan 2015 – Jun 2024
+                </span>
+              </div>
+              <p className="text-gray-700 dark:text-gray-300 italic mb-3">
+                Bachelor of Science - Major in Computer Science, Minor in
+                Philosophy
+              </p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
+                Relevant Coursework: C++, C, Rust Programming, Distributed Systems, Web Applications
+              </p>
+              <div className="ml-4">
+                <h4 className="font-semibold text-gray-800 dark:text-gray-200">
+                  PSU Capstone - Bike Index Platform Team Lead
+                </h4>
+                <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 mt-2 space-y-1">
+                  <li>
+                    Led cross-functional team of 5+ developers implementing microservices architecture with RESTful APIs and containerized deployment for bike theft tracking platform
+                  </li>
+                  <li>
+                    Collaborated across development and operations teams using Scrum methodology, delivering bi-weekly sprints while ensuring system reliability and performance
+                  </li>
+                  <li>
+                    <a href="https://github.com/impeccKable/bike-index-platform" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">
+                      GitHub: https://github.com/impeccKable/bike-index-platform
+                    </a>
+                  </li>
+                  <li>
+                    Featured in Bike Index article: "New Tool in the Fight Against Bike Crimes"
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="text-xl font-semibold dark:text-white">
+                  Portland Community College
+                </h3>
+                <span className="text-gray-600 dark:text-gray-300 font-medium">
+                  Jan 2008 – Mar 2023
+                </span>
+              </div>
+              <p className="text-gray-700 dark:text-gray-300 italic">
+                Associate of Science – Oregon Transfer
+              </p>
             </div>
           </div>
           </div>
