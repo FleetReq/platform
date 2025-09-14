@@ -1,6 +1,6 @@
 # Bruce Truong - Resume Website
 
-A modern, responsive resume website built with Next.js, showcasing my experience as a Site Reliability Engineer. Features dark/light mode, dynamic PDF generation, search functionality, and privacy-focused analytics.
+A modern, responsive resume website built with Next.js, showcasing my experience as a Site Reliability Engineer. Features dark/light mode, PDF resume download, search functionality, and privacy-focused analytics.
 
 🌐 **Live Site**: [brucetruong.com](https://brucetruong.com)
 
@@ -15,23 +15,30 @@ A modern, responsive resume website built with Next.js, showcasing my experience
 - **SEO Optimized** - Structured data, meta tags, and sitemap
 - **Performance Focused** - Loading states, image optimization, and caching
 
+## 📋 Prerequisites
+
+- **Node.js** (version 18 or higher) - [Download here](https://nodejs.org/)
+  - This includes npm automatically
+- **Git** - For cloning the repository
+
 ## 🚀 Quick Start
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/my-resume-site.git
+   git clone https://github.com/DeeAhTee/my-resume-site.git
    cd my-resume-site
    ```
 
 2. **Install dependencies**
    ```bash
    npm install
+   # This installs Next.js, Tailwind CSS, TypeScript, and all other dependencies
    ```
 
-3. **Set up environment variables**
+3. **Set up environment variables (optional)**
    ```bash
-   cp .env.local.example .env.local
-   # Edit .env.local with your configuration
+   # Create .env.local for analytics (optional)
+   # See Configuration section below for details
    ```
 
 4. **Run the development server**
@@ -49,6 +56,7 @@ app/
 ├── components/          # Reusable UI components
 │   ├── Analytics.tsx   # Plausible Analytics integration
 │   ├── ContactForm.tsx # Contact form with validation
+│   ├── PDFDownload.tsx # PDF resume download component
 │   ├── Search.tsx      # Site-wide search functionality
 │   └── ...
 ├── api/                # API routes
@@ -56,6 +64,10 @@ app/
 ├── about/              # About page
 ├── contact/            # Contact page
 ├── resume/             # Resume page
+└── ...
+public/
+├── Bruce_Truong_Resume.pdf  # Static PDF resume file
+├── images/             # Static images
 └── ...
 ```
 
@@ -85,7 +97,15 @@ NEXT_PUBLIC_PLAUSIBLE_DOMAIN=yourdomain.com
 
 ### Analytics Setup
 
-The site is configured for [Plausible Analytics](https://plausible.io/). See `PLAUSIBLE_SETUP.md` for detailed setup instructions.
+The site is configured for [Plausible Analytics](https://plausible.io/). See `ANALYTICS_SETUP.md` for detailed setup instructions.
+
+### PDF Resume Setup
+
+To customize the PDF resume:
+1. Create your professional resume using Word, Google Docs, or your preferred tool
+2. Export as PDF with the filename `Bruce_Truong_Resume.pdf`
+3. Replace the existing file in `/public/Bruce_Truong_Resume.pdf`
+4. The download button will automatically serve your new PDF
 
 ## 📱 Features Overview
 
@@ -120,8 +140,18 @@ The site deploys automatically to GitHub Pages via GitHub Actions when pushing t
 ### Manual Deployment
 
 ```bash
-npm run build
-npm run deploy
+npm run build    # Build the static site
+npm run deploy   # Deploy to GitHub Pages
+```
+
+### Available Scripts
+
+```bash
+npm run dev      # Start development server
+npm run build    # Build for production
+npm run start    # Start production server
+npm run lint     # Run ESLint
+npm run deploy   # Deploy to GitHub Pages
 ```
 
 ## 📄 License
