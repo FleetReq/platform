@@ -102,6 +102,9 @@ export default function Resume() {
                 Bachelor of Science - Major in Computer Science, Minor in
                 Philosophy
               </p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-3">
+                Relevant Coursework: C++, C, Rust Programming
+              </p>
               <div className="ml-4">
                 <h4 className="font-semibold text-gray-800 dark:text-gray-200">
                   PSU Capstone - Bike Index Platform Team Lead
@@ -152,7 +155,7 @@ export default function Resume() {
                 Programming & Scripting:
               </h3>
               <div className="flex flex-wrap gap-2">
-                {["Go", "Python", "Bash/Shell", "SQL", "TypeScript", "C++", "C", "Rust"].map(
+                {["Go", "Python", "Bash/Shell", "SQL", "TypeScript"].map(
                   (skill) => (
                     <span
                       key={skill}
@@ -199,7 +202,6 @@ export default function Resume() {
                 {[
                   "MongoDB",
                   "PostgreSQL",
-                  "Apache Cassandra",
                   "DataDog",
                   "Observability Platforms",
                   "RESTful APIs",
@@ -247,48 +249,6 @@ export default function Resume() {
           </div>
         </section>
 
-        {/* Certifications & Professional Development Section */}
-        <section className="mb-12">
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 border-b-2 border-blue-500 dark:border-blue-400 pb-2">
-            CERTIFICATIONS & PROFESSIONAL DEVELOPMENT
-          </h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-              <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">Currently Pursuing:</h3>
-              <ul className="space-y-2 text-gray-700 dark:text-gray-300">
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                  <span>Google Cloud Professional DevOps Engineer</span>
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                  <span>Certified Kubernetes Administrator (CKA)</span>
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                  <span>AWS Solutions Architect Associate</span>
-                </li>
-              </ul>
-            </div>
-            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-              <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">Professional Development:</h3>
-              <ul className="space-y-2 text-gray-700 dark:text-gray-300">
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                  <span>Site Reliability Engineering Fundamentals</span>
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                  <span>Infrastructure as Code with Terraform</span>
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                  <span>Kubernetes Production Best Practices</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </section>
 
         {/* Experience Section */}
         <section className="mb-12">
@@ -314,16 +274,16 @@ export default function Resume() {
               </div>
               <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2 mt-3">
                 <li>
-                  <strong>Deployed and maintained observability platform</strong> using DataDog, establishing 15+ custom dashboards and automated alerts that reduced mean time to detection (MTTD) by 40% and enabled rapid error detection and remediation across distributed microservices architecture
+                  <strong>Deployed and maintained observability platform</strong> using DataDog, establishing custom dashboards and automated alerts for rapid error detection and remediation across distributed microservices architecture
                 </li>
                 <li>
                   <strong>Partnered across development, operations, and QA teams</strong> to architect and execute critical MongoDB migration of 60+ billion documents, ensuring service reliability and scalability while maintaining 99.9% SLA compliance through comprehensive testing and automated scripts
                 </li>
                 <li>
-                  <strong>Developed automated remediation systems</strong> using Python and Bash scripting, creating monitoring and analysis tools that improved system performance by 30% and reduced manual intervention for common service-impacting issues
+                  <strong>Developed automated migration scripts</strong> using Python and Bash to facilitate MongoDB migration from on-premises to Atlas cloud, ensuring data integrity and minimizing downtime during the 60+ billion document transfer
                 </li>
                 <li>
-                  <strong>Provided guidance to 8+ engineers and developers</strong> on reliability best practices, implementing standardized troubleshooting procedures and incident response protocols that increased confidence in service performance expectations
+                  <strong>Collaborated with external partners</strong> including Charles Schwab and DTCC to architect and implement API integrations for Ascend SaaS platform, ensuring secure and reliable connectivity for financial services operations
                 </li>
                 <li>
                   <strong>Participated in on-call rotations</strong> for mission-critical financial services infrastructure handling 1M+ daily transactions, leading restoration and repair of service-impacting issues while maintaining zero data loss record
@@ -348,13 +308,13 @@ export default function Resume() {
               </div>
               <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2 mt-3">
                 <li>
-                  <strong>Delivered high-quality software solutions</strong> in dual Developer/QA role, executing comprehensive testing strategies that reduced production bugs by 35% and accelerated release cycles by 25% through automated testing frameworks
+                  <strong>Delivered high-quality software solutions</strong> in dual Developer/QA role, executing comprehensive testing strategies and implementing automated testing frameworks
                 </li>
                 <li>
-                  <strong>Engineered database solutions</strong> using SQL Server Management Studio (SSMS) and T-SQL, optimizing query performance by 40% and developing 10+ custom forms using C# and VB.NET for enterprise applications
+                  <strong>Engineered database solutions</strong> using SQL Server Management Studio (SSMS) and T-SQL, optimizing query performance and developing custom forms using C# and VB.NET for enterprise applications
                 </li>
                 <li>
-                  <strong>Streamlined development workflows</strong> using Azure DevOps, implementing CI/CD pipelines and Git version control that improved team productivity by 30% and reduced deployment errors by 60%
+                  <strong>Streamlined development workflows</strong> using Azure DevOps, implementing CI/CD pipelines and Git version control to improve team productivity and reduce deployment errors
                 </li>
               </ul>
             </div>
@@ -376,7 +336,7 @@ export default function Resume() {
               </div>
               <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2 mt-3">
                 <li>
-                  <strong>Mentored 50+ computer science students</strong> in algorithms, data structures, and programming fundamentals, improving student success rates by 25% through personalized debugging and code review sessions
+                  <strong>Mentored computer science students</strong> in algorithms, data structures, and programming fundamentals through personalized debugging and code review sessions
                 </li>
                 <li>
                   <strong>Diagnosed and resolved complex technical issues</strong> including compiler errors, runtime bugs, and performance bottlenecks across multiple programming languages (C++, Python, Java)
@@ -407,7 +367,7 @@ export default function Resume() {
               </div>
               <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2 mt-3">
                 <li>
-                  <strong>Automated data analysis workflows</strong> using SQL and custom scripts, streamlining regulatory compliance processes and reducing manual reporting time by 60%
+                  <strong>Automated data analysis workflows</strong> using SQL and custom scripts, streamlining regulatory compliance processes and reducing manual reporting time
                 </li>
                 <li>
                   <strong>Managed enterprise database systems</strong> (CMMS) for supply chain operations, ensuring data integrity and optimizing query performance for 100+ daily users
@@ -416,7 +376,7 @@ export default function Resume() {
                   <strong>Led cross-functional facility improvement projects</strong> with budgets exceeding $500K, coordinating between engineering, operations, and compliance teams to deliver on-time results
                 </li>
                 <li>
-                  <strong>Developed training programs</strong> for 20+ employees on database software and operational procedures, improving team efficiency and reducing onboarding time by 40%
+                  <strong>Developed training programs</strong> for employees on database software and operational procedures, improving team efficiency and reducing onboarding time
                 </li>
               </ul>
             </div>
@@ -438,16 +398,16 @@ export default function Resume() {
               </div>
               <ul className="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2 mt-3">
                 <li>
-                  <strong>Architected and implemented</strong> comprehensive coding curriculum for 200+ students across K-8 grades, introducing Python programming and web development fundamentals that increased STEM engagement by 60%
+                  <strong>Architected and implemented</strong> comprehensive coding curriculum for 200+ students across K-8 grades, introducing Python programming and web development fundamentals
                 </li>
                 <li>
-                  <strong>Led technology infrastructure modernization</strong>, managing hardware procurement, software deployment, and system administration for 25+ faculty members while reducing IT support requests by 45%
+                  <strong>Led technology infrastructure modernization</strong>, managing hardware procurement, software deployment, and system administration for faculty members
                 </li>
                 <li>
-                  <strong>Designed and delivered technical training programs</strong> for cross-functional teams, improving staff technology proficiency by 40% and establishing standardized workflows for educational technology integration
+                  <strong>Designed and delivered technical training programs</strong> for cross-functional teams, improving staff technology proficiency and establishing standardized workflows for educational technology integration
                 </li>
                 <li>
-                  <strong>Evaluated and optimized</strong> institutional technology stack, conducting needs assessments and budget planning that resulted in 30% cost reduction while improving system reliability and performance
+                  <strong>Evaluated and optimized</strong> institutional technology stack, conducting needs assessments and budget planning to improve system reliability and performance while reducing costs
                 </li>
               </ul>
             </div>
