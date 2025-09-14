@@ -23,7 +23,7 @@ export default function Resume() {
 
       {/* PDF Download Button - Fixed Position */}
       <div className="fixed top-24 right-6 z-50 print:hidden">
-        <PDFDownload targetId="resume-content" />
+        <PDFDownload />
       </div>
 
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16" id="resume-content">

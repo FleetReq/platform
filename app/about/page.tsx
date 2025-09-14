@@ -199,7 +199,7 @@ export default function AboutPage() {
                   <div>
                     <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Growth Mindset</h4>
                     <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-                      Every challenge is a learning opportunity. I'm comfortable saying "I don't know" and excited to figure it out together with the team.
+                      Every challenge is a learning opportunity. I&apos;m comfortable saying &quot;I don&apos;t know&quot; and excited to figure it out together with the team.
                     </p>
                   </div>
                 </div>

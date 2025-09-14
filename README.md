@@ -8,7 +8,7 @@ A modern, responsive resume website built with Next.js, showcasing my experience
 
 - **Responsive Design** - Optimized for mobile, tablet, and desktop
 - **Dark/Light Mode** - System-aware theme switching with manual toggle
-- **Dynamic PDF Resume** - Generate and download PDF version of resume
+- **PDF Resume Download** - Static PDF resume download functionality
 - **Contact Form** - Functional contact form with validation
 - **Search Functionality** - Site-wide search with keyboard shortcuts (Ctrl/Cmd+K)
 - **Privacy-First Analytics** - Plausible Analytics integration
@@ -52,8 +52,7 @@ app/
 │   ├── Search.tsx      # Site-wide search functionality
 │   └── ...
 ├── api/                # API routes
-│   ├── contact/        # Contact form handler
-│   └── resume-pdf/     # PDF generation endpoint
+│   └── contact/        # Contact form handler
 ├── about/              # About page
 ├── contact/            # Contact page
 ├── resume/             # Resume page
@@ -65,7 +64,7 @@ app/
 - **Framework**: Next.js 15 (App Router)
 - **Styling**: Tailwind CSS
 - **TypeScript**: Full type safety
-- **PDF Generation**: @react-pdf/renderer
+- **File Serving**: Static PDF serving
 - **Analytics**: Plausible Analytics
 - **Deployment**: GitHub Pages
 - **CI/CD**: GitHub Actions
@@ -90,10 +89,11 @@ The site is configured for [Plausible Analytics](https://plausible.io/). See `PL
 
 ## 📱 Features Overview
 
-### Dynamic PDF Resume
-- Server-side PDF generation
-- Matches website styling
-- Automatic download functionality
+### PDF Resume Download
+- Static PDF file serving
+- Professional resume format
+- Direct download functionality
+- Easy to update - simply replace `/public/Bruce_Truong_Resume.pdf`
 
 ### Search Functionality
 - Full-site content search
