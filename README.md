@@ -54,7 +54,7 @@ A modern, responsive resume website built with Next.js, showcasing my experience
 ```
 app/
 ├── components/          # Reusable UI components
-│   ├── Analytics.tsx   # Plausible Analytics integration
+│   ├── Analytics.tsx   # Google Analytics 4 integration
 │   ├── ContactForm.tsx # Contact form with validation
 │   ├── PDFDownload.tsx # PDF resume download component
 │   ├── Search.tsx      # Site-wide search functionality
@@ -91,13 +91,11 @@ Create a `.env.local` file with:
 # Google Analytics 4 Configuration
 NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
 
-# Optional: Plausible Analytics (fallback)
-# NEXT_PUBLIC_PLAUSIBLE_DOMAIN=yourdomain.com
 ```
 
 ### Analytics Setup
 
-The site is configured for [Google Analytics 4](https://analytics.google.com). See `GOOGLE_ANALYTICS_SETUP.md` for detailed instructions, or follow these quick steps:
+The site uses [Google Analytics 4](https://analytics.google.com) for privacy-focused analytics. See `GOOGLE_ANALYTICS_SETUP.md` for detailed instructions, or follow these quick steps:
 
 1. **Create Google Analytics Account**
    - Go to [https://analytics.google.com](https://analytics.google.com)
@@ -114,11 +112,11 @@ The site is configured for [Google Analytics 4](https://analytics.google.com). S
    - Add `NEXT_PUBLIC_GA_ID` as a repository secret/variable in GitHub
    - The Analytics component will automatically load GA4 in production
 
-**Features Included:**
+**Analytics Features:**
 - ✅ Privacy-focused (only loads in production)
 - ✅ Page view tracking
 - ✅ Event tracking helpers
-- ✅ Automatic fallback to Plausible if GA ID not provided
+- ✅ GDPR compliant configuration
 
 ### PDF Resume Setup
 
