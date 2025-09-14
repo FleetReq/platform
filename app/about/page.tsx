@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import Image from 'next/image'
 import BackgroundAnimation from '../components/BackgroundAnimation'
-import PhotographyGallery from '../components/PhotographyGallery'
+// import PhotographyGallery from '../components/PhotographyGallery'
 
 export const metadata: Metadata = {
   title: 'About - Bruce Truong',
@@ -18,55 +18,7 @@ export const metadata: Metadata = {
 }
 
 export default function AboutPage() {
-  // Photography data - currently empty until you add your photos
-  // To enable: add photos to /public/images/photography/ and uncomment below
-  const samplePhotos: Array<{id: string; src: string; alt: string; caption?: string; instagramUrl?: string}> = [
-    {
-      id: '1',
-      src: '/images/photography/bee-orchid.jpg',
-      alt: 'Bee orchid flower in natural setting'
-    },
-    {
-      id: '2', 
-      src: '/images/photography/bird-branch.jpg',
-      alt: 'Bird perched on tree branch'
-    },
-    {
-      id: '3',
-      src: '/images/photography/deer-forage.jpg', 
-      alt: 'Deer foraging in natural habitat'
-    },
-    {
-      id: '4',
-      src: '/images/photography/squirrel-fly.jpg',
-      alt: 'Squirrel in mid-leap between trees'
-    },
-    {
-      id: '5',
-      src: '/images/photography/water-lantern.jpg',
-      alt: 'Illuminated lantern reflected in water'
-    },
-    {
-      id: '6',
-      src: '/images/photography/dance-performance.jpg',
-      alt: 'Dance performance captured in motion'
-    },
-    {
-      id: '7',
-      src: '/images/photography/volleyball-spike.jpg',
-      alt: 'Volleyball player executing spike'
-    },
-    {
-      id: '8',
-      src: '/images/photography/beer-glow.jpg',
-      alt: 'Atmospheric beverage photography'
-    },
-    {
-      id: '9',
-      src: '/images/photography/girl-climb.jpg',
-      alt: 'Climber ascending rock face'
-    }
-  ]
+  // Photography data - removed unused variables
 
   return (
     <div className="relative overflow-hidden min-h-screen">
@@ -170,7 +122,7 @@ export default function AboutPage() {
                   <div>
                     <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Educator at Heart</h4>
                     <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-                      From helping classmates in 4th grade to teaching as a wizard chess instructor and beloved "Batman" math teacher, I believe the best solutions are the ones everyone can understand and build upon.
+                      From helping classmates in 4th grade to teaching as a wizard chess instructor and beloved &quot;Batman&quot; math teacher, I believe the best solutions are the ones everyone can understand and build upon.
                     </p>
                   </div>
                 </div>

@@ -383,7 +383,7 @@ export default function Resume() {
                     </a>
                   </li>
                   <li>
-                    Featured in Bike Index article: "New Tool in the Fight Against Bike Crimes"
+                    Featured in Bike Index article: &quot;New Tool in the Fight Against Bike Crimes&quot;
                   </li>
                 </ul>
               </div>
