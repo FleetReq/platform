@@ -1,6 +1,6 @@
 # Bruce Truong - Resume Website
 
-A modern, responsive resume website built with Next.js, showcasing my experience as a Site Reliability Engineer. Features dark/light mode, PDF resume download, Formspree contact integration, and privacy-focused design.
+A modern, responsive resume website built with Next.js, showcasing my experience as a Site Reliability Engineer. Features dark/light mode, PDF resume download, Formspree contact integration, privacy-focused design, and a full-stack Gas Mileage & Maintenance Tracker application.
 
 🌐 **Live Site**: [brucetruong.com](https://brucetruong.com)
 
@@ -14,6 +14,7 @@ A modern, responsive resume website built with Next.js, showcasing my experience
 - **SEO Optimized** - Structured data, meta tags, and sitemap
 - **Performance Focused** - Loading states, image optimization, and caching
 - **Photography Gallery** - Lightbox gallery with Instagram integration
+- **Gas Mileage Tracker** - Full-stack application with Supabase backend for tracking car maintenance and fuel efficiency
 
 ## 📋 Prerequisites
 
@@ -39,6 +40,7 @@ A modern, responsive resume website built with Next.js, showcasing my experience
    ```bash
    # Create .env.local file (see Configuration section for details)
    touch .env.local
+   # Add your Google Analytics ID and Supabase credentials
    ```
 
 4. **Run the development server**
@@ -64,6 +66,8 @@ app/
 ├── contact/            # Contact page with Formspree form
 ├── projects/           # Projects showcase
 ├── resume/             # Resume page with PDF download
+├── mileage/            # Gas Mileage & Maintenance Tracker
+├── api/                # API routes for Supabase integration
 └── globals.css         # Global styles and Tailwind
 public/
 ├── Bruce_Truong_Resume.pdf       # Static PDF resume file
@@ -76,12 +80,54 @@ public/
 - **Framework**: Next.js 15 (App Router)
 - **Styling**: Tailwind CSS with custom components
 - **TypeScript**: Full type safety
+- **Database**: Supabase (PostgreSQL with Row Level Security)
+- **Authentication**: GitHub OAuth via Supabase
+- **Backend**: REST API routes with Supabase integration
 - **Forms**: Formspree integration for contact form
 - **File Serving**: Static PDF serving
 - **Deployment**: Vercel (auto-deploy from GitHub)
 - **Version Control**: Git with GitHub
 
 ## 🔧 Configuration
+
+### Environment Variables
+
+Create a `.env.local` file in the root directory with the following variables:
+
+```bash
+# Google Analytics
+NEXT_PUBLIC_GA_ID=G-YOUR-GA-ID-HERE
+
+# Supabase Configuration (for Gas Mileage Tracker)
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+```
+
+### Gas Mileage & Maintenance Tracker Setup
+
+The mileage tracker is a full-stack application using Supabase as the backend:
+
+1. **Create Supabase Project**
+   - Go to [https://supabase.com](https://supabase.com)
+   - Create a new project
+   - Copy your project URL and anon key to `.env.local`
+
+2. **Set up Database Schema**
+   - Run the SQL in `database/supabase-schema.sql` in your Supabase SQL editor
+   - This creates tables for cars, fill-ups, maintenance records, and user profiles
+
+3. **Configure GitHub OAuth**
+   - In Supabase Dashboard → Authentication → Providers
+   - Enable GitHub provider
+   - Add your GitHub OAuth credentials
+   - Set redirect URL to: `https://your-domain.com/mileage`
+
+4. **Features Include**
+   - ✅ Multi-car tracking with user authentication
+   - ✅ Automatic MPG calculations
+   - ✅ Maintenance record keeping
+   - ✅ Row Level Security for data privacy
+   - ✅ Responsive mobile-friendly interface
 
 ### Contact Form Setup (Formspree)
 
