@@ -57,31 +57,6 @@ const workExperience = [
   },
   {
     id: 5,
-    title: 'Gas Mileage & Maintenance Tracker - Full-Stack SRE Portfolio',
-    description: 'Comprehensive vehicle tracking application demonstrating full-stack development with SRE principles. Features real-time MPG calculations, maintenance scheduling, and public analytics. Built with Next.js, Supabase, and designed for both web dashboard and Android mobile app integration.',
-    longDescription: `A production-ready full-stack application showcasing Site Reliability Engineering skills through practical vehicle management. The system demonstrates database design, API development, authentication, and real-time data processing while maintaining 99.9% uptime targets.
-
-Key technical achievements include: automated MPG calculations with SQL triggers, Row Level Security implementation for multi-tenant data isolation, comprehensive REST API design, and real-time dashboard updates. The architecture supports both web interface and mobile app consumption.
-
-SRE principles applied: automated database backups, comprehensive logging and monitoring, performance optimization through proper indexing, and scalable architecture design supporting future Android app integration.`,
-    technologies: ['Next.js 15', 'TypeScript', 'Supabase', 'PostgreSQL', 'REST APIs', 'Row Level Security', 'GitHub OAuth', 'Tailwind CSS', 'SQL Triggers'],
-    sre_principles: ['Database Reliability', 'API Performance', 'Security by Design', 'Multi-platform Architecture', 'Real-time Monitoring'],
-    performance_metrics: {
-      api_response: '< 200ms',
-      database_queries: 'Optimized',
-      security: 'RLS + OAuth',
-      platforms: 'Web + Mobile',
-      uptime_target: '99.9%',
-      scalability: 'Multi-tenant'
-    },
-    type: 'Personal Project',
-    company: 'Full-Stack Portfolio',
-    github: 'https://github.com/DeeAhTee/my-resume-site',
-    demo: '/mileage',
-    featured: true,
-  },
-  {
-    id: 6,
     title: 'Portfolio Website - SRE Implementation Showcase',
     description: 'Comprehensive technical showcase built with modern web technologies and SRE best practices. Features automated CI/CD deployment, performance optimization, and comprehensive monitoring. Demonstrates infrastructure automation, reliability engineering, and full-stack development skills.',
     longDescription: `This portfolio website serves as both a professional showcase and a demonstration of Site Reliability Engineering principles applied to web development. Built with Next.js 15 and TypeScript for type safety, the site implements modern performance optimizations including static site generation, image optimization, and efficient caching strategies.
@@ -103,6 +78,31 @@ Key SRE principles demonstrated include: 99.9% uptime through static generation,
     company: 'Technical Showcase',
     github: 'https://github.com/DeeAhTee/my-resume-site',
     demo: 'https://brucetruong.com',
+    featured: true,
+  },
+  {
+    id: 6,
+    title: 'Gas Mileage & Maintenance Tracker - Full-Stack SRE Portfolio (WIP)',
+    description: 'Work-in-progress vehicle tracking application demonstrating full-stack development with SRE principles. Features GitHub OAuth authentication, real-time MPG calculations, maintenance scheduling, and public analytics. Built with Next.js, Supabase, and designed for both web dashboard and Android mobile app integration.',
+    longDescription: `A production-ready full-stack application showcasing Site Reliability Engineering skills through practical vehicle management. The system demonstrates database design, API development, authentication, and real-time data processing while maintaining 99.9% uptime targets.
+
+Key technical achievements include: automated MPG calculations with SQL triggers, Row Level Security implementation for multi-tenant data isolation, comprehensive REST API design, and real-time dashboard updates. The architecture supports both web interface and mobile app consumption.
+
+SRE principles applied: automated database backups, comprehensive logging and monitoring, performance optimization through proper indexing, and scalable architecture design supporting future Android app integration.`,
+    technologies: ['Next.js 15', 'TypeScript', 'Supabase', 'PostgreSQL', 'REST APIs', 'Row Level Security', 'GitHub OAuth', 'Tailwind CSS', 'SQL Triggers'],
+    sre_principles: ['Database Reliability', 'API Performance', 'Security by Design', 'Multi-platform Architecture', 'Real-time Monitoring'],
+    performance_metrics: {
+      api_response: '< 200ms',
+      database_queries: 'Optimized',
+      security: 'RLS + OAuth',
+      platforms: 'Web + Mobile',
+      uptime_target: '99.9%',
+      scalability: 'Multi-tenant'
+    },
+    type: 'Personal Project',
+    company: 'Full-Stack Portfolio (WIP)',
+    github: 'https://github.com/DeeAhTee/my-resume-site',
+    demo: '/mileage',
     featured: true,
   },
 ]
