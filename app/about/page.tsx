@@ -273,7 +273,7 @@ export default function AboutPage() {
           <PhotographyGallery
             photos={samplePhotos}
             title="Through My Lens"
-            subtitle="I love capturing people when their genuine emotions are shining—not when they're posing. Photography is my way of memorializing the small events that are incredibly powerful, preserving those authentic moments that tell the real story."
+            subtitle="I love capturing people when their genuine emotions are shining—not when they're posing. Photography is my way of memorializing the small events that are incredibly powerful, preserving those authentic moments that tell the real&nbsp;story."
             instagramHandle="deeahtee"
           />
         )}
