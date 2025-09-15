@@ -76,7 +76,7 @@ export default function MileageTracker() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-          redirectTo: 'https://brucetruong.com/mileage'
+          redirectTo: `${window.location.origin}/mileage`
         }
       })
       if (error) throw error
