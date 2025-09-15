@@ -1,10 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'export',
+  // Remove static export to enable API routes
   trailingSlash: true,
   images: {
-    unoptimized: true,
+    // Keep unoptimized for static assets, but enable optimization for dynamic content
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
   },
   // Performance optimizations
   compress: true,

@@ -11,6 +11,7 @@ const navigationItems = [
   { name: "About", href: "/about" },
   { name: "Resume", href: "/resume" },
   { name: "Projects", href: "/projects" },
+  { name: "Mileage", href: "/mileage" },
   { name: "Contact", href: "/contact" },
 ];
 

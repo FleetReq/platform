@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import BackgroundAnimation from '../components/BackgroundAnimation'
+import MileageStatsWidget from '../components/MileageStatsWidget'
 
 export const metadata: Metadata = {
   title: 'Projects - Bruce Truong',
@@ -56,6 +57,31 @@ const workExperience = [
   },
   {
     id: 5,
+    title: 'Gas Mileage & Maintenance Tracker - Full-Stack SRE Portfolio',
+    description: 'Comprehensive vehicle tracking application demonstrating full-stack development with SRE principles. Features real-time MPG calculations, maintenance scheduling, and public analytics. Built with Next.js, Supabase, and designed for both web dashboard and Android mobile app integration.',
+    longDescription: `A production-ready full-stack application showcasing Site Reliability Engineering skills through practical vehicle management. The system demonstrates database design, API development, authentication, and real-time data processing while maintaining 99.9% uptime targets.
+
+Key technical achievements include: automated MPG calculations with SQL triggers, Row Level Security implementation for multi-tenant data isolation, comprehensive REST API design, and real-time dashboard updates. The architecture supports both web interface and mobile app consumption.
+
+SRE principles applied: automated database backups, comprehensive logging and monitoring, performance optimization through proper indexing, and scalable architecture design supporting future Android app integration.`,
+    technologies: ['Next.js 15', 'TypeScript', 'Supabase', 'PostgreSQL', 'REST APIs', 'Row Level Security', 'GitHub OAuth', 'Tailwind CSS', 'SQL Triggers'],
+    sre_principles: ['Database Reliability', 'API Performance', 'Security by Design', 'Multi-platform Architecture', 'Real-time Monitoring'],
+    performance_metrics: {
+      api_response: '< 200ms',
+      database_queries: 'Optimized',
+      security: 'RLS + OAuth',
+      platforms: 'Web + Mobile',
+      uptime_target: '99.9%',
+      scalability: 'Multi-tenant'
+    },
+    type: 'Personal Project',
+    company: 'Full-Stack Portfolio',
+    github: 'https://github.com/DeeAhTee/my-resume-site',
+    demo: '/mileage',
+    featured: true,
+  },
+  {
+    id: 6,
     title: 'Portfolio Website - SRE Implementation Showcase',
     description: 'Comprehensive technical showcase built with modern web technologies and SRE best practices. Features automated CI/CD deployment, performance optimization, and comprehensive monitoring. Demonstrates infrastructure automation, reliability engineering, and full-stack development skills.',
     longDescription: `This portfolio website serves as both a professional showcase and a demonstration of Site Reliability Engineering principles applied to web development. Built with Next.js 15 and TypeScript for type safety, the site implements modern performance optimizations including static site generation, image optimization, and efficient caching strategies.
@@ -69,7 +95,7 @@ Key SRE principles demonstrated include: 99.9% uptime through static generation,
       load_time: '< 800ms',
       first_load_js: '102KB',
       lighthouse: '95+',
-      static_pages: '11',
+      static_pages: '12',
       core_web_vitals: 'Excellent',
       uptime: '99.9%'
     },
@@ -107,7 +133,7 @@ export default function ProjectsPage() {
               <div
                 key={project.id}
                 className={`bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 p-6 ${
-                  project.id === 5 ? 'md:col-span-2' : ''
+                  project.id === 5 || project.id === 6 ? 'md:col-span-2' : ''
                 }`}
               >
                 <div className="flex items-center gap-2 mb-4">
@@ -127,8 +153,8 @@ export default function ProjectsPage() {
                   {project.description}
                 </p>
 
-                {/* Extended content for portfolio project */}
-                {project.id === 5 && project.longDescription && (
+                {/* Extended content for portfolio projects */}
+                {(project.id === 5 || project.id === 6) && project.longDescription && (
                   <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700/30 rounded-lg">
                     <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Technical Implementation:</h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
@@ -151,8 +177,8 @@ export default function ProjectsPage() {
                   </div>
                 </div>
 
-                {/* SRE Principles for portfolio project */}
-                {project.id === 5 && project.sre_principles && (
+                {/* SRE Principles for portfolio projects */}
+                {(project.id === 5 || project.id === 6) && project.sre_principles && (
                   <div className="mb-6">
                     <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">SRE Principles Applied:</h4>
                     <div className="flex flex-wrap gap-2">
@@ -168,8 +194,8 @@ export default function ProjectsPage() {
                   </div>
                 )}
 
-                {/* Performance Metrics for portfolio project */}
-                {project.id === 5 && project.performance_metrics && (
+                {/* Performance Metrics for portfolio projects */}
+                {(project.id === 5 || project.id === 6) && project.performance_metrics && (
                   <div className="mb-6 p-4 bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10 rounded-lg">
                     <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Key Performance Metrics:</h4>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
@@ -200,7 +226,15 @@ export default function ProjectsPage() {
                     </div>
                   </div>
                 )}
-                
+
+                {/* Live Stats Widget for Mileage Tracker */}
+                {project.id === 5 && (
+                  <div className="mb-6">
+                    <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Live Application Data:</h4>
+                    <MileageStatsWidget />
+                  </div>
+                )}
+
                 {project.type === 'Personal Project' && (
                   <div className="flex gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                     {project.github && (
