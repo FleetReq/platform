@@ -25,8 +25,8 @@ export default function ContactPage() {
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Let&apos;s Connect
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            I&apos;m always interested in discussing new opportunities, collaborating on interesting projects, or just having a good conversation about technology and infrastructure.
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+            I&apos;m always interested in discussing new opportunities, collaborating on interesting projects, or just having a good conversation about technology&nbsp;and&nbsp;infrastructure.
           </p>
         </div>
 
