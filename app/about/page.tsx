@@ -76,7 +76,7 @@ export default function AboutPage() {
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             About Me
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
             Software Engineer, educator at heart, and community builder who brings curiosity, strategic thinking, and genuine human connection to everything I&nbsp;do
           </p>
         </div>
