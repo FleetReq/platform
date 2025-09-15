@@ -60,45 +60,43 @@ export default function ContactForm() {
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!validateForm()) {
       return
     }
-    
+
     setIsSubmitting(true)
     setSubmitStatus('idle')
-    
-    // For static sites, we'll create a mailto link and copy to clipboard
+
     try {
-      const emailSubject = encodeURIComponent(`${formData.subject} - Contact from ${formData.name}`)
-      const emailBody = encodeURIComponent(
-        `From: ${formData.name} (${formData.email})\n` +
-        `Company: ${formData.company || 'Not specified'}\n\n` +
-        `Message:\n${formData.message}`
-      )
-      
-      const mailtoLink = `mailto:careers@brucetruong.com?subject=${emailSubject}&body=${emailBody}`
-      
-      // Open email client
-      window.location.href = mailtoLink
-      
-      // Also copy message to clipboard as backup
-      const clipboardText = `Subject: ${formData.subject}\n\nFrom: ${formData.name} (${formData.email})\nCompany: ${formData.company || 'Not specified'}\n\nMessage:\n${formData.message}`
-      
-      if (navigator.clipboard) {
-        await navigator.clipboard.writeText(clipboardText)
-      }
-      
-      setSubmitStatus('success')
-      setFormData({
-        name: '',
-        email: '',
-        company: '',
-        subject: '',
-        message: ''
+      const response = await fetch('https://formspree.io/f/xvgbnzqo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          company: formData.company || '',
+          subject: formData.subject,
+          message: formData.message,
+        }),
       })
+
+      if (response.ok) {
+        setSubmitStatus('success')
+        setFormData({
+          name: '',
+          email: '',
+          company: '',
+          subject: '',
+          message: ''
+        })
+      } else {
+        setSubmitStatus('error')
+      }
     } catch (error) {
-      console.error('Error creating email:', error)
+      console.error('Error submitting form:', error)
       setSubmitStatus('error')
     } finally {
       setIsSubmitting(false)
@@ -126,7 +124,7 @@ export default function ContactForm() {
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
             </svg>
             <p className="text-green-700 dark:text-green-300 font-medium">
-              Your email client should open with your message pre-filled. Message also copied to clipboard!
+              Message sent successfully! I'll get back to you within 24-48 hours.
             </p>
           </div>
         </div>
@@ -139,7 +137,7 @@ export default function ContactForm() {
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
             </svg>
             <p className="text-red-700 dark:text-red-300 font-medium">
-              Failed to send message. Please try again or email me directly.
+              Failed to send message. Please try again or email me directly at careers@brucetruong.com.
             </p>
           </div>
         </div>
@@ -250,7 +248,7 @@ export default function ContactForm() {
           isLoading={isSubmitting}
           className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-8 py-3 rounded-lg font-medium transition-colors shadow-lg hover:shadow-xl transform hover:scale-105 duration-300"
         >
-          Open Email Client
+          Send Message
         </ButtonLoading>
       </form>
     </div>
