@@ -50,9 +50,10 @@ const workExperience = [
     title: 'Bike Index Platform',
     description: 'Led a 5-member capstone team to develop a platform for creating, editing, and searching through bike theft information. Implemented using Scrum methodology with bi-weekly sprints.',
     technologies: ['Team Leadership', 'Scrum', 'Full Stack Development', 'Database Design'],
-    type: 'Personal Project', 
+    type: 'Personal Project',
     company: 'PSU Capstone',
     github: 'https://github.com/impeccKable/bike-index-platform',
+    demo: 'https://bikeindex.org',
     featured: false,
   },
   {
