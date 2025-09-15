@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
+    }
+
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
@@ -33,6 +37,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
+    }
+
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {

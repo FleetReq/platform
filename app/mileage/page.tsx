@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
-import type { Car, FillUp, MaintenanceRecord } from '@/lib/supabase'
+import type { Car } from '@/lib/supabase'
 
 interface UserStats {
   total_cars: number
@@ -18,18 +18,18 @@ interface UserStats {
 }
 
 export default function MileageTracker() {
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<{ email?: string } | null>(null)
   const [cars, setCars] = useState<Car[]>([])
   const [stats, setStats] = useState<UserStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance'>('dashboard')
 
-  useEffect(() => {
-    checkUser()
-  }, [])
-
-  const checkUser = async () => {
+  const checkUser = useCallback(async () => {
     try {
+      if (!supabase) {
+        throw new Error('Database not configured')
+      }
+
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
 
@@ -41,7 +41,11 @@ export default function MileageTracker() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    checkUser()
+  }, [checkUser])
 
   const loadData = async () => {
     try {
@@ -65,6 +69,10 @@ export default function MileageTracker() {
 
   const signIn = async () => {
     try {
+      if (!supabase) {
+        throw new Error('Database not configured')
+      }
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
@@ -79,6 +87,10 @@ export default function MileageTracker() {
 
   const signOut = async () => {
     try {
+      if (!supabase) {
+        throw new Error('Database not configured')
+      }
+
       const { error } = await supabase.auth.signOut()
       if (error) throw error
       setUser(null)
@@ -107,7 +119,7 @@ export default function MileageTracker() {
                 Gas Mileage & Maintenance Tracker
               </h1>
               <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
-                Track your vehicle's fuel efficiency and maintenance records with ease
+                Track your vehicle&apos;s fuel efficiency and maintenance records with ease
               </p>
             </div>
 
@@ -188,7 +200,7 @@ export default function MileageTracker() {
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as 'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance')}
               className={`flex-1 py-2 px-4 rounded-md transition-colors duration-200 ${
                 activeTab === tab.id
                   ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow'
@@ -235,7 +247,7 @@ export default function MileageTracker() {
                         {car.year} {car.make} {car.model}
                       </h3>
                       {car.nickname && (
-                        <p className="text-gray-600 dark:text-gray-300">"{car.nickname}"</p>
+                        <p className="text-gray-600 dark:text-gray-300">&quot;{car.nickname}&quot;</p>
                       )}
                       {car.color && (
                         <p className="text-gray-600 dark:text-gray-300">Color: {car.color}</p>

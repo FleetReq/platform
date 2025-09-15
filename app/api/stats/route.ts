@@ -3,6 +3,10 @@ import { supabase } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
   try {
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
+    }
+
     const { searchParams } = new URL(request.url)
     const isPublic = searchParams.get('public') === 'true'
 

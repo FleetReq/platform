@@ -3,14 +3,20 @@ import { supabase } from '@/lib/supabase'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
+    }
+
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    const { id } = await params
 
     const { data: car, error } = await supabase
       .from('cars')
@@ -19,7 +25,7 @@ export async function GET(
         fill_ups(*),
         maintenance_records(*)
       `)
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('user_id', user.id)
       .single()
 
@@ -37,9 +43,13 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
+    }
+
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
@@ -48,6 +58,7 @@ export async function PUT(
 
     const body = await request.json()
     const { make, model, year, color, license_plate, nickname } = body
+    const { id } = await params
 
     const { data: car, error } = await supabase
       .from('cars')
@@ -59,7 +70,7 @@ export async function PUT(
         license_plate: license_plate?.trim(),
         nickname: nickname?.trim()
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('user_id', user.id)
       .select()
       .single()
@@ -78,19 +89,25 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
+    }
+
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params
+
     const { error } = await supabase
       .from('cars')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('user_id', user.id)
 
     if (error) {
