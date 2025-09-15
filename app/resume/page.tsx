@@ -36,11 +36,7 @@ export default function Resume() {
             <p className="font-semibold text-gray-900 dark:text-white">Bruce Truong</p>
             <p className="whitespace-nowrap">Site Reliability Engineer | DevOps Engineer | Infrastructure Automation Specialist</p>
             <div className="flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-4 text-lg">
-              <span>Beaverton, OR</span>
-              <span className="hidden sm:block">•</span>
               <a href="mailto:careers@brucetruong.com" className="text-blue-600 dark:text-blue-400 hover:underline">careers@brucetruong.com</a>
-              <span className="hidden sm:block">•</span>
-              <a href="tel:+19714448816" className="text-blue-600 dark:text-blue-400 hover:underline">971.444.8816</a>
               <span className="hidden sm:block">•</span>
               <a href="https://brucetruong.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">brucetruong.com</a>
             </div>
@@ -383,7 +379,7 @@ export default function Resume() {
                     </a>
                   </li>
                   <li>
-                    Featured in Bike Index article: &quot;New Tool in the Fight Against Bike Crimes&quot;
+                    Featured in <a href="https://bikeindex.org/news/bike-indexs-new-tool-in-the-fight-against-bike-crimes" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">Bike Index article</a>: &quot;New Tool in the Fight Against Bike Crimes&quot;
                   </li>
                 </ul>
               </div>
@@ -410,12 +406,9 @@ export default function Resume() {
         <section className="py-8 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 dark:from-blue-900/20 dark:to-indigo-900/20 backdrop-blur-sm rounded-2xl">
           <div className="text-center px-4">
             <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-8 rounded-lg shadow-lg border border-gray-200/50 dark:border-gray-700/50 max-w-2xl mx-auto">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
-                Ready to Discuss Opportunities
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+                Let&apos;s Connect
               </h3>
-              <p className="text-gray-700 dark:text-gray-300 mb-6">
-                Formatted PDF resume and references available for qualified positions
-              </p>
               <a
                 href="mailto:careers@brucetruong.com?subject=Resume Request - SRE Position"
                 className="inline-flex items-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-lg font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"

@@ -198,7 +198,7 @@ export default function HeroSection() {
                 <span className="text-sm font-medium text-green-600 dark:text-green-400">Open to new opportunities</span>
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400">
-                📍 Beaverton, OR • 📞 971.444.8816
+                📍 Beaverton, OR
               </div>
             </div>
           </div>
