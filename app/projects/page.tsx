@@ -53,7 +53,6 @@ const workExperience = [
     type: 'Personal Project',
     company: 'PSU Capstone',
     github: 'https://github.com/impeccKable/bike-index-platform',
-    demo: 'https://bikeindex.org',
     featured: false,
   },
   {
@@ -78,7 +77,7 @@ Key SRE principles demonstrated include: 99.9% uptime through static generation,
     type: 'Personal Project',
     company: 'Technical Showcase',
     github: 'https://github.com/DeeAhTee/my-resume-site',
-    demo: 'https://brucetruong.com',
+    demo: '/',
     featured: true,
   },
   {
