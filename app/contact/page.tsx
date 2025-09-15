@@ -84,12 +84,12 @@ export default function ContactPage() {
                 <div>
                   <h3 className="font-semibold text-gray-900 dark:text-white">GitHub</h3>
                   <a
-                    href="https://github.com/brucetruong"
+                    href="https://github.com/DeeAhTee"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-green-600 dark:text-green-400 hover:underline"
                   >
-                    github.com/brucetruong
+                    github.com/DeeAhTee
                   </a>
                 </div>
               </div>
