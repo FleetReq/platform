@@ -61,10 +61,10 @@ const workExperience = [
     description: 'Comprehensive technical showcase built with modern web technologies and SRE best practices. Features automated CI/CD deployment, performance optimization, and comprehensive monitoring. Demonstrates infrastructure automation, reliability engineering, and full-stack development skills.',
     longDescription: `This portfolio website serves as both a professional showcase and a demonstration of Site Reliability Engineering principles applied to web development. Built with Next.js 15 and TypeScript for type safety, the site implements modern performance optimizations including static site generation, image optimization, and efficient caching strategies.
 
-The deployment pipeline showcases DevOps best practices with automated GitHub Actions workflows, ensuring consistent and reliable deployments to GitHub Pages with custom domain configuration. Privacy-focused Google Analytics 4 integration provides comprehensive monitoring and user insights while respecting visitor privacy.
+The deployment pipeline showcases DevOps best practices with automated Vercel deployment integration, ensuring consistent and reliable deployments with custom domain configuration. Privacy-focused Google Analytics 4 integration provides comprehensive monitoring and user insights while respecting visitor privacy.
 
 Key SRE principles demonstrated include: 99.9% uptime through static generation, sub-second load times via CDN distribution, comprehensive analytics for data-driven improvements, and fully automated deployment pipeline with quality checks.`,
-    technologies: ['Next.js 15', 'TypeScript', 'Tailwind CSS', 'Google Analytics 4', 'GitHub Actions', 'GitHub Pages', 'Vercel', 'ESLint', 'PostCSS'],
+    technologies: ['Next.js 15', 'TypeScript', 'Tailwind CSS', 'Google Analytics 4', 'Vercel', 'Supabase', 'ESLint', 'PostCSS'],
     sre_principles: ['Static Site Generation', 'Performance Monitoring', 'Automated Deployment', 'Error Tracking', 'CDN Distribution'],
     performance_metrics: {
       load_time: '< 800ms',
