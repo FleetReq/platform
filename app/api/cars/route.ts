@@ -8,16 +8,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
     }
 
-    // Get the authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      console.error('Auth error:', authError)
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-
-    // Always show owner's cars for demo purposes
+    // For demo purposes, always show owner's data
+    // Authentication is handled on the frontend for UI purposes
     const targetUserId = getOwnerUserId()
 
 

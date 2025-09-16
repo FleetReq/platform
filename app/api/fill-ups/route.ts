@@ -8,17 +8,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
     }
 
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const { searchParams } = new URL(request.url)
     const carId = searchParams.get('car_id')
     const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 50
 
-    // Always show owner's fill-ups for demo purposes
+    // Show owner's fill-ups for demo purposes
     const targetUserId = getOwnerUserId()
 
     let query = supabase

@@ -25,16 +25,7 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({ stats })
     } else {
-      // User-specific stats - authentication required
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-      if (authError || !user) {
-        console.error('Auth error:', authError)
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      }
-
-
-      // Always show owner's stats for demo purposes
+      // User-specific stats - show owner's data for demo purposes
       const targetUserId = getOwnerUserId()
 
       // Get owner's cars
