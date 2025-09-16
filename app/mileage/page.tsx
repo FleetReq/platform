@@ -55,14 +55,27 @@ export default function MileageTracker() {
         throw new Error('Database not configured')
       }
 
-      // Refresh the session to ensure it's synced
-      const { error: sessionError } = await supabase.auth.getSession()
+      // Get the current session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
       if (sessionError) {
         console.error('Session error:', sessionError)
       }
 
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
+
+      // If user is authenticated, try to sync session with server
+      if (user && session) {
+        try {
+          await fetch('/api/force-auth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ session })
+          })
+        } catch (error) {
+          console.error('Failed to sync session with server:', error)
+        }
+      }
 
       if (user) {
         setUserIsOwner(isOwner(user.id))

@@ -9,9 +9,26 @@ export async function GET(request: NextRequest) {
   if (code) {
     const supabase = await createServerSupabaseClient()
     if (supabase) {
-      const { error } = await supabase.auth.exchangeCodeForSession(code)
-      if (!error) {
-        return NextResponse.redirect(new URL(next, request.url))
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+      if (!error && data.session) {
+        // Successfully established session
+        const response = NextResponse.redirect(new URL(next, request.url))
+
+        // Ensure cookies are properly set for the session
+        const { session } = data
+        if (session) {
+          // Force refresh to establish proper cookie state
+          response.cookies.set(`sb-${process.env.NEXT_PUBLIC_SUPABASE_URL?.split('//')[1]?.split('.')[0]}-auth-token`,
+            JSON.stringify(session), {
+            path: '/',
+            maxAge: session.expires_in,
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
+            httpOnly: false
+          })
+        }
+
+        return response
       }
     }
   }
