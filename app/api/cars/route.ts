@@ -24,6 +24,10 @@ export async function GET() {
     }
 
 
+    // Check if user is authenticated and is the owner
+    const isAuthenticated = user && authError === null
+    const isOwnerUser = isAuthenticated && isOwner(user.id)
+
     const { data: cars, error: carsError } = await supabase
       .from('cars')
       .select(`
@@ -33,6 +37,13 @@ export async function GET() {
       `)
       .eq('user_id', targetUserId)
       .order('created_at', { ascending: false })
+
+    // Hide license plate for non-owner users
+    if (cars && !isOwnerUser) {
+      cars.forEach(car => {
+        car.license_plate = null // Hide license plate from public
+      })
+    }
 
     if (carsError) {
       console.error('Error fetching cars:', carsError)
