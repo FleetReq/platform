@@ -64,13 +64,14 @@ export default function MileageTracker() {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
 
-      // If user is authenticated, try to sync session with server
+      // If user is authenticated, sync session with server
       if (user && session) {
         try {
-          await fetch('/api/force-auth', {
+          await fetch('/api/sync-session', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ session })
+            body: JSON.stringify({ session }),
+            credentials: 'include'
           })
         } catch (error) {
           console.error('Failed to sync session with server:', error)
