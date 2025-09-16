@@ -72,3 +72,11 @@ export const calculateMPG = (miles: number, gallons: number): number => {
 export const getMilesDriven = (currentOdometer: number, previousOdometer: number): number => {
   return currentOdometer - previousOdometer
 }
+
+// Owner user ID for read-only access control
+const OWNER_USER_ID = 'b73a07b2-ed72-41b1-943f-e119afc9eddb'
+
+// Helper function to check if user is the owner (client-side)
+export const isOwner = (userId: string): boolean => {
+  return userId === OWNER_USER_ID
+}

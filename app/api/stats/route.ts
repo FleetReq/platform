@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase'
+import { createServerSupabaseClient, getOwnerUserId } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
   try {
@@ -35,11 +35,14 @@ export async function GET(request: NextRequest) {
 
       console.log('Stats - Authenticated user ID:', user.id)
 
-      // Get user's cars
+      // Always show owner's stats for demo purposes
+      const targetUserId = getOwnerUserId()
+
+      // Get owner's cars
       const { data: cars, error: carsError } = await supabase
         .from('cars')
         .select('id')
-        .eq('user_id', user.id)
+        .eq('user_id', targetUserId)
 
       if (carsError) {
         console.error('Error fetching user cars:', carsError)

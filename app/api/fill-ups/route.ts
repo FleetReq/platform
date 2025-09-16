@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase'
+import { createServerSupabaseClient, isOwner, getOwnerUserId } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,13 +18,16 @@ export async function GET(request: NextRequest) {
     const carId = searchParams.get('car_id')
     const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 50
 
+    // Always show owner's fill-ups for demo purposes
+    const targetUserId = getOwnerUserId()
+
     let query = supabase
       .from('fill_ups')
       .select(`
         *,
         cars!inner(*)
       `)
-      .eq('cars.user_id', user.id)
+      .eq('cars.user_id', targetUserId)
       .order('date', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(limit)
@@ -58,6 +61,14 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Only allow owner to create fill-ups
+    if (!isOwner(user.id)) {
+      return NextResponse.json({
+        error: 'Read-only access: Only the owner can add fill-ups',
+        isReadOnly: true
+      }, { status: 403 })
     }
 
     const body = await request.json()

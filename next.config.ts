@@ -14,20 +14,30 @@ const nextConfig: NextConfig = {
   },
   // Performance optimizations
   compress: true,
-  // Bundle analyzer
-  ...(process.env.ANALYZE === 'true' && {
-    bundleAnalyzer: {
-      enabled: true,
-      openAnalyzer: true,
+
+  // Optimize webpack for bundle size
+  webpack: (config, { dev, isServer }) => {
+    // Optimize production builds
+    if (!dev && !isServer) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          ...config.optimization.splitChunks,
+          cacheGroups: {
+            ...config.optimization.splitChunks?.cacheGroups,
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              chunks: 'all',
+            },
+          },
+        },
+      };
     }
-  }),
+
+    return config;
+  },
+
 };
 
-// Bundle analyzer wrapper
-const withBundleAnalyzer = process.env.ANALYZE === 'true' 
-  ? require('@next/bundle-analyzer')({
-      enabled: true,
-    })
-  : (config: NextConfig) => config;
-
-export default withBundleAnalyzer(nextConfig);
+export default nextConfig;

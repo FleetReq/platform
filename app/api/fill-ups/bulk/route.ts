@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase'
+import { createServerSupabaseClient, isOwner } from '@/lib/supabase'
 
 interface BulkFillUpData {
   miles: number
@@ -22,6 +22,14 @@ export async function POST(request: NextRequest) {
     if (authError || !user) {
       console.error('Auth error:', authError)
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Only allow owner to bulk import fill-ups
+    if (!isOwner(user.id)) {
+      return NextResponse.json({
+        error: 'Read-only access: Only the owner can bulk import fill-ups',
+        isReadOnly: true
+      }, { status: 403 })
     }
 
     const body = await request.json()

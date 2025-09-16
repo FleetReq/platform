@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase'
+import { createServerSupabaseClient, isOwner, getOwnerUserId } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
         *,
         cars!inner(*)
       `)
-      .eq('cars.user_id', user.id)
+      .eq('cars.user_id', getOwnerUserId())
       .order('date', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(limit)
@@ -65,6 +65,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Only allow owner to create maintenance records
+    if (!isOwner(user.id)) {
+      return NextResponse.json({
+        error: 'Read-only access: Only the owner can add maintenance records',
+        isReadOnly: true
+      }, { status: 403 })
+    }
+
     const body = await request.json()
     const {
       car_id,
@@ -92,7 +100,7 @@ export async function POST(request: NextRequest) {
       .from('cars')
       .select('id')
       .eq('id', car_id)
-      .eq('user_id', user.id)
+      .eq('user_id', getOwnerUserId())
       .single()
 
     if (carError || !car) {

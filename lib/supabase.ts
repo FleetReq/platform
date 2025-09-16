@@ -33,6 +33,19 @@ export const createServerSupabaseClient = async () => {
   })
 }
 
+// Owner user ID for read-only access control
+const OWNER_USER_ID = 'b73a07b2-ed72-41b1-943f-e119afc9eddb'
+
+// Helper function to check if user is the owner
+export const isOwner = (userId: string): boolean => {
+  return userId === OWNER_USER_ID
+}
+
+// Get owner's user ID for read-only access
+export const getOwnerUserId = (): string => {
+  return OWNER_USER_ID
+}
+
 // Re-export types and helpers from client module for server-side use
 export type {
   Car,

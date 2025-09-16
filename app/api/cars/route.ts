@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase'
+import { createServerSupabaseClient, isOwner, getOwnerUserId } from '@/lib/supabase'
 
 export async function GET() {
   try {
@@ -18,6 +18,12 @@ export async function GET() {
 
     console.log('Authenticated user ID:', user.id)
 
+    // Always show owner's cars for demo purposes, but note if user is read-only
+    const targetUserId = getOwnerUserId()
+    const userIsOwner = isOwner(user.id)
+
+    console.log(`User is owner: ${userIsOwner}, showing data for: ${targetUserId}`)
+
     const { data: cars, error: carsError } = await supabase
       .from('cars')
       .select(`
@@ -25,7 +31,7 @@ export async function GET() {
         fill_ups!inner(count),
         maintenance_records!inner(count)
       `)
-      .eq('user_id', user.id)
+      .eq('user_id', targetUserId)
       .order('created_at', { ascending: false })
 
     if (carsError) {
@@ -56,6 +62,14 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('Creating car for user ID:', user.id)
+
+    // Only allow owner to create cars
+    if (!isOwner(user.id)) {
+      return NextResponse.json({
+        error: 'Read-only access: Only the owner can add cars',
+        isReadOnly: true
+      }, { status: 403 })
+    }
 
     const body = await request.json()
     const { make, model, year, color, license_plate, nickname } = body
