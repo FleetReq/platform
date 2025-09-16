@@ -14,16 +14,21 @@ export function LoadingSpinner({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
   )
 }
 
-export function ButtonLoading({ children, isLoading, ...props }: {
+export function ButtonLoading({
+  children,
+  isLoading,
+  className,
+  ...props
+}: {
   children: React.ReactNode
   isLoading: boolean
   className?: string
-}) {
+} & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
       {...props}
       disabled={isLoading}
-      className={`${props.className} ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+      className={`${className} ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
     >
       {isLoading ? (
         <div className="flex items-center justify-center">

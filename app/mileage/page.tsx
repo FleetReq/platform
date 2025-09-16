@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { supabase, type Car } from '@/lib/supabase'
+import { supabase, type Car } from '@/lib/supabase-client'
 
 interface UserStats {
   total_cars: number
