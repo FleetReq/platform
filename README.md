@@ -48,8 +48,22 @@ A modern, responsive resume website built with Next.js, showcasing my experience
    npm run dev
    ```
 
+   **⚠️ Important**: The dev server must run on port 3000 for GitHub OAuth to work properly.
+
+   **If port 3000 is in use:**
+   ```bash
+   # Find and kill the process using port 3000
+   netstat -ano | findstr :3000
+   taskkill /PID <PID_NUMBER> /F
+
+   # Then restart dev server
+   npm run dev
+   ```
+
 5. **Open in browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
+
+   **Note**: Mileage tracker OAuth requires localhost:3000 (configured in Supabase)
 
 ## 📁 Project Structure
 
@@ -207,6 +221,46 @@ npm run lint     # Run ESLint for code quality
 1. **Push to GitHub** - Commit and push changes to main branch
 2. **Automatic Build** - Vercel detects changes and builds automatically
 3. **Live in Minutes** - Changes appear on brucetruong.com within 2-3 minutes
+
+## 🔧 Troubleshooting
+
+### GitHub OAuth Issues
+
+**Problem**: OAuth redirects to localhost instead of live site
+**Solution**: Check Supabase URL Configuration:
+- Site URL: `https://brucetruong.com`
+- Redirect URLs: `https://brucetruong.com/mileage`, `http://localhost:3000/mileage`
+
+**Problem**: "Cannot find module" errors in development
+**Solution**: Clear Next.js cache and restart:
+```bash
+rm -rf .next
+npm run dev
+```
+
+**Problem**: Port 3000 in use
+**Solution**: Kill the process and restart:
+```bash
+# Windows
+netstat -ano | findstr :3000
+taskkill /PID <PID_NUMBER> /F
+
+# macOS/Linux
+lsof -ti:3000 | xargs kill -9
+```
+
+### Environment Variables
+
+Required for mileage tracker functionality:
+- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous key
+- `NEXT_PUBLIC_GA_ID` - Google Analytics measurement ID
+
+### Development Notes
+
+- **Port 3000 Required**: Mileage tracker OAuth is configured for localhost:3000
+- **Cache Issues**: Clear browser cache for OAuth problems (use incognito mode)
+- **Database Access**: Row Level Security ensures user data isolation
 
 ## 📄 License
 
