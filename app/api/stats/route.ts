@@ -25,8 +25,18 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({ stats })
     } else {
-      // User-specific stats - show owner's data for demo purposes
-      const targetUserId = getOwnerUserId()
+      // User-specific stats - check authentication
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+      // Determine which user's stats to show
+      let targetUserId: string
+      if (user && authError === null) {
+        // User is authenticated - show their data or owner's data if they're the owner
+        targetUserId = isOwner(user.id) ? user.id : getOwnerUserId()
+      } else {
+        // No authentication - show owner's data for demo purposes
+        targetUserId = getOwnerUserId()
+      }
 
       // Get owner's cars
       const { data: cars, error: carsError } = await supabase

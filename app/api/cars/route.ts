@@ -8,9 +8,20 @@ export async function GET() {
       return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
     }
 
-    // For demo purposes, always show owner's data
-    // Authentication is handled on the frontend for UI purposes
-    const targetUserId = getOwnerUserId()
+    // Get the authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    // For this demo site, if user is authenticated, show their data
+    // If not authenticated, show owner's data for public viewing
+    let targetUserId: string
+
+    if (user && authError === null) {
+      // User is authenticated - show their data or owner's data if they're the owner
+      targetUserId = isOwner(user.id) ? user.id : getOwnerUserId()
+    } else {
+      // No authentication - show owner's data for demo purposes
+      targetUserId = getOwnerUserId()
+    }
 
 
     const { data: cars, error: carsError } = await supabase
