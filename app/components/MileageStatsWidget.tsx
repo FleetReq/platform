@@ -56,9 +56,16 @@ export default function MileageStatsWidget() {
   if (error || !stats) {
     return (
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-elegant p-6 border border-gray-200/60 dark:border-gray-700/40">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          🚗 Mileage Tracker Project
-        </h3>
+        <div className="flex items-center mb-4">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Vehicle Analytics Platform
+          </h3>
+        </div>
         <p className="text-gray-600 dark:text-gray-300 mb-4">
           A full-stack application for tracking vehicle fuel efficiency and maintenance records.
         </p>
@@ -78,9 +85,16 @@ export default function MileageStatsWidget() {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-elegant p-6 border border-gray-200/60 dark:border-gray-700/40">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          🚗 Mileage Tracker
-        </h3>
+        <div className="flex items-center">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Vehicle Analytics
+          </h3>
+        </div>
         <Link
           href="/mileage"
           className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium transition-colors duration-200"
@@ -142,9 +156,12 @@ export default function MileageStatsWidget() {
       )}
 
       <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-          Full-stack SRE portfolio project • Next.js + Supabase
-        </p>
+        <div className="flex items-center justify-center text-xs text-gray-500 dark:text-gray-400">
+          <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+          </svg>
+          Full-stack SRE Portfolio • Next.js + Supabase
+        </div>
       </div>
     </div>
   )
