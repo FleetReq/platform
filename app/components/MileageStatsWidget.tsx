@@ -10,7 +10,7 @@ interface PublicStats {
   total_gallons: number
   total_spent: number
   total_maintenance_records: number
-  total_maintenance_cost: number
+  total_maintenance_cost: number | null
 }
 
 export default function MileageStatsWidget() {
@@ -26,8 +26,8 @@ export default function MileageStatsWidget() {
     try {
       const response = await fetch('/api/stats?public=true')
       if (response.ok) {
-        const { stats } = await response.json()
-        setStats(stats)
+        const data = await response.json()
+        setStats(data.stats)
       } else {
         setError(true)
       }
