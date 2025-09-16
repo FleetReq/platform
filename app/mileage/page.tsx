@@ -55,6 +55,12 @@ export default function MileageTracker() {
         throw new Error('Database not configured')
       }
 
+      // Refresh the session to ensure it's synced
+      const { error: sessionError } = await supabase.auth.getSession()
+      if (sessionError) {
+        console.error('Session error:', sessionError)
+      }
+
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
 

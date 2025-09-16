@@ -17,14 +17,24 @@ export const createServerSupabaseClient = async () => {
       },
       set(name: string, value: string, options: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
         try {
-          cookieStore.set(name, value, options)
+          cookieStore.set(name, value, {
+            ...options,
+            sameSite: 'lax',
+            secure: true,
+            httpOnly: false
+          })
         } catch {
           // Handle cookie setting errors (e.g., in middleware)
         }
       },
       remove(name: string, options: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
         try {
-          cookieStore.set(name, '', { ...options, maxAge: 0 })
+          cookieStore.set(name, '', {
+            ...options,
+            maxAge: 0,
+            sameSite: 'lax',
+            secure: true
+          })
         } catch {
           // Handle cookie removal errors
         }

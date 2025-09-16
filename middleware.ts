@@ -32,6 +32,9 @@ export async function middleware(request: NextRequest) {
             name,
             value,
             ...options,
+            sameSite: 'lax',
+            secure: true,
+            httpOnly: false
           })
         },
         remove(name: string, options: Record<string, unknown>) {
@@ -49,6 +52,9 @@ export async function middleware(request: NextRequest) {
             name,
             value: '',
             ...options,
+            maxAge: 0,
+            sameSite: 'lax',
+            secure: true
           })
         },
       },
