@@ -27,6 +27,22 @@ export async function GET() {
       .from('cars')
       .select('*')
 
+    // Check what user_ids actually exist
+    const { data: userIds, error: userIdsError } = await supabase
+      .from('cars')
+      .select('user_id')
+
+    // Test the exact query from the cars API
+    const { data: apiCars, error: apiError } = await supabase
+      .from('cars')
+      .select(`
+        *,
+        fill_ups!inner(count),
+        maintenance_records!inner(count)
+      `)
+      .eq('user_id', targetUserId)
+      .order('created_at', { ascending: false })
+
     return NextResponse.json({
       success: true,
       targetUserId,
@@ -41,8 +57,17 @@ export async function GET() {
       },
       allCars: {
         count: allCars?.length || 0,
-        first: allCars?.[0],
+        data: allCars,
         error: allCarsError
+      },
+      userIds: {
+        data: userIds,
+        error: userIdsError
+      },
+      apiCars: {
+        count: apiCars?.length || 0,
+        data: apiCars,
+        error: apiError
       }
     })
   } catch (error) {
