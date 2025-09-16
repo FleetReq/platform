@@ -86,6 +86,7 @@ export default function PhotographyGallery({
                 width={400}
                 height={256}
                 className="w-full h-64 object-cover group-hover:brightness-110 transition-all duration-300"
+                style={{ width: "auto", height: "auto" }}
               />
             </div>
           ))}
@@ -141,6 +142,7 @@ export default function PhotographyGallery({
                 width={800}
                 height={600}
                 className="max-w-full max-h-[80vh] object-contain"
+                style={{ width: "auto", height: "auto" }}
                 priority
               />
               

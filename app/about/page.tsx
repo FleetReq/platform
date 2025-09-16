@@ -130,7 +130,7 @@ export default function AboutPage() {
                     width={288}
                     height={200}
                     className="w-full h-auto object-cover"
-                    style={{ height: "auto" }}
+                    style={{ width: "auto", height: "auto" }}
                   />
                 </div>
               </div>
