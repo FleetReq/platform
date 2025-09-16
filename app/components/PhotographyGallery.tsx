@@ -77,17 +77,18 @@ export default function PhotographyGallery({
           {photos.map((photo) => (
             <div
               key={photo.id}
-              className="group cursor-pointer rounded-lg overflow-hidden hover:scale-105 transition-transform duration-300"
+              className="group cursor-pointer rounded-lg overflow-hidden hover:scale-105 transition-transform duration-300 shadow-lg hover:shadow-xl"
               onClick={() => openLightbox(photo)}
             >
-              <Image
-                src={photo.src}
-                alt={photo.alt}
-                width={400}
-                height={256}
-                className="w-full h-64 object-cover group-hover:brightness-110 transition-all duration-300"
-                style={{ width: "auto", height: "auto" }}
-              />
+              <div className="aspect-square relative">
+                <Image
+                  src={photo.src}
+                  alt={photo.alt}
+                  fill
+                  className="object-cover group-hover:brightness-110 transition-all duration-300"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                />
+              </div>
             </div>
           ))}
         </div>
@@ -135,15 +136,16 @@ export default function PhotographyGallery({
             )}
 
             {/* Photo */}
-            <div className="max-w-4xl max-h-full" onClick={(e) => e.stopPropagation()}>
+            <div className="max-w-7xl max-h-full" onClick={(e) => e.stopPropagation()}>
               <Image
                 src={selectedPhoto.src}
                 alt={selectedPhoto.alt}
-                width={800}
-                height={600}
-                className="max-w-full max-h-[80vh] object-contain"
-                style={{ width: "auto", height: "auto" }}
+                width={1200}
+                height={800}
+                className="max-w-full max-h-[90vh] object-contain shadow-2xl rounded-lg"
+                sizes="(max-width: 768px) 95vw, (max-width: 1200px) 90vw, 1200px"
                 priority
+                quality={100}
               />
               
               {/* Caption */}
