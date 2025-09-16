@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase'
+import { cookies } from 'next/headers'
 
 export async function GET() {
   try {
@@ -15,6 +16,15 @@ export async function GET() {
     // Get the session
     const { data: { session }, error: sessionError } = await supabase.auth.getSession()
 
+    // Check what cookies are available
+    const cookieStore = await cookies()
+    const allCookies = cookieStore.getAll()
+    const supabaseCookies = allCookies.filter(cookie =>
+      cookie.name.includes('supabase') ||
+      cookie.name.includes('sb-') ||
+      cookie.name.includes('auth')
+    )
+
     return NextResponse.json({
       authenticated: !!user,
       user: user ? {
@@ -26,6 +36,14 @@ export async function GET() {
         access_token: session.access_token ? 'present' : 'missing',
         expires_at: session.expires_at
       } : null,
+      cookies: {
+        total: allCookies.length,
+        supabase_related: supabaseCookies.map(c => ({
+          name: c.name,
+          hasValue: !!c.value,
+          valueLength: c.value?.length || 0
+        }))
+      },
       errors: {
         authError,
         sessionError

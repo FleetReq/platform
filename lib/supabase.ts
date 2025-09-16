@@ -20,8 +20,9 @@ export const createServerSupabaseClient = async () => {
           cookieStore.set(name, value, {
             ...options,
             sameSite: 'lax',
-            secure: true,
-            httpOnly: false
+            secure: process.env.NODE_ENV === 'production',
+            httpOnly: false,
+            path: '/'
           })
         } catch {
           // Handle cookie setting errors (e.g., in middleware)
@@ -33,7 +34,8 @@ export const createServerSupabaseClient = async () => {
             ...options,
             maxAge: 0,
             sameSite: 'lax',
-            secure: true
+            secure: process.env.NODE_ENV === 'production',
+            path: '/'
           })
         } catch {
           // Handle cookie removal errors

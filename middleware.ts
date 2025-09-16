@@ -33,8 +33,9 @@ export async function middleware(request: NextRequest) {
             value,
             ...options,
             sameSite: 'lax',
-            secure: true,
-            httpOnly: false
+            secure: process.env.NODE_ENV === 'production',
+            httpOnly: false,
+            path: '/'
           })
         },
         remove(name: string, options: Record<string, unknown>) {
@@ -54,7 +55,8 @@ export async function middleware(request: NextRequest) {
             ...options,
             maxAge: 0,
             sameSite: 'lax',
-            secure: true
+            secure: process.env.NODE_ENV === 'production',
+            path: '/'
           })
         },
       },
