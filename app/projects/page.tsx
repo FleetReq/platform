@@ -92,8 +92,8 @@ SRE principles applied: automated database backups, comprehensive logging and mo
     technologies: ['Next.js 15', 'TypeScript', 'Supabase', 'PostgreSQL', 'REST APIs', 'Row Level Security', 'GitHub OAuth', 'Tailwind CSS', 'SQL Triggers'],
     sre_principles: ['Database Reliability', 'API Performance', 'Security by Design', 'Multi-platform Architecture', 'Real-time Monitoring'],
     performance_metrics: {
-      api_response: '< 200ms',
-      database_queries: 'Optimized',
+      api_response: '< 150ms',
+      database_queries: '< 50ms',
       security: 'RLS + OAuth',
       platforms: 'Web + Mobile',
       uptime_target: '99.9%',
@@ -199,36 +199,67 @@ export default function ProjectsPage() {
                   <div className="mb-6 p-4 bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10 rounded-lg">
                     <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Key Performance Metrics:</h4>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                      <div className="text-center">
-                        <div className="text-lg font-bold text-green-600 dark:text-green-400">{project.performance_metrics.load_time}</div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400">Load Time</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{project.performance_metrics.first_load_js}</div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400">First Load JS</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-lg font-bold text-purple-600 dark:text-purple-400">{project.performance_metrics.lighthouse}</div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400">Lighthouse</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{project.performance_metrics.static_pages}</div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400">Static Pages</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{project.performance_metrics.core_web_vitals}</div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400">Core Web Vitals</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-lg font-bold text-cyan-600 dark:text-cyan-400">{project.performance_metrics.uptime}</div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400">Uptime SLA</div>
-                      </div>
+                      {project.id === 5 ? (
+                        <>
+                          <div className="text-center">
+                            <div className="text-lg font-bold text-green-600 dark:text-green-400">{project.performance_metrics.load_time}</div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400">Load Time</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{project.performance_metrics.first_load_js}</div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400">First Load JS</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-lg font-bold text-purple-600 dark:text-purple-400">{project.performance_metrics.lighthouse}</div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400">Lighthouse</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{project.performance_metrics.static_pages}</div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400">Static Pages</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{project.performance_metrics.core_web_vitals}</div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400">Core Web Vitals</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-lg font-bold text-cyan-600 dark:text-cyan-400">{project.performance_metrics.uptime}</div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400">Uptime SLA</div>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-center">
+                            <div className="text-lg font-bold text-green-600 dark:text-green-400">{project.performance_metrics.api_response}</div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400">API Response</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{project.performance_metrics.database_queries}</div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400">DB Queries</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-lg font-bold text-purple-600 dark:text-purple-400">{project.performance_metrics.security}</div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400">Security</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{project.performance_metrics.platforms}</div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400">Platforms</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{project.performance_metrics.uptime_target}</div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400">Uptime Target</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-lg font-bold text-cyan-600 dark:text-cyan-400">{project.performance_metrics.scalability}</div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400">Scalability</div>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 )}
 
                 {/* Live Stats Widget for Mileage Tracker */}
-                {project.id === 5 && (
+                {project.id === 6 && (
                   <div className="mb-6">
                     <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Live Application Data:</h4>
                     <MileageStatsWidget />
