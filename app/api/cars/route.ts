@@ -1,19 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createServerSupabaseClient } from '@/lib/supabase'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const supabase = await createServerSupabaseClient()
     if (!supabase) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
     }
 
-    const { data: { user } } = await supabase.auth.getUser()
+    // Get the authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-    if (!user) {
+    if (authError || !user) {
+      console.error('Auth error:', authError)
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: cars, error } = await supabase
+    console.log('Authenticated user ID:', user.id)
+
+    const { data: cars, error: carsError } = await supabase
       .from('cars')
       .select(`
         *,
@@ -23,8 +28,8 @@ export async function GET() {
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
 
-    if (error) {
-      console.error('Error fetching cars:', error)
+    if (carsError) {
+      console.error('Error fetching cars:', carsError)
       return NextResponse.json({ error: 'Failed to fetch cars' }, { status: 500 })
     }
 
@@ -37,15 +42,20 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = await createServerSupabaseClient()
     if (!supabase) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
     }
 
-    const { data: { user } } = await supabase.auth.getUser()
+    // Get the authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-    if (!user) {
+    if (authError || !user) {
+      console.error('Auth error:', authError)
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    console.log('Creating car for user ID:', user.id)
 
     const body = await request.json()
     const { make, model, year, color, license_plate, nickname } = body

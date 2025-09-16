@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createServerSupabaseClient } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
   try {
+    const supabase = await createServerSupabaseClient()
     if (!supabase) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
     }
@@ -25,11 +26,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ stats })
     } else {
       // User-specific stats - authentication required
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-      if (!user) {
+      if (authError || !user) {
+        console.error('Auth error:', authError)
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }
+
+      console.log('Stats - Authenticated user ID:', user.id)
 
       // Get user's cars
       const { data: cars, error: carsError } = await supabase

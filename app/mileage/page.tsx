@@ -1,8 +1,49 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
 import type { Car } from '@/lib/supabase'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+
+const supabase = supabaseUrl && supabaseAnonKey
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        storage: {
+          getItem: (key: string) => {
+            if (typeof window === 'undefined') return null
+
+            // Try cookies first, then localStorage
+            const cookie = document.cookie
+              .split(';')
+              .find(row => row.trim().startsWith(`${key}=`))
+              ?.split('=')[1]
+
+            if (cookie) {
+              return decodeURIComponent(cookie)
+            }
+
+            return window.localStorage.getItem(key)
+          },
+          setItem: (key: string, value: string) => {
+            if (typeof window === 'undefined') return
+
+            // Set both cookie and localStorage
+            document.cookie = `${key}=${encodeURIComponent(value)}; path=/; max-age=31536000; SameSite=Lax`
+            window.localStorage.setItem(key, value)
+          },
+          removeItem: (key: string) => {
+            if (typeof window === 'undefined') return
+
+            // Remove from both cookie and localStorage
+            document.cookie = `${key}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`
+            window.localStorage.removeItem(key)
+          },
+        },
+      },
+    })
+  : null
 
 interface UserStats {
   total_cars: number
@@ -30,11 +71,28 @@ export default function MileageTracker() {
         throw new Error('Database not configured')
       }
 
-      const { data: { user } } = await supabase.auth.getUser()
+      console.log('Checking user authentication...')
+
+      // Check both session and user
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+
+      console.log('Session:', session)
+      console.log('Session error:', sessionError)
+      console.log('User:', user)
+      console.log('User error:', userError)
+
+      // Check what's in localStorage
+      console.log('localStorage keys:', Object.keys(localStorage))
+      console.log('Document cookies:', document.cookie)
+
       setUser(user)
 
       if (user) {
+        console.log('User is authenticated, loading data...')
         await loadData()
+      } else {
+        console.log('No user found')
       }
     } catch (error) {
       console.error('Error checking user:', error)
@@ -49,7 +107,18 @@ export default function MileageTracker() {
 
   const loadData = async () => {
     try {
-      // Load cars
+      if (!supabase) return
+
+      // Get the current session to verify user is logged in
+      const { data: { session } } = await supabase.auth.getSession()
+      console.log('Client session:', session)
+
+      if (!session) {
+        console.log('No session found')
+        return
+      }
+
+      // Load cars (cookies will be sent automatically)
       const carsResponse = await fetch('/api/cars')
       if (carsResponse.ok) {
         const { cars } = await carsResponse.json()
@@ -320,7 +389,9 @@ function AddCarForm({ onSuccess }: { onSuccess: () => void }) {
     try {
       const response = await fetch('/api/cars', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify(formData)
       })
 
