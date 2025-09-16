@@ -75,7 +75,10 @@ app/
 │   ├── HeroSection.tsx           # Home page hero
 │   ├── PDFDownload.tsx           # PDF resume download
 │   ├── PhotographyGallery.tsx    # Photo gallery with lightbox
-│   └── LoadingStates.tsx         # Loading components
+│   ├── LoadingStates.tsx         # Loading components (spinner, button)
+│   ├── Testimonials.tsx          # Client testimonials display
+│   ├── TestimonialCarousel.tsx   # Carousel for multiple testimonials
+│   └── OAuthRedirectHandler.tsx  # GitHub OAuth flow handler
 ├── about/              # About page with personal stories
 ├── contact/            # Contact page with Formspree form
 ├── projects/           # Projects showcase

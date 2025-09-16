@@ -15,7 +15,6 @@ const structuredData = {
   "url": "https://brucetruong.com",
   "image": "https://brucetruong.com/images/profile.jpg",
   "email": "careers@brucetruong.com",
-  "telephone": "+1-971-444-8816",
   "address": {
     "@type": "PostalAddress",
     "addressLocality": "Beaverton",

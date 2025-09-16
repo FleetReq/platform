@@ -20,16 +20,7 @@ export default function Testimonials() {
       content: "Unlike other project managers I've worked with, Bruce approaches leadership differently. When he has an idea for the main design, he brings it to the team for discussion. We take time to consider all thoughts and considerations together. He's genuinely open to feedback and willing to admit when someone else has an idea he really likes. His collaborative approach to design decisions makes him an exceptional team lead.",
       project: "Senior Capstone Project",
       highlight: "His collaborative approach to design decisions makes him an exceptional team lead."
-    },
-    // {
-    //   id: 3,
-    //   name: "Another Reference",
-    //   title: "Their Title", 
-    //   company: "Company Name",
-    //   content: "Their testimonial...",
-    //   project: "Project Name",
-    //   highlight: "Their key quote"
-    // }
+    }
   ]
 
   // Use carousel if multiple testimonials, otherwise show single testimonial
