@@ -16,13 +16,10 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    console.log('Authenticated user ID:', user.id)
 
-    // Always show owner's cars for demo purposes, but note if user is read-only
+    // Always show owner's cars for demo purposes
     const targetUserId = getOwnerUserId()
-    const userIsOwner = isOwner(user.id)
 
-    console.log(`User is owner: ${userIsOwner}, showing data for: ${targetUserId}`)
 
     const { data: cars, error: carsError } = await supabase
       .from('cars')
@@ -61,7 +58,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    console.log('Creating car for user ID:', user.id)
 
     // Only allow owner to create cars
     if (!isOwner(user.id)) {

@@ -67,7 +67,6 @@ export async function POST(request: NextRequest) {
       mpg: fillUp.miles > 0 ? parseFloat((fillUp.miles / fillUp.gallons).toFixed(2)) : null
     }))
 
-    console.log(`Bulk inserting ${fillUpRecords.length} fill-up records for user ${user.id}`)
 
     // Bulk insert all fill-ups
     const { data: insertedFillUps, error: insertError } = await supabase
@@ -77,7 +76,6 @@ export async function POST(request: NextRequest) {
 
     if (insertError) {
       console.error('Error bulk inserting fill-ups:', insertError)
-      console.error('Error details:', JSON.stringify(insertError, null, 2))
       return NextResponse.json({
         error: 'Failed to insert fill-ups',
         details: insertError.message,

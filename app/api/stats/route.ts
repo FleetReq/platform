@@ -33,7 +33,6 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }
 
-      console.log('Stats - Authenticated user ID:', user.id)
 
       // Always show owner's stats for demo purposes
       const targetUserId = getOwnerUserId()
