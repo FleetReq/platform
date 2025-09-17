@@ -80,8 +80,10 @@ export default function MileageTracker() {
 
       if (user) {
         setUserIsOwner(isOwner(user.id))
-        await loadData()
       }
+
+      // Always load data (for both authenticated and anonymous users)
+      await loadData()
     } catch (error) {
       console.error('Error checking user:', error)
     } finally {
@@ -352,7 +354,8 @@ export default function MileageTracker() {
     )
   }
 
-  if (!user) {
+  // Show landing page only if no data is available (not just no user)
+  if (!user && (!cars || cars.length === 0)) {
     return (
       <div className="relative overflow-hidden min-h-screen">
         <BackgroundAnimation />
@@ -457,15 +460,31 @@ export default function MileageTracker() {
           </h1>
           <div className="w-32 h-1.5 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 mx-auto mb-6 rounded-full"></div>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 text-lg">
-            <span className="text-gray-600 dark:text-gray-300">
-              Welcome back, {user.email}
-            </span>
-            <button
-              onClick={signOut}
-              className="bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-            >
-              Sign Out
-            </button>
+            {user ? (
+              <>
+                <span className="text-gray-600 dark:text-gray-300">
+                  Welcome back, {user.email}
+                </span>
+                <button
+                  onClick={signOut}
+                  className="bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <>
+                <span className="text-gray-600 dark:text-gray-300">
+                  Portfolio Demo - Read Only
+                </span>
+                <button
+                  onClick={signIn}
+                  className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                >
+                  Sign In with GitHub
+                </button>
+              </>
+            )}
           </div>
         </div>
 
