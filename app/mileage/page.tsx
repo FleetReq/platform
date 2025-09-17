@@ -665,236 +665,230 @@ export default function MileageTracker() {
         </div>
 
 
-        {/* Vehicle Selector for Dashboard */}
-        {activeTab === 'dashboard' && (
-          <div className="mb-8">
-            <div className="card-professional p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Selected Vehicle</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">Choose vehicle to view analytics and maintenance status</p>
-                </div>
-                <div className="relative">
-                  <select
-                    value={selectedCarId || ''}
-                    onChange={(e) => setSelectedCarId(e.target.value || null)}
-                    className="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 pr-8 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-64"
-                  >
-                    <option value="">All Vehicles</option>
-                    {cars.map((car) => (
-                      <option key={car.id} value={car.id}>
-                        {car.nickname || `${car.year} ${car.make} ${car.model}`}
-                      </option>
-                    ))}
-                  </select>
-                  <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Dashboard Layout - Charts + Performance Sidebar (Hidden in admin mode for add forms) */}
+        {/* Dashboard Layout - Compressed for single-screen view */}
         {activeTab === 'dashboard' && (
           cars.length > 0 ? (
-            <div className="grid lg:grid-cols-4 gap-8">
-          {/* Main Content - Charts and Analytics */}
-          <div className="lg:col-span-3 space-y-8">
-
-            {/* Maintenance Status Grid */}
-            <div className="card-professional p-6">
-              <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">Maintenance Status</h3>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* Oil Change */}
-                <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-r-lg">
-                  <div className="flex items-center">
-                    <svg className="w-5 h-5 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2c-1.1 0-2 .9-2 2v1h-1c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h6c.55 0 1-.45 1-1V6c0-.55-.45-1-1-1h-1V4c0-1.1-.9-2-2-2zm-1 14c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm2-2c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/>
-                    </svg>
-                    <span className="font-semibold text-gray-600 dark:text-gray-300">Oil Change</span>
-                  </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">No oil change records. Add your first one!</p>
-                </div>
-
-                {/* Tire Rotation */}
-                <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-r-lg">
-                  <div className="flex items-center">
-                    <svg className="w-5 h-5 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 16c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
-                    </svg>
-                    <span className="font-semibold text-gray-600 dark:text-gray-300">Tire Rotation</span>
-                  </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">No tire rotation records. Add your first one!</p>
-                </div>
-
-                {/* Brake Inspection */}
-                <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-r-lg">
-                  <div className="flex items-center">
-                    <svg className="w-5 h-5 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" strokeWidth="2"/>
-                      <circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" strokeWidth="1.5"/>
-                      <circle cx="12" cy="12" r="3" fill="currentColor"/>
-                      <rect x="10" y="6" width="4" height="2" fill="currentColor"/>
-                      <rect x="10" y="16" width="4" height="2" fill="currentColor"/>
-                      <rect x="6" y="10" width="2" height="4" fill="currentColor"/>
-                      <rect x="16" y="10" width="2" height="4" fill="currentColor"/>
-                    </svg>
-                    <span className="font-semibold text-gray-600 dark:text-gray-300">Brake Inspection</span>
-                  </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">No brake inspection records. Add your first one!</p>
-                </div>
-
-                {/* Air Filter */}
-                <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-r-lg">
-                  <div className="flex items-center">
-                    <svg className="w-5 h-5 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                      <rect x="4" y="6" width="16" height="12" rx="2" fill="none" stroke="currentColor" strokeWidth="2"/>
-                      <path d="M7 9h10M7 12h10M7 15h10" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                      <path d="M2 10l2-1M2 12l2 0M2 14l2 1" stroke="currentColor" strokeWidth="1" fill="none"/>
-                      <path d="M20 10l2 1M20 12l2 0M20 14l2-1" stroke="currentColor" strokeWidth="1" fill="none"/>
-                    </svg>
-                    <span className="font-semibold text-gray-600 dark:text-gray-300">Air Filter</span>
-                  </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">No air filter records. Add your first one!</p>
-                </div>
-
-                {/* Transmission Service */}
-                <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-r-lg">
-                  <div className="flex items-center">
-                    <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    <span className="font-semibold text-gray-600 dark:text-gray-300">Transmission Service</span>
-                  </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">No transmission records. Add your first one!</p>
-                </div>
-
-                {/* Coolant Flush */}
-                <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-r-lg">
-                  <div className="flex items-center">
-                    <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                    </svg>
-                    <span className="font-semibold text-gray-600 dark:text-gray-300">Coolant Flush</span>
-                  </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">No coolant flush records. Add your first one!</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Fuel Efficiency Analytics */}
-            {prepareChartData() && (
-              <div className="card-professional p-8">
-                <div className="mb-8">
-                  <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Fuel Efficiency Analytics</h3>
-                  <div className="flex space-x-1 mb-6">
-                    {['weekly', 'monthly', 'yearly'].map((view) => (
-                      <button
-                        key={view}
-                        onClick={() => setChartView(view as 'weekly' | 'monthly' | 'yearly')}
-                        className={`px-4 py-2 rounded-lg capitalize transition-colors ${
-                          chartView === view
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                        }`}
+            <div className="space-y-6">
+              {/* Top Row: Vehicle Selector + Performance Overview (2x2 Grid) */}
+              <div className="grid lg:grid-cols-3 gap-6">
+                {/* Vehicle Selector */}
+                <div className="lg:col-span-1">
+                  <div className="card-professional p-4">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Selected Vehicle</h3>
+                    <div className="relative">
+                      <select
+                        value={selectedCarId || ''}
+                        onChange={(e) => setSelectedCarId(e.target.value || null)}
+                        className="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 pr-8 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
                       >
-                        {view}
-                      </button>
-                    ))}
+                        <option value="">All Vehicles</option>
+                        {cars.map((car) => (
+                          <option key={car.id} value={car.id}>
+                            {car.nickname || `${car.year} ${car.make} ${car.model}`}
+                          </option>
+                        ))}
+                      </select>
+                      <svg className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
-                <div className="h-80">
-                  <Line data={prepareChartData()!} options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                      y: {
-                        beginAtZero: false,
-                        title: {
-                          display: true,
-                          text: 'Miles Per Gallon (MPG)'
-                        }
-                      },
-                      x: {
-                        title: {
-                          display: true,
-                          text: 'Date'
-                        }
-                      }
-                    },
-                    plugins: {
-                      legend: {
-                        display: true,
-                        position: 'top' as const,
-                      },
-                      title: {
-                        display: true,
-                        text: `MPG Trends - ${chartView.charAt(0).toUpperCase() + chartView.slice(1)} View`
-                      }
-                    }
-                  }} />
+
+                {/* Performance Overview - 2x2 Grid */}
+                <div className="lg:col-span-2">
+                  <div className="card-professional p-4">
+                    <h3 className="text-lg font-bold mb-4 text-gradient-primary">Performance Overview</h3>
+                    {stats && (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-2">
+                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+                            </svg>
+                          </div>
+                          <div className="text-xl font-bold text-blue-600 dark:text-blue-400">{stats.total_cars}</div>
+                          <div className="text-xs text-gray-600 dark:text-gray-300">Vehicles</div>
+                        </div>
+
+                        <div className="text-center p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+                          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center mx-auto mb-2">
+                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                            </svg>
+                          </div>
+                          <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">{stats.average_mpg}</div>
+                          <div className="text-xs text-gray-600 dark:text-gray-300">Avg MPG</div>
+                        </div>
+
+                        <div className="text-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-2">
+                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M5 18v-2h2v-3h2v-2h6v2h2v3h2v2H5zM9 4v4l1.5 1L12 8l1.5 1L15 4V2H9v2z"/>
+                              <circle cx="7" cy="16" r="1"/>
+                              <circle cx="17" cy="16" r="1"/>
+                              <path d="M12 8v3" stroke="white" strokeWidth="2" fill="none"/>
+                            </svg>
+                          </div>
+                          <div className="text-xl font-bold text-purple-600 dark:text-purple-400">{stats.total_fill_ups}</div>
+                          <div className="text-xs text-gray-600 dark:text-gray-300">Fill-ups</div>
+                        </div>
+
+                        <div className="text-center p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                          <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center mx-auto mb-2">
+                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+                            </svg>
+                          </div>
+                          <div className="text-xl font-bold text-orange-600 dark:text-orange-400">${stats.total_spent}</div>
+                          <div className="text-xs text-gray-600 dark:text-gray-300">Total Spent</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            )}
 
-          </div>
+              {/* Bottom Row: Maintenance Status + Fuel Efficiency Chart */}
+              <div className="grid lg:grid-cols-3 gap-6">
+                {/* Maintenance Status - Compact Grid */}
+                <div className="lg:col-span-1">
+                  <div className="card-professional p-4">
+                    <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Maintenance Status</h3>
+                    <div className="grid grid-cols-1 gap-2">
+                      {/* Oil Change */}
+                      <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-r-lg">
+                        <div className="flex items-center">
+                          <svg className="w-4 h-4 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2c-1.1 0-2 .9-2 2v1h-1c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h6c.55 0 1-.45 1-1V6c0-.55-.45-1-1-1h-1V4c0-1.1-.9-2-2-2zm-1 14c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm2-2c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/>
+                          </svg>
+                          <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">Oil Change</span>
+                        </div>
+                      </div>
 
-          {/* Right Sidebar - Performance Overview */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-8">
-              <h3 className="text-2xl font-bold mb-6 text-gradient-primary">Performance Overview</h3>
-              {stats && (
-                <div className="space-y-4">
-                  <div className="card-professional p-6 text-center animate-fade-in-up">
-                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-elegant">
-                      <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
-                      </svg>
+                      {/* Tire Rotation */}
+                      <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-r-lg">
+                        <div className="flex items-center">
+                          <svg className="w-4 h-4 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 16c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+                          </svg>
+                          <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">Tire Rotation</span>
+                        </div>
+                      </div>
+
+                      {/* Brake Inspection */}
+                      <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-r-lg">
+                        <div className="flex items-center">
+                          <svg className="w-4 h-4 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" strokeWidth="2"/>
+                            <circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+                            <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                            <rect x="10" y="6" width="4" height="2" fill="currentColor"/>
+                            <rect x="10" y="16" width="4" height="2" fill="currentColor"/>
+                            <rect x="6" y="10" width="2" height="4" fill="currentColor"/>
+                            <rect x="16" y="10" width="2" height="4" fill="currentColor"/>
+                          </svg>
+                          <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">Brake Inspection</span>
+                        </div>
+                      </div>
+
+                      {/* Air Filter */}
+                      <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-r-lg">
+                        <div className="flex items-center">
+                          <svg className="w-4 h-4 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                            <rect x="4" y="6" width="16" height="12" rx="2" fill="none" stroke="currentColor" strokeWidth="2"/>
+                            <path d="M7 9h10M7 12h10M7 15h10" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                            <path d="M2 10l2-1M2 12l2 0M2 14l2 1" stroke="currentColor" strokeWidth="1" fill="none"/>
+                            <path d="M20 10l2 1M20 12l2 0M20 14l2-1" stroke="currentColor" strokeWidth="1" fill="none"/>
+                          </svg>
+                          <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">Air Filter</span>
+                        </div>
+                      </div>
+
+                      {/* Transmission Service */}
+                      <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-r-lg">
+                        <div className="flex items-center">
+                          <svg className="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">Transmission</span>
+                        </div>
+                      </div>
+
+                      {/* Coolant Flush */}
+                      <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-r-lg">
+                        <div className="flex items-center">
+                          <svg className="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                          </svg>
+                          <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">Coolant Flush</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">{stats.total_cars}</div>
-                    <div className="text-gray-600 dark:text-gray-300 font-medium">Vehicles</div>
-                  </div>
-
-                  <div className="card-professional p-6 text-center animate-fade-in-up">
-                    <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-elegant">
-                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                      </svg>
-                    </div>
-                    <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-2">{stats.average_mpg}</div>
-                    <div className="text-gray-600 dark:text-gray-300 font-medium">Avg MPG</div>
-                  </div>
-
-                  <div className="card-professional p-6 text-center animate-fade-in-up">
-                    <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-elegant">
-                      <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M5 18v-2h2v-3h2v-2h6v2h2v3h2v2H5zM9 4v4l1.5 1L12 8l1.5 1L15 4V2H9v2z"/>
-                        <circle cx="7" cy="16" r="1"/>
-                        <circle cx="17" cy="16" r="1"/>
-                        <path d="M12 8v3" stroke="white" strokeWidth="2" fill="none"/>
-                      </svg>
-                    </div>
-                    <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">{stats.total_fill_ups}</div>
-                    <div className="text-gray-600 dark:text-gray-300 font-medium">Fill-ups</div>
-                  </div>
-
-                  <div className="card-professional p-6 text-center animate-fade-in-up">
-                    <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-elegant">
-                      <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
-                      </svg>
-                    </div>
-                    <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">${stats.total_spent}</div>
-                    <div className="text-gray-600 dark:text-gray-300 font-medium">Total Spent</div>
                   </div>
                 </div>
-              )}
+
+                {/* Fuel Efficiency Analytics - Compact Chart */}
+                <div className="lg:col-span-2">
+                  {prepareChartData() && (
+                    <div className="card-professional p-4">
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">Fuel Efficiency Analytics</h3>
+                        <div className="flex space-x-1">
+                          {['weekly', 'monthly', 'yearly'].map((view) => (
+                            <button
+                              key={view}
+                              onClick={() => setChartView(view as 'weekly' | 'monthly' | 'yearly')}
+                              className={`px-3 py-1 text-xs rounded-lg capitalize transition-colors ${
+                                chartView === view
+                                  ? 'bg-blue-600 text-white'
+                                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                              }`}
+                            >
+                              {view}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="h-48">
+                        <Line data={prepareChartData()!} options={{
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          scales: {
+                            y: {
+                              beginAtZero: false,
+                              title: {
+                                display: true,
+                                text: 'MPG',
+                                font: { size: 10 }
+                              },
+                              ticks: { font: { size: 10 } }
+                            },
+                            x: {
+                              title: {
+                                display: true,
+                                text: 'Date',
+                                font: { size: 10 }
+                              },
+                              ticks: { font: { size: 10 } }
+                            }
+                          },
+                          plugins: {
+                            legend: {
+                              display: false
+                            },
+                            title: {
+                              display: false
+                            }
+                          }
+                        }} />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
           ) : (
             <div className="text-center py-24">
               <div className="w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-8">
