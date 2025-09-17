@@ -78,21 +78,36 @@ export default function MileageTracker() {
 
       console.log('checkUser: Checking authentication state...')
 
-      // Add timeout to prevent hanging
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Auth check timeout')), 10000)
-      )
-
-      // Get the current session with timeout
-      const sessionPromise = supabase.auth.getSession()
-      const { data: { session }, error: sessionError } = await Promise.race([sessionPromise, timeoutPromise])
+      // Get the current session with timeout handling
+      let session = null
+      let sessionError = null
+      try {
+        const sessionResult = await Promise.race([
+          supabase.auth.getSession(),
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Session check timeout')), 10000))
+        ])
+        session = (sessionResult as any).data?.session || null
+        sessionError = (sessionResult as any).error || null
+      } catch (timeoutError) {
+        console.error('Session check timeout:', timeoutError)
+        sessionError = timeoutError
+      }
 
       if (sessionError) {
         console.error('Session error:', sessionError)
       }
 
-      const userPromise = supabase.auth.getUser()
-      const { data: { user } } = await Promise.race([userPromise, timeoutPromise])
+      // Get the current user with timeout handling
+      let user = null
+      try {
+        const userResult = await Promise.race([
+          supabase.auth.getUser(),
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('User check timeout')), 10000))
+        ])
+        user = (userResult as any).data?.user || null
+      } catch (timeoutError) {
+        console.error('User check timeout:', timeoutError)
+      }
 
       console.log('checkUser: User data:', user ? `${user.email} (${user.id})` : 'null')
       setUser(user)
