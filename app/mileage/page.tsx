@@ -521,20 +521,20 @@ export default function MileageTracker() {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Header */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        <div className="text-center mb-20">
+          <h1 className="text-5xl sm:text-6xl font-bold mb-6 text-gradient-primary">
             Vehicle Analytics
           </h1>
           <div className="w-32 h-1.5 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 mx-auto mb-6 rounded-full"></div>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
-            Professional Vehicle Fleet Management & Analytics
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+            Professional Vehicle Fleet Management & Analytics Dashboard
           </p>
         </div>
 
         {/* Access Status - Subtle Professional Indicator */}
         {!userIsOwner ? (
-          <div className="mb-6 flex justify-end">
-            <div className="inline-flex items-center px-4 py-2 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-full border border-gray-200/50 dark:border-gray-700/50 shadow-sm">
+          <div className="mb-8 flex justify-end">
+            <div className="inline-flex items-center px-4 py-2 glass-morphism rounded-full shadow-elegant">
               <svg className="w-4 h-4 text-blue-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
               </svg>
@@ -542,8 +542,8 @@ export default function MileageTracker() {
             </div>
           </div>
         ) : (
-          <div className="mb-6 flex justify-end">
-            <div className="inline-flex items-center px-4 py-2 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-full border border-gray-200/50 dark:border-gray-700/50 shadow-sm">
+          <div className="mb-8 flex justify-end">
+            <div className="inline-flex items-center px-4 py-2 glass-morphism rounded-full shadow-elegant">
               <svg className="w-4 h-4 text-emerald-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
@@ -553,7 +553,7 @@ export default function MileageTracker() {
         )}
 
         {/* Navigation Tabs */}
-        <div className="flex space-x-1 mb-8 bg-gray-200 dark:bg-gray-700 rounded-lg p-1">
+        <div className="flex space-x-1 mb-12 glass-morphism rounded-xl p-1 shadow-elegant">
           {[
             { id: 'dashboard', label: 'Dashboard' },
             ...(userIsOwner ? [
@@ -565,10 +565,10 @@ export default function MileageTracker() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as 'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance')}
-              className={`flex-1 py-2 px-4 rounded-md transition-colors duration-200 ${
+              className={`flex-1 py-3 px-6 rounded-lg font-medium transition-all duration-300 ${
                 activeTab === tab.id
-                  ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow'
-                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-elegant transform scale-105'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-gray-800/50'
               }`}
             >
               {tab.label}
@@ -578,20 +578,22 @@ export default function MileageTracker() {
 
         {/* Stats Overview */}
         {stats && (
-          <section className="mb-16 py-12 bg-gradient-to-r from-blue-50/80 to-purple-50/80 dark:from-blue-900/20 dark:to-purple-900/20 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50">
-            <div className="px-8">
-              <h2 className="text-3xl font-bold mb-8 text-center text-gray-900 dark:text-white">Performance Overview</h2>
+          <section className="relative py-24 px-4 sm:px-6 lg:px-8 mb-16">
+            <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/60 backdrop-blur-xl border-y border-gray-200/30 dark:border-gray-700/30 rounded-2xl"></div>
+            <div className="relative">
+              <h2 className="text-4xl font-bold mb-12 text-center text-gradient-primary">Performance Overview</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 text-center shadow-lg border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="card-professional p-8 text-center animate-fade-in-up">
+                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-elegant-lg relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-400/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <svg className="w-10 h-10 text-white relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
                   </div>
-                  <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">{stats.total_cars}</div>
-                  <div className="text-gray-600 dark:text-gray-300 font-medium">Vehicles</div>
+                  <div className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-3">{stats.total_cars}</div>
+                  <div className="text-gray-600 dark:text-gray-300 font-semibold text-lg">Vehicles</div>
                 </div>
-                <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 text-center shadow-lg border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                <div className="card-professional p-8 text-center animate-fade-in-up">
                   <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mx-auto mb-4">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
@@ -600,7 +602,7 @@ export default function MileageTracker() {
                   <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">{stats.average_mpg}</div>
                   <div className="text-gray-600 dark:text-gray-300 font-medium">Avg MPG</div>
                 </div>
-                <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 text-center shadow-lg border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                <div className="card-professional p-8 text-center animate-fade-in-up">
                   <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -609,7 +611,7 @@ export default function MileageTracker() {
                   <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">{stats.total_fill_ups}</div>
                   <div className="text-gray-600 dark:text-gray-300 font-medium">Fill-ups</div>
                 </div>
-                <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 text-center shadow-lg border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                <div className="card-professional p-8 text-center animate-fade-in-up">
                   <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center mx-auto mb-4">
                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
@@ -789,15 +791,16 @@ export default function MileageTracker() {
             {/* Vehicles Section */}
             <section className="py-12 bg-gradient-to-br from-purple-50/80 to-indigo-50/80 dark:from-purple-900/20 dark:to-indigo-900/20 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50">
               <div className="px-8">
-                <h2 className="text-3xl font-bold mb-8 text-center text-gray-900 dark:text-white">Vehicle Fleet</h2>
+                <h2 className="text-4xl font-bold mb-12 text-center text-gradient-primary">Vehicle Fleet</h2>
                 {cars.length > 0 ? (
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {cars.map((car) => (
-                      <div key={car.id} className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                      <div key={car.id} className="group card-professional p-8 animate-fade-in-up">
                         <div className="flex items-start mb-4">
-                          <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mr-4">
-                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mr-6 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-elegant relative overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-br from-indigo-400/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            <svg className="w-8 h-8 text-white relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7h3m0 0v8m0-8l-8 8-4-4-6 6" />
                             </svg>
                           </div>
                           <div className="flex-1">
