@@ -16,7 +16,19 @@ export default function OAuthRedirectHandler() {
     console.log('OAuthRedirectHandler: Current hash:', hash)
     console.log('OAuthRedirectHandler: Current pathname:', window.location.pathname)
 
-    // DISABLED: Now using proper /auth/callback flow
+    // Handle PKCE flow - code in search params
+    const searchParams = new URLSearchParams(window.location.search)
+    const authCode = searchParams.get('code')
+
+    if (authCode) {
+      console.log('OAuthRedirectHandler: Detected PKCE authorization code, redirecting to callback...')
+
+      // Redirect to our callback route with the code
+      router.replace(`/auth/callback?code=${authCode}&next=/mileage`)
+      return
+    }
+
+    // Handle legacy implicit flow - tokens in hash
     if (false && hash.includes('access_token=') &&
         hash.includes('provider_token=') &&
         hash.includes('expires_at=')) {
