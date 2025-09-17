@@ -48,6 +48,7 @@ export default function MileageTracker() {
   const [userIsOwner, setUserIsOwner] = useState(false)
   const [activeTab, setActiveTab] = useState<'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance'>('dashboard')
   const [chartView, setChartView] = useState<'weekly' | 'monthly' | 'yearly'>('monthly')
+  const [selectedCarId, setSelectedCarId] = useState<string | null>(null)
 
   const checkUser = useCallback(async () => {
     try {
@@ -127,6 +128,8 @@ export default function MileageTracker() {
           // User signed out, clear state
           setUser(null)
           setUserIsOwner(false)
+          // Return to dashboard when signing out
+          setActiveTab('dashboard')
           // Still show data for anonymous users
           await loadData()
         }
@@ -323,6 +326,8 @@ export default function MileageTracker() {
       'oil_change': { label: 'Oil Change', interval: 90 }, // 3 months
       'tire_rotation': { label: 'Tire Rotation', interval: 180 }, // 6 months
       'brake_service': { label: 'Brake Service', interval: 365 }, // 1 year
+      'air_filter': { label: 'Air Filter', interval: 365 }, // 1 year
+      'transmission_service': { label: 'Transmission Service', interval: 730 }, // 2 years
       'tune_up': { label: 'Tune-up', interval: 365 }, // 1 year
     }
 
@@ -498,23 +503,31 @@ export default function MileageTracker() {
       {/* Admin/Demo Mode Toggle Corner */}
       <div className="fixed bottom-6 right-6 z-50">
         {user ? (
-          <button
-            onClick={signOut}
-            className="flex items-center gap-3 bg-green-500 hover:bg-green-600 text-white backdrop-blur-sm rounded-lg px-4 py-3 shadow-lg border border-green-400/50 transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1"
-            title="Switch to Demo Mode"
-          >
-            <div className="w-3 h-3 bg-green-300 rounded-full"></div>
-            <span className="text-sm font-medium">Admin Mode</span>
-          </button>
+          <div className="flex items-center gap-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg border border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="text-sm text-gray-600 dark:text-gray-300">Admin Mode</span>
+            </div>
+            <button
+              onClick={signOut}
+              className="text-sm bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded font-medium transition-colors"
+            >
+              Sign Out
+            </button>
+          </div>
         ) : (
-          <button
-            onClick={signIn}
-            className="flex items-center gap-3 bg-red-500 hover:bg-red-600 text-white backdrop-blur-sm rounded-lg px-4 py-3 shadow-lg border border-red-400/50 transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1"
-            title="Enable Admin Access"
-          >
-            <div className="w-3 h-3 bg-red-300 rounded-full"></div>
-            <span className="text-sm font-medium">Demo Mode</span>
-          </button>
+          <div className="flex items-center gap-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg border border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+              <span className="text-sm text-gray-600 dark:text-gray-300">Demo Mode</span>
+            </div>
+            <button
+              onClick={signIn}
+              className="text-sm bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded font-medium transition-colors"
+            >
+              Sign In
+            </button>
+          </div>
         )}
       </div>
 
@@ -570,6 +583,37 @@ export default function MileageTracker() {
 
         </div>
 
+
+        {/* Vehicle Selector for Dashboard */}
+        {activeTab === 'dashboard' && (
+          <div className="mb-8">
+            <div className="card-professional p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Selected Vehicle</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Choose vehicle to view analytics and maintenance status</p>
+                </div>
+                <div className="relative">
+                  <select
+                    value={selectedCarId || ''}
+                    onChange={(e) => setSelectedCarId(e.target.value || null)}
+                    className="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 pr-8 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-64"
+                  >
+                    <option value="">All Vehicles</option>
+                    {cars.map((car) => (
+                      <option key={car.id} value={car.id}>
+                        {car.year} {car.make} {car.model} {car.nickname ? `"${car.nickname}"` : ''}
+                      </option>
+                    ))}
+                  </select>
+                  <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Dashboard Layout - Charts + Performance Sidebar (Hidden in admin mode for add forms) */}
         {activeTab === 'dashboard' && (
@@ -952,7 +996,7 @@ function AddCarForm({ onSuccess }: { onSuccess: () => void }) {
 function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void }) {
   const [formData, setFormData] = useState({
     car_id: cars[0]?.id || '',
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }),
     odometer_reading: '',
     gallons: '',
     price_per_gallon: '',
@@ -1127,6 +1171,8 @@ function AddMaintenanceForm({ cars, onSuccess }: { cars: Car[], onSuccess: () =>
     { value: 'oil_change', label: 'Oil Change' },
     { value: 'tire_rotation', label: 'Tire Rotation' },
     { value: 'brake_service', label: 'Brake Service' },
+    { value: 'air_filter', label: 'Air Filter' },
+    { value: 'transmission_service', label: 'Transmission Service' },
     { value: 'tune_up', label: 'Tune-up' },
     { value: 'repair', label: 'Repair' },
     { value: 'other', label: 'Other' }
