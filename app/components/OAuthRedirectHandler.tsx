@@ -16,7 +16,8 @@ export default function OAuthRedirectHandler() {
     console.log('OAuthRedirectHandler: Current hash:', hash)
     console.log('OAuthRedirectHandler: Current pathname:', window.location.pathname)
 
-    if (hash.includes('access_token=') &&
+    // DISABLED: Now using proper /auth/callback flow
+    if (false && hash.includes('access_token=') &&
         hash.includes('provider_token=') &&
         hash.includes('expires_at=')) {
 
