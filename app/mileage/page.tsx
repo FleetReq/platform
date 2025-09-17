@@ -254,10 +254,14 @@ export default function MileageTracker() {
       }
 
       setIsSigningIn(true)
+      const redirectUrl = `${window.location.origin}/auth/callback?next=/mileage`
+      console.log('OAuth redirect URL:', redirectUrl)
+      console.log('Current origin:', window.location.origin)
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=/mileage`
+          redirectTo: redirectUrl
         }
       })
       if (error) throw error
