@@ -43,6 +43,7 @@ function CurrentMileageEditor({ carId, cars, onUpdate }: { carId: string, cars: 
   const [editing, setEditing] = useState(false)
   const [mileage, setMileage] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showWarning, setShowWarning] = useState(false)
 
   const selectedCar = cars.find(car => car.id === carId)
   const currentMileage = selectedCar?.current_mileage || 0
@@ -51,8 +52,16 @@ function CurrentMileageEditor({ carId, cars, onUpdate }: { carId: string, cars: 
     setMileage(currentMileage.toString())
   }, [currentMileage])
 
-  const handleSave = async () => {
+  const handleSave = async (forceUpdate = false) => {
     if (!mileage || isNaN(Number(mileage))) return
+
+    const newMileage = Number(mileage)
+
+    // Show warning if setting to lower value (unless forced)
+    if (!forceUpdate && currentMileage > 0 && newMileage < currentMileage) {
+      setShowWarning(true)
+      return
+    }
 
     setLoading(true)
     try {
@@ -61,13 +70,15 @@ function CurrentMileageEditor({ carId, cars, onUpdate }: { carId: string, cars: 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           carId,
-          current_mileage: Number(mileage)
+          current_mileage: newMileage,
+          manual_override: true
         })
       })
 
       if (response.ok) {
         onUpdate()
         setEditing(false)
+        setShowWarning(false)
       } else {
         alert('Failed to update mileage')
       }
@@ -79,9 +90,56 @@ function CurrentMileageEditor({ carId, cars, onUpdate }: { carId: string, cars: 
     }
   }
 
+  const handleWarningProceed = () => {
+    handleSave(true)
+  }
+
+  const handleWarningCancel = () => {
+    setMileage(currentMileage.toString())
+    setShowWarning(false)
+  }
+
   const handleCancel = () => {
     setMileage(currentMileage.toString())
     setEditing(false)
+    setShowWarning(false)
+  }
+
+  // Warning Dialog
+  if (showWarning) {
+    return (
+      <div className="space-y-3">
+        <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+          <div className="flex items-start space-x-2">
+            <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            <div className="flex-1">
+              <h4 className="text-sm font-semibold text-yellow-800 dark:text-yellow-200">Mileage Rollback Warning</h4>
+              <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
+                You&apos;re setting the mileage to {Number(mileage).toLocaleString()} miles, which is lower than the current {currentMileage.toLocaleString()} miles. This may affect maintenance tracking.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="flex space-x-2">
+          <button
+            onClick={handleWarningProceed}
+            disabled={loading}
+            className="flex-1 px-3 py-2 text-xs bg-yellow-600 hover:bg-yellow-700 text-white rounded transition-colors disabled:opacity-50"
+          >
+            Proceed Anyway
+          </button>
+          <button
+            onClick={handleWarningCancel}
+            disabled={loading}
+            className="flex-1 px-3 py-2 text-xs bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors disabled:opacity-50"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    )
   }
 
   if (editing) {
@@ -96,7 +154,7 @@ function CurrentMileageEditor({ carId, cars, onUpdate }: { carId: string, cars: 
           disabled={loading}
         />
         <button
-          onClick={handleSave}
+          onClick={() => handleSave()}
           disabled={loading}
           className="px-2 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded transition-colors disabled:opacity-50"
         >
@@ -1071,7 +1129,8 @@ function AddCarForm({ onSuccess }: { onSuccess: () => void }) {
     year: '',
     color: '',
     license_plate: '',
-    nickname: ''
+    nickname: '',
+    current_mileage: ''
   })
   const [loading, setLoading] = useState(false)
 
@@ -1167,15 +1226,27 @@ function AddCarForm({ onSuccess }: { onSuccess: () => void }) {
           </div>
         </div>
 
-        <div>
-          <label className="block text-gray-700 dark:text-gray-300 mb-2">Nickname</label>
-          <input
-            type="text"
-            value={formData.nickname}
-            onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            placeholder="My daily driver, The truck..."
-          />
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-gray-700 dark:text-gray-300 mb-2">Nickname</label>
+            <input
+              type="text"
+              value={formData.nickname}
+              onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              placeholder="My daily driver, The truck..."
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700 dark:text-gray-300 mb-2">Current Mileage</label>
+            <input
+              type="number"
+              value={formData.current_mileage}
+              onChange={(e) => setFormData({ ...formData, current_mileage: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              placeholder="150000"
+            />
+          </div>
         </div>
 
         <button
@@ -1200,7 +1271,8 @@ function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void
     price_per_gallon: '',
     gas_station: '',
     location: '',
-    notes: ''
+    notes: '',
+    consecutive_fillup: true
   })
   const [loading, setLoading] = useState(false)
 
@@ -1334,6 +1406,24 @@ function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void
             rows={3}
             placeholder="Any additional notes..."
           />
+        </div>
+
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <label className="flex items-start space-x-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.consecutive_fillup}
+              onChange={(e) => setFormData({ ...formData, consecutive_fillup: e.target.checked })}
+              className="mt-1 w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+            />
+            <div className="flex-1">
+              <span className="text-sm font-semibold text-blue-900 dark:text-blue-100">Consecutive Fill-up</span>
+              <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                Check this if this fill-up immediately follows your last fill-up (tank was filled completely both times).
+                This ensures accurate MPG calculations. Uncheck if you missed recording previous fill-ups.
+              </p>
+            </div>
+          </label>
         </div>
 
         <button

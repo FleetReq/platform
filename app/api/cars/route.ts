@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { make, model, year, color, license_plate, nickname } = body
+    const { make, model, year, color, license_plate, nickname, current_mileage } = body
 
     if (!make || !model || !year) {
       return NextResponse.json(
@@ -100,7 +100,8 @@ export async function POST(request: NextRequest) {
         year: parseInt(year),
         color: color?.trim(),
         license_plate: license_plate?.trim(),
-        nickname: nickname?.trim()
+        nickname: nickname?.trim(),
+        current_mileage: current_mileage ? parseInt(current_mileage) : null
       })
       .select()
       .single()
@@ -141,13 +142,34 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { carId, current_mileage } = body
+    const { carId, current_mileage, manual_override } = body
 
     if (!carId || current_mileage === undefined) {
       return NextResponse.json(
         { error: 'Car ID and current_mileage are required' },
         { status: 400 }
       )
+    }
+
+    // For manual overrides (direct editing), allow any value
+    // For automatic updates (from fill-ups/maintenance), only allow increases
+    if (!manual_override) {
+      const { data: currentCar } = await supabase
+        .from('cars')
+        .select('current_mileage')
+        .eq('id', carId)
+        .eq('user_id', user.id)
+        .single()
+
+      const newMileage = Number(current_mileage)
+      const shouldReject = currentCar?.current_mileage && currentCar.current_mileage >= newMileage
+
+      if (shouldReject) {
+        return NextResponse.json(
+          { error: 'Cannot set mileage lower than current reading' },
+          { status: 400 }
+        )
+      }
     }
 
     const { data: car, error } = await supabase
