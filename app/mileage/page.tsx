@@ -93,6 +93,35 @@ export default function MileageTracker() {
 
   useEffect(() => {
     checkUser()
+
+    // Listen for auth state changes (e.g., after OAuth callback)
+    if (supabase) {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          // User just signed in, sync session and reload data
+          try {
+            await fetch('/api/sync-session', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ session }),
+              credentials: 'include'
+            })
+            // Reload user state and data
+            await checkUser()
+          } catch (error) {
+            console.error('Failed to sync session after sign in:', error)
+          }
+        } else if (event === 'SIGNED_OUT') {
+          // User signed out, clear state
+          setUser(null)
+          setUserIsOwner(false)
+          // Still show data for anonymous users
+          await loadData()
+        }
+      })
+
+      return () => subscription.unsubscribe()
+    }
   }, [checkUser])
 
   const loadData = async () => {
@@ -454,7 +483,7 @@ export default function MileageTracker() {
       <BackgroundAnimation />
 
       {/* Admin Sign-In Corner */}
-      <div className="fixed top-4 right-4 z-50">
+      <div className="fixed bottom-6 right-6 z-50">
         {user ? (
           <div className="flex items-center gap-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg border border-gray-200/50 dark:border-gray-700/50">
             <div className="flex items-center gap-2">
