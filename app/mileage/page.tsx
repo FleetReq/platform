@@ -580,9 +580,168 @@ export default function MileageTracker() {
           )}
         </div>
 
-        {/* Dashboard Layout - Sidebar + Main Content */}
+        {/* Vehicle Selector Dropdown */}
+        <div className="mb-8">
+          <div className="card-professional p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Selected Vehicle</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Choose vehicle to view analytics and maintenance status</p>
+              </div>
+              <div className="relative">
+                <select className="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 pr-8 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-64">
+                  {cars.length > 0 ? cars.map((car) => (
+                    <option key={car.id} value={car.id}>
+                      {car.year} {car.make} {car.model} {car.nickname ? `"${car.nickname}"` : ''}
+                    </option>
+                  )) : (
+                    <option>No vehicles available</option>
+                  )}
+                </select>
+                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Dashboard Layout - Charts + Performance Sidebar */}
         <div className="grid lg:grid-cols-4 gap-8">
-          {/* Left Sidebar - Performance Overview */}
+          {/* Main Content - Charts and Analytics */}
+          <div className="lg:col-span-3 space-y-8">
+
+            {/* Maintenance Status Grid */}
+            <div className="card-professional p-6">
+              <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">Maintenance Status</h3>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Oil Change */}
+                <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-r-lg">
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                    </svg>
+                    <span className="font-semibold text-gray-600 dark:text-gray-300">Oil Change</span>
+                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">No oil change records. Add your first one!</p>
+                </div>
+
+                {/* Tire Rotation */}
+                <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-r-lg">
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <span className="font-semibold text-gray-600 dark:text-gray-300">Tire Rotation</span>
+                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">No tire rotation records. Add your first one!</p>
+                </div>
+
+                {/* Brake Inspection */}
+                <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-r-lg">
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="font-semibold text-gray-600 dark:text-gray-300">Brake Inspection</span>
+                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">No brake inspection records. Add your first one!</p>
+                </div>
+
+                {/* Air Filter */}
+                <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-r-lg">
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 4v10a2 2 0 002 2h6a2 2 0 002-2V8M7 8h10" />
+                    </svg>
+                    <span className="font-semibold text-gray-600 dark:text-gray-300">Air Filter</span>
+                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">No air filter records. Add your first one!</p>
+                </div>
+
+                {/* Transmission Service */}
+                <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-r-lg">
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span className="font-semibold text-gray-600 dark:text-gray-300">Transmission Service</span>
+                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">No transmission records. Add your first one!</p>
+                </div>
+
+                {/* Coolant Flush */}
+                <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-r-lg">
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    </svg>
+                    <span className="font-semibold text-gray-600 dark:text-gray-300">Coolant Flush</span>
+                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">No coolant flush records. Add your first one!</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Fuel Efficiency Analytics */}
+            {prepareChartData() && (
+              <div className="card-professional p-8">
+                <div className="mb-8">
+                  <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Fuel Efficiency Analytics</h3>
+                  <div className="flex space-x-1 mb-6">
+                    {['weekly', 'monthly', 'yearly'].map((view) => (
+                      <button
+                        key={view}
+                        onClick={() => setChartView(view as 'weekly' | 'monthly' | 'yearly')}
+                        className={`px-4 py-2 rounded-lg capitalize transition-colors ${
+                          chartView === view
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                        }`}
+                      >
+                        {view}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="h-80">
+                  <Line data={prepareChartData()!} options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                      y: {
+                        beginAtZero: false,
+                        title: {
+                          display: true,
+                          text: 'Miles Per Gallon (MPG)'
+                        }
+                      },
+                      x: {
+                        title: {
+                          display: true,
+                          text: 'Date'
+                        }
+                      }
+                    },
+                    plugins: {
+                      legend: {
+                        display: true,
+                        position: 'top' as const,
+                      },
+                      title: {
+                        display: true,
+                        text: `MPG Trends - ${chartView.charAt(0).toUpperCase() + chartView.slice(1)} View`
+                      }
+                    }
+                  }} />
+                </div>
+              </div>
+            )}
+
+          </div>
+
+          {/* Right Sidebar - Performance Overview */}
           <div className="lg:col-span-1">
             <div className="sticky top-8">
               <h3 className="text-2xl font-bold mb-6 text-gradient-primary">Performance Overview</h3>
@@ -629,68 +788,6 @@ export default function MileageTracker() {
                   </div>
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* Main Content Area */}
-          <div className="lg:col-span-3 space-y-8">
-            {/* Vehicle Selector */}
-            {cars.length > 1 && (
-              <div className="card-professional p-6">
-                <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Current Vehicle</h3>
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
-                    </svg>
-                  </div>
-                  <div>
-                    <div className="text-lg font-bold text-gray-900 dark:text-white">
-                      {cars[0]?.year} {cars[0]?.make} {cars[0]?.model}
-                    </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-300">
-                      Analytics shown for this vehicle
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Maintenance Status Grid */}
-            <div className="card-professional p-6">
-              <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">Maintenance Status</h3>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* Example maintenance items - you'll want to populate these with real data */}
-                <div className="border-l-4 border-green-500 bg-green-50 dark:bg-green-900/20 p-4 rounded-r-lg">
-                  <div className="flex items-center">
-                    <svg className="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                    <span className="font-semibold text-green-700 dark:text-green-300">Oil Change</span>
-                  </div>
-                  <p className="text-sm text-green-600 dark:text-green-400 mt-1">Good for 3,200 miles</p>
-                </div>
-
-                <div className="border-l-4 border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-r-lg">
-                  <div className="flex items-center">
-                    <svg className="w-5 h-5 text-yellow-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                    <span className="font-semibold text-yellow-700 dark:text-yellow-300">Tire Rotation</span>
-                  </div>
-                  <p className="text-sm text-yellow-600 dark:text-yellow-400 mt-1">Due in 800 miles</p>
-                </div>
-
-                <div className="border-l-4 border-red-500 bg-red-50 dark:bg-red-900/20 p-4 rounded-r-lg">
-                  <div className="flex items-center">
-                    <svg className="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                    <span className="font-semibold text-red-700 dark:text-red-300">Brake Inspection</span>
-                  </div>
-                  <p className="text-sm text-red-600 dark:text-red-400 mt-1">Overdue by 1,200 miles</p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
