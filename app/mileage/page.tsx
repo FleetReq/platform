@@ -555,25 +555,38 @@ export default function MileageTracker() {
         {/* Navigation Tabs */}
         <div className="flex space-x-1 mb-12 glass-morphism rounded-xl p-1 shadow-elegant">
           {[
-            { id: 'dashboard', label: 'Dashboard' },
-            ...(userIsOwner ? [
-              { id: 'add-car', label: 'Add Car' },
-              { id: 'add-fillup', label: 'Add Fill-up' },
-              { id: 'add-maintenance', label: 'Add Maintenance' }
-            ] : [])
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as 'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance')}
-              className={`flex-1 py-3 px-6 rounded-lg font-medium transition-all duration-300 ${
-                activeTab === tab.id
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-elegant-lg'
-                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-gray-800/50'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+            { id: 'dashboard', label: 'Dashboard', adminOnly: false },
+            { id: 'add-car', label: 'Add Car', adminOnly: true },
+            { id: 'add-fillup', label: 'Add Fill-up', adminOnly: true },
+            { id: 'add-maintenance', label: 'Add Maintenance', adminOnly: true }
+          ].map((tab) => {
+            const isDisabled = tab.adminOnly && !userIsOwner
+            const isActive = activeTab === tab.id
+
+            return (
+              <button
+                key={tab.id}
+                onClick={() => !isDisabled && setActiveTab(tab.id as 'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance')}
+                disabled={isDisabled}
+                title={isDisabled ? 'Admin access required - Enable Admin to access this feature' : ''}
+                className={`flex-1 py-3 px-6 rounded-lg font-medium transition-all duration-300 relative group ${
+                  isActive
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-elegant-lg'
+                    : isDisabled
+                    ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed opacity-60'
+                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-gray-800/50'
+                }`}
+              >
+                {tab.label}
+                {isDisabled && (
+                  <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                    Admin access required
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+                  </div>
+                )}
+              </button>
+            )
+          })}
         </div>
 
         {/* Stats Overview */}
