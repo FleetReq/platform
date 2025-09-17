@@ -16,13 +16,15 @@ export default function OAuthRedirectHandler() {
     console.log('OAuthRedirectHandler: Current hash:', hash)
     console.log('OAuthRedirectHandler: Current pathname:', window.location.pathname)
 
-    if (false && hash.includes('access_token=') &&
+    if (hash.includes('access_token=') &&
         hash.includes('provider_token=') &&
         hash.includes('expires_at=')) {
 
+      console.log('OAuthRedirectHandler: Detected OAuth tokens, redirecting to mileage page...')
+
       // This is a fresh OAuth redirect from GitHub -> Supabase -> here
-      // Redirect to mileage page with the tokens
-      router.replace('/mileage' + hash)
+      // Redirect to mileage page with auth=success parameter and preserve tokens in hash
+      router.replace('/mileage?auth=success' + hash)
 
       // Clear the hash from homepage after redirect to prevent future redirects
       window.history.replaceState(null, '', window.location.pathname)
