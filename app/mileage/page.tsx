@@ -45,6 +45,7 @@ export default function MileageTracker() {
   const [fillUps, setFillUps] = useState<FillUp[]>([])
   const [maintenanceRecords, setMaintenanceRecords] = useState<MaintenanceRecord[]>([])
   const [loading, setLoading] = useState(true)
+  const [isSigningIn, setIsSigningIn] = useState(false)
   const [userIsOwner, setUserIsOwner] = useState(false)
   const [activeTab, setActiveTab] = useState<'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance'>('dashboard')
   const [chartView, setChartView] = useState<'weekly' | 'monthly' | 'yearly'>('monthly')
@@ -127,6 +128,7 @@ export default function MileageTracker() {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
         if (event === 'SIGNED_IN' && session) {
           // User just signed in, sync session and reload data
+          setIsSigningIn(false)
           try {
             await fetch('/api/sync-session', {
               method: 'POST',
@@ -134,12 +136,15 @@ export default function MileageTracker() {
               body: JSON.stringify({ session }),
               credentials: 'include'
             })
-            // Reload user state and data
+            // Reload user state and data immediately
             await checkUser()
             // Force a re-render to update UI state
             await loadData()
+            // Force update to show admin mode immediately
+            window.location.reload()
           } catch (error) {
             console.error('Failed to sync session after sign in:', error)
+            setIsSigningIn(false)
           }
         } else if (event === 'SIGNED_OUT') {
           // User signed out, clear state
@@ -198,6 +203,7 @@ export default function MileageTracker() {
         throw new Error('Database not configured')
       }
 
+      setIsSigningIn(true)
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
@@ -207,6 +213,7 @@ export default function MileageTracker() {
       if (error) throw error
     } catch (error) {
       console.error('Error signing in:', error)
+      setIsSigningIn(false)
     }
   }
 
@@ -458,9 +465,10 @@ export default function MileageTracker() {
             </div>
             <button
               onClick={signIn}
-              className="text-sm bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded font-medium transition-colors"
+              disabled={isSigningIn}
+              className="text-sm bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white px-3 py-1 rounded font-medium transition-colors"
             >
-              Sign In
+              {isSigningIn ? 'Signing In...' : 'Sign In'}
             </button>
           </div>
         )}
