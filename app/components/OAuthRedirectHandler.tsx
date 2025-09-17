@@ -11,6 +11,7 @@ export default function OAuthRedirectHandler() {
     // Handle PKCE flow - code in search params
     const searchParams = new URLSearchParams(window.location.search)
     const authCode = searchParams.get('code')
+    const hash = window.location.hash
 
     console.log('OAuthRedirectHandler: pathname:', window.location.pathname, 'code:', authCode ? 'present' : 'none')
 
@@ -19,6 +20,12 @@ export default function OAuthRedirectHandler() {
 
       // Process auth code IMMEDIATELY without any delays
       const processAuthImmediate = async () => {
+        if (!supabase) {
+          console.error('Supabase client not available')
+          router.replace('/mileage')
+          return
+        }
+
         try {
           const { data, error } = await supabase.auth.exchangeCodeForSession(authCode)
 
