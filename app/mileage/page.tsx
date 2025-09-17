@@ -74,6 +74,8 @@ export default function MileageTracker() {
         throw new Error('Database not configured')
       }
 
+      console.log('checkUser: Checking authentication state...')
+
       // Get the current session
       const { data: { session }, error: sessionError } = await supabase.auth.getSession()
       if (sessionError) {
@@ -81,6 +83,7 @@ export default function MileageTracker() {
       }
 
       const { data: { user } } = await supabase.auth.getUser()
+      console.log('checkUser: User data:', user ? `${user.email} (${user.id})` : 'null')
       setUser(user)
 
       // If user is authenticated, sync session with server
@@ -121,7 +124,12 @@ export default function MileageTracker() {
 
     if (accessToken || authSuccess === 'success') {
       // OAuth callback completed, force auth state refresh immediately
-      checkUser()
+      console.log('Detected successful OAuth callback, refreshing user state...')
+
+      // Immediately check user state
+      checkUser().then(() => {
+        console.log('User state refreshed after OAuth callback')
+      })
 
       // Clear the URL parameters to clean up the URL
       if (authSuccess === 'success') {

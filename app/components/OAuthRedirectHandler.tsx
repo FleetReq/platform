@@ -7,11 +7,16 @@ export default function OAuthRedirectHandler() {
   const router = useRouter()
 
   useEffect(() => {
+    // DISABLED: We now use /auth/callback flow instead of direct home page redirects
     // Only redirect if we have FRESH OAuth tokens in the URL hash
     // This means they just completed OAuth flow and were redirected here
     const hash = window.location.hash
 
-    if (hash.includes('access_token=') &&
+    // Log to debug what's happening
+    console.log('OAuthRedirectHandler: Current hash:', hash)
+    console.log('OAuthRedirectHandler: Current pathname:', window.location.pathname)
+
+    if (false && hash.includes('access_token=') &&
         hash.includes('provider_token=') &&
         hash.includes('expires_at=')) {
 

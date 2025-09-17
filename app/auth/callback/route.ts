@@ -29,16 +29,7 @@ export async function GET(request: NextRequest) {
             httpOnly: false
           })
 
-          // Also sync with client-side session
-          try {
-            await fetch(new URL('/api/sync-session', request.url), {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ session }),
-            })
-          } catch (syncError) {
-            console.error('Failed to sync session:', syncError)
-          }
+          // Session will be synced client-side via the auth=success parameter
         }
 
         return response
