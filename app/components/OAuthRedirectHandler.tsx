@@ -8,17 +8,73 @@ export default function OAuthRedirectHandler() {
   const router = useRouter()
 
   useEffect(() => {
-    // DISABLED: Now using popup OAuth flow instead of redirects
-    // This component is only kept for fallback scenarios
-
+    // Handle OAuth codes that end up on home page (due to Site URL override)
     const searchParams = new URLSearchParams(window.location.search)
     const authCode = searchParams.get('code')
     const hash = window.location.hash
 
     console.log('OAuthRedirectHandler: pathname:', window.location.pathname, 'code:', authCode ? 'present' : 'none')
 
-    // Only handle redirects if this is clearly a fallback scenario
-    // (e.g., popup was blocked and user ended up here)
+    // If we're in a popup window with an auth code, handle it here
+    if (authCode && window.opener && supabase) {
+      console.log('OAuthRedirectHandler: Handling popup OAuth callback on home page...')
+
+      // This is a popup callback that ended up on home page
+      const processPopupAuth = async () => {
+        if (!supabase) {
+          console.error('Supabase client not available')
+          return
+        }
+
+        try {
+          const { data, error } = await supabase.auth.exchangeCodeForSession(authCode)
+
+          const authChannel = new BroadcastChannel('supabase-oauth')
+
+          if (error) {
+            console.error('Session exchange failed:', error)
+            authChannel.postMessage({
+              type: 'OAUTH_ERROR',
+              error: error.message
+            })
+          } else if (data.session) {
+            console.log('Session established successfully in popup')
+
+            // Sync session with server in background
+            fetch('/api/sync-session', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ session: data.session }),
+              credentials: 'include'
+            }).catch(console.error)
+
+            // Notify parent window of success
+            authChannel.postMessage({
+              type: 'OAUTH_SUCCESS',
+              session: data.session
+            })
+          } else {
+            console.error('No session returned from auth exchange')
+            authChannel.postMessage({
+              type: 'OAUTH_ERROR',
+              error: 'No session returned'
+            })
+          }
+        } catch (error) {
+          console.error('Popup auth processing failed:', error)
+          const authChannel = new BroadcastChannel('supabase-oauth')
+          authChannel.postMessage({
+            type: 'OAUTH_ERROR',
+            error: error instanceof Error ? error.message : 'Unknown error'
+          })
+        }
+      }
+
+      processPopupAuth()
+      return
+    }
+
+    // Handle regular redirects if this is clearly a fallback scenario
     if (false && authCode && supabase) {
       console.log('OAuthRedirectHandler: Processing auth code immediately...')
 
