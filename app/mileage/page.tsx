@@ -162,6 +162,15 @@ export default function MileageTracker() {
     const accessToken = urlParams.get('access_token')
     const authSuccess = searchParams.get('auth')
 
+    // Clean up auth error parameter if present (authentication may have succeeded despite error)
+    const errorParam = searchParams.get('error')
+    if (errorParam === 'auth_callback_error') {
+      console.log('Cleaning up auth error parameter from URL')
+      const newUrl = new URL(window.location.href)
+      newUrl.searchParams.delete('error')
+      window.history.replaceState({}, '', newUrl.pathname + newUrl.search)
+    }
+
     if (accessToken || authSuccess === 'success') {
       // OAuth callback completed, force auth state refresh immediately
       console.log('Detected successful OAuth callback, refreshing user state...')
