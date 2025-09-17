@@ -43,6 +43,7 @@ export default function MileageTracker() {
   const [cars, setCars] = useState<Car[]>([])
   const [stats, setStats] = useState<UserStats | null>(null)
   const [fillUps, setFillUps] = useState<FillUp[]>([])
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [maintenanceRecords, setMaintenanceRecords] = useState<MaintenanceRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [isSigningIn, setIsSigningIn] = useState(false)
@@ -86,8 +87,10 @@ export default function MileageTracker() {
           supabase.auth.getSession(),
           new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Session check timeout')), 10000))
         ])
-        session = (sessionResult as any).data?.session || null
-        sessionError = (sessionResult as any).error || null
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        session = (sessionResult as { data?: { session: any }, error?: any }).data?.session || null
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        sessionError = (sessionResult as { data?: { session: any }, error?: any }).error || null
       } catch (timeoutError) {
         console.error('Session check timeout:', timeoutError)
         sessionError = timeoutError
@@ -104,7 +107,8 @@ export default function MileageTracker() {
           supabase.auth.getUser(),
           new Promise<never>((_, reject) => setTimeout(() => reject(new Error('User check timeout')), 10000))
         ])
-        user = (userResult as any).data?.user || null
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        user = (userResult as { data?: { user: any } }).data?.user || null
       } catch (timeoutError) {
         console.error('User check timeout:', timeoutError)
       }
