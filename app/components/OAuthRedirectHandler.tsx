@@ -8,30 +8,17 @@ export default function OAuthRedirectHandler() {
   const router = useRouter()
 
   useEffect(() => {
-    // DISABLED: We now use /auth/callback flow instead of direct home page redirects
-    // Only redirect if we have FRESH OAuth tokens in the URL hash
-    // This means they just completed OAuth flow and were redirected here
-    const hash = window.location.hash
-
-    // Log to debug what's happening
-    console.log('OAuthRedirectHandler: Current hash:', hash)
-    console.log('OAuthRedirectHandler: Current pathname:', window.location.pathname)
-
     // Handle PKCE flow - code in search params
     const searchParams = new URLSearchParams(window.location.search)
     const authCode = searchParams.get('code')
 
+    console.log('OAuthRedirectHandler: pathname:', window.location.pathname, 'code:', authCode ? 'present' : 'none')
+
     if (authCode && supabase) {
-      console.log('OAuthRedirectHandler: Detected PKCE authorization code, processing client-side...')
+      console.log('OAuthRedirectHandler: Processing auth code immediately...')
 
-      // Exchange code for session directly on client
-      const processAuth = async () => {
-        if (!supabase) {
-          console.error('Supabase client not available')
-          router.replace('/mileage')
-          return
-        }
-
+      // Process auth code IMMEDIATELY without any delays
+      const processAuthImmediate = async () => {
         try {
           const { data, error } = await supabase.auth.exchangeCodeForSession(authCode)
 
@@ -42,24 +29,19 @@ export default function OAuthRedirectHandler() {
           }
 
           if (data.session) {
-            console.log('Session established successfully, redirecting to mileage...')
+            console.log('Session established, going to mileage...')
 
-            // Sync session with server
-            try {
-              await fetch('/api/sync-session', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ session: data.session }),
-                credentials: 'include'
-              })
-            } catch (syncError) {
-              console.error('Session sync failed:', syncError)
-            }
+            // Don't wait for server sync - do it in background
+            fetch('/api/sync-session', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ session: data.session }),
+              credentials: 'include'
+            }).catch(console.error)
 
-            // Go directly to mileage with success flag
+            // Immediate redirect to mileage
             router.replace('/mileage?auth=success')
           } else {
-            console.error('No session returned from auth exchange')
             router.replace('/mileage')
           }
         } catch (error) {
@@ -68,7 +50,8 @@ export default function OAuthRedirectHandler() {
         }
       }
 
-      processAuth()
+      // Execute immediately
+      processAuthImmediate()
       return
     }
 
