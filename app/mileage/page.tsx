@@ -537,7 +537,7 @@ export default function MileageTracker() {
                     <option value="">All Vehicles</option>
                     {cars.map((car) => (
                       <option key={car.id} value={car.id}>
-                        {car.year} {car.make} {car.model} {car.nickname ? `"${car.nickname}"` : ''}
+                        {car.nickname || `${car.year} ${car.make} ${car.model}`}
                       </option>
                     ))}
                   </select>
@@ -718,7 +718,8 @@ export default function MileageTracker() {
                   <div className="card-professional p-6 text-center animate-fade-in-up">
                     <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-elegant">
                       <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                        <path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11c-.94.36-1.61 1.26-1.61 2.33 0 1.38 1.12 2.5 2.5 2.5.84 0 1.58-.41 2.03-1.03L19.77 7.23zM5.27 17.73l6.06-6.06c.75.22 1.5.32 2.25.28l4.24 4.24c.39.39 1.02.39 1.41 0s.39-1.02 0-1.41l-4.24-4.24c.46-.8.82-1.69.82-2.54 0-1.38-1.12-2.5-2.5-2.5s-2.5 1.12-2.5 2.5c0 .85.36 1.74.82 2.54L5.27 17.73z"/>
+                        <circle cx="17.5" cy="9" r="1.25"/>
                       </svg>
                     </div>
                     <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">{stats.total_fill_ups}</div>
@@ -874,7 +875,7 @@ function AddCarForm({ onSuccess }: { onSuccess: () => void }) {
               required
               value={formData.make}
               onChange={(e) => setFormData({ ...formData, make: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               placeholder="Toyota, Honda, Ford..."
             />
           </div>
@@ -885,7 +886,7 @@ function AddCarForm({ onSuccess }: { onSuccess: () => void }) {
               required
               value={formData.model}
               onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               placeholder="Camry, Civic, F-150..."
             />
           </div>
@@ -901,7 +902,7 @@ function AddCarForm({ onSuccess }: { onSuccess: () => void }) {
               max="2030"
               value={formData.year}
               onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               placeholder="2020"
             />
           </div>
@@ -911,7 +912,7 @@ function AddCarForm({ onSuccess }: { onSuccess: () => void }) {
               type="text"
               value={formData.color}
               onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               placeholder="Silver, Black, Red..."
             />
           </div>
@@ -921,7 +922,7 @@ function AddCarForm({ onSuccess }: { onSuccess: () => void }) {
               type="text"
               value={formData.license_plate}
               onChange={(e) => setFormData({ ...formData, license_plate: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               placeholder="ABC-1234"
             />
           </div>
@@ -1000,11 +1001,11 @@ function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void
               required
               value={formData.car_id}
               onChange={(e) => setFormData({ ...formData, car_id: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             >
               {cars.map((car) => (
                 <option key={car.id} value={car.id}>
-                  {car.year} {car.make} {car.model} {car.nickname && `(${car.nickname})`}
+                  {car.nickname || `${car.year} ${car.make} ${car.model}`}
                 </option>
               ))}
             </select>
@@ -1016,7 +1017,7 @@ function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void
               required
               value={formData.date}
               onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             />
           </div>
         </div>
@@ -1030,7 +1031,7 @@ function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void
               min="0"
               value={formData.odometer_reading}
               onChange={(e) => setFormData({ ...formData, odometer_reading: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               placeholder="Miles"
             />
           </div>
@@ -1043,7 +1044,7 @@ function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void
               step="0.001"
               value={formData.gallons}
               onChange={(e) => setFormData({ ...formData, gallons: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               placeholder="10.5"
             />
           </div>
@@ -1056,7 +1057,7 @@ function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void
               step="0.001"
               value={formData.price_per_gallon}
               onChange={(e) => setFormData({ ...formData, price_per_gallon: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               placeholder="3.45"
             />
           </div>
@@ -1069,7 +1070,7 @@ function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void
               type="text"
               value={formData.gas_station}
               onChange={(e) => setFormData({ ...formData, gas_station: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               placeholder="Shell, Chevron, etc."
             />
           </div>
@@ -1079,7 +1080,7 @@ function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void
               type="text"
               value={formData.location}
               onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               placeholder="City, State"
             />
           </div>
@@ -1172,11 +1173,11 @@ function AddMaintenanceForm({ cars, onSuccess }: { cars: Car[], onSuccess: () =>
               required
               value={formData.car_id}
               onChange={(e) => setFormData({ ...formData, car_id: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             >
               {cars.map((car) => (
                 <option key={car.id} value={car.id}>
-                  {car.year} {car.make} {car.model} {car.nickname && `(${car.nickname})`}
+                  {car.nickname || `${car.year} ${car.make} ${car.model}`}
                 </option>
               ))}
             </select>
@@ -1188,7 +1189,7 @@ function AddMaintenanceForm({ cars, onSuccess }: { cars: Car[], onSuccess: () =>
               required
               value={formData.date}
               onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             />
           </div>
         </div>
@@ -1200,7 +1201,7 @@ function AddMaintenanceForm({ cars, onSuccess }: { cars: Car[], onSuccess: () =>
               required
               value={formData.type}
               onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             >
               {maintenanceTypes.map((type) => (
                 <option key={type.value} value={type.value}>
@@ -1217,7 +1218,7 @@ function AddMaintenanceForm({ cars, onSuccess }: { cars: Car[], onSuccess: () =>
               min="0"
               value={formData.mileage}
               onChange={(e) => setFormData({ ...formData, mileage: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               placeholder="Miles"
             />
           </div>
@@ -1245,7 +1246,7 @@ function AddMaintenanceForm({ cars, onSuccess }: { cars: Car[], onSuccess: () =>
               step="0.01"
               value={formData.cost}
               onChange={(e) => setFormData({ ...formData, cost: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               placeholder="89.99"
             />
           </div>
@@ -1255,7 +1256,7 @@ function AddMaintenanceForm({ cars, onSuccess }: { cars: Car[], onSuccess: () =>
               type="text"
               value={formData.service_provider}
               onChange={(e) => setFormData({ ...formData, service_provider: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               placeholder="Jiffy Lube, Dealership..."
             />
           </div>
@@ -1265,7 +1266,7 @@ function AddMaintenanceForm({ cars, onSuccess }: { cars: Car[], onSuccess: () =>
               type="text"
               value={formData.location}
               onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               placeholder="City, State"
             />
           </div>
@@ -1278,7 +1279,7 @@ function AddMaintenanceForm({ cars, onSuccess }: { cars: Car[], onSuccess: () =>
               type="date"
               value={formData.next_service_date}
               onChange={(e) => setFormData({ ...formData, next_service_date: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             />
           </div>
           <div>
@@ -1288,7 +1289,7 @@ function AddMaintenanceForm({ cars, onSuccess }: { cars: Car[], onSuccess: () =>
               min="0"
               value={formData.next_service_mileage}
               onChange={(e) => setFormData({ ...formData, next_service_mileage: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               placeholder="Miles"
             />
           </div>
