@@ -495,28 +495,25 @@ export default function MileageTracker() {
     <div className="relative overflow-hidden min-h-screen">
       <BackgroundAnimation />
 
-      {/* Admin Sign-In Corner */}
+      {/* Admin/Demo Mode Toggle Corner */}
       <div className="fixed bottom-6 right-6 z-50">
         {user ? (
-          <div className="flex items-center gap-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg border border-gray-200/50 dark:border-gray-700/50">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-sm text-gray-600 dark:text-gray-300">Admin</span>
-            </div>
-            <button
-              onClick={signOut}
-              className="text-sm bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded font-medium transition-colors"
-            >
-              Sign Out
-            </button>
-          </div>
+          <button
+            onClick={signOut}
+            className="flex items-center gap-3 bg-green-500 hover:bg-green-600 text-white backdrop-blur-sm rounded-lg px-4 py-3 shadow-lg border border-green-400/50 transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1"
+            title="Switch to Demo Mode"
+          >
+            <div className="w-3 h-3 bg-green-300 rounded-full"></div>
+            <span className="text-sm font-medium">Admin Mode</span>
+          </button>
         ) : (
           <button
             onClick={signIn}
-            className="text-xs bg-gray-700/90 hover:bg-gray-800/90 text-gray-300 hover:text-white px-3 py-2 rounded-lg font-medium transition-all backdrop-blur-sm border border-gray-600/50 hover:border-gray-500/50"
+            className="flex items-center gap-3 bg-red-500 hover:bg-red-600 text-white backdrop-blur-sm rounded-lg px-4 py-3 shadow-lg border border-red-400/50 transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1"
             title="Enable Admin Access"
           >
-            Enable Admin
+            <div className="w-3 h-3 bg-red-300 rounded-full"></div>
+            <span className="text-sm font-medium">Demo Mode</span>
           </button>
         )}
       </div>
@@ -571,28 +568,6 @@ export default function MileageTracker() {
           })}
           </div>
 
-          {/* Admin/Demo Mode Toggle Button */}
-          <div className="fixed bottom-6 right-6 z-50">
-            <button
-              onClick={userIsOwner ? signOut : signIn}
-              className={`inline-flex items-center px-4 py-3 rounded-full font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 ${
-                userIsOwner
-                  ? 'bg-green-500 hover:bg-green-600 text-white'
-                  : 'bg-red-500 hover:bg-red-600 text-white'
-              }`}
-              title={userIsOwner ? 'Switch to Demo Mode' : 'Enable Admin Mode'}
-            >
-              <div className={`w-3 h-3 rounded-full mr-3 ${
-                userIsOwner ? 'bg-green-300' : 'bg-red-300'
-              }`}></div>
-              <span className="text-sm">
-                {userIsOwner ? 'Admin Mode' : 'Demo Mode'}
-              </span>
-              <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={userIsOwner ? "M17 16l4-4m0 0l-4-4m4 4H7" : "M7 8l4-4m0 0l4 4m-4-4v12"} />
-              </svg>
-            </button>
-          </div>
         </div>
 
         {/* Vehicle Selector Dropdown */}
