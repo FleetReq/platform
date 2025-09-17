@@ -705,7 +705,7 @@ export default function MileageTracker() {
               {/* Maintenance Status - Compact */}
               <div className="card-professional p-4">
                 <h3 className="text-sm font-bold mb-3 text-gray-900 dark:text-white">Maintenance Status</h3>
-                <div className="space-y-1">
+                <div className="grid grid-cols-2 gap-1">
                   {/* Oil Change */}
                   <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-r-lg">
                     <div className="flex items-center">
@@ -794,7 +794,7 @@ export default function MileageTracker() {
               {/* Navigation Tabs */}
               <div className="flex space-x-1 glass-morphism rounded-xl p-1 shadow-elegant">
                 {[
-                  { id: 'dashboard', label: 'Dashboard', adminOnly: false },
+                  { id: 'dashboard', label: 'Graph', adminOnly: false },
                   { id: 'add-car', label: 'Add Car', adminOnly: true },
                   { id: 'add-fillup', label: 'Add Fill-up', adminOnly: true },
                   { id: 'add-maintenance', label: 'Add Maintenance', adminOnly: true }
@@ -849,7 +849,7 @@ export default function MileageTracker() {
                       ))}
                     </div>
                   </div>
-                  <div className="h-80">
+                  <div className="h-96">
                     <Line data={prepareChartData()!} options={{
                       responsive: true,
                       maintainAspectRatio: false,
