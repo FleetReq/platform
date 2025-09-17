@@ -267,14 +267,82 @@ export default function MileageTracker() {
       }
 
       setIsSigningIn(true)
-      console.log('Starting OAuth flow...')
+      console.log('Starting popup OAuth flow...')
 
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-          redirectTo: `${window.location.origin}`
+          skipBrowserRedirect: true,
+          redirectTo: `${window.location.origin}/auth/popup`
         }
       })
+
+      if (error) throw error
+
+      if (data?.url) {
+        console.log('Opening OAuth popup...')
+
+        // Open popup window for OAuth
+        const popup = window.open(
+          data.url,
+          'github-oauth',
+          'width=500,height=600,scrollbars=yes,resizable=yes,left=' +
+          (window.screen.width / 2 - 250) + ',top=' +
+          (window.screen.height / 2 - 300)
+        )
+
+        if (!popup) {
+          // Popup blocked, fallback to redirect
+          console.log('Popup blocked, falling back to redirect...')
+          window.location.assign(data.url)
+          return
+        }
+
+        // Listen for auth completion via BroadcastChannel
+        const authChannel = new BroadcastChannel('supabase-oauth')
+
+        const handleAuthMessage = (event: MessageEvent) => {
+          if (event.data.type === 'OAUTH_SUCCESS') {
+            console.log('OAuth successful, closing popup...')
+            popup.close()
+            authChannel.close()
+
+            // Immediately check user state and update UI
+            checkUser().then(() => {
+              setIsSigningIn(false)
+              console.log('User authenticated and state updated')
+            })
+          } else if (event.data.type === 'OAUTH_ERROR') {
+            console.error('OAuth failed:', event.data.error)
+            popup.close()
+            authChannel.close()
+            setIsSigningIn(false)
+          }
+        }
+
+        authChannel.onmessage = handleAuthMessage
+
+        // Handle popup closed manually (user canceled)
+        const checkClosed = setInterval(() => {
+          if (popup.closed) {
+            clearInterval(checkClosed)
+            authChannel.close()
+            setIsSigningIn(false)
+            console.log('OAuth popup closed by user')
+          }
+        }, 1000)
+
+        // Timeout after 3 minutes
+        setTimeout(() => {
+          if (!popup.closed) {
+            popup.close()
+            clearInterval(checkClosed)
+            authChannel.close()
+            setIsSigningIn(false)
+            console.log('OAuth popup timeout')
+          }
+        }, 180000)
+      }
       if (error) throw error
     } catch (error) {
       console.error('Error signing in:', error)

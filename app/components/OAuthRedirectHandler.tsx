@@ -8,14 +8,18 @@ export default function OAuthRedirectHandler() {
   const router = useRouter()
 
   useEffect(() => {
-    // Handle PKCE flow - code in search params
+    // DISABLED: Now using popup OAuth flow instead of redirects
+    // This component is only kept for fallback scenarios
+
     const searchParams = new URLSearchParams(window.location.search)
     const authCode = searchParams.get('code')
     const hash = window.location.hash
 
     console.log('OAuthRedirectHandler: pathname:', window.location.pathname, 'code:', authCode ? 'present' : 'none')
 
-    if (authCode && supabase) {
+    // Only handle redirects if this is clearly a fallback scenario
+    // (e.g., popup was blocked and user ended up here)
+    if (false && authCode && supabase) {
       console.log('OAuthRedirectHandler: Processing auth code immediately...')
 
       // Process auth code IMMEDIATELY without any delays
@@ -27,7 +31,7 @@ export default function OAuthRedirectHandler() {
         }
 
         try {
-          const { data, error } = await supabase.auth.exchangeCodeForSession(authCode)
+          const { data, error } = await supabase.auth.exchangeCodeForSession(authCode!)
 
           if (error) {
             console.error('Session exchange failed:', error)
