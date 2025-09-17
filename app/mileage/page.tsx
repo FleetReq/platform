@@ -567,7 +567,7 @@ export default function MileageTracker() {
               onClick={() => setActiveTab(tab.id as 'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance')}
               className={`flex-1 py-3 px-6 rounded-lg font-medium transition-all duration-300 ${
                 activeTab === tab.id
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-elegant transform scale-105'
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-elegant-lg'
                   : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-gray-800/50'
               }`}
             >
@@ -799,8 +799,8 @@ export default function MileageTracker() {
                         <div className="flex items-start mb-4">
                           <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mr-6 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-elegant relative overflow-hidden">
                             <div className="absolute inset-0 bg-gradient-to-br from-indigo-400/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                            <svg className="w-8 h-8 text-white relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7h3m0 0v8m0-8l-8 8-4-4-6 6" />
+                            <svg className="w-10 h-10 text-white relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14-7L8 4l4 2v10m6-6h1.5a2.5 2.5 0 010 5H20m-8 0H4a2 2 0 01-2-2V9a2 2 0 012-2h8m0 6v2a2 2 0 002 2h4a2 2 0 002-2v-2" />
                             </svg>
                           </div>
                           <div className="flex-1">
