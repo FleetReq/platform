@@ -94,6 +94,16 @@ export default function MileageTracker() {
   useEffect(() => {
     checkUser()
 
+    // Check for OAuth callback completion (access_token in URL)
+    const urlParams = new URLSearchParams(window.location.hash.substring(1))
+    const accessToken = urlParams.get('access_token')
+    if (accessToken) {
+      // OAuth callback completed, force auth state refresh
+      setTimeout(() => {
+        checkUser()
+      }, 1000) // Give time for Supabase to process the session
+    }
+
     // Listen for auth state changes (e.g., after OAuth callback)
     if (supabase) {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -502,9 +512,9 @@ export default function MileageTracker() {
           <button
             onClick={signIn}
             className="text-xs bg-gray-700/90 hover:bg-gray-800/90 text-gray-300 hover:text-white px-3 py-2 rounded-lg font-medium transition-all backdrop-blur-sm border border-gray-600/50 hover:border-gray-500/50"
-            title="Admin Access"
+            title="Enable Admin Access"
           >
-            Admin
+            Enable Admin
           </button>
         )}
       </div>
