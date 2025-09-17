@@ -71,18 +71,6 @@ export function Navigation() {
               <Search className="w-48" />
             </div>
 
-            {/* CTA Button */}
-            <div className="hidden xl:block">
-              <Link
-                href="/contact"
-                className="inline-flex items-center px-4 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-medium rounded-full hover:bg-gray-800 dark:hover:bg-gray-100 transition-all duration-300 shadow-sm hover:shadow-md whitespace-nowrap"
-              >
-                Contact
-                <svg className="ml-1.5 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </Link>
-            </div>
 
             <ThemeToggle />
 

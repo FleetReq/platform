@@ -118,6 +118,8 @@ export default function MileageTracker() {
             })
             // Reload user state and data
             await checkUser()
+            // Force a re-render to update UI state
+            await loadData()
           } catch (error) {
             console.error('Failed to sync session after sign in:', error)
           }
@@ -569,15 +571,28 @@ export default function MileageTracker() {
           })}
           </div>
 
-          {/* Demo Mode Indicator - Inline */}
-          {!userIsOwner && (
-            <div className="ml-4 inline-flex items-center px-3 py-2 glass-morphism rounded-lg shadow-elegant">
-              <svg className="w-4 h-4 text-blue-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+          {/* Admin/Demo Mode Toggle Button */}
+          <div className="fixed bottom-6 right-6 z-50">
+            <button
+              onClick={userIsOwner ? handleSignOut : handleSignIn}
+              className={`inline-flex items-center px-4 py-3 rounded-full font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 ${
+                userIsOwner
+                  ? 'bg-green-500 hover:bg-green-600 text-white'
+                  : 'bg-red-500 hover:bg-red-600 text-white'
+              }`}
+              title={userIsOwner ? 'Switch to Demo Mode' : 'Enable Admin Mode'}
+            >
+              <div className={`w-3 h-3 rounded-full mr-3 ${
+                userIsOwner ? 'bg-green-300' : 'bg-red-300'
+              }`}></div>
+              <span className="text-sm">
+                {userIsOwner ? 'Admin Mode' : 'Demo Mode'}
+              </span>
+              <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={userIsOwner ? "M17 16l4-4m0 0l-4-4m4 4H7" : "M7 8l4-4m0 0l4 4m-4-4v12"} />
               </svg>
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Demo Mode</span>
-            </div>
-          )}
+            </button>
+          </div>
         </div>
 
         {/* Vehicle Selector Dropdown */}
@@ -618,8 +633,8 @@ export default function MileageTracker() {
                 {/* Oil Change */}
                 <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-r-lg">
                   <div className="flex items-center">
-                    <svg className="w-5 h-5 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                    <svg className="w-5 h-5 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2c-1.1 0-2 .9-2 2 0 .5.2 1 .5 1.3L9 8H7c-.6 0-1 .4-1 1v11c0 .6.4 1 1 1h10c.6 0 1-.4 1-1V9c0-.6-.4-1-1-1h-2l-1.5-2.7c.3-.3.5-.8.5-1.3 0-1.1-.9-2-2-2zm-3 16c-.8 0-1.5-.7-1.5-1.5S8.2 15 9 15s1.5.7 1.5 1.5S9.8 18 9 18zm6 0c-.8 0-1.5-.7-1.5-1.5s.7-1.5 1.5-1.5 1.5.7 1.5 1.5-.7 1.5-1.5 1.5z"/>
                     </svg>
                     <span className="font-semibold text-gray-600 dark:text-gray-300">Oil Change</span>
                   </div>
@@ -629,8 +644,8 @@ export default function MileageTracker() {
                 {/* Tire Rotation */}
                 <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-r-lg">
                   <div className="flex items-center">
-                    <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    <svg className="w-5 h-5 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 16c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
                     </svg>
                     <span className="font-semibold text-gray-600 dark:text-gray-300">Tire Rotation</span>
                   </div>
@@ -640,8 +655,10 @@ export default function MileageTracker() {
                 {/* Brake Inspection */}
                 <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-r-lg">
                   <div className="flex items-center">
-                    <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <svg className="w-5 h-5 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 16c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/>
+                      <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+                      <circle cx="12" cy="12" r="1"/>
                     </svg>
                     <span className="font-semibold text-gray-600 dark:text-gray-300">Brake Inspection</span>
                   </div>
@@ -652,7 +669,8 @@ export default function MileageTracker() {
                 <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-r-lg">
                   <div className="flex items-center">
                     <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2m-9 4v10a2 2 0 002 2h6a2 2 0 002-2V8M7 8h10" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8h18M3 12h18M3 16h18"/>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M1 8l2-2M1 12l2 0M1 16l2 2"/>
                     </svg>
                     <span className="font-semibold text-gray-600 dark:text-gray-300">Air Filter</span>
                   </div>
