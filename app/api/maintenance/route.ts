@@ -73,6 +73,7 @@ export async function POST(request: NextRequest) {
       car_id,
       date,
       type,
+      oil_type,
       cost,
       mileage,
       service_provider,
@@ -82,9 +83,9 @@ export async function POST(request: NextRequest) {
       notes
     } = body
 
-    if (!car_id || !type || !mileage) {
+    if (!car_id || !type) {
       return NextResponse.json(
-        { error: 'Car ID, type, and odometer reading are required' },
+        { error: 'Car ID and type are required' },
         { status: 400 }
       )
     }
@@ -107,8 +108,9 @@ export async function POST(request: NextRequest) {
         car_id,
         date: date || new Date().toISOString().split('T')[0],
         type,
+        oil_type: oil_type?.trim(),
         cost: cost ? parseFloat(cost) : null,
-        mileage: parseInt(mileage),
+        mileage: mileage ? parseInt(mileage) : null,
         service_provider: service_provider?.trim(),
         location: location?.trim(),
         next_service_date,

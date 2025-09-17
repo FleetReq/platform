@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
       odometer_reading,
       gallons,
       price_per_gallon,
+      fuel_type,
       gas_station,
       location,
       notes
@@ -107,6 +108,7 @@ export async function POST(request: NextRequest) {
         gallons: parseFloat(gallons),
         price_per_gallon: parseFloat(price_per_gallon),
         total_cost,
+        fuel_type: fuel_type?.trim(),
         gas_station: gas_station?.trim(),
         location: location?.trim(),
         notes: notes?.trim()

@@ -38,6 +38,163 @@ interface UserStats {
   worst_mpg: number
 }
 
+interface MaintenanceInterval {
+  months?: number
+  miles?: number
+  yellowThreshold?: number // percentage (0.75 = 75%)
+  redThreshold?: number // percentage (1.0 = 100%)
+}
+
+const MAINTENANCE_INTERVALS: Record<string, MaintenanceInterval> = {
+  oil_change: { months: 6, miles: 5000, yellowThreshold: 0.8, redThreshold: 1.0 },
+  tire_rotation: { months: 6, miles: 7500, yellowThreshold: 0.8, redThreshold: 1.0 },
+  brake_inspection: { months: 12, miles: 12000, yellowThreshold: 0.8, redThreshold: 1.0 },
+  air_filter: { months: 12, miles: 15000, yellowThreshold: 0.8, redThreshold: 1.0 },
+  transmission_service: { months: 24, miles: 30000, yellowThreshold: 0.8, redThreshold: 1.0 },
+  coolant_flush: { months: 24, miles: 30000, yellowThreshold: 0.8, redThreshold: 1.0 },
+  wipers: { months: 12, yellowThreshold: 0.75, redThreshold: 1.0 }, // Time-based only: 9mo yellow (75% of 12), 12mo red
+  registration: { months: 24, yellowThreshold: 0.9, redThreshold: 1.0 } // Time-based only: 2 years, yellow at 21.6mo (90%)
+}
+
+type MaintenanceStatus = 'good' | 'warning' | 'overdue' | 'unknown'
+
+function getMaintenanceStatus(
+  maintenanceType: string,
+  lastMaintenanceDate: string | null,
+  lastMaintenanceMileage: number | null,
+  currentMileage: number | null
+): MaintenanceStatus {
+  const interval = MAINTENANCE_INTERVALS[maintenanceType]
+  if (!interval) return 'unknown'
+
+  if (!lastMaintenanceDate) return 'overdue'
+
+  const today = new Date()
+  const lastDate = new Date(lastMaintenanceDate)
+  const monthsElapsed = (today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44) // Average month length
+
+  let status: MaintenanceStatus = 'good'
+
+  // Check time-based intervals
+  if (interval.months) {
+    const timeProgress = monthsElapsed / interval.months
+    if (timeProgress >= (interval.redThreshold || 1.0)) {
+      status = 'overdue'
+    } else if (timeProgress >= (interval.yellowThreshold || 0.8)) {
+      status = 'warning'
+    }
+  }
+
+  // Check mileage-based intervals (if applicable)
+  if (interval.miles && lastMaintenanceMileage !== null && currentMileage !== null) {
+    const mileageElapsed = currentMileage - lastMaintenanceMileage
+    const mileageProgress = mileageElapsed / interval.miles
+
+    const mileageStatus: MaintenanceStatus =
+      mileageProgress >= (interval.redThreshold || 1.0) ? 'overdue' :
+      mileageProgress >= (interval.yellowThreshold || 0.8) ? 'warning' : 'good'
+
+    // Take the most urgent status between time and mileage
+    if (mileageStatus === 'overdue' || status === 'overdue') {
+      status = 'overdue'
+    } else if (mileageStatus === 'warning' || status === 'warning') {
+      status = 'warning'
+    }
+  }
+
+  return status
+}
+
+// Helper function to get latest maintenance record for a type
+function getLatestMaintenanceRecord(maintenanceRecords: MaintenanceRecord[], type: string) {
+  return maintenanceRecords
+    .filter(record => record.type === type)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
+}
+
+// Maintenance Status Grid Component
+function MaintenanceStatusGrid({
+  selectedCarId,
+  cars,
+  maintenanceRecords
+}: {
+  selectedCarId: string | null,
+  cars: Car[],
+  maintenanceRecords: MaintenanceRecord[]
+}) {
+  if (!selectedCarId) {
+    return (
+      <div className="card-professional p-4">
+        <h3 className="text-sm font-bold mb-3 text-gray-900 dark:text-white">Maintenance Status</h3>
+        <p className="text-gray-500 dark:text-gray-400 text-sm">Select a vehicle to view maintenance status</p>
+      </div>
+    )
+  }
+
+  const selectedCar = cars.find(car => car.id === selectedCarId)
+  const carMaintenanceRecords = maintenanceRecords.filter(record => record.car_id === selectedCarId)
+
+  const getStatusColor = (status: MaintenanceStatus) => {
+    switch (status) {
+      case 'good': return 'border-green-500 bg-green-50 dark:bg-green-900/20'
+      case 'warning': return 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20'
+      case 'overdue': return 'border-red-500 bg-red-50 dark:bg-red-900/20'
+      default: return 'border-gray-400 bg-gray-50 dark:bg-gray-800/50'
+    }
+  }
+
+  const getTextColor = (status: MaintenanceStatus) => {
+    switch (status) {
+      case 'good': return 'text-green-600 dark:text-green-300'
+      case 'warning': return 'text-yellow-600 dark:text-yellow-300'
+      case 'overdue': return 'text-red-600 dark:text-red-300'
+      default: return 'text-gray-600 dark:text-gray-300'
+    }
+  }
+
+  const maintenanceTypes = [
+    { key: 'oil_change', label: 'Oil Change', icon: '🛢️' },
+    { key: 'tire_rotation', label: 'Tire Rotation', icon: '🔄' },
+    { key: 'brake_inspection', label: 'Brakes', icon: '🛑' },
+    { key: 'air_filter', label: 'Air Filter', icon: '🌬️' },
+    { key: 'transmission_service', label: 'Transmission', icon: '⚙️' },
+    { key: 'coolant_flush', label: 'Coolant', icon: '🧊' },
+    { key: 'wipers', label: 'Wipers', icon: '🌧️' },
+    { key: 'registration', label: 'Registration', icon: '📋' }
+  ]
+
+  return (
+    <div className="card-professional p-4">
+      <h3 className="text-sm font-bold mb-3 text-gray-900 dark:text-white">Maintenance Status</h3>
+      <div className="grid grid-cols-2 gap-1">
+        {maintenanceTypes.map(({ key, label, icon }) => {
+          const latestRecord = getLatestMaintenanceRecord(carMaintenanceRecords, key)
+          const status = getMaintenanceStatus(
+            key,
+            latestRecord?.date || null,
+            latestRecord?.mileage || null,
+            selectedCar?.current_mileage || null
+          )
+
+          return (
+            <div
+              key={key}
+              className={`border-l-4 p-2 rounded-r-lg ${getStatusColor(status)}`}
+            >
+              <div className="flex items-center">
+                <span className="text-sm mr-2">{icon}</span>
+                <span className={`text-xs font-semibold ${getTextColor(status)}`}>
+                  {label}
+                </span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // Current Mileage Editor Component
 function CurrentMileageEditor({ carId, cars, onUpdate }: { carId: string, cars: Car[], onUpdate: () => void }) {
   const [editing, setEditing] = useState(false)
@@ -191,7 +348,6 @@ export default function MileageTracker() {
   const [cars, setCars] = useState<Car[]>([])
   const [stats, setStats] = useState<UserStats | null>(null)
   const [fillUps, setFillUps] = useState<FillUp[]>([])
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [maintenanceRecords, setMaintenanceRecords] = useState<MaintenanceRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [isSigningIn, setIsSigningIn] = useState(false)
@@ -862,91 +1018,12 @@ export default function MileageTracker() {
                 )}
               </div>
 
-              {/* Maintenance Status - Compact */}
-              <div className="card-professional p-4">
-                <h3 className="text-sm font-bold mb-3 text-gray-900 dark:text-white">Maintenance Status</h3>
-                <div className="grid grid-cols-2 gap-1">
-                  {/* Oil Change */}
-                  <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-r-lg">
-                    <div className="flex items-center">
-                      <svg className="w-3 h-3 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2c-1.1 0-2 .9-2 2v1h-1c-.55 0-1 .45-1 1v12c0 .55.45 1 1 1h6c.55 0 1-.45 1-1V6c0-.55-.45-1-1-1h-1V4c0-1.1-.9-2-2-2zm-1 14c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm2-2c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/>
-                      </svg>
-                      <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">Oil Change</span>
-                    </div>
-                  </div>
-
-                  {/* Tire Rotation */}
-                  <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-r-lg">
-                    <div className="flex items-center">
-                      <svg className="w-3 h-3 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 16c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm0-10c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
-                      </svg>
-                      <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">Tire Rotation</span>
-                    </div>
-                  </div>
-
-                  {/* Brake Inspection */}
-                  <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-r-lg">
-                    <div className="flex items-center">
-                      <svg className="w-3 h-3 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" strokeWidth="2"/>
-                        <circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" strokeWidth="1.5"/>
-                        <circle cx="12" cy="12" r="3" fill="currentColor"/>
-                        <rect x="10" y="6" width="4" height="2" fill="currentColor"/>
-                        <rect x="10" y="16" width="4" height="2" fill="currentColor"/>
-                        <rect x="6" y="10" width="2" height="4" fill="currentColor"/>
-                        <rect x="16" y="10" width="2" height="4" fill="currentColor"/>
-                      </svg>
-                      <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">Brakes</span>
-                    </div>
-                  </div>
-
-                  {/* Air Filter */}
-                  <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-r-lg">
-                    <div className="flex items-center">
-                      <svg className="w-3 h-3 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                        <rect x="4" y="6" width="16" height="12" rx="2" fill="none" stroke="currentColor" strokeWidth="2"/>
-                        <path d="M7 9h10M7 12h10M7 15h10" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                        <path d="M2 10l2-1M2 12l2 0M2 14l2 1" stroke="currentColor" strokeWidth="1" fill="none"/>
-                        <path d="M20 10l2 1M20 12l2 0M20 14l2-1" stroke="currentColor" strokeWidth="1" fill="none"/>
-                      </svg>
-                      <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">Air Filter</span>
-                    </div>
-                  </div>
-
-                  {/* Transmission Service */}
-                  <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-r-lg">
-                    <div className="flex items-center">
-                      <svg className="w-3 h-3 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">Transmission</span>
-                    </div>
-                  </div>
-
-                  {/* Coolant Flush */}
-                  <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-r-lg">
-                    <div className="flex items-center">
-                      <svg className="w-3 h-3 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                      </svg>
-                      <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">Coolant</span>
-                    </div>
-                  </div>
-
-                  {/* Wipers */}
-                  <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-r-lg">
-                    <div className="flex items-center">
-                      <svg className="w-3 h-3 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7l3-3 3 3M3 17l3 3 3-3M13 6h8M13 12h8M13 18h8" />
-                      </svg>
-                      <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">Wipers</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              {/* Maintenance Status - Dynamic */}
+              <MaintenanceStatusGrid
+                selectedCarId={selectedCarId}
+                cars={cars}
+                maintenanceRecords={maintenanceRecords}
+              />
             </div>
 
             {/* Right Column - Navigation Tabs + Charts/Forms */}
@@ -1269,6 +1346,7 @@ function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void
     odometer_reading: '',
     gallons: '',
     price_per_gallon: '',
+    fuel_type: 'regular',
     gas_station: '',
     location: '',
     notes: '',
@@ -1374,7 +1452,21 @@ function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-gray-700 dark:text-gray-300 mb-2">Fuel Type</label>
+            <select
+              value={formData.fuel_type}
+              onChange={(e) => setFormData({ ...formData, fuel_type: e.target.value })}
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            >
+              <option value="regular">Regular (87 Octane)</option>
+              <option value="midgrade">Midgrade (89 Octane)</option>
+              <option value="premium">Premium (91-93 Octane)</option>
+              <option value="diesel">Diesel</option>
+              <option value="e85">E85 (Flex Fuel)</option>
+            </select>
+          </div>
           <div>
             <label className="block text-gray-700 dark:text-gray-300 mb-2">Gas Station</label>
             <input
@@ -1444,6 +1536,7 @@ function AddMaintenanceForm({ cars, onSuccess }: { cars: Car[], onSuccess: () =>
     car_id: cars[0]?.id || '',
     date: new Date().toISOString().split('T')[0],
     type: 'oil_change',
+    oil_type: 'conventional',
     cost: '',
     mileage: '',
     service_provider: '',
@@ -1461,7 +1554,8 @@ function AddMaintenanceForm({ cars, onSuccess }: { cars: Car[], onSuccess: () =>
     { value: 'air_filter', label: 'Air Filter' },
     { value: 'transmission_service', label: 'Transmission Service' },
     { value: 'coolant_flush', label: 'Coolant Flush' },
-    { value: 'wipers', label: 'Wipers' }
+    { value: 'wipers', label: 'Wipers' },
+    { value: 'registration', label: 'Registration' }
   ]
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -1537,16 +1631,29 @@ function AddMaintenanceForm({ cars, onSuccess }: { cars: Car[], onSuccess: () =>
               ))}
             </select>
           </div>
+          {formData.type === 'oil_change' && (
+            <div>
+              <label className="block text-gray-700 dark:text-gray-300 mb-2">Oil Type</label>
+              <select
+                value={formData.oil_type}
+                onChange={(e) => setFormData({ ...formData, oil_type: e.target.value })}
+                className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              >
+                <option value="conventional">Conventional Oil</option>
+                <option value="full_synthetic">Full Synthetic Oil</option>
+                <option value="synthetic_blend">Synthetic Blend Oil</option>
+              </select>
+            </div>
+          )}
           <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Odometer Reading *</label>
+            <label className="block text-gray-700 dark:text-gray-300 mb-2">Odometer Reading</label>
             <input
               type="number"
-              required
               min="0"
               value={formData.mileage}
               onChange={(e) => setFormData({ ...formData, mileage: e.target.value })}
               className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              placeholder="Miles"
+              placeholder="Miles (optional)"
             />
           </div>
         </div>
