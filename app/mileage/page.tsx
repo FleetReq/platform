@@ -273,22 +273,27 @@ export default function MileageTracker() {
         provider: 'github',
         options: {
           skipBrowserRedirect: true,
-          redirectTo: `${window.location.origin}/auth/popup`
+          redirectTo: `${window.location.origin}/auth/popup`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent'
+          }
         }
       })
 
       if (error) throw error
 
       if (data?.url) {
-        console.log('Opening OAuth popup...')
+        console.log('Opening GitHub OAuth popup...')
+        console.log('OAuth URL:', data.url)
 
-        // Open popup window for OAuth
+        // Open popup window with the GitHub OAuth URL
         const popup = window.open(
           data.url,
           'github-oauth',
-          'width=500,height=600,scrollbars=yes,resizable=yes,left=' +
+          'width=500,height=700,scrollbars=yes,resizable=yes,left=' +
           (window.screen.width / 2 - 250) + ',top=' +
-          (window.screen.height / 2 - 300)
+          (window.screen.height / 2 - 350)
         )
 
         if (!popup) {
