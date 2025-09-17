@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase-client'
 
 export default function OAuthRedirectHandler() {
   const router = useRouter()
@@ -20,11 +21,48 @@ export default function OAuthRedirectHandler() {
     const searchParams = new URLSearchParams(window.location.search)
     const authCode = searchParams.get('code')
 
-    if (authCode) {
-      console.log('OAuthRedirectHandler: Detected PKCE authorization code, redirecting to callback...')
+    if (authCode && supabase) {
+      console.log('OAuthRedirectHandler: Detected PKCE authorization code, processing client-side...')
 
-      // Redirect to our callback route with the code
-      router.replace(`/auth/callback?code=${authCode}&next=/mileage`)
+      // Exchange code for session directly on client
+      const processAuth = async () => {
+        try {
+          const { data, error } = await supabase.auth.exchangeCodeForSession(authCode)
+
+          if (error) {
+            console.error('Session exchange failed:', error)
+            router.replace('/mileage')
+            return
+          }
+
+          if (data.session) {
+            console.log('Session established successfully, redirecting to mileage...')
+
+            // Sync session with server
+            try {
+              await fetch('/api/sync-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ session: data.session }),
+                credentials: 'include'
+              })
+            } catch (syncError) {
+              console.error('Session sync failed:', syncError)
+            }
+
+            // Go directly to mileage with success flag
+            router.replace('/mileage?auth=success')
+          } else {
+            console.error('No session returned from auth exchange')
+            router.replace('/mileage')
+          }
+        } catch (error) {
+          console.error('Auth processing failed:', error)
+          router.replace('/mileage')
+        }
+      }
+
+      processAuth()
       return
     }
 
