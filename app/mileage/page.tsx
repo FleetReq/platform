@@ -140,8 +140,6 @@ export default function MileageTracker() {
             await checkUser()
             // Force a re-render to update UI state
             await loadData()
-            // Force update to show admin mode immediately
-            window.location.reload()
           } catch (error) {
             console.error('Failed to sync session after sign in:', error)
             setIsSigningIn(false)
@@ -207,7 +205,7 @@ export default function MileageTracker() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=/mileage`
+          redirectTo: `${window.location.origin}/mileage`
         }
       })
       if (error) throw error
