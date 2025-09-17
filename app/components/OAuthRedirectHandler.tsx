@@ -26,6 +26,12 @@ export default function OAuthRedirectHandler() {
 
       // Exchange code for session directly on client
       const processAuth = async () => {
+        if (!supabase) {
+          console.error('Supabase client not available')
+          router.replace('/mileage')
+          return
+        }
+
         try {
           const { data, error } = await supabase.auth.exchangeCodeForSession(authCode)
 
