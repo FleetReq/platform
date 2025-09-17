@@ -574,7 +574,7 @@ export default function MileageTracker() {
           {/* Admin/Demo Mode Toggle Button */}
           <div className="fixed bottom-6 right-6 z-50">
             <button
-              onClick={userIsOwner ? handleSignOut : handleSignIn}
+              onClick={userIsOwner ? signOut : signIn}
               className={`inline-flex items-center px-4 py-3 rounded-full font-medium transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 ${
                 userIsOwner
                   ? 'bg-green-500 hover:bg-green-600 text-white'
