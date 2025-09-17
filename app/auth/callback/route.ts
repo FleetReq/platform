@@ -12,20 +12,33 @@ export async function GET(request: NextRequest) {
       const { data, error } = await supabase.auth.exchangeCodeForSession(code)
       if (!error && data.session) {
         // Successfully established session
-        const response = NextResponse.redirect(new URL(next, request.url))
+        const redirectUrl = new URL(next, request.url)
+        redirectUrl.searchParams.set('auth', 'success')
+        const response = NextResponse.redirect(redirectUrl)
 
         // Ensure cookies are properly set for the session
         const { session } = data
         if (session) {
-          // Force refresh to establish proper cookie state
-          response.cookies.set(`sb-${process.env.NEXT_PUBLIC_SUPABASE_URL?.split('//')[1]?.split('.')[0]}-auth-token`,
-            JSON.stringify(session), {
+          // Set the session cookie manually for server-side access
+          const cookieName = `sb-${process.env.NEXT_PUBLIC_SUPABASE_URL?.split('//')[1]?.split('.')[0]}-auth-token`
+          response.cookies.set(cookieName, JSON.stringify(session), {
             path: '/',
-            maxAge: session.expires_in,
+            maxAge: session.expires_in || 3600,
             sameSite: 'lax',
             secure: process.env.NODE_ENV === 'production',
             httpOnly: false
           })
+
+          // Also sync with client-side session
+          try {
+            await fetch(new URL('/api/sync-session', request.url), {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ session }),
+            })
+          } catch (syncError) {
+            console.error('Failed to sync session:', syncError)
+          }
         }
 
         return response

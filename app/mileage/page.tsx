@@ -113,14 +113,22 @@ export default function MileageTracker() {
   useEffect(() => {
     checkUser()
 
-    // Check for OAuth callback completion (access_token in URL)
+    // Check for OAuth callback completion (access_token in hash OR auth=success in search params)
     const urlParams = new URLSearchParams(window.location.hash.substring(1))
+    const searchParams = new URLSearchParams(window.location.search)
     const accessToken = urlParams.get('access_token')
-    if (accessToken) {
-      // OAuth callback completed, force auth state refresh
-      setTimeout(() => {
-        checkUser()
-      }, 1000) // Give time for Supabase to process the session
+    const authSuccess = searchParams.get('auth')
+
+    if (accessToken || authSuccess === 'success') {
+      // OAuth callback completed, force auth state refresh immediately
+      checkUser()
+
+      // Clear the URL parameters to clean up the URL
+      if (authSuccess === 'success') {
+        const newUrl = new URL(window.location.href)
+        newUrl.searchParams.delete('auth')
+        window.history.replaceState({}, '', newUrl.pathname)
+      }
     }
 
     // Listen for auth state changes (e.g., after OAuth callback)
@@ -205,7 +213,7 @@ export default function MileageTracker() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-          redirectTo: `${window.location.origin}/mileage`
+          redirectTo: `${window.location.origin}/auth/callback?next=/mileage`
         }
       })
       if (error) throw error
