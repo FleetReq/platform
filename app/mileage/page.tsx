@@ -587,7 +587,13 @@ export default function MileageTracker() {
                 <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-r-lg">
                   <div className="flex items-center">
                     <svg className="w-5 h-5 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2L3 7v3c0 .55.45 1 1 1h16c.55 0 1-.45 1-1V7l-9-5zM5 13h14v6c0 .55-.45 1-1 1H6c-.55 0-1-.45-1-1v-6zm7-1c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/>
+                      <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" strokeWidth="2"/>
+                      <circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+                      <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                      <rect x="10" y="6" width="4" height="2" fill="currentColor"/>
+                      <rect x="10" y="16" width="4" height="2" fill="currentColor"/>
+                      <rect x="6" y="10" width="2" height="4" fill="currentColor"/>
+                      <rect x="16" y="10" width="2" height="4" fill="currentColor"/>
                     </svg>
                     <span className="font-semibold text-gray-600 dark:text-gray-300">Brake Inspection</span>
                   </div>
@@ -597,10 +603,11 @@ export default function MileageTracker() {
                 {/* Air Filter */}
                 <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-r-lg">
                   <div className="flex items-center">
-                    <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 12h16M4 16h16"/>
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M2 8l2-1M2 12l2 0M2 16l2 1"/>
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 8l2 1M20 12l2 0M20 16l2-1"/>
+                    <svg className="w-5 h-5 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                      <rect x="4" y="6" width="16" height="12" rx="2" fill="none" stroke="currentColor" strokeWidth="2"/>
+                      <path d="M7 9h10M7 12h10M7 15h10" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                      <path d="M2 10l2-1M2 12l2 0M2 14l2 1" stroke="currentColor" strokeWidth="1" fill="none"/>
+                      <path d="M20 10l2 1M20 12l2 0M20 14l2-1" stroke="currentColor" strokeWidth="1" fill="none"/>
                     </svg>
                     <span className="font-semibold text-gray-600 dark:text-gray-300">Air Filter</span>
                   </div>
@@ -718,8 +725,10 @@ export default function MileageTracker() {
                   <div className="card-professional p-6 text-center animate-fade-in-up">
                     <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-elegant">
                       <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M19.77 7.23l.01-.01-3.72-3.72L15 4.56l2.11 2.11c-.94.36-1.61 1.26-1.61 2.33 0 1.38 1.12 2.5 2.5 2.5.84 0 1.58-.41 2.03-1.03L19.77 7.23zM5.27 17.73l6.06-6.06c.75.22 1.5.32 2.25.28l4.24 4.24c.39.39 1.02.39 1.41 0s.39-1.02 0-1.41l-4.24-4.24c.46-.8.82-1.69.82-2.54 0-1.38-1.12-2.5-2.5-2.5s-2.5 1.12-2.5 2.5c0 .85.36 1.74.82 2.54L5.27 17.73z"/>
-                        <circle cx="17.5" cy="9" r="1.25"/>
+                        <path d="M5 18v-2h2v-3h2v-2h6v2h2v3h2v2H5zM9 4v4l1.5 1L12 8l1.5 1L15 4V2H9v2z"/>
+                        <circle cx="7" cy="16" r="1"/>
+                        <circle cx="17" cy="16" r="1"/>
+                        <path d="M12 8v3" stroke="white" strokeWidth="2" fill="none"/>
                       </svg>
                     </div>
                     <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">{stats.total_fill_ups}</div>
