@@ -71,18 +71,29 @@ export default function MileageTracker() {
   const checkUser = useCallback(async () => {
     try {
       if (!supabase) {
-        throw new Error('Database not configured')
+        console.log('checkUser: Database not configured, skipping auth check')
+        setLoading(false)
+        return
       }
 
       console.log('checkUser: Checking authentication state...')
 
-      // Get the current session
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Auth check timeout')), 10000)
+      )
+
+      // Get the current session with timeout
+      const sessionPromise = supabase.auth.getSession()
+      const { data: { session }, error: sessionError } = await Promise.race([sessionPromise, timeoutPromise])
+
       if (sessionError) {
         console.error('Session error:', sessionError)
       }
 
-      const { data: { user } } = await supabase.auth.getUser()
+      const userPromise = supabase.auth.getUser()
+      const { data: { user } } = await Promise.race([userPromise, timeoutPromise])
+
       console.log('checkUser: User data:', user ? `${user.email} (${user.id})` : 'null')
       setUser(user)
 
@@ -108,7 +119,17 @@ export default function MileageTracker() {
       await loadData()
     } catch (error) {
       console.error('Error checking user:', error)
+      // Set user to null on auth errors to show demo mode
+      setUser(null)
+      setUserIsOwner(false)
+      // Still try to load demo data
+      try {
+        await loadData()
+      } catch (loadError) {
+        console.error('Error loading demo data:', loadError)
+      }
     } finally {
+      console.log('checkUser: Setting loading to false')
       setLoading(false)
     }
   }, [])
