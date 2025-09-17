@@ -327,88 +327,6 @@ export default function MileageTracker() {
     }
   }
 
-  // Get maintenance status for all types
-  const getMaintenanceStatus = () => {
-    const alerts: Array<{
-      type: string
-      typeKey: string
-      status: 'overdue' | 'due_soon' | 'good' | 'no_record'
-      message: string
-      lastDate?: string
-      daysUntilDue?: number
-    }> = []
-
-    // Define maintenance intervals (in days) and labels
-    const maintenanceTypes = {
-      'oil_change': { label: 'Oil Change', interval: 90 }, // 3 months
-      'tire_rotation': { label: 'Tire Rotation', interval: 180 }, // 6 months
-      'brake_service': { label: 'Brake Service', interval: 365 }, // 1 year
-      'air_filter': { label: 'Air Filter', interval: 365 }, // 1 year
-      'transmission_service': { label: 'Transmission Service', interval: 730 }, // 2 years
-      'tune_up': { label: 'Tune-up', interval: 365 }, // 1 year
-    }
-
-    // Group maintenance by type, get most recent for each
-    const maintenanceByType = maintenanceRecords.reduce((acc, record) => {
-      if (!acc[record.type] || new Date(record.date) > new Date(acc[record.type].date)) {
-        acc[record.type] = record
-      }
-      return acc
-    }, {} as Record<string, MaintenanceRecord>)
-
-    // Process each maintenance type
-    Object.entries(maintenanceTypes).forEach(([typeKey, config]) => {
-      const record = maintenanceByType[typeKey]
-
-      if (!record) {
-        // No record exists for this maintenance type
-        alerts.push({
-          type: config.label,
-          typeKey,
-          status: 'no_record',
-          message: `No ${config.label.toLowerCase()} records found. Add your first record to start tracking.`
-        })
-        return
-      }
-
-      const lastDate = new Date(record.date)
-      const nextDueDate = new Date(lastDate.getTime() + config.interval * 24 * 60 * 60 * 1000)
-      const today = new Date()
-      const daysUntilDue = Math.ceil((nextDueDate.getTime() - today.getTime()) / (24 * 60 * 60 * 1000))
-
-      let status: 'overdue' | 'due_soon' | 'good'
-      let message: string
-
-      if (daysUntilDue < 0) {
-        status = 'overdue'
-        const overdueDays = Math.abs(daysUntilDue)
-        message = `Last ${config.label.toLowerCase()} was ${lastDate.toLocaleDateString()}. Overdue by ${overdueDays} day${overdueDays !== 1 ? 's' : ''}!`
-      } else if (daysUntilDue <= 30) {
-        status = 'due_soon'
-        const daysText = daysUntilDue === 1 ? '1 day' : `${daysUntilDue} days`
-        message = `Last ${config.label.toLowerCase()} was ${lastDate.toLocaleDateString()}. Due in ${daysText}.`
-      } else {
-        status = 'good'
-        const daysText = daysUntilDue === 1 ? '1 day' : `${daysUntilDue} days`
-        message = `Last ${config.label.toLowerCase()} was ${lastDate.toLocaleDateString()}. Next due in ${daysText}.`
-      }
-
-      alerts.push({
-        type: config.label,
-        typeKey,
-        status,
-        message,
-        lastDate: lastDate.toLocaleDateString(),
-        daysUntilDue: daysUntilDue > 0 ? daysUntilDue : undefined
-      })
-    })
-
-    // Sort by status priority: overdue, due_soon, no_record, good
-    return alerts.sort((a, b) => {
-      const priorityOrder = { 'overdue': 0, 'due_soon': 1, 'no_record': 2, 'good': 3 }
-      return priorityOrder[a.status] - priorityOrder[b.status]
-    })
-  }
 
   if (loading) {
     return (
@@ -833,7 +751,7 @@ export default function MileageTracker() {
                 Add your first car to unlock the dashboard
               </h3>
               <p className="text-gray-600 dark:text-gray-300 mb-8">
-                Start tracking your vehicle's fuel efficiency and maintenance by adding your first car.
+                Start tracking your vehicle&apos;s fuel efficiency and maintenance by adding your first car.
               </p>
               {userIsOwner && (
                 <button
