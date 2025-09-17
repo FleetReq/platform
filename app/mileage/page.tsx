@@ -570,31 +570,6 @@ export default function MileageTracker() {
 
         </div>
 
-        {/* Vehicle Selector Dropdown */}
-        <div className="mb-8">
-          <div className="card-professional p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Selected Vehicle</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300">Choose vehicle to view analytics and maintenance status</p>
-              </div>
-              <div className="relative">
-                <select className="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 pr-8 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-64">
-                  {cars.length > 0 ? cars.map((car) => (
-                    <option key={car.id} value={car.id}>
-                      {car.year} {car.make} {car.model} {car.nickname ? `"${car.nickname}"` : ''}
-                    </option>
-                  )) : (
-                    <option>No vehicles available</option>
-                  )}
-                </select>
-                <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Dashboard Layout - Charts + Performance Sidebar (Hidden in admin mode for add forms) */}
         {activeTab === 'dashboard' && (
@@ -787,35 +762,6 @@ export default function MileageTracker() {
         </div>
         )}
 
-        {/* Vehicle Selector for Add Forms (Fill-up and Maintenance only) */}
-        {userIsOwner && (activeTab === 'add-fillup' || activeTab === 'add-maintenance') && (
-          <div className="mb-8">
-            <div className="card-professional p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Selected Vehicle</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">Choose vehicle for this record</p>
-                </div>
-                <div className="relative">
-                  <select className="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 pr-8 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-64">
-                    {cars.length > 0 ? cars.map((car) => (
-                      <option key={car.id} value={car.id}>
-                        {car.year} {car.make} {car.model} {car.nickname ? `"${car.nickname}"` : ''}
-                      </option>
-                    )) : (
-                      <option>No vehicles available</option>
-                    )}
-                  </select>
-                  <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Content based on active tab */}
         {activeTab === 'dashboard' && null}
