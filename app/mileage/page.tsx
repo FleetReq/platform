@@ -187,8 +187,9 @@ export default function MileageTracker() {
       const { error } = await supabase.auth.signOut()
       if (error) throw error
       setUser(null)
-      setCars([])
-      setStats(null)
+      setUserIsOwner(false)
+      // Don't clear cars/stats - reload data to show anonymous view
+      await loadData()
     } catch (error) {
       console.error('Error signing out:', error)
     }
