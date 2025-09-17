@@ -565,7 +565,8 @@ export default function MileageTracker() {
                 <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-r-lg">
                   <div className="flex items-center">
                     <svg className="w-5 h-5 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2c-1.1 0-2 .9-2 2 0 .5.2 1 .5 1.3L9 8H7c-.6 0-1 .4-1 1v11c0 .6.4 1 1 1h10c.6 0 1-.4 1-1V9c0-.6-.4-1-1-1h-2l-1.5-2.7c.3-.3.5-.8.5-1.3 0-1.1-.9-2-2-2zm-3 16c-.8 0-1.5-.7-1.5-1.5S8.2 15 9 15s1.5.7 1.5 1.5S9.8 18 9 18zm6 0c-.8 0-1.5-.7-1.5-1.5s.7-1.5 1.5-1.5 1.5.7 1.5 1.5-.7 1.5-1.5 1.5z"/>
+                      <path d="M8 2v2H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2H8V2h2zm8 0v3c0 1.66 1.34 3 3 3s3-1.34 3-3V2h-2v3c0 .55-.45 1-1 1s-1-.45-1-1V2h-2zM6 8h4v2H6V8zm0 4h4v2H6v-2z"/>
+                      <ellipse cx="8" cy="15" rx="2" ry="1" fill="currentColor" opacity="0.6"/>
                     </svg>
                     <span className="font-semibold text-gray-600 dark:text-gray-300">Oil Change</span>
                   </div>
@@ -587,9 +588,9 @@ export default function MileageTracker() {
                 <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-r-lg">
                   <div className="flex items-center">
                     <svg className="w-5 h-5 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 16c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/>
-                      <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
-                      <circle cx="12" cy="12" r="1"/>
+                      <path d="M12 2L2 7v3h20V7l-10-5zM6 12v8h2v-6h8v6h2v-8H6z"/>
+                      <rect x="10" y="14" width="4" height="2" fill="white"/>
+                      <circle cx="12" cy="9" r="1.5" fill="white"/>
                     </svg>
                     <span className="font-semibold text-gray-600 dark:text-gray-300">Brake Inspection</span>
                   </div>
@@ -600,8 +601,7 @@ export default function MileageTracker() {
                 <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-r-lg">
                   <div className="flex items-center">
                     <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8h18M3 12h18M3 16h18"/>
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M1 8l2-2M1 12l2 0M1 16l2 2"/>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2 8c2 2 4-2 6 0s4-2 6 0 4 2 6 0M2 12c2 2 4-2 6 0s4-2 6 0 4 2 6 0M2 16c2 2 4-2 6 0s4-2 6 0 4 2 6 0"/>
                     </svg>
                     <span className="font-semibold text-gray-600 dark:text-gray-300">Air Filter</span>
                   </div>
