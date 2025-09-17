@@ -775,6 +775,16 @@ export default function MileageTracker() {
                       <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">Coolant</span>
                     </div>
                   </div>
+
+                  {/* Wipers */}
+                  <div className="border-l-4 border-gray-400 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-r-lg">
+                    <div className="flex items-center">
+                      <svg className="w-3 h-3 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7l3-3 3 3M3 17l3 3 3-3M13 6h8M13 12h8M13 18h8" />
+                      </svg>
+                      <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">Wipers</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1242,7 +1252,6 @@ function AddMaintenanceForm({ cars, onSuccess }: { cars: Car[], onSuccess: () =>
     car_id: cars[0]?.id || '',
     date: new Date().toISOString().split('T')[0],
     type: 'oil_change',
-    description: '',
     cost: '',
     mileage: '',
     service_provider: '',
@@ -1256,12 +1265,11 @@ function AddMaintenanceForm({ cars, onSuccess }: { cars: Car[], onSuccess: () =>
   const maintenanceTypes = [
     { value: 'oil_change', label: 'Oil Change' },
     { value: 'tire_rotation', label: 'Tire Rotation' },
-    { value: 'brake_service', label: 'Brake Service' },
+    { value: 'brake_inspection', label: 'Brake Inspection' },
     { value: 'air_filter', label: 'Air Filter' },
     { value: 'transmission_service', label: 'Transmission Service' },
-    { value: 'tune_up', label: 'Tune-up' },
-    { value: 'repair', label: 'Repair' },
-    { value: 'other', label: 'Other' }
+    { value: 'coolant_flush', label: 'Coolant Flush' },
+    { value: 'wipers', label: 'Wipers' }
   ]
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -1351,30 +1359,17 @@ function AddMaintenanceForm({ cars, onSuccess }: { cars: Car[], onSuccess: () =>
           </div>
         </div>
 
-        <div>
-          <label className="block text-gray-700 dark:text-gray-300 mb-2">Description *</label>
-          <input
-            type="text"
-            required
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            placeholder="Oil change with 5W-30 synthetic..."
-          />
-        </div>
-
         <div className="grid md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Cost *</label>
+            <label className="block text-gray-700 dark:text-gray-300 mb-2">Cost</label>
             <input
               type="number"
-              required
               min="0"
               step="0.01"
               value={formData.cost}
               onChange={(e) => setFormData({ ...formData, cost: e.target.value })}
               className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              placeholder="89.99"
+              placeholder="89.99 (optional)"
             />
           </div>
           <div>
