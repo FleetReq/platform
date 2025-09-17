@@ -580,57 +580,120 @@ export default function MileageTracker() {
           )}
         </div>
 
-        {/* Stats Overview */}
-        {stats && (
-          <section className="relative py-24 px-4 sm:px-6 lg:px-8 mb-16">
-            <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/60 backdrop-blur-xl border-y border-gray-200/30 dark:border-gray-700/30 rounded-2xl"></div>
-            <div className="relative">
-              <h2 className="text-4xl font-bold mb-12 text-center text-gradient-primary">Performance Overview</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div className="card-professional p-8 text-center animate-fade-in-up">
-                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-elegant-lg relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-400/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <svg className="w-10 h-10 text-white relative z-10" fill="currentColor" viewBox="0 0 24 24">
+        {/* Dashboard Layout - Sidebar + Main Content */}
+        <div className="grid lg:grid-cols-4 gap-8">
+          {/* Left Sidebar - Performance Overview */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-8">
+              <h3 className="text-2xl font-bold mb-6 text-gradient-primary">Performance Overview</h3>
+              {stats && (
+                <div className="space-y-4">
+                  <div className="card-professional p-6 text-center animate-fade-in-up">
+                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-elegant">
+                      <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+                      </svg>
+                    </div>
+                    <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">{stats.total_cars}</div>
+                    <div className="text-gray-600 dark:text-gray-300 font-medium">Vehicles</div>
+                  </div>
+
+                  <div className="card-professional p-6 text-center animate-fade-in-up">
+                    <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-elegant">
+                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                      </svg>
+                    </div>
+                    <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-2">{stats.average_mpg}</div>
+                    <div className="text-gray-600 dark:text-gray-300 font-medium">Avg MPG</div>
+                  </div>
+
+                  <div className="card-professional p-6 text-center animate-fade-in-up">
+                    <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-elegant">
+                      <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                      </svg>
+                    </div>
+                    <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">{stats.total_fill_ups}</div>
+                    <div className="text-gray-600 dark:text-gray-300 font-medium">Fill-ups</div>
+                  </div>
+
+                  <div className="card-professional p-6 text-center animate-fade-in-up">
+                    <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-elegant">
+                      <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+                      </svg>
+                    </div>
+                    <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">${stats.total_spent}</div>
+                    <div className="text-gray-600 dark:text-gray-300 font-medium">Total Spent</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Main Content Area */}
+          <div className="lg:col-span-3 space-y-8">
+            {/* Vehicle Selector */}
+            {cars.length > 1 && (
+              <div className="card-professional p-6">
+                <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Current Vehicle</h3>
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
                     </svg>
                   </div>
-                  <div className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-3">{stats.total_cars}</div>
-                  <div className="text-gray-600 dark:text-gray-300 font-semibold text-lg">Vehicles</div>
-                </div>
-                <div className="card-professional p-8 text-center animate-fade-in-up group" style={{ animationDelay: '0.2s', animationFillMode: 'both', opacity: 0 }}>
-                  <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-green-600 rounded-3xl flex items-center justify-center mx-auto mb-6 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-elegant-lg relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <svg className="w-10 h-10 text-white relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                    </svg>
+                  <div>
+                    <div className="text-lg font-bold text-gray-900 dark:text-white">
+                      {cars[0]?.year} {cars[0]?.make} {cars[0]?.model}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-300">
+                      Analytics shown for this vehicle
+                    </div>
                   </div>
-                  <div className="text-4xl font-bold text-emerald-600 dark:text-emerald-400 mb-3">{stats.average_mpg}</div>
-                  <div className="text-gray-600 dark:text-gray-300 font-semibold text-lg">Avg MPG</div>
                 </div>
-                <div className="card-professional p-8 text-center animate-fade-in-up group" style={{ animationDelay: '0.4s', animationFillMode: 'both', opacity: 0 }}>
-                  <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-elegant-lg relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-purple-400/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <svg className="w-10 h-10 text-white relative z-10" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+              </div>
+            )}
+
+            {/* Maintenance Status Grid */}
+            <div className="card-professional p-6">
+              <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">Maintenance Status</h3>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Example maintenance items - you'll want to populate these with real data */}
+                <div className="border-l-4 border-green-500 bg-green-50 dark:bg-green-900/20 p-4 rounded-r-lg">
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
+                    <span className="font-semibold text-green-700 dark:text-green-300">Oil Change</span>
                   </div>
-                  <div className="text-4xl font-bold text-purple-600 dark:text-purple-400 mb-3">{stats.total_fill_ups}</div>
-                  <div className="text-gray-600 dark:text-gray-300 font-semibold text-lg">Fill-ups</div>
+                  <p className="text-sm text-green-600 dark:text-green-400 mt-1">Good for 3,200 miles</p>
                 </div>
-                <div className="card-professional p-8 text-center animate-fade-in-up group" style={{ animationDelay: '0.6s', animationFillMode: 'both', opacity: 0 }}>
-                  <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-600 rounded-3xl flex items-center justify-center mx-auto mb-6 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-elegant-lg relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-orange-400/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <svg className="w-10 h-10 text-white relative z-10" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+
+                <div className="border-l-4 border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-r-lg">
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 text-yellow-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                     </svg>
+                    <span className="font-semibold text-yellow-700 dark:text-yellow-300">Tire Rotation</span>
                   </div>
-                  <div className="text-4xl font-bold text-orange-600 dark:text-orange-400 mb-3">${stats.total_spent}</div>
-                  <div className="text-gray-600 dark:text-gray-300 font-semibold text-lg">Total Spent</div>
+                  <p className="text-sm text-yellow-600 dark:text-yellow-400 mt-1">Due in 800 miles</p>
+                </div>
+
+                <div className="border-l-4 border-red-500 bg-red-50 dark:bg-red-900/20 p-4 rounded-r-lg">
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    <span className="font-semibold text-red-700 dark:text-red-300">Brake Inspection</span>
+                  </div>
+                  <p className="text-sm text-red-600 dark:text-red-400 mt-1">Overdue by 1,200 miles</p>
                 </div>
               </div>
             </div>
-          </section>
-        )}
+          </div>
+        </div>
 
         {/* Content based on active tab */}
         {activeTab === 'dashboard' && (
