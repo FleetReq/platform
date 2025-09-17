@@ -67,7 +67,7 @@ function getMaintenanceStatus(
   const interval = MAINTENANCE_INTERVALS[maintenanceType]
   if (!interval) return 'unknown'
 
-  if (!lastMaintenanceDate) return 'overdue'
+  if (!lastMaintenanceDate) return 'unknown'
 
   const today = new Date()
   const lastDate = new Date(lastMaintenanceDate)
