@@ -452,6 +452,33 @@ export default function MileageTracker() {
   return (
     <div className="relative overflow-hidden min-h-screen">
       <BackgroundAnimation />
+
+      {/* Admin Sign-In Corner */}
+      <div className="fixed top-4 right-4 z-50">
+        {user ? (
+          <div className="flex items-center gap-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg border border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="text-sm text-gray-600 dark:text-gray-300">Admin</span>
+            </div>
+            <button
+              onClick={signOut}
+              className="text-sm bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded font-medium transition-colors"
+            >
+              Sign Out
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={signIn}
+            className="text-xs bg-gray-700/90 hover:bg-gray-800/90 text-gray-300 hover:text-white px-3 py-2 rounded-lg font-medium transition-all backdrop-blur-sm border border-gray-600/50 hover:border-gray-500/50"
+            title="Admin Access"
+          >
+            Admin
+          </button>
+        )}
+      </div>
+
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Header */}
         <div className="text-center mb-16">
@@ -459,33 +486,9 @@ export default function MileageTracker() {
             Vehicle Analytics
           </h1>
           <div className="w-32 h-1.5 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 mx-auto mb-6 rounded-full"></div>
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 text-lg">
-            {user ? (
-              <>
-                <span className="text-gray-600 dark:text-gray-300">
-                  Welcome back, {user.email}
-                </span>
-                <button
-                  onClick={signOut}
-                  className="bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                >
-                  Sign Out
-                </button>
-              </>
-            ) : (
-              <>
-                <span className="text-gray-600 dark:text-gray-300">
-                  Portfolio Demo - Read Only
-                </span>
-                <button
-                  onClick={signIn}
-                  className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                >
-                  Sign In with GitHub
-                </button>
-              </>
-            )}
-          </div>
+          <p className="text-lg text-gray-600 dark:text-gray-300">
+            Professional Vehicle Fleet Management & Analytics
+          </p>
         </div>
 
         {/* Access Status - Subtle Professional Indicator */}
