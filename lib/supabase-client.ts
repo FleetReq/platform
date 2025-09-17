@@ -24,6 +24,7 @@ export interface Car {
   color?: string
   license_plate?: string
   nickname?: string
+  current_mileage?: number
   created_at: string
   updated_at: string
 }

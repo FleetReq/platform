@@ -116,3 +116,56 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const supabase = await createServerSupabaseClient()
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
+    }
+
+    // Get the authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      console.error('Auth error:', authError)
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Only allow owner to update cars
+    if (!isOwner(user.id)) {
+      return NextResponse.json({
+        error: 'Read-only access: Only the owner can update cars',
+        isReadOnly: true
+      }, { status: 403 })
+    }
+
+    const body = await request.json()
+    const { carId, current_mileage } = body
+
+    if (!carId || current_mileage === undefined) {
+      return NextResponse.json(
+        { error: 'Car ID and current_mileage are required' },
+        { status: 400 }
+      )
+    }
+
+    const { data: car, error } = await supabase
+      .from('cars')
+      .update({ current_mileage: Number(current_mileage) })
+      .eq('id', carId)
+      .eq('user_id', user.id) // Ensure user can only update their own cars
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Error updating car mileage:', error)
+      return NextResponse.json({ error: 'Failed to update car mileage' }, { status: 500 })
+    }
+
+    return NextResponse.json({ car })
+  } catch (error) {
+    console.error('API error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}

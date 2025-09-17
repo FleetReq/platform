@@ -38,6 +38,96 @@ interface UserStats {
   worst_mpg: number
 }
 
+// Current Mileage Editor Component
+function CurrentMileageEditor({ carId, cars, onUpdate }: { carId: string, cars: Car[], onUpdate: () => void }) {
+  const [editing, setEditing] = useState(false)
+  const [mileage, setMileage] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const selectedCar = cars.find(car => car.id === carId)
+  const currentMileage = selectedCar?.current_mileage || 0
+
+  useEffect(() => {
+    setMileage(currentMileage.toString())
+  }, [currentMileage])
+
+  const handleSave = async () => {
+    if (!mileage || isNaN(Number(mileage))) return
+
+    setLoading(true)
+    try {
+      const response = await fetch('/api/cars', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          carId,
+          current_mileage: Number(mileage)
+        })
+      })
+
+      if (response.ok) {
+        onUpdate()
+        setEditing(false)
+      } else {
+        alert('Failed to update mileage')
+      }
+    } catch (error) {
+      console.error('Error updating mileage:', error)
+      alert('Failed to update mileage')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setMileage(currentMileage.toString())
+    setEditing(false)
+  }
+
+  if (editing) {
+    return (
+      <div className="flex items-center space-x-2">
+        <input
+          type="number"
+          value={mileage}
+          onChange={(e) => setMileage(e.target.value)}
+          className="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+          placeholder="Miles"
+          disabled={loading}
+        />
+        <button
+          onClick={handleSave}
+          disabled={loading}
+          className="px-2 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded transition-colors disabled:opacity-50"
+        >
+          ✓
+        </button>
+        <button
+          onClick={handleCancel}
+          disabled={loading}
+          className="px-2 py-1 text-xs bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors disabled:opacity-50"
+        >
+          ✕
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-sm font-semibold text-gray-900 dark:text-white">
+        {currentMileage.toLocaleString()} miles
+      </span>
+      <button
+        onClick={() => setEditing(true)}
+        className="px-2 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors"
+      >
+        Edit
+      </button>
+    </div>
+  )
+}
+
 export default function MileageTracker() {
   const [user, setUser] = useState<{ email?: string; id?: string } | null>(null)
   const [cars, setCars] = useState<Car[]>([])
@@ -632,7 +722,7 @@ export default function MileageTracker() {
               {/* Vehicle Selector */}
               <div className="card-professional p-4">
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Selected Vehicle</h3>
-                <div className="relative">
+                <div className="relative mb-3">
                   <select
                     value={selectedCarId || ''}
                     onChange={(e) => setSelectedCarId(e.target.value || null)}
@@ -649,6 +739,18 @@ export default function MileageTracker() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
+
+                {/* Current Mileage */}
+                {selectedCarId && (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Current Mileage</label>
+                    <CurrentMileageEditor
+                      carId={selectedCarId}
+                      cars={cars}
+                      onUpdate={loadData}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Performance Overview - Compact */}
@@ -1346,7 +1448,7 @@ function AddMaintenanceForm({ cars, onSuccess }: { cars: Car[], onSuccess: () =>
             </select>
           </div>
           <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Current Mileage *</label>
+            <label className="block text-gray-700 dark:text-gray-300 mb-2">Odometer Reading *</label>
             <input
               type="number"
               required

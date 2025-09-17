@@ -122,6 +122,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create fill-up' }, { status: 500 })
     }
 
+    // Update the car's current mileage if the new odometer reading is higher or if no current mileage exists
+    const { data: currentCar } = await supabase
+      .from('cars')
+      .select('current_mileage')
+      .eq('id', car_id)
+      .eq('user_id', user.id)
+      .single()
+
+    const newMileage = parseInt(odometer_reading)
+    const shouldUpdate = !currentCar?.current_mileage || currentCar.current_mileage < newMileage
+
+    if (shouldUpdate) {
+      const { error: updateError } = await supabase
+        .from('cars')
+        .update({ current_mileage: newMileage })
+        .eq('id', car_id)
+        .eq('user_id', user.id)
+
+      if (updateError) {
+        console.error('Error updating car mileage:', updateError)
+      }
+    }
+
     return NextResponse.json({ fillUp }, { status: 201 })
   } catch (error) {
     console.error('API error:', error)

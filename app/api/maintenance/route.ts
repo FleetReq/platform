@@ -73,7 +73,6 @@ export async function POST(request: NextRequest) {
       car_id,
       date,
       type,
-      description,
       cost,
       mileage,
       service_provider,
@@ -83,9 +82,9 @@ export async function POST(request: NextRequest) {
       notes
     } = body
 
-    if (!car_id || !type || !description || cost === undefined || !mileage) {
+    if (!car_id || !type || !mileage) {
       return NextResponse.json(
-        { error: 'Car ID, type, description, cost, and mileage are required' },
+        { error: 'Car ID, type, and odometer reading are required' },
         { status: 400 }
       )
     }
@@ -108,8 +107,7 @@ export async function POST(request: NextRequest) {
         car_id,
         date: date || new Date().toISOString().split('T')[0],
         type,
-        description: description.trim(),
-        cost: parseFloat(cost),
+        cost: cost ? parseFloat(cost) : null,
         mileage: parseInt(mileage),
         service_provider: service_provider?.trim(),
         location: location?.trim(),
@@ -126,6 +124,29 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('Error creating maintenance record:', error)
       return NextResponse.json({ error: 'Failed to create maintenance record' }, { status: 500 })
+    }
+
+    // Update the car's current mileage if the new odometer reading is higher or if no current mileage exists
+    const { data: currentCar } = await supabase
+      .from('cars')
+      .select('current_mileage')
+      .eq('id', car_id)
+      .eq('user_id', getOwnerUserId())
+      .single()
+
+    const newMileage = parseInt(mileage)
+    const shouldUpdate = !currentCar?.current_mileage || currentCar.current_mileage < newMileage
+
+    if (shouldUpdate) {
+      const { error: updateError } = await supabase
+        .from('cars')
+        .update({ current_mileage: newMileage })
+        .eq('id', car_id)
+        .eq('user_id', getOwnerUserId())
+
+      if (updateError) {
+        console.error('Error updating car mileage:', updateError)
+      }
     }
 
     return NextResponse.json({ maintenanceRecord }, { status: 201 })
