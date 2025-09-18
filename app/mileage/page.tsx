@@ -1366,7 +1366,23 @@ function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void
       })
 
       if (response.ok) {
-        onSuccess()
+        // Reset form to initial state
+        setFormData({
+          car_id: cars[0]?.id || '',
+          date: new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }),
+          odometer_reading: '',
+          gallons: '',
+          price_per_gallon: '',
+          fuel_type: 'regular',
+          gas_station: '',
+          location: '',
+          notes: '',
+          consecutive_fillup: true
+        })
+        // Small delay to ensure API completes before refresh
+        setTimeout(() => {
+          onSuccess()
+        }, 100)
       } else {
         const error = await response.json()
         alert(error.error || 'Failed to add fill-up')
@@ -1570,7 +1586,24 @@ function AddMaintenanceForm({ cars, onSuccess }: { cars: Car[], onSuccess: () =>
       })
 
       if (response.ok) {
-        onSuccess()
+        // Reset form to initial state
+        setFormData({
+          car_id: cars[0]?.id || '',
+          date: new Date().toISOString().split('T')[0],
+          type: 'oil_change',
+          oil_type: 'conventional',
+          cost: '',
+          mileage: '',
+          service_provider: '',
+          location: '',
+          next_service_date: '',
+          next_service_mileage: '',
+          notes: ''
+        })
+        // Small delay to ensure API completes before refresh
+        setTimeout(() => {
+          onSuccess()
+        }, 100)
       } else {
         const error = await response.json()
         alert(error.error || 'Failed to add maintenance record')
