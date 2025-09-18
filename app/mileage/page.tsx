@@ -578,29 +578,29 @@ function RecordsManager({
         {/* Records Table */}
         <div className="card-professional overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-20">
                     Type
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-24">
                     Date
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Created By
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-28">
+                    User
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-32">
                     Created
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-32">
                     Vehicle
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Details
                   </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Action
+                  <th className="px-2 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-16">
+                    Del
                   </th>
                 </tr>
               </thead>
@@ -610,40 +610,40 @@ function RecordsManager({
                     key={`${record.type}-${record.id}`}
                     className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150"
                   >
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="flex items-center space-x-2">
-                        <div className={`w-2 h-2 rounded-full ${record.type === 'fillup' ? 'bg-blue-500' : 'bg-green-500'}`}></div>
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          {record.type === 'fillup' ? 'Fill-up' : 'Maintenance'}
+                    <td className="px-2 py-2 whitespace-nowrap">
+                      <div className="flex items-center space-x-1">
+                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${record.type === 'fillup' ? 'bg-blue-500' : 'bg-green-500'}`}></div>
+                        <span className="text-xs font-medium text-gray-900 dark:text-white">
+                          {record.type === 'fillup' ? 'Fill' : 'Maint'}
                         </span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className="text-sm text-gray-900 dark:text-white">
-                        {new Date(record.date).toLocaleDateString()}
+                    <td className="px-2 py-2 whitespace-nowrap">
+                      <span className="text-xs text-gray-900 dark:text-white">
+                        {new Date(record.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </span>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className="text-sm text-gray-900 dark:text-white">
-                        {uniqueUsers.find(u => u.id === record.user_id)?.name || `User ${record.user_id.slice(0, 8)}...`}
+                    <td className="px-2 py-2 whitespace-nowrap">
+                      <span className="text-xs text-gray-900 dark:text-white truncate">
+                        {uniqueUsers.find(u => u.id === record.user_id)?.name?.split(' ')[0] || `User ${record.user_id.slice(0, 6)}...`}
                       </span>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className="text-sm text-gray-900 dark:text-white">
-                        {new Date(record.created_at).toLocaleDateString()}
+                    <td className="px-2 py-2 whitespace-nowrap">
+                      <span className="text-xs text-gray-900 dark:text-white">
+                        {new Date(record.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </span>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {new Date(record.created_at).toLocaleTimeString()}
+                        {new Date(record.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                       </div>
                     </td>
-                    <td className="px-4 py-3">
-                      <span className="text-sm text-gray-900 dark:text-white">
-                        {record.car.nickname || `${record.car.year} ${record.car.make} ${record.car.model}`}
+                    <td className="px-2 py-2">
+                      <span className="text-xs text-gray-900 dark:text-white truncate block">
+                        {record.car.nickname || `${record.car.year} ${record.car.make}`}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-2 py-2">
                       <div className="max-w-xs">
-                        <div className="text-sm text-gray-900 dark:text-white truncate">
+                        <div className="text-xs text-gray-900 dark:text-white truncate">
                           {record.description}
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
@@ -651,17 +651,17 @@ function RecordsManager({
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-right">
+                    <td className="px-2 py-2 whitespace-nowrap text-right">
                       <button
                         onClick={() => setDeleteConfirm({
                           type: record.type,
                           id: record.id,
                           description: record.description
                         })}
-                        className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors duration-200"
+                        className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors duration-200"
                         title="Delete record"
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
                       </button>
