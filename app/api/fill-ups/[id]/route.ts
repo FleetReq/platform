@@ -3,7 +3,7 @@ import { createServerSupabaseClient, isOwner } from '@/lib/supabase'
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createServerSupabaseClient()
@@ -25,7 +25,7 @@ export async function DELETE(
       }, { status: 403 })
     }
 
-    const fillUpId = params.id
+    const { id: fillUpId } = await params
 
     // Verify the fill-up belongs to the user's car
     const { data: fillUp, error: fetchError } = await supabase
