@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner } from '@/lib/supabase-client'
 import BackgroundAnimation from '../components/BackgroundAnimation'
 import {
@@ -215,6 +215,573 @@ function MaintenanceStatusGrid({
   )
 }
 
+// Records Management Component
+function RecordsManager({
+  cars,
+  fillUps,
+  maintenanceRecords,
+  onRecordDeleted
+}: {
+  cars: Car[],
+  fillUps: FillUp[],
+  maintenanceRecords: MaintenanceRecord[],
+  onRecordDeleted: () => void
+}) {
+  const [searchTerm, setSearchTerm] = useState('')
+  const [recordType, setRecordType] = useState<'all' | 'fillups' | 'maintenance'>('all')
+  const [maintenanceType, setMaintenanceType] = useState<string>('all')
+  const [selectedCarId, setSelectedCarId] = useState<string>('all')
+  const [selectedUserId, setSelectedUserId] = useState<string>('all')
+  const [userSearchTerm, setUserSearchTerm] = useState('')
+  const [showUserDropdown, setShowUserDropdown] = useState(false)
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [jumpToPage, setJumpToPage] = useState('')
+  const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'fillup' | 'maintenance', id: string, description: string } | null>(null)
+  const recordsPerPage = 20
+
+  // Filter records based on search and filters
+  const filteredRecords = useMemo(() => {
+    let allRecords: Array<{
+      id: string
+      type: 'fillup' | 'maintenance'
+      date: string
+      car: Car
+      user_id: string
+      created_at: string
+      description: string
+      details: string
+      record: FillUp | MaintenanceRecord
+    }> = []
+
+    // Add fill-ups
+    if (recordType === 'all' || recordType === 'fillups') {
+      const fillUpRecords = fillUps.map(fillUp => {
+        const car = cars.find(c => c.id === fillUp.car_id)!
+        return {
+          id: fillUp.id,
+          type: 'fillup' as const,
+          date: fillUp.date,
+          car,
+          user_id: fillUp.created_by_user_id || car.user_id, // Fallback to car owner for existing records
+          created_at: fillUp.created_at,
+          description: `Fill-up - ${fillUp.gallons} gallons`,
+          details: `${fillUp.odometer_reading} miles • ${fillUp.mpg ? fillUp.mpg + ' MPG' : 'MPG N/A'}${fillUp.total_cost ? ' • $' + fillUp.total_cost : ''}`,
+          record: fillUp
+        }
+      })
+      allRecords.push(...fillUpRecords)
+    }
+
+    // Add maintenance records
+    if (recordType === 'all' || recordType === 'maintenance') {
+      const maintenanceRecordsFiltered = maintenanceRecords.filter(record =>
+        maintenanceType === 'all' || record.type === maintenanceType
+      ).map(maintenance => {
+        const car = cars.find(c => c.id === maintenance.car_id)!
+        const typeLabel = maintenance.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
+        return {
+          id: maintenance.id,
+          type: 'maintenance' as const,
+          date: maintenance.date,
+          car,
+          user_id: maintenance.created_by_user_id || car.user_id, // Fallback to car owner for existing records
+          created_at: maintenance.created_at,
+          description: `${typeLabel}${maintenance.oil_type ? ` (${maintenance.oil_type})` : ''}`,
+          details: `${maintenance.mileage ? maintenance.mileage + ' miles' : 'Mileage N/A'}${maintenance.cost ? ' • $' + maintenance.cost : ''}${maintenance.next_service_date ? ' • Next: ' + new Date(maintenance.next_service_date).toLocaleDateString() : ''}`,
+          record: maintenance
+        }
+      })
+      allRecords.push(...maintenanceRecordsFiltered)
+    }
+
+    // Filter by car
+    if (selectedCarId !== 'all') {
+      allRecords = allRecords.filter(record => record.car.id === selectedCarId)
+    }
+
+    // Filter by user
+    if (selectedUserId !== 'all') {
+      allRecords = allRecords.filter(record => record.user_id === selectedUserId)
+    }
+
+    // Filter by search term
+    if (searchTerm) {
+      allRecords = allRecords.filter(record =>
+        record.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        record.details.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (record.record as FillUp | MaintenanceRecord).notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        ('location' in record.record && record.record.location?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        ('gas_station' in record.record && record.record.gas_station?.toLowerCase().includes(searchTerm.toLowerCase()))
+      )
+    }
+
+    // Sort by date
+    return allRecords.sort((a, b) => {
+      const dateA = new Date(a.date).getTime()
+      const dateB = new Date(b.date).getTime()
+      return sortOrder === 'desc' ? dateB - dateA : dateA - dateB
+    })
+  }, [fillUps, maintenanceRecords, cars, searchTerm, recordType, maintenanceType, selectedCarId, selectedUserId, sortOrder])
+
+  // Pagination
+  const totalPages = Math.ceil(filteredRecords.length / recordsPerPage)
+  const startIndex = (currentPage - 1) * recordsPerPage
+  const paginatedRecords = filteredRecords.slice(startIndex, startIndex + recordsPerPage)
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, recordType, maintenanceType, selectedCarId, selectedUserId])
+
+  // Handle page jump
+  const handlePageJump = () => {
+    const pageNum = parseInt(jumpToPage)
+    if (pageNum >= 1 && pageNum <= totalPages) {
+      setCurrentPage(pageNum)
+      setJumpToPage('')
+    }
+  }
+
+  // Get unique users for dropdown (based on record creators)
+  const uniqueUsers = useMemo(() => {
+    const userIds = new Set<string>()
+
+    // Add user IDs from fill-ups
+    fillUps.forEach(fillUp => {
+      if (fillUp.created_by_user_id) {
+        userIds.add(fillUp.created_by_user_id)
+      } else {
+        // Fallback to car owner for existing records
+        const car = cars.find(c => c.id === fillUp.car_id)
+        if (car) userIds.add(car.user_id)
+      }
+    })
+
+    // Add user IDs from maintenance records
+    maintenanceRecords.forEach(maintenance => {
+      if (maintenance.created_by_user_id) {
+        userIds.add(maintenance.created_by_user_id)
+      } else {
+        // Fallback to car owner for existing records
+        const car = cars.find(c => c.id === maintenance.car_id)
+        if (car) userIds.add(car.user_id)
+      }
+    })
+
+    return Array.from(userIds).map(userId => {
+      // For now, we'll just show the user ID. In a real app, you'd fetch user profiles
+      return { id: userId, name: userId === 'b73a07b2-ed72-41b1-943f-e119afc9eddb' ? 'Owner (Bruce)' : `User ${userId.slice(0, 8)}...` }
+    })
+  }, [cars, fillUps, maintenanceRecords])
+
+  // Filter users based on search term
+  const filteredUsers = useMemo(() => {
+    if (!userSearchTerm) return uniqueUsers
+    return uniqueUsers.filter(user =>
+      user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
+      user.id.toLowerCase().includes(userSearchTerm.toLowerCase())
+    )
+  }, [uniqueUsers, userSearchTerm])
+
+  // Get display text for selected user
+  const selectedUserDisplay = useMemo(() => {
+    if (selectedUserId === 'all') return 'All Users'
+    const user = uniqueUsers.find(u => u.id === selectedUserId)
+    return user?.name || 'Unknown User'
+  }, [selectedUserId, uniqueUsers])
+
+  // Handle user selection
+  const handleUserSelect = (userId: string) => {
+    setSelectedUserId(userId)
+    setUserSearchTerm('')
+    setShowUserDropdown(false)
+  }
+
+  const handleDelete = async (type: 'fillup' | 'maintenance', id: string) => {
+    try {
+      const endpoint = type === 'fillup' ? '/api/fill-ups' : '/api/maintenance'
+      const response = await fetch(`${endpoint}/${id}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        setDeleteConfirm(null)
+        onRecordDeleted() // Call the callback to refresh data
+      } else {
+        alert('Failed to delete record')
+      }
+    } catch (error) {
+      console.error('Error deleting record:', error)
+      alert('Failed to delete record')
+    }
+  }
+
+  const maintenanceTypes = [
+    { value: 'all', label: 'All Types' },
+    { value: 'oil_change', label: 'Oil Change' },
+    { value: 'tire_rotation', label: 'Tire Rotation' },
+    { value: 'brake_inspection', label: 'Brake Inspection' },
+    { value: 'air_filter', label: 'Air Filter' },
+    { value: 'transmission_service', label: 'Transmission Service' },
+    { value: 'coolant_flush', label: 'Coolant Flush' },
+    { value: 'wipers', label: 'Wipers' },
+    { value: 'registration', label: 'Registration' }
+  ]
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Records Management</h2>
+
+        {/* Filters */}
+        <div className="space-y-4 mb-6">
+          {/* Search and Sort */}
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <input
+                type="text"
+                placeholder="Search by service type, description, notes, location..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              />
+            </div>
+            <div className="flex-shrink-0">
+              <button
+                onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
+                className="h-12 px-4 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white flex items-center gap-2"
+                title={`Sort by date (${sortOrder === 'desc' ? 'newest first' : 'oldest first'})`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {sortOrder === 'desc' ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4" />
+                  )}
+                </svg>
+                <span className="text-sm">
+                  {sortOrder === 'desc' ? 'Newest' : 'Oldest'}
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* Filter Controls */}
+          <div className="grid md:grid-cols-4 gap-4">
+            <div className="relative">
+              <label className="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium">Created By</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={showUserDropdown ? userSearchTerm : selectedUserDisplay}
+                  onChange={(e) => {
+                    setUserSearchTerm(e.target.value)
+                    setShowUserDropdown(true)
+                  }}
+                  onFocus={() => {
+                    setUserSearchTerm('')
+                    setShowUserDropdown(true)
+                  }}
+                  onBlur={() => {
+                    // Delay hiding to allow clicking on options
+                    setTimeout(() => setShowUserDropdown(false), 150)
+                  }}
+                  className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white pr-10"
+                  placeholder="Type to search users..."
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+
+                {showUserDropdown && (
+                  <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    <div
+                      className="px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-200 dark:border-gray-600"
+                      onClick={() => handleUserSelect('all')}
+                    >
+                      <span className="text-sm text-gray-900 dark:text-white">All Users</span>
+                    </div>
+                    {filteredUsers.map(user => (
+                      <div
+                        key={user.id}
+                        className="px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                        onClick={() => handleUserSelect(user.id)}
+                      >
+                        <span className="text-sm text-gray-900 dark:text-white">{user.name}</span>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{user.id}</div>
+                      </div>
+                    ))}
+                    {filteredUsers.length === 0 && userSearchTerm && (
+                      <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                        No users found matching &ldquo;{userSearchTerm}&rdquo;
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium">Vehicle</label>
+              <select
+                value={selectedCarId}
+                onChange={(e) => setSelectedCarId(e.target.value)}
+                className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              >
+                <option value="all">All Vehicles</option>
+                {cars.map(car => (
+                  <option key={car.id} value={car.id}>
+                    {car.nickname || `${car.year} ${car.make} ${car.model}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium">Record Type</label>
+              <select
+                value={recordType}
+                onChange={(e) => setRecordType(e.target.value as 'all' | 'fillups' | 'maintenance')}
+                className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              >
+                <option value="all">All Records</option>
+                <option value="fillups">Fill-ups Only</option>
+                <option value="maintenance">Maintenance Only</option>
+              </select>
+            </div>
+
+            {recordType !== 'fillups' && (
+              <div>
+                <label className="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium">Maintenance Type</label>
+                <select
+                  value={maintenanceType}
+                  onChange={(e) => setMaintenanceType(e.target.value)}
+                  className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                >
+                  {maintenanceTypes.map(type => (
+                    <option key={type.value} value={type.value}>{type.label}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Results Summary */}
+        <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          Showing {paginatedRecords.length} of {filteredRecords.length} records
+        </div>
+
+        {/* Records Table */}
+        <div className="card-professional overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Type
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Created By
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Created
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Vehicle
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Details
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Action
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                {paginatedRecords.map((record) => (
+                  <tr
+                    key={`${record.type}-${record.id}`}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150"
+                  >
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-2 h-2 rounded-full ${record.type === 'fillup' ? 'bg-blue-500' : 'bg-green-500'}`}></div>
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">
+                          {record.type === 'fillup' ? 'Fill-up' : 'Maintenance'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className="text-sm text-gray-900 dark:text-white">
+                        {new Date(record.date).toLocaleDateString()}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className="text-sm text-gray-900 dark:text-white">
+                        {uniqueUsers.find(u => u.id === record.user_id)?.name || `User ${record.user_id.slice(0, 8)}...`}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <span className="text-sm text-gray-900 dark:text-white">
+                        {new Date(record.created_at).toLocaleDateString()}
+                      </span>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {new Date(record.created_at).toLocaleTimeString()}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-sm text-gray-900 dark:text-white">
+                        {record.car.nickname || `${record.car.year} ${record.car.make} ${record.car.model}`}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="max-w-xs">
+                        <div className="text-sm text-gray-900 dark:text-white truncate">
+                          {record.description}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                          {record.details}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-right">
+                      <button
+                        onClick={() => setDeleteConfirm({
+                          type: record.type,
+                          id: record.id,
+                          description: record.description
+                        })}
+                        className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors duration-200"
+                        title="Delete record"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {paginatedRecords.length === 0 && (
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+              No records found matching your criteria
+            </div>
+          )}
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0 mt-6">
+            {/* Page Info and Jump */}
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                Page {currentPage} of {totalPages}
+              </span>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Go to:</span>
+                <input
+                  type="number"
+                  min="1"
+                  max={totalPages}
+                  value={jumpToPage}
+                  onChange={(e) => setJumpToPage(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handlePageJump()}
+                  className="w-16 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="1"
+                />
+                <button
+                  onClick={handlePageJump}
+                  disabled={!jumpToPage || parseInt(jumpToPage) < 1 || parseInt(jumpToPage) > totalPages}
+                  className="px-2 py-1 text-sm bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded transition-colors duration-200"
+                >
+                  Go
+                </button>
+              </div>
+            </div>
+
+            {/* Navigation Buttons */}
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+              >
+                Previous
+              </button>
+
+              <div className="flex space-x-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`px-3 py-2 text-sm rounded-lg transition-colors duration-200 ${
+                        pageNum === currentPage
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  )
+                })}
+              </div>
+
+              <button
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md mx-4 shadow-xl">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Confirm Delete</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Are you sure you want to delete this record?
+            </p>
+            <p className="text-sm font-medium text-gray-900 dark:text-white mb-6">
+              {deleteConfirm.description}
+            </p>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="flex-1 px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(deleteConfirm.type, deleteConfirm.id)}
+                className="flex-1 px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors duration-200"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // Current Mileage Editor Component
 function CurrentMileageEditor({ carId, cars, onUpdate }: { carId: string, cars: Car[], onUpdate: () => void }) {
   const [editing, setEditing] = useState(false)
@@ -372,7 +939,7 @@ export default function MileageTracker() {
   const [loading, setLoading] = useState(true)
   const [isSigningIn, setIsSigningIn] = useState(false)
   const [userIsOwner, setUserIsOwner] = useState(false)
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'records'>('dashboard')
   const [chartView, setChartView] = useState<'weekly' | 'monthly' | 'yearly'>('monthly')
   const [selectedCarId, setSelectedCarId] = useState<string | null>(null)
 
@@ -1054,7 +1621,8 @@ export default function MileageTracker() {
                   { id: 'dashboard', label: 'Graph', adminOnly: false },
                   { id: 'add-car', label: 'Add Car', adminOnly: true },
                   { id: 'add-fillup', label: 'Add Fill-up', adminOnly: true },
-                  { id: 'add-maintenance', label: 'Add Maintenance', adminOnly: true }
+                  { id: 'add-maintenance', label: 'Add Maintenance', adminOnly: true },
+                  { id: 'records', label: 'Records', adminOnly: true }
                 ].map((tab) => {
                   const isDisabled = tab.adminOnly && !userIsOwner
                   const isActive = activeTab === tab.id
@@ -1062,7 +1630,7 @@ export default function MileageTracker() {
                   return (
                     <button
                       key={tab.id}
-                      onClick={() => !isDisabled && setActiveTab(tab.id as 'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance')}
+                      onClick={() => !isDisabled && setActiveTab(tab.id as 'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'records')}
                       disabled={isDisabled}
                       title={isDisabled ? 'Admin access required - Enable Admin to access this feature' : ''}
                       className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-300 relative group ${
@@ -1158,6 +1726,18 @@ export default function MileageTracker() {
               {activeTab === 'add-maintenance' && cars.length > 0 && (
                 <div className="card-professional p-6">
                   <AddMaintenanceForm cars={cars} onSuccess={() => { loadData(); setActiveTab('dashboard'); }} />
+                </div>
+              )}
+
+              {/* Records Management */}
+              {activeTab === 'records' && (
+                <div className="card-professional p-6">
+                  <RecordsManager
+                    cars={cars}
+                    fillUps={fillUps}
+                    maintenanceRecords={maintenanceRecords}
+                    onRecordDeleted={() => loadData()}
+                  />
                 </div>
               )}
 

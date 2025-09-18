@@ -112,7 +112,8 @@ export async function POST(request: NextRequest) {
       total_cost,
       gas_station: gas_station?.trim(),
       location: location?.trim(),
-      notes: notes?.trim()
+      notes: notes?.trim(),
+      created_by_user_id: user.id
     }
 
     // Only add fuel_type if it exists (for backward compatibility)

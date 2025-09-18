@@ -42,6 +42,7 @@ export interface FillUp {
   location?: string
   notes?: string
   mpg?: number
+  created_by_user_id?: string
   created_at: string
   updated_at: string
 }
@@ -60,6 +61,7 @@ export interface MaintenanceRecord {
   next_service_date?: string
   next_service_mileage?: number
   notes?: string
+  created_by_user_id?: string
   created_at: string
   updated_at: string
 }

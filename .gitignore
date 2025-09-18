@@ -42,3 +42,6 @@ next-env.d.ts
 
 # local configuration
 .claude
+
+# Claude Code session context (local only)
+CLAUDE.md
