@@ -99,20 +99,28 @@ export async function POST(request: NextRequest) {
 
     const total_cost = parseFloat((parseFloat(gallons) * parseFloat(price_per_gallon)).toFixed(2))
 
+    // Build insert object conditionally to handle missing columns gracefully
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const insertData: Record<string, any> = {
+      car_id,
+      date: date || new Date().toISOString().split('T')[0],
+      odometer_reading: parseInt(odometer_reading),
+      gallons: parseFloat(gallons),
+      price_per_gallon: parseFloat(price_per_gallon),
+      total_cost,
+      gas_station: gas_station?.trim(),
+      location: location?.trim(),
+      notes: notes?.trim()
+    }
+
+    // Only add fuel_type if it exists (for backward compatibility)
+    if (fuel_type) {
+      insertData.fuel_type = fuel_type.trim()
+    }
+
     const { data: fillUp, error } = await supabase
       .from('fill_ups')
-      .insert({
-        car_id,
-        date: date || new Date().toISOString().split('T')[0],
-        odometer_reading: parseInt(odometer_reading),
-        gallons: parseFloat(gallons),
-        price_per_gallon: parseFloat(price_per_gallon),
-        total_cost,
-        fuel_type: fuel_type?.trim(),
-        gas_station: gas_station?.trim(),
-        location: location?.trim(),
-        notes: notes?.trim()
-      })
+      .insert(insertData)
       .select(`
         *,
         cars(*)

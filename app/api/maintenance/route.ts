@@ -102,21 +102,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Car not found' }, { status: 404 })
     }
 
+    // Build insert object conditionally to handle missing columns gracefully
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const insertData: Record<string, any> = {
+      car_id,
+      date: date || new Date().toISOString().split('T')[0],
+      type,
+      cost: cost ? parseFloat(cost) : null,
+      mileage: mileage ? parseInt(mileage) : null,
+      service_provider: service_provider?.trim(),
+      location: location?.trim(),
+      next_service_date,
+      next_service_mileage: next_service_mileage ? parseInt(next_service_mileage) : null,
+      notes: notes?.trim()
+    }
+
+    // Only add oil_type if it exists (for backward compatibility)
+    if (oil_type) {
+      insertData.oil_type = oil_type.trim()
+    }
+
     const { data: maintenanceRecord, error } = await supabase
       .from('maintenance_records')
-      .insert({
-        car_id,
-        date: date || new Date().toISOString().split('T')[0],
-        type,
-        oil_type: oil_type?.trim(),
-        cost: cost ? parseFloat(cost) : null,
-        mileage: mileage ? parseInt(mileage) : null,
-        service_provider: service_provider?.trim(),
-        location: location?.trim(),
-        next_service_date,
-        next_service_mileage: next_service_mileage ? parseInt(next_service_mileage) : null,
-        notes: notes?.trim()
-      })
+      .insert(insertData)
       .select(`
         *,
         cars(*)

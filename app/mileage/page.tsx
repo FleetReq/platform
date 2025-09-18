@@ -1653,7 +1653,7 @@ function AddMaintenanceForm({ cars, onSuccess }: { cars: Car[], onSuccess: () =>
               value={formData.mileage}
               onChange={(e) => setFormData({ ...formData, mileage: e.target.value })}
               className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              placeholder="Miles (optional)"
+              placeholder="Miles"
             />
           </div>
         </div>
@@ -1668,7 +1668,7 @@ function AddMaintenanceForm({ cars, onSuccess }: { cars: Car[], onSuccess: () =>
               value={formData.cost}
               onChange={(e) => setFormData({ ...formData, cost: e.target.value })}
               className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              placeholder="89.99 (optional)"
+              placeholder="89.99"
             />
           </div>
           <div>
