@@ -60,49 +60,70 @@ type MaintenanceStatus = 'good' | 'warning' | 'overdue' | 'unknown'
 
 function getMaintenanceStatus(
   maintenanceType: string,
-  lastMaintenanceDate: string | null,
-  lastMaintenanceMileage: number | null,
+  lastMaintenanceRecord: MaintenanceRecord | null,
   currentMileage: number | null
 ): MaintenanceStatus {
   const interval = MAINTENANCE_INTERVALS[maintenanceType]
   if (!interval) return 'unknown'
 
-  if (!lastMaintenanceDate) return 'unknown'
+  if (!lastMaintenanceRecord) return 'unknown'
 
   const today = new Date()
-  const lastDate = new Date(lastMaintenanceDate)
-  const monthsElapsed = (today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44) // Average month length
+  let timeStatus: MaintenanceStatus = 'good'
+  let mileageStatus: MaintenanceStatus = 'good'
 
-  let status: MaintenanceStatus = 'good'
+  // Priority 1: Check user-specified next service date
+  if (lastMaintenanceRecord.next_service_date) {
+    const nextServiceDate = new Date(lastMaintenanceRecord.next_service_date)
+    const daysUntilService = (nextServiceDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
 
-  // Check time-based intervals
-  if (interval.months) {
+    if (daysUntilService <= 0) {
+      timeStatus = 'overdue'
+    } else if (daysUntilService <= 30) { // 30 days = yellow warning
+      timeStatus = 'warning'
+    }
+  } else if (interval.months) {
+    // Fallback: Use default time interval
+    const lastDate = new Date(lastMaintenanceRecord.date)
+    const monthsElapsed = (today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44)
     const timeProgress = monthsElapsed / interval.months
+
     if (timeProgress >= (interval.redThreshold || 1.0)) {
-      status = 'overdue'
+      timeStatus = 'overdue'
     } else if (timeProgress >= (interval.yellowThreshold || 0.8)) {
-      status = 'warning'
+      timeStatus = 'warning'
     }
   }
 
-  // Check mileage-based intervals (if applicable)
-  if (interval.miles && lastMaintenanceMileage !== null && currentMileage !== null) {
-    const mileageElapsed = currentMileage - lastMaintenanceMileage
+  // Priority 2: Check user-specified next service mileage
+  if (lastMaintenanceRecord.next_service_mileage && currentMileage !== null) {
+    const milesUntilService = lastMaintenanceRecord.next_service_mileage - currentMileage
+
+    if (milesUntilService <= 0) {
+      mileageStatus = 'overdue'
+    } else if (milesUntilService <= 1000) { // 1000 miles = yellow warning
+      mileageStatus = 'warning'
+    }
+  } else if (interval.miles && lastMaintenanceRecord.mileage && currentMileage !== null) {
+    // Fallback: Use default mileage interval
+    const mileageElapsed = currentMileage - lastMaintenanceRecord.mileage
     const mileageProgress = mileageElapsed / interval.miles
 
-    const mileageStatus: MaintenanceStatus =
-      mileageProgress >= (interval.redThreshold || 1.0) ? 'overdue' :
-      mileageProgress >= (interval.yellowThreshold || 0.8) ? 'warning' : 'good'
-
-    // Take the most urgent status between time and mileage
-    if (mileageStatus === 'overdue' || status === 'overdue') {
-      status = 'overdue'
-    } else if (mileageStatus === 'warning' || status === 'warning') {
-      status = 'warning'
+    if (mileageProgress >= (interval.redThreshold || 1.0)) {
+      mileageStatus = 'overdue'
+    } else if (mileageProgress >= (interval.yellowThreshold || 0.8)) {
+      mileageStatus = 'warning'
     }
   }
 
-  return status
+  // Return the most urgent status (whichever comes first)
+  if (timeStatus === 'overdue' || mileageStatus === 'overdue') {
+    return 'overdue'
+  } else if (timeStatus === 'warning' || mileageStatus === 'warning') {
+    return 'warning'
+  }
+
+  return 'good'
 }
 
 // Helper function to get latest maintenance record for a type
@@ -171,8 +192,7 @@ function MaintenanceStatusGrid({
           const latestRecord = getLatestMaintenanceRecord(carMaintenanceRecords, key)
           const status = getMaintenanceStatus(
             key,
-            latestRecord?.date || null,
-            latestRecord?.mileage || null,
+            latestRecord || null,
             selectedCar?.current_mileage || null
           )
 

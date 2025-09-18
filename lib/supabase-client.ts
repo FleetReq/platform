@@ -35,8 +35,9 @@ export interface FillUp {
   date: string
   odometer_reading: number
   gallons: number
-  price_per_gallon: number
-  total_cost: number
+  price_per_gallon?: number
+  total_cost?: number
+  fuel_type?: string
   gas_station?: string
   location?: string
   notes?: string
@@ -49,10 +50,11 @@ export interface MaintenanceRecord {
   id: string
   car_id: string
   date: string
-  type: 'oil_change' | 'tire_rotation' | 'brake_service' | 'tune_up' | 'repair' | 'other'
-  description: string
-  cost: number
-  mileage: number
+  type: 'oil_change' | 'tire_rotation' | 'brake_inspection' | 'air_filter' | 'transmission_service' | 'coolant_flush' | 'wipers' | 'registration'
+  oil_type?: string
+  description?: string
+  cost?: number
+  mileage?: number
   service_provider?: string
   location?: string
   next_service_date?: string
