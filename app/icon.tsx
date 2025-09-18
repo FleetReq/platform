@@ -16,15 +16,17 @@ export default function Icon() {
     (
       <div
         style={{
-          fontSize: 20,
-          background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+          fontSize: 18,
+          background: '#2563eb',
           width: '100%',
           height: '100%',
+          borderRadius: '50%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           color: 'white',
           fontWeight: 'bold',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
         }}
       >
         BT

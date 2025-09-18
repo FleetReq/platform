@@ -16,8 +16,8 @@ export default function AppleIcon() {
     (
       <div
         style={{
-          fontSize: 64,
-          background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+          fontSize: 72,
+          background: '#2563eb',
           width: '100%',
           height: '100%',
           display: 'flex',
@@ -25,7 +25,8 @@ export default function AppleIcon() {
           justifyContent: 'center',
           color: 'white',
           fontWeight: 'bold',
-          borderRadius: '20px',
+          borderRadius: '32px',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
         }}
       >
         BT
