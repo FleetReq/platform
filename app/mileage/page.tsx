@@ -1454,10 +1454,9 @@ function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void
             />
           </div>
           <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Price per Gallon *</label>
+            <label className="block text-gray-700 dark:text-gray-300 mb-2">Price per Gallon</label>
             <input
               type="number"
-              required
               min="0"
               step="0.001"
               value={formData.price_per_gallon}

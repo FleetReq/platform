@@ -78,9 +78,9 @@ export async function POST(request: NextRequest) {
       notes
     } = body
 
-    if (!car_id || !odometer_reading || !gallons || !price_per_gallon) {
+    if (!car_id || !odometer_reading || !gallons) {
       return NextResponse.json(
-        { error: 'Car ID, odometer reading, gallons, and price per gallon are required' },
+        { error: 'Car ID, odometer reading, and gallons are required' },
         { status: 400 }
       )
     }
@@ -97,7 +97,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Car not found' }, { status: 404 })
     }
 
-    const total_cost = parseFloat((parseFloat(gallons) * parseFloat(price_per_gallon)).toFixed(2))
+    const total_cost = price_per_gallon ?
+      parseFloat((parseFloat(gallons) * parseFloat(price_per_gallon)).toFixed(2)) :
+      null
 
     // Build insert object conditionally to handle missing columns gracefully
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -106,7 +108,7 @@ export async function POST(request: NextRequest) {
       date: date || new Date().toISOString().split('T')[0],
       odometer_reading: parseInt(odometer_reading),
       gallons: parseFloat(gallons),
-      price_per_gallon: parseFloat(price_per_gallon),
+      price_per_gallon: price_per_gallon ? parseFloat(price_per_gallon) : null,
       total_cost,
       gas_station: gas_station?.trim(),
       location: location?.trim(),
