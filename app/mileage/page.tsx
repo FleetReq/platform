@@ -1193,7 +1193,7 @@ export default function MileageTracker() {
   const [loading, setLoading] = useState(true)
   // Auth state is now managed by AuthComponent
   const [userIsOwner, setUserIsOwner] = useState(false)
-  const [userSubscriptionPlan, setUserSubscriptionPlan] = useState<'personal' | 'business' | 'fleet'>('personal')
+  const [userSubscriptionPlan, setUserSubscriptionPlan] = useState<'free' | 'personal' | 'business'>('free')
   const [activeTab, setActiveTab] = useState<'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'records' | 'settings'>('dashboard')
   const [chartView, setChartView] = useState<'weekly' | 'monthly' | 'yearly'>('monthly')
   const [selectedCarId, setSelectedCarId] = useState<string | null>(null)
@@ -1226,7 +1226,7 @@ export default function MileageTracker() {
       const plan = await getUserSubscriptionPlan(newUser.id)
       setUserSubscriptionPlan(plan)
     } else {
-      setUserSubscriptionPlan('personal')
+      setUserSubscriptionPlan('free')
     }
 
     setLoading(false)
