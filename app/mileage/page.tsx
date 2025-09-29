@@ -1188,7 +1188,7 @@ export default function MileageTracker() {
           {/* Title Section */}
           <div className="text-center mb-12">
             <h1 className="text-5xl lg:text-6xl font-bold text-white mb-4">
-              Fleet Management
+              FleetSync
               <span className="block text-blue-400 text-4xl lg:text-5xl mt-2">for Small Business</span>
             </h1>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
@@ -1318,7 +1318,7 @@ export default function MileageTracker() {
           </h1>
           <div className="w-32 h-1.5 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 mx-auto mb-6 rounded-full"></div>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-            Professional Vehicle Fleet Management & Analytics Dashboard
+            Professional Vehicle Fleet Tracking & Analytics Dashboard
           </p>
         </div>
 

@@ -82,7 +82,7 @@ Key SRE principles demonstrated include: 99.9% uptime through static generation,
   },
   {
     id: 6,
-    title: 'Fleet Management Platform - B2B SaaS Solution',
+    title: 'FleetSync - B2B SaaS Fleet Management',
     description: 'Professional fleet management platform targeting small businesses and contractors. Features multi-provider authentication, real-time analytics, maintenance scheduling, and cost optimization tools. Enterprise-grade architecture with 99.8% uptime, built with Next.js and Supabase.',
     longDescription: `A production-ready full-stack application showcasing Site Reliability Engineering skills through practical vehicle management. The system demonstrates database design, API development, authentication, and real-time data processing while maintaining 99.9% uptime targets.
 

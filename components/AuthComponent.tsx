@@ -308,7 +308,7 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
   return (
     <div className="max-w-md mx-auto p-6 bg-gray-900 rounded-lg border border-gray-700">
       <h2 className="text-2xl font-bold text-white mb-6 text-center">
-        Fleet Management
+        FleetSync
       </h2>
 
       {error && (
