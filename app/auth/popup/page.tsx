@@ -53,6 +53,11 @@ export default function AuthPopupCallback() {
               type: 'OAUTH_SUCCESS',
               session: data.session
             })
+
+            // Close the popup window
+            setTimeout(() => {
+              window.close()
+            }, 1000)
           } else {
             console.error('No session returned from auth exchange')
             authChannel.postMessage({
