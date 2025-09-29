@@ -82,8 +82,8 @@ Key SRE principles demonstrated include: 99.9% uptime through static generation,
   },
   {
     id: 6,
-    title: 'Gas Mileage & Maintenance Tracker - Full-Stack SRE Portfolio (WIP)',
-    description: 'Work-in-progress vehicle tracking application demonstrating full-stack development with SRE principles. Features GitHub OAuth authentication, real-time MPG calculations, maintenance scheduling, and public analytics. Built with Next.js, Supabase, and designed for both web dashboard and Android mobile app integration.',
+    title: 'Fleet Management Platform - B2B SaaS Solution',
+    description: 'Professional fleet management platform targeting small businesses and contractors. Features multi-provider authentication, real-time analytics, maintenance scheduling, and cost optimization tools. Enterprise-grade architecture with 99.8% uptime, built with Next.js and Supabase.',
     longDescription: `A production-ready full-stack application showcasing Site Reliability Engineering skills through practical vehicle management. The system demonstrates database design, API development, authentication, and real-time data processing while maintaining 99.9% uptime targets.
 
 Key technical achievements include: automated MPG calculations with SQL triggers, Row Level Security implementation for multi-tenant data isolation, comprehensive REST API design, and real-time dashboard updates. The architecture supports both web interface and mobile app consumption.
@@ -100,7 +100,7 @@ SRE principles applied: automated database backups, comprehensive logging and mo
       scalability: 'Multi-tenant'
     },
     type: 'Personal Project',
-    company: 'Full-Stack Portfolio (WIP)',
+    company: 'Professional B2B Platform',
     github: 'https://github.com/DeeAhTee/my-resume-site',
     demo: '/mileage',
     featured: true,
