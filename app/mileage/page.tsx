@@ -976,7 +976,7 @@ export default function MileageTracker() {
     }
 
     setLoading(false)
-  }, [loadData])
+  }, [])
 
   // Clean up auth callback parameters on initial load
   useEffect(() => {
@@ -993,7 +993,7 @@ export default function MileageTracker() {
     }
   }, [])
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       if (!supabase) return
 
@@ -1027,7 +1027,7 @@ export default function MileageTracker() {
     } catch (error) {
       console.error('Error loading data:', error)
     }
-  }
+  }, [])
 
   // Authentication is now handled by AuthComponent
 

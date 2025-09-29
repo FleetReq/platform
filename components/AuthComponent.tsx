@@ -67,8 +67,8 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
       // Clear form
       setEmail('')
       setPassword('')
-    } catch (error: any) {
-      setError(error.message)
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'An error occurred')
     } finally {
       setIsSigningIn(false)
     }
@@ -99,8 +99,8 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
       setEmail('')
       setPassword('')
       setFullName('')
-    } catch (error: any) {
-      setError(error.message)
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'An error occurred')
     } finally {
       setIsSigningIn(false)
     }
@@ -125,8 +125,8 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
       })
 
       if (error) throw error
-    } catch (error: any) {
-      setError(error.message)
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'An error occurred')
       setIsSigningIn(false)
     }
   }
@@ -162,14 +162,14 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
               clearInterval(pollTimer)
               setIsSigningIn(false)
             }
-          } catch (error) {
+          } catch {
             clearInterval(pollTimer)
             setIsSigningIn(false)
           }
         }, 1000)
       }
-    } catch (error: any) {
-      setError(error.message)
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'An error occurred')
       setIsSigningIn(false)
     }
   }
