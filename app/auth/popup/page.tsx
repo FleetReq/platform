@@ -20,6 +20,11 @@ export default function AuthPopupCallback() {
           type: 'OAUTH_ERROR',
           error: error
         })
+        try {
+          window.close()
+        } catch {
+          window.location.href = 'about:blank'
+        }
         return
       }
 
@@ -34,6 +39,11 @@ export default function AuthPopupCallback() {
               type: 'OAUTH_ERROR',
               error: exchangeError.message
             })
+            try {
+              window.close()
+            } catch {
+              window.location.href = 'about:blank'
+            }
             return
           }
 
@@ -66,6 +76,11 @@ export default function AuthPopupCallback() {
               type: 'OAUTH_ERROR',
               error: 'No session returned'
             })
+            try {
+              window.close()
+            } catch {
+              window.location.href = 'about:blank'
+            }
           }
         } catch (error) {
           console.error('Auth processing failed:', error)
@@ -73,6 +88,11 @@ export default function AuthPopupCallback() {
             type: 'OAUTH_ERROR',
             error: error instanceof Error ? error.message : 'Unknown error'
           })
+          try {
+            window.close()
+          } catch {
+            window.location.href = 'about:blank'
+          }
         }
       } else {
         console.error('No authorization code provided or Supabase not available')
@@ -80,6 +100,11 @@ export default function AuthPopupCallback() {
           type: 'OAUTH_ERROR',
           error: 'No authorization code provided'
         })
+        try {
+          window.close()
+        } catch {
+          window.location.href = 'about:blank'
+        }
       }
     }
 
