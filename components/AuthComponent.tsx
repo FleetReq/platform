@@ -125,13 +125,18 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
     setError(null)
 
     try {
+      const redirectUrl = window.location.hostname === 'localhost'
+        ? 'http://localhost:3000/auth/popup'
+        : 'https://brucetruong.com/auth/popup'
+
+      console.log('OAuth redirect URL:', redirectUrl)
+      console.log('Current hostname:', window.location.hostname)
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           skipBrowserRedirect: true,
-          redirectTo: window.location.hostname === 'localhost'
-            ? 'http://localhost:3000/auth/popup'
-            : 'https://brucetruong.com/auth/popup',
+          redirectTo: redirectUrl,
           scopes: 'openid email profile',
           queryParams: {
             access_type: 'offline',
