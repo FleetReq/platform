@@ -15,11 +15,19 @@ export default function OAuthRedirectHandler() {
 
     console.log('OAuthRedirectHandler: pathname:', window.location.pathname, 'code:', authCode ? 'present' : 'none')
 
-    // If we're in a popup window with an auth code, handle it here
+    // If we're in a popup window with an auth code, close immediately and handle auth in background
     if (authCode && window.opener && supabase) {
-      console.log('OAuthRedirectHandler: Handling popup OAuth callback on home page...')
+      console.log('OAuthRedirectHandler: Popup OAuth detected - closing immediately')
 
-      // This is a popup callback that ended up on home page
+      // Close popup immediately to prevent flash
+      try {
+        window.close()
+      } catch {
+        // Fallback if close() fails
+        window.location.href = 'about:blank'
+      }
+
+      // Process auth in background after closing
       const processPopupAuth = async () => {
         if (!supabase) {
           console.error('Supabase client not available')
@@ -70,6 +78,7 @@ export default function OAuthRedirectHandler() {
         }
       }
 
+      // Execute auth processing in background (don't await)
       processPopupAuth()
       return
     }
