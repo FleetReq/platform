@@ -1181,168 +1181,65 @@ export default function MileageTracker() {
   // Show auth component if no user is logged in
   if (!user) {
     return (
-      <div className="min-h-screen flex">
-        {/* Left Side - Business Value Proposition */}
-        <div className="flex-1 flex flex-col justify-center px-8 lg:px-16 bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 relative">
-          <BackgroundAnimation />
-          <div className="max-w-lg relative z-10">
-            <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 relative flex items-center justify-center">
+        <BackgroundAnimation />
+
+        <div className="relative z-10 max-w-4xl mx-auto px-8 py-16">
+          <div className="text-center mb-12">
+            <h1 className="text-5xl lg:text-6xl font-bold text-white mb-6">
               Fleet Management
-              <span className="block text-blue-400 text-3xl lg:text-4xl mt-2">for Small Business</span>
+              <span className="block text-blue-400 text-4xl lg:text-5xl mt-2">for Small Business</span>
             </h1>
 
-            <p className="text-xl text-gray-300 mb-8 leading-relaxed">
+            <p className="text-xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed">
               Professional tracking without enterprise costs. Built for contractors outgrowing spreadsheets.
             </p>
 
-            {/* Business Benefits */}
-            <div className="space-y-6 mb-8">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            {/* Key Benefits */}
+            <div className="grid md:grid-cols-3 gap-8 mb-12">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-green-500 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white mb-1">15-minute setup</h3>
-                  <p className="text-gray-400">No upfront costs - perfect for businesses outgrowing Excel</p>
-                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">15-minute setup</h3>
+                <p className="text-gray-400">Quick onboarding, no technical expertise required</p>
               </div>
 
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              <div className="text-center">
+                <div className="w-16 h-16 bg-blue-500 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white mb-1">Professional features included</h3>
-                  <p className="text-gray-400">Audit trails, compliance tracking, team management</p>
-                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">Professional reporting</h3>
+                <p className="text-gray-400">Audit trails and analytics for compliance</p>
               </div>
 
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+              <div className="text-center">
+                <div className="w-16 h-16 bg-purple-500 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                   </svg>
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white mb-1">Developer portfolio showcase</h3>
-                  <p className="text-gray-400">Production-ready SaaS built with modern tech stack</p>
+                <h3 className="text-lg font-semibold text-white mb-2">Affordable pricing</h3>
+                <p className="text-gray-400">$8-12/vehicle vs enterprise $25-50/month</p>
+              </div>
+            </div>
+
+            {/* Access Section */}
+            <div className="max-w-md mx-auto">
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-8 border border-white/20">
+                <h2 className="text-2xl font-bold text-white mb-6 text-center">Get Started</h2>
+
+                <AuthComponent onAuthChange={handleAuthChange} />
+
+                <div className="mt-6 text-center">
+                  <p className="text-gray-300 text-sm">
+                    Questions? <a href="mailto:bruce@brucetruong.com" className="text-blue-400 hover:text-blue-300 font-medium">Contact us</a>
+                  </p>
                 </div>
-              </div>
-            </div>
-
-            {/* Pricing */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
-              <div className="text-center mb-4">
-                <div className="text-sm text-gray-300 mb-2">Freemium Pricing</div>
-                <div className="space-y-2">
-                  <div className="text-white">
-                    <span className="font-bold">Free:</span> 1 vehicle
-                  </div>
-                  <div className="text-white">
-                    <span className="font-bold">$8/month:</span> Up to 5 vehicles
-                  </div>
-                  <div className="text-white">
-                    <span className="font-bold">$12/vehicle:</span> 6+ vehicles
-                  </div>
-                </div>
-                <p className="text-gray-400 text-sm mt-3">
-                  vs. enterprise at $25-50/vehicle/month
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Side - Technical Skills Showcase + Access */}
-        <div className="flex-1 flex flex-col justify-center px-8 lg:px-16 bg-white relative">
-          <div className="max-w-md mx-auto w-full">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                Full-Stack Development
-              </h2>
-              <p className="text-gray-600">
-                Built with modern enterprise architecture
-              </p>
-            </div>
-
-            {/* Technical Skills Showcase */}
-            <div className="mb-8 space-y-4">
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                    </svg>
-                  </div>
-                  <span className="font-semibold text-gray-900">Frontend & Backend</span>
-                </div>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• Next.js 15 with TypeScript & App Router</li>
-                  <li>• Supabase PostgreSQL + Row Level Security</li>
-                  <li>• RESTful APIs with authentication</li>
-                  <li>• Real-time data synchronization</li>
-                </ul>
-              </div>
-
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                    <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                    </svg>
-                  </div>
-                  <span className="font-semibold text-gray-900">Enterprise Features</span>
-                </div>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• Multi-user access control & audit trails</li>
-                  <li>• Advanced pagination & search</li>
-                  <li>• Data visualization with Chart.js</li>
-                  <li>• Responsive design & accessibility</li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Demo Access */}
-            <div className="mb-6 p-6 bg-blue-50 rounded-xl border border-blue-200">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                <span className="text-blue-900 font-semibold">Interactive Demo</span>
-              </div>
-              <p className="text-gray-700 text-sm mb-4">
-                Explore live application with sample data. See enterprise-grade features in action.
-              </p>
-              <button
-                onClick={() => {
-                  // Simulate demo mode by loading data without user authentication
-                  setLoading(false);
-                  loadData().catch(console.error);
-                }}
-                className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
-              >
-                View Technical Demo
-              </button>
-            </div>
-
-            {/* Authentication Component */}
-            <div className="bg-gray-50 rounded-xl p-6">
-              <div className="text-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Account Access</h3>
-                <p className="text-gray-600 text-sm">Sign in to access your fleet data</p>
-              </div>
-
-              <AuthComponent onAuthChange={handleAuthChange} />
-
-              <div className="mt-6 text-center space-y-2">
-                <p className="text-gray-500 text-sm">
-                  Business inquiry? <a href="mailto:bruce@brucetruong.com" className="text-blue-600 hover:text-blue-700 font-medium">Contact for setup</a>
-                </p>
-                <p className="text-gray-500 text-sm">
-                  Recruiting? <a href="mailto:bruce@brucetruong.com" className="text-green-600 hover:text-green-700 font-medium">Developer portfolio</a>
-                </p>
               </div>
             </div>
           </div>
