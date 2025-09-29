@@ -975,19 +975,43 @@ export default function MileageTracker() {
     })
   }, [])
 
-  // Clean up auth callback parameters on initial load
+  // Initialize auth state and clean up URL parameters
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search)
-    const errorParam = searchParams.get('error')
-    const authSuccess = searchParams.get('auth')
+    const initializeAuth = async () => {
+      // Clean up URL parameters from auth callbacks
+      const searchParams = new URLSearchParams(window.location.search)
+      const errorParam = searchParams.get('error')
+      const authSuccess = searchParams.get('auth')
 
-    // Clean up URL parameters from auth callbacks
-    if (errorParam === 'auth_callback_error' || authSuccess === 'success') {
-      const newUrl = new URL(window.location.href)
-      newUrl.searchParams.delete('error')
-      newUrl.searchParams.delete('auth')
-      window.history.replaceState({}, '', newUrl.pathname + newUrl.search)
+      if (errorParam === 'auth_callback_error' || authSuccess === 'success') {
+        const newUrl = new URL(window.location.href)
+        newUrl.searchParams.delete('error')
+        newUrl.searchParams.delete('auth')
+        window.history.replaceState({}, '', newUrl.pathname + newUrl.search)
+      }
+
+      // Initialize auth state
+      if (supabase) {
+        try {
+          const { data: { session } } = await supabase.auth.getSession()
+          const currentUser = session?.user ?? null
+          setUser(currentUser)
+          setUserIsOwner(currentUser ? isOwner(currentUser.id) : false)
+        } catch (error) {
+          console.error('Error getting session:', error)
+          setUser(null)
+          setUserIsOwner(false)
+        }
+      }
+
+      // Always set loading to false after auth check
+      setLoading(false)
+
+      // Load initial data
+      loadData().catch(console.error)
     }
+
+    initializeAuth()
   }, [])
 
   const loadData = useCallback(async () => {
