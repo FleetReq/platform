@@ -122,7 +122,7 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
         provider: 'google',
         options: {
           skipBrowserRedirect: true,
-          redirectTo: `${window.location.origin}/auth/popup`,
+          redirectTo: `${window.location.origin}/auth/popup-close`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent'
@@ -190,7 +190,7 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
         provider: 'github',
         options: {
           skipBrowserRedirect: true,
-          redirectTo: `${window.location.origin}/auth/popup`,
+          redirectTo: `${window.location.origin}/auth/popup-close`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent'
