@@ -29,6 +29,11 @@ export default function OAuthRedirectHandler() {
 
       // Process auth in background after closing
       const processPopupAuth = async () => {
+        if (!supabase) {
+          console.error('Supabase client not available for popup auth')
+          return
+        }
+
         try {
           const { data, error } = await supabase.auth.exchangeCodeForSession(authCode)
           const authChannel = new BroadcastChannel('supabase-oauth')
