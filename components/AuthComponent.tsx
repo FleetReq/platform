@@ -36,9 +36,14 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth event:', event)
         setUser(session?.user ?? null)
         setLoading(false)
-        onAuthChange(session?.user ?? null)
+
+        // Only call onAuthChange for actual state changes, not initial load
+        if (event !== 'INITIAL_SESSION') {
+          onAuthChange(session?.user ?? null)
+        }
 
         if (event === 'SIGNED_IN') {
           setError(null)
@@ -47,7 +52,7 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
     )
 
     return () => subscription.unsubscribe()
-  }, [onAuthChange])
+  }, [])
 
   const signInWithEmail = async (e: React.FormEvent) => {
     e.preventDefault()

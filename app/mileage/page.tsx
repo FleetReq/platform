@@ -963,19 +963,16 @@ export default function MileageTracker() {
   }, [cars, selectedCarId])
 
   // Handle auth state changes from AuthComponent
-  const handleAuthChange = useCallback(async (newUser: User | null) => {
+  const handleAuthChange = useCallback((newUser: User | null) => {
     console.log('Auth state changed:', newUser ? `${newUser.email} (${newUser.id})` : 'null')
     setUser(newUser)
     setUserIsOwner(newUser ? isOwner(newUser.id) : false)
-
-    // Load data for the new user (or demo data if no user)
-    try {
-      await loadData()
-    } catch (error) {
-      console.error('Error loading data:', error)
-    }
-
     setLoading(false)
+
+    // Load data for the new user (or demo data if no user) - but don't await it
+    loadData().catch(error => {
+      console.error('Error loading data:', error)
+    })
   }, [])
 
   // Clean up auth callback parameters on initial load
