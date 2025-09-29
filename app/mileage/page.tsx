@@ -1181,75 +1181,100 @@ export default function MileageTracker() {
   // Show auth component if no user is logged in
   if (!user) {
     return (
-      <div className="h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 relative flex flex-col">
+      <div className="h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 relative">
         <BackgroundAnimation />
 
-        <div className="relative z-10 flex-1 flex flex-col justify-center max-w-6xl mx-auto px-8 w-full">
+        <div className="relative z-10 h-full flex flex-col justify-center max-w-7xl mx-auto px-6">
           {/* Title Section */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl lg:text-5xl font-bold text-white mb-4">
+          <div className="text-center mb-12">
+            <h1 className="text-5xl lg:text-6xl font-bold text-white mb-4">
               Fleet Management
-              <span className="block text-blue-400 text-3xl lg:text-4xl mt-1">for Small Business</span>
+              <span className="block text-blue-400 text-4xl lg:text-5xl mt-2">for Small Business</span>
             </h1>
-            <p className="text-lg text-gray-300 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
               Professional tracking without enterprise costs. Built for contractors outgrowing spreadsheets.
             </p>
           </div>
 
           {/* Main Content - Split Layout */}
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left Side - Key Benefits */}
-            <div>
-              <div className="space-y-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+          <div className="grid lg:grid-cols-2 gap-16 items-start max-w-6xl mx-auto">
+            {/* Left Side - Key Benefits & Pricing */}
+            <div className="space-y-8">
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-6">Why Choose Our Platform</h2>
+                <div className="space-y-4">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-1">15-minute setup with Excel import</h3>
+                      <p className="text-gray-400 text-sm">Import your existing spreadsheets and get running immediately</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-white">15-minute setup</h3>
-                    <p className="text-gray-400">Quick onboarding, no technical expertise required</p>
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-1">Professional reporting & compliance</h3>
+                      <p className="text-gray-400 text-sm">Audit trails, analytics, and reports for business requirements</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-white">Professional reporting</h3>
-                    <p className="text-gray-400">Audit trails and analytics for compliance</p>
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-white">Affordable pricing</h3>
-                    <p className="text-gray-400">$8-12/vehicle vs enterprise $25-50/month</p>
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center flex-shrink-0 mt-1">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-1">Multi-user team access</h3>
+                      <p className="text-gray-400 text-sm">Manage permissions for drivers, mechanics, and office staff</p>
+                    </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Pricing */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+                <h3 className="text-lg font-bold text-white mb-4">Simple Pricing</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center py-2 border-b border-white/10">
+                    <span className="text-white font-medium">Free</span>
+                    <span className="text-blue-400">1 vehicle</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 border-b border-white/10">
+                    <span className="text-white font-medium">Personal</span>
+                    <span className="text-blue-400">$8/month (up to 5 vehicles)</span>
+                  </div>
+                  <div className="flex justify-between items-center py-2">
+                    <span className="text-white font-medium">Business</span>
+                    <span className="text-blue-400">$12/vehicle/month</span>
+                  </div>
+                </div>
+                <p className="text-gray-400 text-xs mt-3 text-center">
+                  vs. enterprise solutions at $25-50/vehicle/month
+                </p>
               </div>
             </div>
 
             {/* Right Side - Authentication */}
-            <div className="flex justify-center lg:justify-end">
+            <div className="flex justify-center">
               <div className="w-full max-w-sm">
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-                  <h2 className="text-xl font-bold text-white mb-4 text-center">Get Started</h2>
+                <div className="bg-white/15 backdrop-blur-sm rounded-xl p-8 border border-white/20 shadow-2xl">
+                  <h2 className="text-2xl font-bold text-white mb-6 text-center">Get Started Today</h2>
 
                   <AuthComponent onAuthChange={handleAuthChange} />
 
-                  <div className="mt-4 text-center">
+                  <div className="mt-6 text-center">
                     <p className="text-gray-300 text-sm">
-                      Questions? <a href="mailto:bruce@brucetruong.com" className="text-blue-400 hover:text-blue-300 font-medium">Contact us</a>
+                      Questions? <a href="mailto:bruce@brucetruong.com" className="text-blue-400 hover:text-blue-300 font-medium underline">Contact us</a>
                     </p>
                   </div>
                 </div>
