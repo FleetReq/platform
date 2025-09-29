@@ -54,10 +54,12 @@ export default function AuthPopupCallback() {
               session: data.session
             })
 
-            // Close the popup window
-            setTimeout(() => {
+            // Close the popup window immediately
+            try {
               window.close()
-            }, 1000)
+            } catch {
+              window.location.href = 'about:blank'
+            }
           } else {
             console.error('No session returned from auth exchange')
             authChannel.postMessage({
@@ -84,12 +86,6 @@ export default function AuthPopupCallback() {
     handleAuthCallback()
   }, [])
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-        <p className="mt-4 text-gray-600">Processing authentication...</p>
-      </div>
-    </div>
-  )
+  // Return null to prevent any visual flash
+  return null
 }
