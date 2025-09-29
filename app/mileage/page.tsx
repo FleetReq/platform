@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner } from '@/lib/supabase-client'
 import BackgroundAnimation from '../components/BackgroundAnimation'
+import AuthComponent from '../../components/AuthComponent'
+import type { User } from '@supabase/supabase-js'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -931,13 +933,13 @@ function CurrentMileageEditor({ carId, cars, onUpdate }: { carId: string, cars: 
 }
 
 export default function MileageTracker() {
-  const [user, setUser] = useState<{ email?: string; id?: string } | null>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [cars, setCars] = useState<Car[]>([])
   const [stats, setStats] = useState<UserStats | null>(null)
   const [fillUps, setFillUps] = useState<FillUp[]>([])
   const [maintenanceRecords, setMaintenanceRecords] = useState<MaintenanceRecord[]>([])
   const [loading, setLoading] = useState(true)
-  const [isSigningIn, setIsSigningIn] = useState(false)
+  // Auth state is now managed by AuthComponent
   const [userIsOwner, setUserIsOwner] = useState(false)
   const [activeTab, setActiveTab] = useState<'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'records'>('dashboard')
   const [chartView, setChartView] = useState<'weekly' | 'monthly' | 'yearly'>('monthly')
@@ -960,160 +962,36 @@ export default function MileageTracker() {
     }
   }, [cars, selectedCarId])
 
-  const checkUser = useCallback(async () => {
+  // Handle auth state changes from AuthComponent
+  const handleAuthChange = useCallback(async (newUser: User | null) => {
+    console.log('Auth state changed:', newUser ? `${newUser.email} (${newUser.id})` : 'null')
+    setUser(newUser)
+    setUserIsOwner(newUser ? isOwner(newUser.id) : false)
+
+    // Load data for the new user (or demo data if no user)
     try {
-      if (!supabase) {
-        console.log('checkUser: Database not configured, skipping auth check')
-        setLoading(false)
-        return
-      }
-
-      console.log('checkUser: Checking authentication state...')
-
-      // Get the current session with timeout handling
-      let session = null
-      let sessionError = null
-      try {
-        const sessionResult = await Promise.race([
-          supabase.auth.getSession(),
-          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Session check timeout')), 10000))
-        ])
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        session = (sessionResult as { data?: { session: any }, error?: any }).data?.session || null
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        sessionError = (sessionResult as { data?: { session: any }, error?: any }).error || null
-      } catch (timeoutError) {
-        console.error('Session check timeout:', timeoutError)
-        sessionError = timeoutError
-      }
-
-      if (sessionError) {
-        console.error('Session error:', sessionError)
-      }
-
-      // Get the current user with timeout handling
-      let user = null
-      try {
-        const userResult = await Promise.race([
-          supabase.auth.getUser(),
-          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('User check timeout')), 10000))
-        ])
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        user = (userResult as { data?: { user: any } }).data?.user || null
-      } catch (timeoutError) {
-        console.error('User check timeout:', timeoutError)
-      }
-
-      console.log('checkUser: User data:', user ? `${user.email} (${user.id})` : 'null')
-      setUser(user)
-
-      // If user is authenticated, sync session with server
-      if (user && session) {
-        try {
-          await fetch('/api/sync-session', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ session }),
-            credentials: 'include'
-          })
-        } catch (error) {
-          console.error('Failed to sync session with server:', error)
-        }
-      }
-
-      if (user) {
-        setUserIsOwner(isOwner(user.id))
-      }
-
-      // Always load data (for both authenticated and anonymous users)
       await loadData()
     } catch (error) {
-      console.error('Error checking user:', error)
-      // Set user to null on auth errors to show demo mode
-      setUser(null)
-      setUserIsOwner(false)
-      // Still try to load demo data
-      try {
-        await loadData()
-      } catch (loadError) {
-        console.error('Error loading demo data:', loadError)
-      }
-    } finally {
-      console.log('checkUser: Setting loading to false')
-      setLoading(false)
+      console.error('Error loading data:', error)
     }
-  }, [])
 
+    setLoading(false)
+  }, [loadData])
+
+  // Clean up auth callback parameters on initial load
   useEffect(() => {
-    checkUser()
-
-    // Check for OAuth callback completion (access_token in hash OR auth=success in search params)
-    const urlParams = new URLSearchParams(window.location.hash.substring(1))
     const searchParams = new URLSearchParams(window.location.search)
-    const accessToken = urlParams.get('access_token')
+    const errorParam = searchParams.get('error')
     const authSuccess = searchParams.get('auth')
 
-    // Clean up auth error parameter if present (authentication may have succeeded despite error)
-    const errorParam = searchParams.get('error')
-    if (errorParam === 'auth_callback_error') {
-      console.log('Cleaning up auth error parameter from URL')
+    // Clean up URL parameters from auth callbacks
+    if (errorParam === 'auth_callback_error' || authSuccess === 'success') {
       const newUrl = new URL(window.location.href)
       newUrl.searchParams.delete('error')
+      newUrl.searchParams.delete('auth')
       window.history.replaceState({}, '', newUrl.pathname + newUrl.search)
     }
-
-    if (accessToken || authSuccess === 'success') {
-      // OAuth callback completed, force auth state refresh immediately
-      console.log('Detected successful OAuth callback, refreshing user state...')
-
-      // Immediately check user state
-      checkUser().then(() => {
-        console.log('User state refreshed after OAuth callback')
-      })
-
-      // Clear the URL parameters to clean up the URL
-      if (authSuccess === 'success') {
-        const newUrl = new URL(window.location.href)
-        newUrl.searchParams.delete('auth')
-        window.history.replaceState({}, '', newUrl.pathname)
-      }
-    }
-
-    // Listen for auth state changes (e.g., after OAuth callback)
-    if (supabase) {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_IN' && session) {
-          // User just signed in, sync session and reload data
-          setIsSigningIn(false)
-          try {
-            await fetch('/api/sync-session', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ session }),
-              credentials: 'include'
-            })
-            // Reload user state and data immediately
-            await checkUser()
-            // Force a re-render to update UI state
-            await loadData()
-          } catch (error) {
-            console.error('Failed to sync session after sign in:', error)
-            setIsSigningIn(false)
-          }
-        } else if (event === 'SIGNED_OUT') {
-          // User signed out, clear state
-          setUser(null)
-          setUserIsOwner(false)
-          // Return to dashboard when signing out
-          setActiveTab('dashboard')
-          // Still show data for anonymous users
-          await loadData()
-        }
-      })
-
-      return () => subscription.unsubscribe()
-    }
-  }, [checkUser])
+  }, [])
 
   const loadData = async () => {
     try {
@@ -1151,100 +1029,7 @@ export default function MileageTracker() {
     }
   }
 
-  const signIn = async () => {
-    try {
-      if (!supabase) {
-        throw new Error('Database not configured')
-      }
-
-      setIsSigningIn(true)
-      console.log('Starting popup OAuth flow...')
-
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'github',
-        options: {
-          skipBrowserRedirect: true,
-          redirectTo: `${window.location.origin}/auth/popup`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent'
-          }
-        }
-      })
-
-      if (error) throw error
-
-      if (data?.url) {
-        console.log('Opening GitHub OAuth popup...')
-        console.log('OAuth URL:', data.url)
-
-        // Open popup window with the GitHub OAuth URL
-        const popup = window.open(
-          data.url,
-          'github-oauth',
-          'width=500,height=700,scrollbars=yes,resizable=yes,left=' +
-          (window.screen.width / 2 - 250) + ',top=' +
-          (window.screen.height / 2 - 350)
-        )
-
-        if (!popup) {
-          // Popup blocked, fallback to redirect
-          console.log('Popup blocked, falling back to redirect...')
-          window.location.assign(data.url)
-          return
-        }
-
-        // Listen for auth completion via BroadcastChannel
-        const authChannel = new BroadcastChannel('supabase-oauth')
-
-        const handleAuthMessage = (event: MessageEvent) => {
-          if (event.data.type === 'OAUTH_SUCCESS') {
-            console.log('OAuth successful, closing popup...')
-            popup.close()
-            authChannel.close()
-
-            // Immediately check user state and update UI
-            checkUser().then(() => {
-              setIsSigningIn(false)
-              console.log('User authenticated and state updated')
-            })
-          } else if (event.data.type === 'OAUTH_ERROR') {
-            console.error('OAuth failed:', event.data.error)
-            popup.close()
-            authChannel.close()
-            setIsSigningIn(false)
-          }
-        }
-
-        authChannel.onmessage = handleAuthMessage
-
-        // Handle popup closed manually (user canceled)
-        const checkClosed = setInterval(() => {
-          if (popup.closed) {
-            clearInterval(checkClosed)
-            authChannel.close()
-            setIsSigningIn(false)
-            console.log('OAuth popup closed by user')
-          }
-        }, 1000)
-
-        // Timeout after 3 minutes
-        setTimeout(() => {
-          if (!popup.closed) {
-            popup.close()
-            clearInterval(checkClosed)
-            authChannel.close()
-            setIsSigningIn(false)
-            console.log('OAuth popup timeout')
-          }
-        }, 180000)
-      }
-      if (error) throw error
-    } catch (error) {
-      console.error('Error signing in:', error)
-      setIsSigningIn(false)
-    }
-  }
+  // Authentication is now handled by AuthComponent
 
   const signOut = async () => {
     try {
@@ -1372,24 +1157,29 @@ export default function MileageTracker() {
     )
   }
 
-  // Show landing page only if no data is available (not just no user)
-  if (!user && (!cars || cars.length === 0)) {
+  // Show auth component if no user is logged in
+  if (!user) {
     return (
       <div className="relative overflow-hidden min-h-screen">
         <BackgroundAnimation />
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center mb-16">
             <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Vehicle Analytics
+              Fleet Management
             </h1>
             <div className="w-32 h-1.5 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 mx-auto mb-6 rounded-full"></div>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              Professional-grade vehicle tracking with comprehensive analytics and maintenance scheduling
+              Professional vehicle tracking for small businesses and contractors
             </p>
           </div>
 
+          {/* Auth Component */}
+          <div className="max-w-md mx-auto">
+            <AuthComponent onAuthChange={handleAuthChange} />
+          </div>
+
           {/* Features Section */}
-          <section className="mb-16 py-12 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50">
+          <section className="mt-16 py-12 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50">
             <div className="px-8">
               <h2 className="text-3xl font-bold mb-8 text-center text-gray-900 dark:text-white">Platform Features</h2>
               <div className="grid md:grid-cols-3 gap-8">
@@ -1401,10 +1191,10 @@ export default function MileageTracker() {
                     </svg>
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 transition-colors duration-300 group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                    Advanced Analytics
+                    Fleet Analytics
                   </h3>
                   <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                    Monitor fuel efficiency with automatic MPG calculations, trend analysis, and performance insights
+                    Monitor fuel efficiency, track costs, and optimize fleet performance with comprehensive analytics
                   </p>
                 </div>
 
@@ -1442,26 +1232,6 @@ export default function MileageTracker() {
             </div>
           </section>
 
-          {/* Call to Action */}
-          <section className="py-12 bg-gradient-to-r from-blue-50/80 to-indigo-50/80 dark:from-blue-900/20 dark:to-indigo-900/20 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50">
-            <div className="max-w-3xl mx-auto text-center px-6">
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-                Ready to Optimize Your Vehicle Management?
-              </h2>
-              <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
-                Join the platform that brings professional-grade analytics to personal vehicle tracking
-              </p>
-              <button
-                onClick={signIn}
-                className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-8 py-4 rounded-lg font-medium transition-all duration-200 inline-flex items-center justify-center shadow-lg hover:shadow-xl"
-              >
-                <svg className="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clipRule="evenodd" />
-                </svg>
-                Sign In with GitHub to Get Started
-              </button>
-            </div>
-          </section>
         </div>
       </div>
     )
