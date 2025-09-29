@@ -1251,7 +1251,7 @@ export default function MileageTracker() {
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-white/10">
                     <span className="text-white font-medium">Personal</span>
-                    <span className="text-blue-400">$8/month (up to 5 vehicles)</span>
+                    <span className="text-blue-400">$8/month (up to 3 vehicles)</span>
                   </div>
                   <div className="flex justify-between items-center py-2">
                     <span className="text-white font-medium">Business</span>
