@@ -1181,147 +1181,131 @@ export default function MileageTracker() {
   // Show auth component if no user is logged in
   if (!user) {
     return (
-      <div className="relative overflow-hidden min-h-screen">
-        <BackgroundAnimation />
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+      <div className="min-h-screen flex">
+        {/* Left Side - Value Proposition */}
+        <div className="flex-1 flex flex-col justify-center px-8 lg:px-16 bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 relative">
+          <BackgroundAnimation />
+          <div className="max-w-lg relative z-10">
+            <h1 className="text-4xl lg:text-5xl font-bold text-white mb-6">
               Fleet Management
+              <span className="block text-blue-400 text-3xl lg:text-4xl mt-2">for Small Business</span>
             </h1>
-            <div className="w-32 h-1.5 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 mx-auto mb-6 rounded-full"></div>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              Professional vehicle tracking for small businesses and contractors
+
+            <p className="text-xl text-gray-300 mb-8 leading-relaxed">
+              Stop using spreadsheets. Start saving money.
             </p>
-          </div>
 
-          {/* Platform Statistics & Skills Showcase */}
-          <div className="grid md:grid-cols-3 gap-6 mb-12">
-            <div className="text-center p-6 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
-              <div className="text-3xl font-bold text-blue-400 mb-2">250K+</div>
-              <div className="text-gray-300">Miles Tracked</div>
-              <div className="text-sm text-gray-400 mt-1">Across development & testing</div>
-            </div>
-            <div className="text-center p-6 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
-              <div className="text-3xl font-bold text-green-400 mb-2">99.8%</div>
-              <div className="text-gray-300">Uptime</div>
-              <div className="text-sm text-gray-400 mt-1">Enterprise-grade reliability</div>
-            </div>
-            <div className="text-center p-6 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
-              <div className="text-3xl font-bold text-purple-400 mb-2">$2.3K</div>
-              <div className="text-gray-300">Cost Savings</div>
-              <div className="text-sm text-gray-400 mt-1">Per vehicle annually</div>
-            </div>
-          </div>
-
-          {/* Login Section */}
-          <div className="max-w-md mx-auto">
-            <div className="p-8 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
-              <h2 className="text-2xl font-bold text-white mb-6 text-center">
-                Access Fleet Management Platform
-              </h2>
-
-              {/* Demo Access */}
-              <div className="mb-6 p-4 bg-blue-900/30 rounded-lg border border-blue-500/30">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
-                  <span className="text-blue-200 font-medium">Live Demo Available</span>
+            {/* Key Benefits */}
+            <div className="space-y-6 mb-8">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                  </svg>
                 </div>
-                <p className="text-gray-300 text-sm mb-3">
-                  Explore the full platform with sample fleet data
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-1">Save $2,300 per vehicle annually</h3>
+                  <p className="text-gray-400">Optimize fuel efficiency and reduce maintenance costs</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-1">99.8% uptime guarantee</h3>
+                  <p className="text-gray-400">Enterprise reliability at small business prices</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-1">Setup in under 15 minutes</h3>
+                  <p className="text-gray-400">Import from Excel or start fresh with guided setup</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Pricing */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-white mb-2">
+                  $12<span className="text-lg text-gray-300">/vehicle/month</span>
+                </div>
+                <p className="text-gray-300 text-sm">
+                  vs. enterprise solutions at $25-50/month
                 </p>
-                <button
-                  onClick={() => handleAuthChange(null)}
-                  className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
-                >
-                  View Demo
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side - Login */}
+        <div className="flex-1 flex flex-col justify-center px-8 lg:px-16 bg-white relative">
+          <div className="max-w-md mx-auto w-full">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                Access Platform
+              </h2>
+              <p className="text-gray-600">
+                Get started with your fleet management
+              </p>
+            </div>
+
+            {/* Demo Access */}
+            <div className="mb-8 p-6 bg-blue-50 rounded-xl border border-blue-200">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                <span className="text-blue-900 font-semibold">Live Demo</span>
+              </div>
+              <p className="text-gray-700 text-sm mb-4">
+                Explore with sample fleet data - no signup required
+              </p>
+              <button
+                onClick={() => handleAuthChange(null)}
+                className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
+              >
+                View Demo
+              </button>
+            </div>
+
+            {/* Client Login */}
+            <div>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="flex-1 h-px bg-gray-300"></div>
+                <div className="text-gray-500 text-sm font-medium">Client Login</div>
+                <div className="flex-1 h-px bg-gray-300"></div>
+              </div>
+
+              <div className="space-y-4">
+                <button className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white hover:bg-gray-50 text-gray-900 rounded-lg transition-colors font-medium border border-gray-300">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  </svg>
+                  Continue with Google
+                </button>
+
+                <button className="w-full px-4 py-3 bg-gray-900 hover:bg-gray-800 text-white rounded-lg transition-colors font-medium">
+                  Sign in with Email
                 </button>
               </div>
 
-              {/* Client Login */}
-              <div className="text-center">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="flex-1 h-px bg-gray-600"></div>
-                  <div className="text-gray-400 text-sm">Client Access</div>
-                  <div className="flex-1 h-px bg-gray-600"></div>
-                </div>
-
-                <div className="space-y-3">
-                  <button className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white hover:bg-gray-100 text-gray-900 rounded-lg transition-colors font-medium">
-                    <svg className="w-5 h-5" viewBox="0 0 24 24">
-                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                    </svg>
-                    Sign in with Google
-                  </button>
-
-                  <button className="w-full px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium text-sm border border-gray-600">
-                    Email Sign In
-                  </button>
-                </div>
-
-                <p className="text-gray-400 text-xs mt-4">
-                  New client? <a href="mailto:bruce@brucetruong.com" className="text-blue-400 hover:text-blue-300">Contact for setup</a>
-                </p>
-              </div>
+              <p className="text-gray-500 text-sm text-center mt-6">
+                New client? <a href="mailto:bruce@brucetruong.com" className="text-blue-600 hover:text-blue-700 font-medium">Contact for setup</a>
+              </p>
             </div>
           </div>
-
-          {/* Features Section */}
-          <section className="mt-16 py-12 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-700/50">
-            <div className="px-8">
-              <h2 className="text-3xl font-bold mb-8 text-center text-gray-900 dark:text-white">Platform Features</h2>
-              <div className="grid md:grid-cols-3 gap-8">
-                <div className="group text-center">
-                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 transition-all duration-300 shadow-lg hover:shadow-xl relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-400/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <svg className="w-10 h-10 text-white relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 transition-colors duration-300 group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                    Fleet Analytics
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                    Monitor fuel efficiency, track costs, and optimize fleet performance with comprehensive analytics
-                  </p>
-                </div>
-
-                <div className="group text-center">
-                  <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-green-600 rounded-3xl flex items-center justify-center mx-auto mb-6 transition-all duration-300 shadow-lg hover:shadow-xl relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <svg className="w-10 h-10 text-white relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 transition-colors duration-300 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
-                    Smart Maintenance
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                    Automated scheduling, service reminders, and comprehensive maintenance history tracking
-                  </p>
-                </div>
-
-                <div className="group text-center">
-                  <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 transition-all duration-300 shadow-lg hover:shadow-xl relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-purple-400/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <svg className="w-10 h-10 text-white relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 transition-colors duration-300 group-hover:text-purple-600 dark:group-hover:text-purple-400">
-                    Data Visualization
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                    Interactive charts, trend analysis, and detailed performance reports across multiple time frames
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
-
         </div>
       </div>
     )
