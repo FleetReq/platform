@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner } from '@/lib/supabase-client'
+import Link from 'next/link'
+import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner, getUserSubscriptionPlan, hasFeatureAccess, getUpgradeMessage } from '@/lib/supabase-client'
 import BackgroundAnimation from '../components/BackgroundAnimation'
 import AuthComponent from '../../components/AuthComponent'
+import UpgradePrompt from '../../components/UpgradePrompt'
 import type { User } from '@supabase/supabase-js'
 import {
   Chart as ChartJS,
@@ -139,11 +141,13 @@ function getLatestMaintenanceRecord(maintenanceRecords: MaintenanceRecord[], typ
 function MaintenanceStatusGrid({
   selectedCarId,
   cars,
-  maintenanceRecords
+  maintenanceRecords,
+  subscriptionPlan
 }: {
   selectedCarId: string | null,
   cars: Car[],
-  maintenanceRecords: MaintenanceRecord[]
+  maintenanceRecords: MaintenanceRecord[],
+  subscriptionPlan: 'personal' | 'business' | 'fleet'
 }) {
   if (!selectedCarId) {
     return (
@@ -156,6 +160,9 @@ function MaintenanceStatusGrid({
 
   const selectedCar = cars.find(car => car.id === selectedCarId)
   const carMaintenanceRecords = maintenanceRecords.filter(record => record.car_id === selectedCarId)
+
+  // Check if user has access to maintenance tracking
+  const hasMaintenanceAccess = hasFeatureAccess(subscriptionPlan, 'maintenance_tracking')
 
   const getStatusColor = (status: MaintenanceStatus) => {
     switch (status) {
@@ -187,32 +194,61 @@ function MaintenanceStatusGrid({
   ]
 
   return (
-    <div className="card-professional p-4">
+    <div className="card-professional p-4 relative">
       <h3 className="text-sm font-bold mb-3 text-gray-900 dark:text-white">Maintenance Status</h3>
-      <div className="grid grid-cols-2 gap-1">
-        {maintenanceTypes.map(({ key, label, icon }) => {
-          const latestRecord = getLatestMaintenanceRecord(carMaintenanceRecords, key)
-          const status = getMaintenanceStatus(
-            key,
-            latestRecord || null,
-            selectedCar?.current_mileage || null
-          )
 
-          return (
-            <div
-              key={key}
-              className={`border-l-4 p-2 rounded-r-lg ${getStatusColor(status)}`}
-            >
-              <div className="flex items-center">
-                <span className="text-sm mr-2">{icon}</span>
-                <span className={`text-xs font-semibold ${getTextColor(status)}`}>
-                  {label}
-                </span>
+      {hasMaintenanceAccess ? (
+        <div className="grid grid-cols-2 gap-1">
+          {maintenanceTypes.map(({ key, label, icon }) => {
+            const latestRecord = getLatestMaintenanceRecord(carMaintenanceRecords, key)
+            const status = getMaintenanceStatus(
+              key,
+              latestRecord || null,
+              selectedCar?.current_mileage || null
+            )
+
+            return (
+              <div
+                key={key}
+                className={`border-l-4 p-2 rounded-r-lg ${getStatusColor(status)}`}
+              >
+                <div className="flex items-center">
+                  <span className="text-sm mr-2">{icon}</span>
+                  <span className={`text-xs font-semibold ${getTextColor(status)}`}>
+                    {label}
+                  </span>
+                </div>
               </div>
-            </div>
-          )
-        })}
-      </div>
+            )
+          })}
+        </div>
+      ) : (
+        <>
+          {/* Grayed out preview */}
+          <div className="grid grid-cols-2 gap-1 opacity-40 pointer-events-none">
+            {maintenanceTypes.map(({ key, label, icon }) => (
+              <div
+                key={key}
+                className="border-l-4 p-2 rounded-r-lg border-gray-400 bg-gray-50 dark:bg-gray-800/50"
+              >
+                <div className="flex items-center">
+                  <span className="text-sm mr-2">{icon}</span>
+                  <span className="text-xs font-semibold text-gray-500">
+                    {label}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Upgrade overlay */}
+          <UpgradePrompt
+            feature="maintenance_tracking"
+            message={getUpgradeMessage('maintenance_tracking')}
+            className="absolute inset-0"
+          />
+        </>
+      )}
     </div>
   )
 }
@@ -1158,6 +1194,7 @@ export default function MileageTracker() {
   const [loading, setLoading] = useState(true)
   // Auth state is now managed by AuthComponent
   const [userIsOwner, setUserIsOwner] = useState(false)
+  const [userSubscriptionPlan, setUserSubscriptionPlan] = useState<'personal' | 'business' | 'fleet'>('personal')
   const [activeTab, setActiveTab] = useState<'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'records' | 'settings'>('dashboard')
   const [chartView, setChartView] = useState<'weekly' | 'monthly' | 'yearly'>('monthly')
   const [selectedCarId, setSelectedCarId] = useState<string | null>(null)
@@ -1180,10 +1217,19 @@ export default function MileageTracker() {
   }, [cars, selectedCarId])
 
   // Handle auth state changes from AuthComponent
-  const handleAuthChange = useCallback((newUser: User | null) => {
+  const handleAuthChange = useCallback(async (newUser: User | null) => {
     console.log('Auth state changed:', newUser ? `${newUser.email} (${newUser.id})` : 'null')
     setUser(newUser)
     setUserIsOwner(newUser ? isOwner(newUser.id) : false)
+
+    // Load subscription plan for authenticated users
+    if (newUser) {
+      const plan = await getUserSubscriptionPlan(newUser.id)
+      setUserSubscriptionPlan(plan)
+    } else {
+      setUserSubscriptionPlan('personal')
+    }
+
     setLoading(false)
 
     // Load data for the new user (or demo data if no user) - but don't await it
@@ -1478,6 +1524,17 @@ export default function MileageTracker() {
                 <p className="text-gray-400 text-xs mt-3 text-center">
                   vs. per-vehicle competitors at $15-25/vehicle/month
                 </p>
+                <div className="mt-4 text-center">
+                  <Link
+                    href="/pricing"
+                    className="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 backdrop-blur-sm border border-white/30"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                    View Full Pricing & Features
+                  </Link>
+                </div>
               </div>
             </div>
 
@@ -1634,6 +1691,7 @@ export default function MileageTracker() {
                 selectedCarId={selectedCarId}
                 cars={cars}
                 maintenanceRecords={maintenanceRecords}
+                subscriptionPlan={userSubscriptionPlan}
               />
             </div>
 

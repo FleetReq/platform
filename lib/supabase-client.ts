@@ -178,3 +178,42 @@ export const checkSubscriptionLimits = async (primaryUserId: string): Promise<Su
 
   return data?.[0] || null
 }
+
+// Subscription plan checking functions
+export const getUserSubscriptionPlan = async (userId: string): Promise<'personal' | 'business' | 'fleet'> => {
+  if (!supabase) return 'personal'
+
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .select('subscription_plan')
+    .eq('user_id', userId)
+    .single()
+
+  if (error) {
+    console.error('Error fetching subscription plan:', error)
+    return 'personal'
+  }
+
+  return data?.subscription_plan || 'personal'
+}
+
+export const hasFeatureAccess = (plan: 'personal' | 'business' | 'fleet', feature: string): boolean => {
+  const features = {
+    personal: ['fuel_tracking', 'basic_analytics'],
+    business: ['fuel_tracking', 'basic_analytics', 'maintenance_tracking', 'team_collaboration', 'professional_reporting', 'unlimited_history'],
+    fleet: ['fuel_tracking', 'basic_analytics', 'maintenance_tracking', 'team_collaboration', 'professional_reporting', 'unlimited_history', 'advanced_analytics', 'api_access']
+  }
+
+  return features[plan]?.includes(feature) || false
+}
+
+export const getUpgradeMessage = (feature: string): string => {
+  const messages = {
+    maintenance_tracking: "Upgrade to Business to unlock maintenance scheduling and compliance tracking",
+    team_collaboration: "Upgrade to Business to invite team members and collaborate",
+    professional_reporting: "Upgrade to Business for professional reports and data export",
+    unlimited_history: "Upgrade to Business for unlimited data history (free plan limited to 90 days)"
+  }
+
+  return messages[feature as keyof typeof messages] || "Upgrade to unlock this feature"
+}
