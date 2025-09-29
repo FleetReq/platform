@@ -243,7 +243,6 @@ function MaintenanceStatusGrid({
 
           {/* Upgrade overlay */}
           <UpgradePrompt
-            feature="maintenance_tracking"
             message={getUpgradeMessage('maintenance_tracking')}
             className="absolute inset-0"
           />
@@ -301,7 +300,7 @@ function RecordsManager({
           type: 'fillup' as const,
           date: fillUp.date,
           car,
-          user_id: fillUp.created_by_user_id || car.user_id, // Fallback to car owner for existing records
+          user_id: fillUp.created_by_user_id || car.owner_id, // Fallback to car owner for existing records
           created_at: fillUp.created_at,
           description: `Fill-up - ${fillUp.gallons} gallons`,
           details: `${fillUp.odometer_reading} miles • ${fillUp.mpg ? fillUp.mpg + ' MPG' : 'MPG N/A'}${fillUp.total_cost ? ' • $' + fillUp.total_cost : ''}`,
@@ -323,7 +322,7 @@ function RecordsManager({
           type: 'maintenance' as const,
           date: maintenance.date,
           car,
-          user_id: maintenance.created_by_user_id || car.user_id, // Fallback to car owner for existing records
+          user_id: maintenance.created_by_user_id || car.owner_id, // Fallback to car owner for existing records
           created_at: maintenance.created_at,
           description: `${typeLabel}${maintenance.oil_type ? ` (${maintenance.oil_type})` : ''}`,
           details: `${maintenance.mileage ? maintenance.mileage + ' miles' : 'Mileage N/A'}${maintenance.cost ? ' • $' + maintenance.cost : ''}${maintenance.next_service_date ? ' • Next: ' + new Date(maintenance.next_service_date).toLocaleDateString() : ''}`,
@@ -392,7 +391,7 @@ function RecordsManager({
       } else {
         // Fallback to car owner for existing records
         const car = cars.find(c => c.id === fillUp.car_id)
-        if (car) userIds.add(car.user_id)
+        if (car) userIds.add(car.owner_id)
       }
     })
 
@@ -403,7 +402,7 @@ function RecordsManager({
       } else {
         // Fallback to car owner for existing records
         const car = cars.find(c => c.id === maintenance.car_id)
-        if (car) userIds.add(car.user_id)
+        if (car) userIds.add(car.owner_id)
       }
     })
 

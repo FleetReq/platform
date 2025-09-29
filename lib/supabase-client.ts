@@ -150,7 +150,7 @@ export const getTeamMembers = async (primaryUserId: string): Promise<TeamMember[
 export const inviteTeamMember = async (email: string, canEdit: boolean): Promise<{ success: boolean, error?: string }> => {
   if (!supabase) return { success: false, error: 'Supabase not initialized' }
 
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('invited_users')
     .insert({
       invited_email: email,

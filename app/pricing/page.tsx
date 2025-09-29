@@ -134,7 +134,7 @@ export default function PricingPage() {
 
         {/* Pricing Cards */}
         <div className="grid md:grid-cols-3 gap-8 mb-16">
-          {pricingTiers.map((tier, index) => (
+          {pricingTiers.map((tier) => (
             <div
               key={tier.name}
               className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden ${

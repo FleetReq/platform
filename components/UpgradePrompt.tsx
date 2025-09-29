@@ -1,12 +1,11 @@
 'use client'
 
 interface UpgradePromptProps {
-  feature: string
   message: string
   className?: string
 }
 
-export default function UpgradePrompt({ feature, message, className = '' }: UpgradePromptProps) {
+export default function UpgradePrompt({ message, className = '' }: UpgradePromptProps) {
   return (
     <div className={`relative ${className}`}>
       {/* Overlay that blocks interaction */}
