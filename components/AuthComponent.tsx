@@ -129,7 +129,10 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
         provider: 'google',
         options: {
           skipBrowserRedirect: true,
-          redirectTo: `${window.location.origin}/auth/popup`,
+          redirectTo: window.location.hostname === 'localhost'
+            ? 'http://localhost:3000/auth/popup'
+            : 'https://brucetruong.com/auth/popup',
+          scopes: 'openid email profile',
           queryParams: {
             access_type: 'offline',
             prompt: 'consent'
@@ -197,7 +200,10 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
         provider: 'github',
         options: {
           skipBrowserRedirect: true,
-          redirectTo: `${window.location.origin}/auth/popup`,
+          redirectTo: window.location.hostname === 'localhost'
+            ? 'http://localhost:3000/auth/popup'
+            : 'https://brucetruong.com/auth/popup',
+          scopes: 'read:user user:email',
           queryParams: {
             access_type: 'offline',
             prompt: 'consent'

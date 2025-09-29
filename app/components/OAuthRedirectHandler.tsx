@@ -15,73 +15,8 @@ export default function OAuthRedirectHandler() {
 
     console.log('OAuthRedirectHandler: pathname:', window.location.pathname, 'code:', authCode ? 'present' : 'none')
 
-    // If we're in a popup window with an auth code, close immediately and handle auth in background
-    if (authCode && window.opener && supabase) {
-      console.log('OAuthRedirectHandler: Popup OAuth detected - closing immediately')
-
-      // Close popup immediately to prevent flash
-      try {
-        window.close()
-      } catch {
-        // Fallback if close() fails
-        window.location.href = 'about:blank'
-      }
-
-      // Process auth in background after closing
-      const processPopupAuth = async () => {
-        if (!supabase) {
-          console.error('Supabase client not available')
-          return
-        }
-
-        try {
-          const { data, error } = await supabase.auth.exchangeCodeForSession(authCode)
-
-          const authChannel = new BroadcastChannel('supabase-oauth')
-
-          if (error) {
-            console.error('Session exchange failed:', error)
-            authChannel.postMessage({
-              type: 'OAUTH_ERROR',
-              error: error.message
-            })
-          } else if (data.session) {
-            console.log('Session established successfully in popup')
-
-            // Sync session with server in background
-            fetch('/api/sync-session', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ session: data.session }),
-              credentials: 'include'
-            }).catch(console.error)
-
-            // Notify parent window of success
-            authChannel.postMessage({
-              type: 'OAUTH_SUCCESS',
-              session: data.session
-            })
-          } else {
-            console.error('No session returned from auth exchange')
-            authChannel.postMessage({
-              type: 'OAUTH_ERROR',
-              error: 'No session returned'
-            })
-          }
-        } catch (error) {
-          console.error('Popup auth processing failed:', error)
-          const authChannel = new BroadcastChannel('supabase-oauth')
-          authChannel.postMessage({
-            type: 'OAUTH_ERROR',
-            error: error instanceof Error ? error.message : 'Unknown error'
-          })
-        }
-      }
-
-      // Execute auth processing in background (don't await)
-      processPopupAuth()
-      return
-    }
+    // OAuth should redirect directly to /auth/popup once Supabase Site URL is configured properly
+    // No workaround needed - fix the root cause in Supabase settings
 
     // Handle regular redirects if this is clearly a fallback scenario
     if (false && authCode && supabase) {
