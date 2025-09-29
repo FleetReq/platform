@@ -1243,31 +1243,19 @@ export default function MileageTracker() {
 
       {/* Admin/Demo Mode Toggle Corner */}
       <div className="fixed bottom-6 right-6 z-50">
-        {user ? (
+        {user && (
           <div className="flex items-center gap-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg border border-gray-200/50 dark:border-gray-700/50">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-sm text-gray-600 dark:text-gray-300">Admin Mode</span>
+              <span className="text-sm text-gray-600 dark:text-gray-300">
+                {userIsOwner ? 'Admin Mode' : 'Authenticated'}
+              </span>
             </div>
             <button
               onClick={signOut}
               className="text-sm bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded font-medium transition-colors"
             >
               Sign Out
-            </button>
-          </div>
-        ) : (
-          <div className="flex items-center gap-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg border border-gray-200/50 dark:border-gray-700/50">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-              <span className="text-sm text-gray-600 dark:text-gray-300">Demo Mode</span>
-            </div>
-            <button
-              onClick={signIn}
-              disabled={isSigningIn}
-              className="text-sm bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white px-3 py-1 rounded font-medium transition-colors"
-            >
-              {isSigningIn ? 'Signing In...' : 'Sign In'}
             </button>
           </div>
         )}
