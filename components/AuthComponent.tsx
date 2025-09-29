@@ -12,7 +12,7 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [isSigningIn, setIsSigningIn] = useState(false)
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
+  const [authMode, setAuthMode] = useState<'signin' | 'signup' | 'reset'>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
@@ -47,6 +47,13 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
 
         if (event === 'SIGNED_IN') {
           setError(null)
+        }
+
+        if (event === 'SIGNED_OUT') {
+          setError(null)
+          setEmail('')
+          setPassword('')
+          setFullName('')
         }
       }
     )
@@ -249,7 +256,20 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
   const signOut = async () => {
     if (!supabase) return
 
-    await supabase.auth.signOut()
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('Sign out error:', error)
+        setError('Failed to sign out')
+      } else {
+        console.log('Successfully signed out')
+        // Force refresh to ensure clean state
+        window.location.reload()
+      }
+    } catch (error) {
+      console.error('Sign out failed:', error)
+      setError('Failed to sign out')
+    }
   }
 
   if (loading) {
