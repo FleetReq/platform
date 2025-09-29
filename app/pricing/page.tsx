@@ -15,56 +15,54 @@ interface PricingTier {
 
 const pricingTiers: PricingTier[] = [
   {
-    name: "Personal",
+    name: "Free",
     price: "Free",
     period: "",
-    description: "Perfect for individual vehicle owners",
+    description: "Perfect for trying out vehicle tracking",
     features: [
       "1 vehicle",
       "1 user",
-      "Fuel tracking & MPG analysis",
-      "Basic analytics",
+      "Basic fuel tracking & MPG analysis",
+      "View maintenance status",
       "90-day data history",
-      "Mobile responsive"
+      "Web access only"
     ],
     buttonText: "Get Started Free",
     buttonStyle: "bg-gray-600 hover:bg-gray-700 text-white"
   },
   {
-    name: "Business",
-    price: "$29",
+    name: "Personal",
+    price: "$4",
     period: "/month",
-    description: "Ideal for small contractors & service businesses",
+    description: "Ideal for families & small vehicle owners",
     features: [
-      "Up to 10 vehicles",
-      "Up to 6 team members",
-      "Everything in Personal",
-      "Maintenance tracking & alerts",
-      "Team collaboration",
-      "Professional reporting",
+      "Up to 3 vehicles",
+      "1 user",
+      "Everything in Free",
+      "Full maintenance tracking & alerts",
       "Unlimited data history",
-      "Export capabilities",
-      "Priority support"
+      "Mobile app access",
+      "Fuel efficiency analytics",
+      "Export capabilities"
     ],
     highlighted: true,
-    buttonText: "Start Business Trial",
+    buttonText: "Start Personal Plan",
     buttonStyle: "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
   },
   {
-    name: "Fleet",
-    price: "$59",
-    period: "/month",
-    description: "For growing fleets & enterprise needs",
+    name: "Business",
+    price: "$12",
+    period: "/vehicle/month",
+    description: "For contractors & service businesses (4+ vehicles)",
     features: [
-      "Up to 25 vehicles",
-      "Up to 12 team members",
-      "Everything in Business",
-      "Advanced analytics",
-      "API access",
-      "Custom maintenance intervals",
-      "Compliance reporting",
-      "White-label options",
-      "Dedicated support"
+      "Unlimited vehicles",
+      "Up to 6 team members",
+      "Everything in Personal",
+      "Team collaboration",
+      "Tax mileage tracking",
+      "Professional reporting",
+      "Advanced mobile features",
+      "Priority support"
     ],
     buttonText: "Contact Sales",
     buttonStyle: "bg-gray-800 hover:bg-gray-900 text-white"
@@ -72,24 +70,21 @@ const pricingTiers: PricingTier[] = [
 ]
 
 const allFeatures = [
-  { name: "Vehicles", personal: "1", business: "10", fleet: "25" },
-  { name: "Team Members", personal: "1", business: "6", fleet: "12" },
-  { name: "Fuel Tracking", personal: true, business: true, fleet: true },
-  { name: "MPG Analysis", personal: true, business: true, fleet: true },
-  { name: "Basic Analytics", personal: true, business: true, fleet: true },
-  { name: "Mobile Responsive", personal: true, business: true, fleet: true },
-  { name: "Data History", personal: "90 days", business: "Unlimited", fleet: "Unlimited" },
-  { name: "Maintenance Tracking", personal: false, business: true, fleet: true },
-  { name: "Maintenance Alerts", personal: false, business: true, fleet: true },
-  { name: "Team Collaboration", personal: false, business: true, fleet: true },
-  { name: "Professional Reporting", personal: false, business: true, fleet: true },
-  { name: "Export Capabilities", personal: false, business: true, fleet: true },
-  { name: "Advanced Analytics", personal: false, business: false, fleet: true },
-  { name: "API Access", personal: false, business: false, fleet: true },
-  { name: "Custom Intervals", personal: false, business: false, fleet: true },
-  { name: "Compliance Reporting", personal: false, business: false, fleet: true },
-  { name: "White-label Options", personal: false, business: false, fleet: true },
-  { name: "Support Level", personal: "Community", business: "Priority", fleet: "Dedicated" }
+  { name: "Vehicles", free: "1", personal: "3", business: "Unlimited" },
+  { name: "Team Members", free: "1", personal: "1", business: "6" },
+  { name: "Fuel Tracking", free: true, personal: true, business: true },
+  { name: "MPG Analysis", free: true, personal: true, business: true },
+  { name: "Basic Analytics", free: true, personal: true, business: true },
+  { name: "Data History", free: "90 days", personal: "Unlimited", business: "Unlimited" },
+  { name: "Maintenance Tracking", free: false, personal: true, business: true },
+  { name: "Maintenance Alerts", free: false, personal: true, business: true },
+  { name: "Mobile App Access", free: false, personal: true, business: true },
+  { name: "Export Capabilities", free: false, personal: true, business: true },
+  { name: "Team Collaboration", free: false, personal: false, business: true },
+  { name: "Tax Mileage Tracking", free: false, personal: false, business: true },
+  { name: "Professional Reporting", free: false, personal: false, business: true },
+  { name: "Advanced Mobile Features", free: false, personal: false, business: true },
+  { name: "Support Level", free: "Community", personal: "Email", business: "Priority" }
 ]
 
 export default function PricingPage() {
@@ -214,13 +209,13 @@ export default function PricingPage() {
                     Features
                   </th>
                   <th className="text-center py-4 px-6 font-medium text-gray-900 dark:text-white">
-                    Personal
+                    Free
                   </th>
                   <th className="text-center py-4 px-6 font-medium text-blue-600 dark:text-blue-400">
-                    Business
+                    Personal
                   </th>
                   <th className="text-center py-4 px-6 font-medium text-gray-900 dark:text-white">
-                    Fleet
+                    Business
                   </th>
                 </tr>
               </thead>
@@ -229,6 +224,17 @@ export default function PricingPage() {
                   <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                     <td className="py-4 px-6 text-gray-900 dark:text-white font-medium">
                       {feature.name}
+                    </td>
+                    <td className="py-4 px-6 text-center">
+                      {typeof feature.free === 'boolean' ? (
+                        feature.free ? (
+                          <span className="text-green-500">✓</span>
+                        ) : (
+                          <span className="text-gray-400">✗</span>
+                        )
+                      ) : (
+                        <span className="text-gray-900 dark:text-white">{feature.free}</span>
+                      )}
                     </td>
                     <td className="py-4 px-6 text-center">
                       {typeof feature.personal === 'boolean' ? (
@@ -261,23 +267,6 @@ export default function PricingPage() {
                       ) : (
                         <span className="text-gray-600 dark:text-gray-300 text-sm font-medium">
                           {feature.business}
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-4 px-6 text-center">
-                      {typeof feature.fleet === 'boolean' ? (
-                        feature.fleet ? (
-                          <svg className="w-5 h-5 text-green-500 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        ) : (
-                          <svg className="w-5 h-5 text-gray-400 mx-auto" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                          </svg>
-                        )
-                      ) : (
-                        <span className="text-gray-600 dark:text-gray-300 text-sm font-medium">
-                          {feature.fleet}
                         </span>
                       )}
                     </td>

@@ -147,7 +147,7 @@ function MaintenanceStatusGrid({
   selectedCarId: string | null,
   cars: Car[],
   maintenanceRecords: MaintenanceRecord[],
-  subscriptionPlan: 'personal' | 'business' | 'fleet'
+  subscriptionPlan: 'free' | 'personal' | 'business'
 }) {
   if (!selectedCarId) {
     return (
@@ -1508,16 +1508,16 @@ export default function MileageTracker() {
                 <h3 className="text-lg font-bold text-white mb-4">Team-Based Pricing</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center py-2 border-b border-white/10">
-                    <span className="text-white font-medium">Personal</span>
+                    <span className="text-white font-medium">Free</span>
                     <span className="text-blue-400">FREE (1 user, 1 vehicle)</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-white/10">
-                    <span className="text-white font-medium">Business</span>
-                    <span className="text-blue-400">$29/month (6 users, 10 vehicles)</span>
+                    <span className="text-white font-medium">Personal</span>
+                    <span className="text-blue-400">$4/month (1 user, 3 vehicles)</span>
                   </div>
                   <div className="flex justify-between items-center py-2">
-                    <span className="text-white font-medium">Fleet</span>
-                    <span className="text-blue-400">$59/month (12 users, 25 vehicles)</span>
+                    <span className="text-white font-medium">Business</span>
+                    <span className="text-blue-400">$12/vehicle/month (6 users, unlimited vehicles)</span>
                   </div>
                 </div>
                 <p className="text-gray-400 text-xs mt-3 text-center">

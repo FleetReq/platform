@@ -32,7 +32,7 @@ export interface Car {
 // Team management types
 export interface UserProfile {
   user_id: string
-  subscription_plan: 'personal' | 'business' | 'fleet'
+  subscription_plan: 'free' | 'personal' | 'business'
   max_vehicles: number
   max_invited_users: number
   is_primary_user: boolean
@@ -180,8 +180,8 @@ export const checkSubscriptionLimits = async (primaryUserId: string): Promise<Su
 }
 
 // Subscription plan checking functions
-export const getUserSubscriptionPlan = async (userId: string): Promise<'personal' | 'business' | 'fleet'> => {
-  if (!supabase) return 'personal'
+export const getUserSubscriptionPlan = async (userId: string): Promise<'free' | 'personal' | 'business'> => {
+  if (!supabase) return 'free'
 
   const { data, error } = await supabase
     .from('user_profiles')
@@ -191,17 +191,17 @@ export const getUserSubscriptionPlan = async (userId: string): Promise<'personal
 
   if (error) {
     console.error('Error fetching subscription plan:', error)
-    return 'personal'
+    return 'free'
   }
 
-  return data?.subscription_plan || 'personal'
+  return data?.subscription_plan || 'free'
 }
 
-export const hasFeatureAccess = (plan: 'personal' | 'business' | 'fleet', feature: string): boolean => {
+export const hasFeatureAccess = (plan: 'free' | 'personal' | 'business', feature: string): boolean => {
   const features = {
-    personal: ['fuel_tracking', 'basic_analytics'],
-    business: ['fuel_tracking', 'basic_analytics', 'maintenance_tracking', 'team_collaboration', 'professional_reporting', 'unlimited_history'],
-    fleet: ['fuel_tracking', 'basic_analytics', 'maintenance_tracking', 'team_collaboration', 'professional_reporting', 'unlimited_history', 'advanced_analytics', 'api_access']
+    free: ['fuel_tracking', 'basic_analytics'],
+    personal: ['fuel_tracking', 'basic_analytics', 'maintenance_tracking', 'mobile_app', 'unlimited_history'],
+    business: ['fuel_tracking', 'basic_analytics', 'maintenance_tracking', 'mobile_app', 'unlimited_history', 'team_collaboration', 'tax_mileage_tracking', 'professional_reporting', 'advanced_mobile_features']
   }
 
   return features[plan]?.includes(feature) || false
@@ -209,10 +209,12 @@ export const hasFeatureAccess = (plan: 'personal' | 'business' | 'fleet', featur
 
 export const getUpgradeMessage = (feature: string): string => {
   const messages = {
-    maintenance_tracking: "Upgrade to Business to unlock maintenance scheduling and compliance tracking",
-    team_collaboration: "Upgrade to Business to invite team members and collaborate",
-    professional_reporting: "Upgrade to Business for professional reports and data export",
-    unlimited_history: "Upgrade to Business for unlimited data history (free plan limited to 90 days)"
+    maintenance_tracking: "Upgrade to Personal ($4/month) to unlock maintenance scheduling and tracking",
+    mobile_app: "Upgrade to Personal ($4/month) for mobile app access and detailed notifications",
+    unlimited_history: "Upgrade to Personal ($4/month) for unlimited data history (free plan limited to 90 days)",
+    team_collaboration: "Upgrade to Business ($12/vehicle/month) to invite team members and collaborate",
+    tax_mileage_tracking: "Upgrade to Business ($12/vehicle/month) for IRS-compliant business mileage tracking",
+    professional_reporting: "Upgrade to Business ($12/vehicle/month) for professional reports and tax compliance"
   }
 
   return messages[feature as keyof typeof messages] || "Upgrade to unlock this feature"
