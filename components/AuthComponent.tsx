@@ -112,7 +112,14 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
       setPassword('')
       setFullName('')
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : 'An error occurred')
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred'
+
+      // Provide helpful messages for common provider conflicts
+      if (errorMessage.includes('already registered') || errorMessage.includes('already exists')) {
+        setError('This email is already registered with Google. Try signing in with Google or use "Forgot password?" to set a password.')
+      } else {
+        setError(errorMessage)
+      }
     } finally {
       setIsSigningIn(false)
     }
@@ -264,6 +271,31 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
     }
   }
 
+  const resetPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!supabase) return
+
+    setIsSigningIn(true)
+    setError(null)
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.hostname === 'localhost'
+          ? 'http://localhost:3000/mileage?reset=true'
+          : 'https://brucetruong.com/mileage?reset=true',
+      })
+
+      if (error) throw error
+
+      setError('Password reset link sent to your email!')
+      setEmail('')
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'An error occurred')
+    } finally {
+      setIsSigningIn(false)
+    }
+  }
+
   const signOut = async () => {
     if (!supabase) return
 
@@ -358,7 +390,7 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
       </div>
 
       {/* Email/Password Form */}
-      <form onSubmit={authMode === 'signin' ? signInWithEmail : signUpWithEmail} className="space-y-4">
+      <form onSubmit={authMode === 'signin' ? signInWithEmail : authMode === 'signup' ? signUpWithEmail : resetPassword} className="space-y-4">
         {authMode === 'signup' && (
           <div>
             <label htmlFor="fullName" className="block text-sm font-medium text-gray-300 mb-2">
@@ -391,38 +423,63 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
           />
         </div>
 
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-            Password
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
-            placeholder="Your password"
-            required
-            minLength={6}
-          />
-        </div>
+        {authMode !== 'reset' && (
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+              placeholder="Your password"
+              required
+              minLength={6}
+            />
+          </div>
+        )}
 
         <button
           type="submit"
           disabled={isSigningIn}
           className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium disabled:opacity-50"
         >
-          {isSigningIn ? 'Please wait...' : (authMode === 'signin' ? 'Sign In' : 'Create Account')}
+          {isSigningIn ? 'Please wait...' : (
+            authMode === 'signin' ? 'Sign In' :
+            authMode === 'signup' ? 'Create Account' :
+            'Send Reset Link'
+          )}
         </button>
       </form>
 
-      <div className="mt-4 text-center">
-        <button
-          onClick={() => setAuthMode(authMode === 'signin' ? 'signup' : 'signin')}
-          className="text-blue-400 hover:text-blue-300 text-sm"
-        >
-          {authMode === 'signin' ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
-        </button>
+      <div className="mt-4 text-center space-y-2">
+        {authMode === 'reset' ? (
+          <button
+            onClick={() => setAuthMode('signin')}
+            className="text-blue-400 hover:text-blue-300 text-sm"
+          >
+            Back to sign in
+          </button>
+        ) : (
+          <>
+            <button
+              onClick={() => setAuthMode(authMode === 'signin' ? 'signup' : 'signin')}
+              className="text-blue-400 hover:text-blue-300 text-sm block"
+            >
+              {authMode === 'signin' ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+            </button>
+            {authMode === 'signin' && (
+              <button
+                onClick={() => setAuthMode('reset')}
+                className="text-gray-400 hover:text-gray-300 text-sm"
+              >
+                Forgot password?
+              </button>
+            )}
+          </>
+        )}
       </div>
     </div>
   )
