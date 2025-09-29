@@ -1172,7 +1172,20 @@ export default function MileageTracker() {
 
           {/* Auth Component */}
           <div className="max-w-md mx-auto">
-            <AuthComponent onAuthChange={handleAuthChange} />
+            <div className="p-6 bg-gray-900 rounded-lg border border-gray-700">
+              <h2 className="text-2xl font-bold text-white mb-6 text-center">
+                Fleet Management
+              </h2>
+              <p className="text-gray-300 text-center mb-4">
+                Authentication system under development
+              </p>
+              <button
+                onClick={() => handleAuthChange(null)}
+                className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
+              >
+                Continue to Demo
+              </button>
+            </div>
           </div>
 
           {/* Features Section */}
