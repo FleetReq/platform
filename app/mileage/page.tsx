@@ -936,6 +936,7 @@ function CurrentMileageEditor({ carId, cars, onUpdate }: { carId: string, cars: 
 function UserSettings() {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [isChangingPassword, setIsChangingPassword] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
@@ -953,22 +954,45 @@ function UserSettings() {
     e.preventDefault()
     if (!supabase) return
 
+    if (!currentPassword.trim()) {
+      setMessage({ type: 'error', text: 'Current password is required' })
+      return
+    }
+
     if (newPassword !== confirmPassword) {
-      setMessage({ type: 'error', text: 'Passwords do not match' })
+      setMessage({ type: 'error', text: 'New passwords do not match' })
       return
     }
 
     if (newPassword.length < 6) {
-      setMessage({ type: 'error', text: 'Password must be at least 6 characters' })
+      setMessage({ type: 'error', text: 'New password must be at least 6 characters' })
+      return
+    }
+
+    if (newPassword === currentPassword) {
+      setMessage({ type: 'error', text: 'New password must be different from current password' })
       return
     }
 
     setIsChangingPassword(true)
     try {
+      // First verify current password by attempting to sign in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: currentUser?.email || '',
+        password: currentPassword
+      })
+
+      if (signInError) {
+        setMessage({ type: 'error', text: 'Current password is incorrect' })
+        return
+      }
+
+      // If verification successful, update password
       const { error } = await supabase.auth.updateUser({ password: newPassword })
       if (error) throw error
 
       setMessage({ type: 'success', text: 'Password updated successfully!' })
+      setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
     } catch (error) {
@@ -982,23 +1006,11 @@ function UserSettings() {
   }
 
   const handleLinkGoogle = async () => {
-    if (!supabase) return
-
-    try {
-      const { data, error } = await supabase.auth.linkIdentity({
-        provider: 'google'
-      })
-      if (error) throw error
-
-      if (data?.url) {
-        window.open(data.url, 'link-account', 'width=500,height=600')
-      }
-    } catch (error) {
-      setMessage({
-        type: 'error',
-        text: error instanceof Error ? error.message : 'Failed to link Google account'
-      })
-    }
+    // Account linking disabled for security in single-organization setup
+    setMessage({
+      type: 'error',
+      text: 'Account linking is disabled for security. Contact your administrator for account changes.'
+    })
   }
 
   const isGoogleLinked = currentUser?.app_metadata?.providers?.includes('google')
@@ -1080,6 +1092,20 @@ function UserSettings() {
       <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Change Password</h3>
         <form onSubmit={handlePasswordChange} className="space-y-4 max-w-md">
+          <div>
+            <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Current Password
+            </label>
+            <input
+              id="currentPassword"
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+              placeholder="Enter current password"
+              required
+            />
+          </div>
           <div>
             <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               New Password
@@ -1425,8 +1451,8 @@ export default function MileageTracker() {
                       </svg>
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-white mb-1">Multi-user team access</h3>
-                      <p className="text-gray-400 text-sm">Manage permissions for drivers, mechanics, and office staff</p>
+                      <h3 className="text-lg font-semibold text-white mb-1">Team collaboration built-in</h3>
+                      <p className="text-gray-400 text-sm">Owner + office staff + drivers - everyone stays in sync</p>
                     </div>
                   </div>
                 </div>
@@ -1434,23 +1460,23 @@ export default function MileageTracker() {
 
               {/* Pricing */}
               <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
-                <h3 className="text-lg font-bold text-white mb-4">Simple Pricing</h3>
+                <h3 className="text-lg font-bold text-white mb-4">Team-Based Pricing</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center py-2 border-b border-white/10">
-                    <span className="text-white font-medium">Free</span>
-                    <span className="text-blue-400">1 vehicle</span>
+                    <span className="text-white font-medium">Personal</span>
+                    <span className="text-blue-400">FREE (1 user, 1 vehicle)</span>
                   </div>
                   <div className="flex justify-between items-center py-2 border-b border-white/10">
-                    <span className="text-white font-medium">Personal</span>
-                    <span className="text-blue-400">$8/month (up to 3 vehicles)</span>
+                    <span className="text-white font-medium">Business</span>
+                    <span className="text-blue-400">$29/month (6 users, 10 vehicles)</span>
                   </div>
                   <div className="flex justify-between items-center py-2">
-                    <span className="text-white font-medium">Business</span>
-                    <span className="text-blue-400">$12/vehicle/month</span>
+                    <span className="text-white font-medium">Fleet</span>
+                    <span className="text-blue-400">$59/month (12 users, 25 vehicles)</span>
                   </div>
                 </div>
                 <p className="text-gray-400 text-xs mt-3 text-center">
-                  vs. enterprise solutions at $25-50/vehicle/month
+                  vs. per-vehicle competitors at $15-25/vehicle/month
                 </p>
               </div>
             </div>
