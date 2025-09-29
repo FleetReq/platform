@@ -75,7 +75,7 @@ export default function OAuthRedirectHandler() {
     }
 
     // Handle regular redirects if this is clearly a fallback scenario
-    if (authCode && supabase) {
+    if (false && authCode && supabase) {
       console.log('OAuthRedirectHandler: Processing auth code immediately...')
 
       // Process auth code IMMEDIATELY without any delays
