@@ -8,10 +8,8 @@ import Search from "./Search";
 
 const navigationItems = [
   { name: "Home", href: "/" },
-  { name: "About", href: "/about" },
-  { name: "Resume", href: "/resume" },
-  { name: "Projects", href: "/projects" },
-  { name: "Contact", href: "/contact" },
+  { name: "Pricing", href: "/pricing" },
+  { name: "App", href: "/mileage" },
 ];
 
 export function Navigation() {
@@ -34,12 +32,9 @@ export function Navigation() {
           <div className="flex items-center flex-shrink-0 min-w-0">
             <Link href="/" className="group">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gray-900 dark:bg-white rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-105 flex-shrink-0">
-                  <span className="text-base font-bold text-white dark:text-gray-900">BT</span>
-                </div>
                 <div className="hidden sm:block min-w-0">
-                  <div className="text-lg font-bold text-gray-900 dark:text-white tracking-tight truncate">Bruce Truong</div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400 truncate">Site Reliability Engineer</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight truncate">Fleet<span className="text-blue-600 dark:text-blue-400">Req</span></div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 truncate">Fleet Management Platform</div>
                 </div>
               </div>
             </Link>
@@ -127,11 +122,11 @@ export function Navigation() {
             {/* Mobile CTA */}
             <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
               <Link
-                href="/contact"
-                className="w-full inline-flex items-center justify-center px-6 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-base font-medium rounded-xl hover:bg-gray-800 dark:hover:bg-gray-100 transition-all duration-300"
+                href="/mileage"
+                className="w-full inline-flex items-center justify-center px-6 py-3 bg-blue-600 dark:bg-blue-500 text-white text-base font-medium rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 transition-all duration-300"
                 onClick={() => setIsOpen(false)}
               >
-                Get In Touch
+                Start Free Trial
                 <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
