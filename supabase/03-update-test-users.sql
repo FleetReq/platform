@@ -16,27 +16,21 @@ ORDER BY u.email;
 
 -- For Free User (test-free@fleetreq.com)
 -- REPLACE 'USER_ID_HERE' with the actual user_id from the query above
-/*
 UPDATE user_profiles
 SET subscription_plan = 'free', max_vehicles = 1, max_invited_users = 0
 WHERE id = 'USER_ID_HERE';
-*/
 
 -- For Personal User (test-personal@fleetreq.com)
 -- REPLACE 'USER_ID_HERE' with the actual user_id from the query above
-/*
 UPDATE user_profiles
 SET subscription_plan = 'personal', max_vehicles = 3, max_invited_users = 0
 WHERE id = 'USER_ID_HERE';
-*/
 
 -- For Business User (test-business@fleetreq.com)
 -- REPLACE 'USER_ID_HERE' with the actual user_id from the query above
-/*
 UPDATE user_profiles
 SET subscription_plan = 'business', max_vehicles = 999, max_invited_users = 6
 WHERE id = 'USER_ID_HERE';
-*/
 
 -- Verify all profiles are set correctly:
 SELECT
