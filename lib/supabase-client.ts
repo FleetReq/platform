@@ -202,6 +202,26 @@ export const getUserSubscriptionPlan = async (userId: string): Promise<'free' | 
   return data?.subscription_plan || 'free'
 }
 
+export const getUserMaxVehicles = async (userId: string): Promise<number> => {
+  if (!supabase) return 1
+
+  // Admins get unlimited vehicles
+  if (isAdmin(userId)) return 999
+
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .select('max_vehicles')
+    .eq('id', userId)
+    .single()
+
+  if (error) {
+    console.error('Error fetching max vehicles:', error)
+    return 1
+  }
+
+  return data?.max_vehicles || 1
+}
+
 export const hasFeatureAccess = (userId: string, plan: 'free' | 'personal' | 'business', feature: string): boolean => {
   // Admins have access to all features
   if (isAdmin(userId)) return true

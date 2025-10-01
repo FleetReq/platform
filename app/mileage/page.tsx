@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
-import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner, isAdmin, getUserSubscriptionPlan, hasFeatureAccess, getUpgradeMessage } from '@/lib/supabase-client'
+import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner, isAdmin, getUserSubscriptionPlan, getUserMaxVehicles, hasFeatureAccess, getUpgradeMessage } from '@/lib/supabase-client'
 import BackgroundAnimation from '../components/BackgroundAnimation'
 import AuthComponent from '../../components/AuthComponent'
 import UpgradePrompt from '../../components/UpgradePrompt'
@@ -1208,6 +1208,7 @@ export default function MileageTracker() {
   // Auth state is now managed by AuthComponent
   const [userIsOwner, setUserIsOwner] = useState(false)
   const [userSubscriptionPlan, setUserSubscriptionPlan] = useState<'free' | 'personal' | 'business'>('free')
+  const [maxVehicles, setMaxVehicles] = useState<number>(1)
   const [activeTab, setActiveTab] = useState<'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'records' | 'settings'>('dashboard')
   const [chartView, setChartView] = useState<'weekly' | 'monthly' | 'yearly'>('monthly')
   const [selectedCarId, setSelectedCarId] = useState<string | null>(null)
@@ -1236,12 +1237,15 @@ export default function MileageTracker() {
     setAuthLoading(false)
     setUserIsOwner(newUser ? isOwner(newUser.id) : false)
 
-    // Load subscription plan for authenticated users
+    // Load subscription plan and max vehicles for authenticated users
     if (newUser) {
       const plan = await getUserSubscriptionPlan(newUser.id)
       setUserSubscriptionPlan(plan)
+      const maxVehicles = await getUserMaxVehicles(newUser.id)
+      setMaxVehicles(maxVehicles)
     } else {
       setUserSubscriptionPlan('free')
+      setMaxVehicles(1)
     }
 
     setLoading(false)
@@ -1736,15 +1740,22 @@ export default function MileageTracker() {
                   { id: 'records', label: 'Records', adminOnly: false },
                   { id: 'settings', label: 'Settings', adminOnly: false }
                 ].map((tab) => {
-                  const isDisabled = tab.adminOnly && !userIsOwner
+                  // Check if vehicle limit reached (only for Add Car tab)
+                  const isVehicleLimitReached = tab.id === 'add-car' && cars.length >= maxVehicles
+                  const isDisabled = (tab.adminOnly && !userIsOwner) || isVehicleLimitReached
                   const isActive = activeTab === tab.id
+
+                  // Show vehicle count for Add Car tab
+                  const tabLabel = tab.id === 'add-car'
+                    ? `${tab.label} (${cars.length}/${maxVehicles})`
+                    : tab.label
 
                   return (
                     <button
                       key={tab.id}
                       onClick={() => !isDisabled && setActiveTab(tab.id as 'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'records' | 'settings')}
                       disabled={isDisabled}
-                      title={isDisabled ? 'Admin access required - Enable Admin to access this feature' : ''}
+                      title={isDisabled ? (isVehicleLimitReached ? 'Vehicle limit reached - Upgrade to add more' : 'Admin access required - Enable Admin to access this feature') : ''}
                       className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-300 relative group ${
                         isActive
                           ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-elegant-lg'
@@ -1753,10 +1764,10 @@ export default function MileageTracker() {
                           : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-gray-800/50'
                       }`}
                     >
-                      {tab.label}
+                      {tabLabel}
                       {isDisabled && (
                         <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                          Admin access required
+                          {isVehicleLimitReached ? 'Vehicle limit reached - Upgrade to add more' : 'Admin access required'}
                           <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
                         </div>
                       )}
@@ -1823,7 +1834,29 @@ export default function MileageTracker() {
               {/* Add Car Form */}
               {activeTab === 'add-car' && (
                 <div className="card-professional p-6">
-                  <AddCarForm onSuccess={() => { loadData(); setActiveTab('dashboard'); }} />
+                  {cars.length >= maxVehicles ? (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                        Vehicle Limit Reached
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-300 mb-6">
+                        You've reached your limit of {maxVehicles} vehicle{maxVehicles !== 1 ? 's' : ''}. Upgrade your plan to add more vehicles.
+                      </p>
+                      <Link
+                        href="/pricing"
+                        className="inline-block bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                      >
+                        View Upgrade Options
+                      </Link>
+                    </div>
+                  ) : (
+                    <AddCarForm onSuccess={() => { loadData(); setActiveTab('dashboard'); }} />
+                  )}
                 </div>
               )}
 
