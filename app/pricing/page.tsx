@@ -164,7 +164,12 @@ export default function PricingPage() {
                   </span>
                   {tier.period && (
                     <span className="text-gray-600 dark:text-gray-300">
-                      {showAnnual ? '/year' : tier.period}
+                      {showAnnual
+                        ? tier.period.includes('/vehicle')
+                          ? '/vehicle/year'
+                          : '/year'
+                        : tier.period
+                      }
                     </span>
                   )}
                 </div>
