@@ -11,31 +11,30 @@ export async function GET() {
     // Get the authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-    // For this demo site, if user is authenticated, show their data
-    // If not authenticated, show owner's data for public viewing
+    // If user is authenticated, show their own data
+    // If not authenticated, show owner's data for demo purposes
     let targetUserId: string
 
     if (user && authError === null) {
-      // User is authenticated - show their data or owner's data if they're the owner
-      targetUserId = isOwner(user.id) ? user.id : getOwnerUserId()
+      // User is authenticated - show their own data
+      targetUserId = user.id
     } else {
       // No authentication - show owner's data for demo purposes
       targetUserId = getOwnerUserId()
     }
 
-
     // Check if user is authenticated and is the owner
     const isAuthenticated = user && authError === null
     const isOwnerUser = isAuthenticated && isOwner(user.id)
 
-    const { data: cars, error: carsError } = await supabase
+    const { data: cars, error: carsError} = await supabase
       .from('cars')
       .select(`
         *,
         fill_ups!inner(count),
         maintenance_records!inner(count)
       `)
-      .eq('user_id', targetUserId)
+      .eq('owner_id', targetUserId)
       .order('created_at', { ascending: false })
 
     // Hide license plate for non-owner users
@@ -73,14 +72,7 @@ export async function POST(request: NextRequest) {
     }
 
 
-    // Only allow owner to create cars
-    if (!isOwner(user.id)) {
-      return NextResponse.json({
-        error: 'Read-only access: Only the owner can add cars',
-        isReadOnly: true
-      }, { status: 403 })
-    }
-
+    // Allow all authenticated users to create cars
     const body = await request.json()
     const { make, model, year, color, license_plate, nickname, current_mileage } = body
 
@@ -94,7 +86,7 @@ export async function POST(request: NextRequest) {
     const { data: car, error } = await supabase
       .from('cars')
       .insert({
-        user_id: user.id,
+        owner_id: user.id,
         make: make.trim(),
         model: model.trim(),
         year: parseInt(year),
@@ -133,14 +125,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Only allow owner to update cars
-    if (!isOwner(user.id)) {
-      return NextResponse.json({
-        error: 'Read-only access: Only the owner can update cars',
-        isReadOnly: true
-      }, { status: 403 })
-    }
-
+    // Allow all authenticated users to update their own cars
     const body = await request.json()
     const { carId, current_mileage, manual_override } = body
 
@@ -158,7 +143,7 @@ export async function PATCH(request: NextRequest) {
         .from('cars')
         .select('current_mileage')
         .eq('id', carId)
-        .eq('user_id', user.id)
+        .eq('owner_id', user.id)
         .single()
 
       const newMileage = Number(current_mileage)
@@ -176,7 +161,7 @@ export async function PATCH(request: NextRequest) {
       .from('cars')
       .update({ current_mileage: Number(current_mileage) })
       .eq('id', carId)
-      .eq('user_id', user.id) // Ensure user can only update their own cars
+      .eq('owner_id', user.id) // Ensure user can only update their own cars
       .select()
       .single()
 
