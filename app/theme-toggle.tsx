@@ -8,9 +8,8 @@ export function ThemeToggle() {
   const toggleTheme = () => {
     if (theme === "light") {
       setTheme("dark");
-    } else if (theme === "dark") {
-      setTheme("system");
     } else {
+      // Dark or System → Light (no more system option)
       setTheme("light");
     }
   };
@@ -26,29 +25,19 @@ export function ThemeToggle() {
           />
         </svg>
       );
-    } else if (theme === "dark") {
+    } else {
+      // Dark or System mode shows moon icon
       return (
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
           <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-        </svg>
-      );
-    } else {
-      return (
-        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-          <path
-            fillRule="evenodd"
-            d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z"
-            clipRule="evenodd"
-          />
         </svg>
       );
     }
   };
 
   const getLabel = () => {
-    if (theme === "dark") return "Switch to light mode";
-    if (theme === "light") return "Switch to system mode";
-    return "Switch to dark mode";
+    if (theme === "light") return "Switch to dark mode";
+    return "Switch to light mode";
   };
 
   return (
