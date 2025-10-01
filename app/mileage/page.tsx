@@ -1209,7 +1209,7 @@ export default function MileageTracker() {
   const [userIsOwner, setUserIsOwner] = useState(false)
   const [userSubscriptionPlan, setUserSubscriptionPlan] = useState<'free' | 'personal' | 'business'>('free')
   const [maxVehicles, setMaxVehicles] = useState<number>(1)
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'records' | 'settings'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'records' | 'settings'>('add-car')
   const [chartView, setChartView] = useState<'weekly' | 'monthly' | 'yearly'>('monthly')
   const [selectedCarId, setSelectedCarId] = useState<string | null>(null)
 
@@ -1229,6 +1229,13 @@ export default function MileageTracker() {
       }
     }
   }, [cars, selectedCarId])
+
+  // Auto-switch to dashboard when first car is added (for new users)
+  useEffect(() => {
+    if (cars.length > 0 && activeTab === 'add-car') {
+      setActiveTab('dashboard')
+    }
+  }, [cars.length, activeTab])
 
   // Handle auth state changes from AuthComponent
   const handleAuthChange = useCallback(async (newUser: User | null) => {
@@ -1742,7 +1749,12 @@ export default function MileageTracker() {
                 ].map((tab) => {
                   // Check if vehicle limit reached (only for Add Car tab)
                   const isVehicleLimitReached = tab.id === 'add-car' && cars.length >= maxVehicles
-                  const isDisabled = (tab.adminOnly && !userIsOwner) || isVehicleLimitReached
+
+                  // Disable data tabs (Graph, Fill-up, Maintenance, Records) when no cars
+                  const requiresCars = ['dashboard', 'add-fillup', 'add-maintenance', 'records'].includes(tab.id)
+                  const isDisabledNoCars = requiresCars && cars.length === 0
+
+                  const isDisabled = (tab.adminOnly && !userIsOwner) || isVehicleLimitReached || isDisabledNoCars
                   const isActive = activeTab === tab.id
 
                   // Show vehicle count for Add Car tab
@@ -1750,12 +1762,22 @@ export default function MileageTracker() {
                     ? `${tab.label} (${cars.length}/${maxVehicles})`
                     : tab.label
 
+                  // Determine tooltip message
+                  let tooltipMessage = ''
+                  if (isDisabledNoCars) {
+                    tooltipMessage = 'Add a vehicle first'
+                  } else if (isVehicleLimitReached) {
+                    tooltipMessage = 'Vehicle limit reached - Upgrade to add more'
+                  } else if (tab.adminOnly && !userIsOwner) {
+                    tooltipMessage = 'Admin access required'
+                  }
+
                   return (
                     <button
                       key={tab.id}
                       onClick={() => !isDisabled && setActiveTab(tab.id as 'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'records' | 'settings')}
                       disabled={isDisabled}
-                      title={isDisabled ? (isVehicleLimitReached ? 'Vehicle limit reached - Upgrade to add more' : 'Admin access required - Enable Admin to access this feature') : ''}
+                      title={tooltipMessage}
                       className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-300 relative group ${
                         isActive
                           ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-elegant-lg'
@@ -1765,9 +1787,9 @@ export default function MileageTracker() {
                       }`}
                     >
                       {tabLabel}
-                      {isDisabled && (
+                      {isDisabled && tooltipMessage && (
                         <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                          {isVehicleLimitReached ? 'Vehicle limit reached - Upgrade to add more' : 'Admin access required'}
+                          {tooltipMessage}
                           <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
                         </div>
                       )}
