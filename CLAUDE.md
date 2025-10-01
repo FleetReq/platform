@@ -762,9 +762,10 @@ if (!hasAccess) {
 - ✅ Show vehicle count on Add Car tab
 - ✅ Empty state for Graph tab
 - ✅ Professional light mode appearance
-- 🔄 View-only maintenance for free tier
-- 🔄 Delete car functionality
-- 🔄 Better first-time onboarding
+- ✅ View-only maintenance for free tier (2025-10-01)
+- ✅ Delete car functionality (2025-10-01)
+- ✅ Centered maintenance paywall overlay (2025-10-01)
+- ⏳ Better first-time onboarding
 
 ---
 
@@ -792,6 +793,42 @@ if (!hasAccess) {
 ---
 
 *Last Updated: 2025-10-01*
-*Session: Multi-session consolidation - Complete strategic & technical documentation*
-*Status: Production-ready, active development on freemium limits*
-*Next Focus: Maintenance view/edit permissions split*
+*Session: Feature implementation - Maintenance permissions + delete car*
+*Status: Production-ready, freemium feature gating complete*
+*Next Focus: Consumer naming research (deprioritized), first-time UX improvements*
+
+## 📝 Recent Session Summary (2025-10-01)
+
+### **Completed Features**
+1. **Maintenance Tab - View/Edit Permissions**
+   - Renamed "Add Maintenance" → "Maintenance"
+   - Free users: VIEW maintenance status only (with paywall overlay)
+   - Personal+ users: Full add/edit access to maintenance records
+   - Centered paywall overlay for better UX
+
+2. **Delete Car Functionality**
+   - Added "Delete Vehicles" section to Settings tab
+   - Two-step confirmation: Delete → Confirm Delete
+   - Shows car details before deletion
+   - Created DELETE `/api/cars/[id]` endpoint with ownership verification
+   - Cascade deletes fill-ups and maintenance records
+
+3. **UX Polish**
+   - Fixed paywall overlay positioning on maintenance grid
+   - Clear warning messages about data deletion
+   - Loading states for delete operations
+
+### **Next Session Tasks**
+1. ⏳ **Consumer naming research** (deprioritized - not critical for launch)
+   - Need unique name with .com availability
+   - Playing with "garage" concept or similar words
+   - Examples explored: Carmento, Maintly, Molog, Valog
+
+2. 🔜 **First-time user experience**
+   - Auto-redirect to Add Car when no vehicles exist
+   - Better onboarding flow for new users
+
+3. 🔜 **Testing & refinement**
+   - Test all three subscription tiers (free, personal, business)
+   - Verify data isolation between users
+   - Ensure feature gating works correctly
