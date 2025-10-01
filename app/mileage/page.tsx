@@ -198,7 +198,7 @@ function MaintenanceStatusGrid({
   ]
 
   return (
-    <div className="card-professional p-4 relative">
+    <div className="card-professional p-4">
       <h3 className="text-sm font-bold mb-3 text-gray-900 dark:text-white">Maintenance Status</h3>
 
       {hasMaintenanceAccess ? (
@@ -227,7 +227,7 @@ function MaintenanceStatusGrid({
           })}
         </div>
       ) : (
-        <>
+        <div className="relative">
           {/* Grayed out preview */}
           <div className="grid grid-cols-2 gap-1 opacity-40 pointer-events-none">
             {maintenanceTypes.map(({ key, label, icon }) => (
@@ -250,7 +250,7 @@ function MaintenanceStatusGrid({
             message={getUpgradeMessage('maintenance_tracking')}
             className="absolute inset-0"
           />
-        </>
+        </div>
       )}
     </div>
   )
@@ -981,13 +981,15 @@ function CurrentMileageEditor({ carId, cars, onUpdate }: { carId: string, cars: 
 }
 
 // User Settings Component
-function UserSettings() {
+function UserSettings({ cars, onCarDeleted }: { cars?: Car[], onCarDeleted?: () => void }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [isChangingPassword, setIsChangingPassword] = useState(false)
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+  const [deletingCarId, setDeletingCarId] = useState<string | null>(null)
+  const [confirmDeleteCarId, setConfirmDeleteCarId] = useState<string | null>(null)
 
   useEffect(() => {
     const getUser = async () => {
@@ -1059,6 +1061,35 @@ function UserSettings() {
       type: 'error',
       text: 'Account linking is disabled for security. Contact your administrator for account changes.'
     })
+  }
+
+  const handleDeleteCar = async (carId: string) => {
+    if (confirmDeleteCarId !== carId) {
+      setConfirmDeleteCarId(carId)
+      return
+    }
+
+    setDeletingCarId(carId)
+    try {
+      const response = await fetch(`/api/cars/${carId}`, {
+        method: 'DELETE'
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete vehicle')
+      }
+
+      setMessage({ type: 'success', text: 'Vehicle deleted successfully' })
+      setConfirmDeleteCarId(null)
+      if (onCarDeleted) onCarDeleted()
+    } catch (error) {
+      setMessage({
+        type: 'error',
+        text: error instanceof Error ? error.message : 'Failed to delete vehicle'
+      })
+    } finally {
+      setDeletingCarId(null)
+    }
   }
 
   const isGoogleLinked = currentUser?.app_metadata?.providers?.includes('google')
@@ -1193,6 +1224,58 @@ function UserSettings() {
           </button>
         </form>
       </div>
+
+      {/* Delete Vehicles */}
+      {cars && cars.length > 0 && (
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Delete Vehicles</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            Deleting a vehicle will permanently remove all associated fill-up and maintenance records.
+          </p>
+          <div className="space-y-3">
+            {cars.map((car) => (
+              <div key={car.id} className="flex items-center justify-between p-4 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                <div>
+                  <div className="font-medium text-gray-900 dark:text-white">
+                    {car.year} {car.make} {car.model}
+                  </div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    {car.nickname && `"${car.nickname}" • `}
+                    {car.license_plate}
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  {confirmDeleteCarId === car.id ? (
+                    <>
+                      <button
+                        onClick={() => setConfirmDeleteCarId(null)}
+                        className="px-3 py-1 bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 rounded text-sm font-medium transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => handleDeleteCar(car.id)}
+                        disabled={deletingCarId === car.id}
+                        className="px-3 py-1 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded text-sm font-medium transition-colors"
+                      >
+                        {deletingCarId === car.id ? 'Deleting...' : 'Confirm Delete'}
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => handleDeleteCar(car.id)}
+                      disabled={deletingCarId !== null}
+                      className="px-3 py-1 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded text-sm font-medium transition-colors"
+                    >
+                      Delete
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -1743,7 +1826,7 @@ export default function MileageTracker() {
                   { id: 'dashboard', label: 'Graph', adminOnly: false },
                   { id: 'add-car', label: 'Add Car', adminOnly: false },
                   { id: 'add-fillup', label: 'Add Fill-up', adminOnly: false },
-                  { id: 'add-maintenance', label: 'Add Maintenance', adminOnly: false },
+                  { id: 'add-maintenance', label: 'Maintenance', adminOnly: false },
                   { id: 'records', label: 'Records', adminOnly: false },
                   { id: 'settings', label: 'Settings', adminOnly: false }
                 ].map((tab) => {
@@ -1913,11 +1996,69 @@ export default function MileageTracker() {
                 </div>
               )}
 
-              {/* Add Maintenance Form */}
+              {/* Maintenance Tab - View/Edit based on subscription */}
               {activeTab === 'add-maintenance' && cars.length > 0 && (
-                <div className="card-professional p-6">
-                  <AddMaintenanceForm cars={cars} onSuccess={() => { loadData(); setActiveTab('dashboard'); }} />
-                </div>
+                <>
+                  {/* Maintenance Status Grid (visible to all) */}
+                  <MaintenanceStatusGrid
+                    selectedCarId={selectedCarId}
+                    cars={cars}
+                    maintenanceRecords={maintenanceRecords}
+                    subscriptionPlan={subscriptionPlan}
+                    userId={user?.id || null}
+                  />
+
+                  {/* Add Maintenance Form (Personal+ only) */}
+                  {hasFeatureAccess(user?.id || null, subscriptionPlan, 'maintenance_tracking') ? (
+                    <div className="card-professional p-6 mt-6">
+                      <AddMaintenanceForm cars={cars} onSuccess={() => { loadData(); setActiveTab('dashboard'); }} />
+                    </div>
+                  ) : (
+                    <div className="card-professional p-6 mt-6 relative">
+                      {/* Grayed out preview of form */}
+                      <div className="opacity-30 pointer-events-none">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Add Maintenance Record</h2>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Vehicle</label>
+                            <select className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                              <option>Select a vehicle...</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Maintenance Type</label>
+                            <select className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+                              <option>Select maintenance type...</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Paywall overlay */}
+                      <div className="absolute inset-0 flex items-center justify-center bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg">
+                        <div className="text-center px-6 max-w-md">
+                          <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                          </div>
+                          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                            Maintenance Tracking Locked
+                          </h3>
+                          <p className="text-gray-600 dark:text-gray-400 mb-6">
+                            Upgrade to <span className="font-semibold text-blue-600 dark:text-blue-400">Personal</span> or <span className="font-semibold text-purple-600 dark:text-purple-400">Business</span> to add and track maintenance records
+                          </p>
+                          <Link
+                            href="/pricing"
+                            className="inline-block bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                          >
+                            View Pricing
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
 
               {/* Records Management */}
@@ -1935,7 +2076,7 @@ export default function MileageTracker() {
               {/* User Settings */}
               {activeTab === 'settings' && (
                 <div className="card-professional p-6">
-                  <UserSettings />
+                  <UserSettings cars={cars} onCarDeleted={() => loadData()} />
                 </div>
               )}
 
