@@ -295,42 +295,51 @@ function RecordsManager({
 
     // Add fill-ups
     if (recordType === 'all' || recordType === 'fillups') {
-      const fillUpRecords = fillUps.map(fillUp => {
-        const car = cars.find(c => c.id === fillUp.car_id)!
-        return {
-          id: fillUp.id,
-          type: 'fillup' as const,
-          date: fillUp.date,
-          car,
-          user_id: fillUp.created_by_user_id || car.owner_id, // Fallback to car owner for existing records
-          created_at: fillUp.created_at,
-          description: `Fill-up - ${fillUp.gallons} gallons`,
-          details: `${fillUp.odometer_reading} miles • ${fillUp.mpg ? fillUp.mpg + ' MPG' : 'MPG N/A'}${fillUp.total_cost ? ' • $' + fillUp.total_cost : ''}`,
-          record: fillUp
-        }
-      })
+      const fillUpRecords = fillUps
+        .filter(fillUp => {
+          const car = cars.find(c => c.id === fillUp.car_id)
+          return car !== undefined
+        })
+        .map(fillUp => {
+          const car = cars.find(c => c.id === fillUp.car_id)!
+          return {
+            id: fillUp.id,
+            type: 'fillup' as const,
+            date: fillUp.date,
+            car,
+            user_id: fillUp.created_by_user_id || car.owner_id, // Fallback to car owner for existing records
+            created_at: fillUp.created_at,
+            description: `Fill-up - ${fillUp.gallons} gallons`,
+            details: `${fillUp.odometer_reading} miles • ${fillUp.mpg ? fillUp.mpg + ' MPG' : 'MPG N/A'}${fillUp.total_cost ? ' • $' + fillUp.total_cost : ''}`,
+            record: fillUp
+          }
+        })
       allRecords.push(...fillUpRecords)
     }
 
     // Add maintenance records
     if (recordType === 'all' || recordType === 'maintenance') {
-      const maintenanceRecordsFiltered = maintenanceRecords.filter(record =>
-        maintenanceType === 'all' || record.type === maintenanceType
-      ).map(maintenance => {
-        const car = cars.find(c => c.id === maintenance.car_id)!
-        const typeLabel = maintenance.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
-        return {
-          id: maintenance.id,
-          type: 'maintenance' as const,
-          date: maintenance.date,
-          car,
-          user_id: maintenance.created_by_user_id || car.owner_id, // Fallback to car owner for existing records
-          created_at: maintenance.created_at,
-          description: `${typeLabel}${maintenance.oil_type ? ` (${maintenance.oil_type})` : ''}`,
-          details: `${maintenance.mileage ? maintenance.mileage + ' miles' : 'Mileage N/A'}${maintenance.cost ? ' • $' + maintenance.cost : ''}${maintenance.next_service_date ? ' • Next: ' + new Date(maintenance.next_service_date).toLocaleDateString() : ''}`,
-          record: maintenance
-        }
-      })
+      const maintenanceRecordsFiltered = maintenanceRecords
+        .filter(record => {
+          const maintenanceTypeMatch = maintenanceType === 'all' || record.type === maintenanceType
+          const car = cars.find(c => c.id === record.car_id)
+          return maintenanceTypeMatch && car !== undefined
+        })
+        .map(maintenance => {
+          const car = cars.find(c => c.id === maintenance.car_id)!
+          const typeLabel = maintenance.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
+          return {
+            id: maintenance.id,
+            type: 'maintenance' as const,
+            date: maintenance.date,
+            car,
+            user_id: maintenance.created_by_user_id || car.owner_id, // Fallback to car owner for existing records
+            created_at: maintenance.created_at,
+            description: `${typeLabel}${maintenance.oil_type ? ` (${maintenance.oil_type})` : ''}`,
+            details: `${maintenance.mileage ? maintenance.mileage + ' miles' : 'Mileage N/A'}${maintenance.cost ? ' • $' + maintenance.cost : ''}${maintenance.next_service_date ? ' • Next: ' + new Date(maintenance.next_service_date).toLocaleDateString() : ''}`,
+            record: maintenance
+          }
+        })
       allRecords.push(...maintenanceRecordsFiltered)
     }
 
@@ -364,9 +373,9 @@ function RecordsManager({
   }, [fillUps, maintenanceRecords, cars, searchTerm, recordType, maintenanceType, selectedCarId, selectedUserId, sortOrder])
 
   // Pagination
-  const totalPages = Math.ceil(filteredRecords.length / recordsPerPage)
+  const totalPages = Math.ceil((filteredRecords?.length || 0) / recordsPerPage)
   const startIndex = (currentPage - 1) * recordsPerPage
-  const paginatedRecords = filteredRecords.slice(startIndex, startIndex + recordsPerPage)
+  const paginatedRecords = filteredRecords?.slice(startIndex, startIndex + recordsPerPage) || []
 
   // Reset page when filters change
   useEffect(() => {
