@@ -12,9 +12,11 @@ export async function GET() {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      console.log('No authenticated user, returning empty array')
+      console.log('Cars API: No authenticated user, returning empty array')
       return NextResponse.json({ cars: [] })
     }
+
+    console.log('Cars API: Fetching cars for user:', user.email, user.id)
 
     const { data: cars, error: carsError} = await supabase
       .from('cars')
@@ -25,6 +27,8 @@ export async function GET() {
       `)
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
+
+    console.log('Cars API: Query result - cars:', cars?.length || 0, 'error:', carsError?.message || 'none')
 
     if (carsError) {
       console.error('Error fetching cars:', carsError)
