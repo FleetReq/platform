@@ -11,21 +11,9 @@ export async function GET() {
     // Get the authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-    // If user is authenticated, show their own data
-    // If not authenticated, show owner's data for demo purposes
-    let targetUserId: string
-
-    if (user && authError === null) {
-      // User is authenticated - show their own data
-      targetUserId = user.id
-    } else {
-      // No authentication - show owner's data for demo purposes
-      targetUserId = getOwnerUserId()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    // Check if user is authenticated and is the owner
-    const isAuthenticated = user && authError === null
-    const isOwnerUser = isAuthenticated && isOwner(user.id)
 
     const { data: cars, error: carsError} = await supabase
       .from('cars')
@@ -34,15 +22,8 @@ export async function GET() {
         fill_ups!inner(count),
         maintenance_records!inner(count)
       `)
-      .eq('owner_id', targetUserId)
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false })
-
-    // Hide license plate for non-owner users
-    if (cars && !isOwnerUser) {
-      cars.forEach(car => {
-        car.license_plate = null // Hide license plate from public
-      })
-    }
 
     if (carsError) {
       console.error('Error fetching cars:', carsError)
@@ -86,7 +67,7 @@ export async function POST(request: NextRequest) {
     const { data: car, error } = await supabase
       .from('cars')
       .insert({
-        owner_id: user.id,
+        user_id: user.id,
         make: make.trim(),
         model: model.trim(),
         year: parseInt(year),
@@ -143,7 +124,7 @@ export async function PATCH(request: NextRequest) {
         .from('cars')
         .select('current_mileage')
         .eq('id', carId)
-        .eq('owner_id', user.id)
+        .eq('user_id', user.id)
         .single()
 
       const newMileage = Number(current_mileage)
@@ -161,7 +142,7 @@ export async function PATCH(request: NextRequest) {
       .from('cars')
       .update({ current_mileage: Number(current_mileage) })
       .eq('id', carId)
-      .eq('owner_id', user.id) // Ensure user can only update their own cars
+      .eq('user_id', user.id) // Ensure user can only update their own cars
       .select()
       .single()
 

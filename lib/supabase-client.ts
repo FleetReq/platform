@@ -17,7 +17,7 @@ export const supabase = supabaseUrl && supabaseAnonKey
 // Database types (shared between client and server)
 export interface Car {
   id: string
-  owner_id: string  // Updated to match new schema
+  user_id: string  // User who owns this car
   make: string
   model: string
   year: number

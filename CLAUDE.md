@@ -190,6 +190,13 @@ npm run dev  # Runs on localhost:3000 (required for OAuth)
 - Vercel handles builds automatically
 - Check deployment logs if issues occur
 
+### **Git Commit Messages**
+**IMPORTANT**: Do NOT include any mentions of Claude, Claude Code, or AI tools in commit messages.
+- ❌ NO: "🤖 Generated with [Claude Code](https://claude.com/claude-code)"
+- ❌ NO: "Co-Authored-By: Claude <noreply@anthropic.com>"
+- ✅ YES: Clean, professional commit messages with emoji prefixes
+- Keep commits focused on what changed and why, not how it was created
+
 ## 🎯 Next Priorities
 
 **Immediate (Current Session)**:

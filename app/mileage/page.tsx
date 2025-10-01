@@ -1709,10 +1709,10 @@ export default function MileageTracker() {
               <div className="flex space-x-1 glass-morphism rounded-xl p-1 shadow-elegant">
                 {[
                   { id: 'dashboard', label: 'Graph', adminOnly: false },
-                  { id: 'add-car', label: 'Add Car', adminOnly: true },
-                  { id: 'add-fillup', label: 'Add Fill-up', adminOnly: true },
-                  { id: 'add-maintenance', label: 'Add Maintenance', adminOnly: true },
-                  { id: 'records', label: 'Records', adminOnly: true },
+                  { id: 'add-car', label: 'Add Car', adminOnly: false },
+                  { id: 'add-fillup', label: 'Add Fill-up', adminOnly: false },
+                  { id: 'add-maintenance', label: 'Add Maintenance', adminOnly: false },
+                  { id: 'records', label: 'Records', adminOnly: false },
                   { id: 'settings', label: 'Settings', adminOnly: false }
                 ].map((tab) => {
                   const isDisabled = tab.adminOnly && !userIsOwner

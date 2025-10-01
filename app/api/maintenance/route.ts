@@ -8,11 +8,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
     }
 
+    // Get the authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { searchParams } = new URL(request.url)
     const carId = searchParams.get('car_id')
     const type = searchParams.get('type')
     const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 50
-
 
     let query = supabase
       .from('maintenance_records')
@@ -20,7 +26,7 @@ export async function GET(request: NextRequest) {
         *,
         cars!inner(*)
       `)
-      .eq('cars.user_id', getOwnerUserId())
+      .eq('cars.user_id', user.id)
       .order('date', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(limit)
@@ -60,14 +66,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Only allow owner to create maintenance records
-    if (!isOwner(user.id)) {
-      return NextResponse.json({
-        error: 'Read-only access: Only the owner can add maintenance records',
-        isReadOnly: true
-      }, { status: 403 })
-    }
-
     const body = await request.json()
     const {
       car_id,
@@ -95,7 +93,7 @@ export async function POST(request: NextRequest) {
       .from('cars')
       .select('id')
       .eq('id', car_id)
-      .eq('user_id', getOwnerUserId())
+      .eq('user_id', user.id)
       .single()
 
     if (carError || !car) {
@@ -142,7 +140,7 @@ export async function POST(request: NextRequest) {
       .from('cars')
       .select('current_mileage')
       .eq('id', car_id)
-      .eq('user_id', getOwnerUserId())
+      .eq('user_id', user.id)
       .single()
 
     const newMileage = parseInt(mileage)
@@ -153,7 +151,7 @@ export async function POST(request: NextRequest) {
         .from('cars')
         .update({ current_mileage: newMileage })
         .eq('id', car_id)
-        .eq('user_id', getOwnerUserId())
+        .eq('user_id', user.id)
 
       if (updateError) {
         console.error('Error updating car mileage:', updateError)

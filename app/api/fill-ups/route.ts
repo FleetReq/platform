@@ -8,12 +8,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
     }
 
+    // Get the authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { searchParams } = new URL(request.url)
     const carId = searchParams.get('car_id')
     const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 50
-
-    // Show owner's fill-ups for demo purposes
-    const targetUserId = getOwnerUserId()
 
     let query = supabase
       .from('fill_ups')
@@ -21,7 +25,7 @@ export async function GET(request: NextRequest) {
         *,
         cars!inner(*)
       `)
-      .eq('cars.user_id', targetUserId)
+      .eq('cars.user_id', user.id)
       .order('date', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(limit)
@@ -55,14 +59,6 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Only allow owner to create fill-ups
-    if (!isOwner(user.id)) {
-      return NextResponse.json({
-        error: 'Read-only access: Only the owner can add fill-ups',
-        isReadOnly: true
-      }, { status: 403 })
     }
 
     const body = await request.json()
