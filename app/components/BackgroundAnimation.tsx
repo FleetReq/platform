@@ -2,7 +2,7 @@ export default function BackgroundAnimation() {
   return (
     <div className="fixed inset-0 -z-10">
       {/* Base gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-100 via-blue-100/70 to-indigo-100 dark:from-gray-900 dark:via-gray-800/50 dark:to-gray-900 transition-colors duration-300"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-blue-50/80 to-indigo-50/90 dark:from-gray-900 dark:via-gray-800/50 dark:to-gray-900 transition-colors duration-300"></div>
       
       {/* Floating geometric elements */}
       <div className="absolute inset-0 overflow-hidden">
