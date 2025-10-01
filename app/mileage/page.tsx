@@ -419,7 +419,7 @@ function RecordsManager({
 
     return Array.from(userIds).map(userId => {
       // For now, we'll just show the user ID. In a real app, you'd fetch user profiles
-      return { id: userId, name: userId === 'b73a07b2-ed72-41b1-943f-e119afc9eddb' ? 'Owner (Bruce)' : `User ${userId.slice(0, 8)}...` }
+      return { id: userId, name: userId === 'b73a07b2-ed72-41b1-943f-e119afc9eddb' ? 'Owner (Bruce)' : `User ${userId?.slice(0, 8) || 'Unknown'}...` }
     })
   }, [cars, fillUps, maintenanceRecords])
 
@@ -673,7 +673,7 @@ function RecordsManager({
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
                       <span className="text-xs text-gray-900 dark:text-white truncate">
-                        {uniqueUsers.find(u => u.id === record.user_id)?.name?.split(' ')[0] || `User ${record.user_id.slice(0, 6)}...`}
+                        {uniqueUsers.find(u => u.id === record.user_id)?.name?.split(' ')[0] || `User ${record.user_id?.slice(0, 6) || 'Unknown'}...`}
                       </span>
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap">
