@@ -1199,6 +1199,7 @@ function UserSettings() {
 
 export default function MileageTracker() {
   const [user, setUser] = useState<User | null>(null)
+  const [authLoading, setAuthLoading] = useState(true)
   const [cars, setCars] = useState<Car[]>([])
   const [stats, setStats] = useState<UserStats | null>(null)
   const [fillUps, setFillUps] = useState<FillUp[]>([])
@@ -1232,6 +1233,7 @@ export default function MileageTracker() {
   const handleAuthChange = useCallback(async (newUser: User | null) => {
     console.log('Auth state changed:', newUser ? `${newUser.email} (${newUser.id})` : 'null')
     setUser(newUser)
+    setAuthLoading(false)
     setUserIsOwner(newUser ? isOwner(newUser.id) : false)
 
     // Load subscription plan for authenticated users
@@ -1455,6 +1457,15 @@ export default function MileageTracker() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 relative flex items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
       </div>
     )
   }
