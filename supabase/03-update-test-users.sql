@@ -15,22 +15,19 @@ ORDER BY u.email;
 -- After creating the test users, update their profiles:
 
 -- For Free User (test-free@fleetreq.com)
--- REPLACE 'USER_ID_HERE' with the actual user_id from the query above
 UPDATE user_profiles
 SET subscription_plan = 'free', max_vehicles = 1, max_invited_users = 0
-WHERE id = 'USER_ID_HERE';
+WHERE id = '644bd072-4d14-4a91-91eb-675d1406c537';
 
 -- For Personal User (test-personal@fleetreq.com)
--- REPLACE 'USER_ID_HERE' with the actual user_id from the query above
 UPDATE user_profiles
 SET subscription_plan = 'personal', max_vehicles = 3, max_invited_users = 0
-WHERE id = 'USER_ID_HERE';
+WHERE id = '36df4089-6b72-4efc-9328-0e346a96c9c2';
 
 -- For Business User (test-business@fleetreq.com)
--- REPLACE 'USER_ID_HERE' with the actual user_id from the query above
 UPDATE user_profiles
 SET subscription_plan = 'business', max_vehicles = 999, max_invited_users = 6
-WHERE id = 'USER_ID_HERE';
+WHERE id = '3317f330-c980-4f02-8587-4194f20906a5';
 
 -- Verify all profiles are set correctly:
 SELECT
