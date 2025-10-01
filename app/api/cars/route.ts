@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase'
+import { createRouteHandlerClient } from '@/lib/supabase'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient()
+    const supabase = await createRouteHandlerClient(request)
     if (!supabase) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
     }
@@ -53,7 +53,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient()
+    const supabase = await createRouteHandlerClient(request)
     if (!supabase) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
     }
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient()
+    const supabase = await createRouteHandlerClient(request)
     if (!supabase) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
     }
