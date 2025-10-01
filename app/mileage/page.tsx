@@ -1580,11 +1580,16 @@ export default function MileageTracker() {
       <div className="fixed bottom-6 right-6 z-50">
         {user && (
           <div className="flex items-center gap-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg border border-gray-200/50 dark:border-gray-700/50">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-sm text-gray-600 dark:text-gray-300">
-                {userIsOwner ? 'Admin Mode' : 'Authenticated'}
+              <span className="text-sm text-gray-900 dark:text-white font-medium">
+                Welcome, {user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'}
               </span>
+              {isAdmin(user.id) && (
+                <span className="text-xs bg-purple-600 text-white px-2 py-0.5 rounded-full font-semibold">
+                  ADMIN
+                </span>
+              )}
             </div>
             <button
               onClick={signOut}
@@ -1596,17 +1601,7 @@ export default function MileageTracker() {
         )}
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl sm:text-6xl font-bold mb-6 text-gradient-primary">
-            Vehicle Analytics
-          </h1>
-          <div className="w-32 h-1.5 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 mx-auto mb-6 rounded-full"></div>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-            Professional Vehicle Fleet Tracking & Analytics Dashboard
-          </p>
-        </div>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {/* Professional 3-column layout */}
         {cars.length > 0 ? (
