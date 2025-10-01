@@ -1294,7 +1294,9 @@ export default function MileageTracker() {
       if (!supabase) return
 
       // Load cars
-      const carsResponse = await fetch('/api/cars')
+      const carsResponse = await fetch('/api/cars', {
+        credentials: 'include'
+      })
       if (carsResponse.ok) {
         const { cars } = await carsResponse.json()
         setCars(cars || [])
@@ -1308,14 +1310,18 @@ export default function MileageTracker() {
       }
 
       // Load fill-ups for chart (last 50 records)
-      const fillUpsResponse = await fetch('/api/fill-ups?limit=50')
+      const fillUpsResponse = await fetch('/api/fill-ups?limit=50', {
+        credentials: 'include'
+      })
       if (fillUpsResponse.ok) {
         const { fillUps } = await fillUpsResponse.json()
         setFillUps(fillUps || [])
       }
 
       // Load maintenance records for alerts
-      const maintenanceResponse = await fetch('/api/maintenance?limit=50')
+      const maintenanceResponse = await fetch('/api/maintenance?limit=50', {
+        credentials: 'include'
+      })
       if (maintenanceResponse.ok) {
         const { maintenanceRecords } = await maintenanceResponse.json()
         setMaintenanceRecords(maintenanceRecords || [])

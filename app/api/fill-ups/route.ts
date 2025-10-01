@@ -12,7 +12,8 @@ export async function GET(request: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      console.log('No authenticated user, returning empty array')
+      return NextResponse.json({ fillUps: [] })
     }
 
     const { searchParams } = new URL(request.url)

@@ -12,7 +12,8 @@ export async function GET() {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      console.log('No authenticated user, returning empty array')
+      return NextResponse.json({ cars: [] })
     }
 
     const { data: cars, error: carsError} = await supabase
