@@ -1867,7 +1867,7 @@ export default function MileageTracker() {
                         Vehicle Limit Reached
                       </h3>
                       <p className="text-gray-600 dark:text-gray-300 mb-6">
-                        You've reached your limit of {maxVehicles} vehicle{maxVehicles !== 1 ? 's' : ''}. Upgrade your plan to add more vehicles.
+                        You&apos;ve reached your limit of {maxVehicles} vehicle{maxVehicles !== 1 ? 's' : ''}. Upgrade your plan to add more vehicles.
                       </p>
                       <Link
                         href="/pricing"
