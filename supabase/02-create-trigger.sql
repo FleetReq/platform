@@ -9,8 +9,10 @@ DROP FUNCTION IF EXISTS public.handle_new_user();
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.user_profiles (user_id, subscription_plan, max_vehicles, max_invited_users)
-  VALUES (NEW.id, 'free', 1, 0);
+  INSERT INTO public.user_profiles (id, subscription_plan, max_vehicles, max_invited_users)
+  VALUES (NEW.id, 'free', 1, 0)
+  ON CONFLICT (id) DO UPDATE
+  SET subscription_plan = COALESCE(user_profiles.subscription_plan, 'free');
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

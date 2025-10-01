@@ -9,7 +9,7 @@ SELECT
   p.max_vehicles,
   p.max_invited_users
 FROM auth.users u
-LEFT JOIN user_profiles p ON u.id = p.user_id
+LEFT JOIN user_profiles p ON u.id = p.id
 ORDER BY u.email;
 
 -- After creating the test users, update their profiles:
@@ -19,7 +19,7 @@ ORDER BY u.email;
 /*
 UPDATE user_profiles
 SET subscription_plan = 'free', max_vehicles = 1, max_invited_users = 0
-WHERE user_id = 'USER_ID_HERE';
+WHERE id = 'USER_ID_HERE';
 */
 
 -- For Personal User (test-personal@fleetreq.com)
@@ -27,7 +27,7 @@ WHERE user_id = 'USER_ID_HERE';
 /*
 UPDATE user_profiles
 SET subscription_plan = 'personal', max_vehicles = 3, max_invited_users = 0
-WHERE user_id = 'USER_ID_HERE';
+WHERE id = 'USER_ID_HERE';
 */
 
 -- For Business User (test-business@fleetreq.com)
@@ -35,7 +35,7 @@ WHERE user_id = 'USER_ID_HERE';
 /*
 UPDATE user_profiles
 SET subscription_plan = 'business', max_vehicles = 999, max_invited_users = 6
-WHERE user_id = 'USER_ID_HERE';
+WHERE id = 'USER_ID_HERE';
 */
 
 -- Verify all profiles are set correctly:
@@ -46,5 +46,5 @@ SELECT
   p.max_vehicles,
   p.max_invited_users
 FROM auth.users u
-LEFT JOIN user_profiles p ON u.id = p.user_id
+LEFT JOIN user_profiles p ON u.id = p.id
 ORDER BY p.subscription_plan, u.email;
