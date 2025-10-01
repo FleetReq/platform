@@ -21,9 +21,13 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
   useEffect(() => {
     // Get initial session
     const getSession = async () => {
-      if (!supabase) return
+      if (!supabase) {
+        console.log('AuthComponent: No supabase client')
+        return
+      }
 
       const { data: { session } } = await supabase.auth.getSession()
+      console.log('AuthComponent: Initial session loaded, calling onAuthChange with:', session?.user?.email || 'null')
       setUser(session?.user ?? null)
       setLoading(false)
       onAuthChange(session?.user ?? null)
