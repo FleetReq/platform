@@ -13,32 +13,36 @@ export const createServerSupabaseClient = async () => {
   return createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       get(name: string) {
-        return cookieStore.get(name)?.value
+        const cookie = cookieStore.get(name)
+        console.log('Server: Getting cookie', name, cookie ? 'found' : 'not found')
+        return cookie?.value
       },
       set(name: string, value: string, options: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
         try {
+          console.log('Server: Setting cookie', name)
           cookieStore.set(name, value, {
             ...options,
             sameSite: 'lax',
-            secure: process.env.NODE_ENV === 'production',
+            secure: true, // Always use secure in production
             httpOnly: false,
             path: '/'
           })
-        } catch {
-          // Handle cookie setting errors (e.g., in middleware)
+        } catch (error) {
+          console.error('Server: Error setting cookie', name, error)
         }
       },
       remove(name: string, options: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
         try {
+          console.log('Server: Removing cookie', name)
           cookieStore.set(name, '', {
             ...options,
             maxAge: 0,
             sameSite: 'lax',
-            secure: process.env.NODE_ENV === 'production',
+            secure: true,
             path: '/'
           })
-        } catch {
-          // Handle cookie removal errors
+        } catch (error) {
+          console.error('Server: Error removing cookie', name, error)
         }
       },
     },
