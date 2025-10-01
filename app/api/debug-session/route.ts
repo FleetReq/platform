@@ -1,13 +1,11 @@
-import { NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase'
-import { cookies } from 'next/headers'
+import { NextRequest, NextResponse } from 'next/server'
+import { createRouteHandlerClient } from '@/lib/supabase'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const cookieStore = await cookies()
-    const allCookies = cookieStore.getAll()
+    const allCookies = request.cookies.getAll()
 
-    const supabase = await createServerSupabaseClient()
+    const supabase = await createRouteHandlerClient(request)
     if (!supabase) {
       return NextResponse.json({ error: 'No supabase client' })
     }
