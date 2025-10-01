@@ -40,10 +40,8 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
         setUser(session?.user ?? null)
         setLoading(false)
 
-        // Only call onAuthChange for actual state changes, not initial load
-        if (event !== 'INITIAL_SESSION') {
-          onAuthChange(session?.user ?? null)
-        }
+        // Call onAuthChange for all events including initial session
+        onAuthChange(session?.user ?? null)
 
         if (event === 'SIGNED_IN') {
           setError(null)
