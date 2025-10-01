@@ -125,9 +125,17 @@ export const getMilesDriven = (currentOdometer: number, previousOdometer: number
 // Owner user ID for read-only access control
 const OWNER_USER_ID = 'b73a07b2-ed72-41b1-943f-e119afc9eddb'
 
+// Admin user IDs - these users have full access to all features regardless of subscription
+const ADMIN_USER_IDS = ['b73a07b2-ed72-41b1-943f-e119afc9eddb'] // deeahtee@live.com
+
 // Helper function to check if user is the owner (client-side)
 export const isOwner = (userId: string): boolean => {
   return userId === OWNER_USER_ID
+}
+
+// Helper function to check if user is an admin
+export const isAdmin = (userId: string): boolean => {
+  return ADMIN_USER_IDS.includes(userId)
 }
 
 // Team management helper functions
@@ -183,6 +191,9 @@ export const checkSubscriptionLimits = async (primaryUserId: string): Promise<Su
 export const getUserSubscriptionPlan = async (userId: string): Promise<'free' | 'personal' | 'business'> => {
   if (!supabase) return 'free'
 
+  // Admins always get 'business' plan access
+  if (isAdmin(userId)) return 'business'
+
   const { data, error } = await supabase
     .from('user_profiles')
     .select('subscription_plan')
@@ -197,7 +208,10 @@ export const getUserSubscriptionPlan = async (userId: string): Promise<'free' | 
   return data?.subscription_plan || 'free'
 }
 
-export const hasFeatureAccess = (plan: 'free' | 'personal' | 'business', feature: string): boolean => {
+export const hasFeatureAccess = (userId: string, plan: 'free' | 'personal' | 'business', feature: string): boolean => {
+  // Admins have access to all features
+  if (isAdmin(userId)) return true
+
   const features = {
     free: ['fuel_tracking', 'basic_analytics'],
     personal: ['fuel_tracking', 'basic_analytics', 'maintenance_tracking', 'mobile_app', 'unlimited_history'],

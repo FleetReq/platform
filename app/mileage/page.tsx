@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
-import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner, getUserSubscriptionPlan, hasFeatureAccess, getUpgradeMessage } from '@/lib/supabase-client'
+import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner, isAdmin, getUserSubscriptionPlan, hasFeatureAccess, getUpgradeMessage } from '@/lib/supabase-client'
 import BackgroundAnimation from '../components/BackgroundAnimation'
 import AuthComponent from '../../components/AuthComponent'
 import UpgradePrompt from '../../components/UpgradePrompt'
@@ -144,12 +144,14 @@ function MaintenanceStatusGrid({
   selectedCarId,
   cars,
   maintenanceRecords,
-  subscriptionPlan
+  subscriptionPlan,
+  userId
 }: {
   selectedCarId: string | null,
   cars: Car[],
   maintenanceRecords: MaintenanceRecord[],
-  subscriptionPlan: 'free' | 'personal' | 'business'
+  subscriptionPlan: 'free' | 'personal' | 'business',
+  userId: string | null
 }) {
   if (!selectedCarId) {
     return (
@@ -164,7 +166,7 @@ function MaintenanceStatusGrid({
   const carMaintenanceRecords = maintenanceRecords.filter(record => record.car_id === selectedCarId)
 
   // Check if user has access to maintenance tracking
-  const hasMaintenanceAccess = hasFeatureAccess(subscriptionPlan, 'maintenance_tracking')
+  const hasMaintenanceAccess = userId ? hasFeatureAccess(userId, subscriptionPlan, 'maintenance_tracking') : false
 
   const getStatusColor = (status: MaintenanceStatus) => {
     switch (status) {
@@ -1702,6 +1704,7 @@ export default function MileageTracker() {
                 cars={cars}
                 maintenanceRecords={maintenanceRecords}
                 subscriptionPlan={userSubscriptionPlan}
+                userId={user?.id || null}
               />
             </div>
 
