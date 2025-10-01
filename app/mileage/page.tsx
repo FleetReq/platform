@@ -1624,9 +1624,9 @@ export default function MileageTracker() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {/* Professional 3-column layout */}
-        {cars.length > 0 ? (
-          <div className="grid lg:grid-cols-3 gap-6">
-            {/* Left Column - Vehicle Info, Performance, and Maintenance */}
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Left Column - Vehicle Info, Performance, and Maintenance */}
+          {cars.length > 0 && (
             <div className="lg:col-span-1 space-y-6">
               {/* Vehicle Selector */}
               <div className="card-professional p-4">
@@ -1722,9 +1722,10 @@ export default function MileageTracker() {
                 userId={user?.id || null}
               />
             </div>
+          )}
 
-            {/* Right Column - Navigation Tabs + Charts/Forms */}
-            <div className="lg:col-span-2 space-y-6">
+          {/* Right Column - Navigation Tabs + Charts/Forms */}
+          <div className={`${cars.length > 0 ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-6`}>
               {/* Navigation Tabs */}
               <div className="flex space-x-1 glass-morphism rounded-xl p-1 shadow-elegant">
                 {[
@@ -1887,30 +1888,6 @@ export default function MileageTracker() {
               )}
             </div>
           </div>
-          ) : (
-            <div className="text-center py-24">
-              <div className="w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-8">
-                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14-7L8 4l4 2v10m6-6h1.5a2.5 2.5 0 010 5H20m-8 0H4a2 2 0 01-2-2V9a2 2 0 012-2h8m0 6v2a2 2 0 002 2h4a2 2 0 002-2v-2" />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                Add your first car to unlock the dashboard
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-8">
-                Start tracking your vehicle&apos;s fuel efficiency and maintenance by adding your first car.
-              </p>
-              {userIsOwner && (
-                <button
-                  onClick={() => setActiveTab('add-car')}
-                  className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
-                >
-                  Add Your First Vehicle
-                </button>
-              )}
-            </div>
-          )
-        }
       </div>
     </div>
   )
