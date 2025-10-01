@@ -35,7 +35,16 @@ export async function GET() {
       return NextResponse.json({ error: 'Failed to fetch cars' }, { status: 500 })
     }
 
-    return NextResponse.json({ cars })
+    // Temporary debug info
+    return NextResponse.json({
+      cars,
+      _debug: {
+        userId: user.id,
+        userEmail: user.email,
+        carCount: cars?.length || 0,
+        hasError: !!carsError
+      }
+    })
   } catch (error) {
     console.error('API error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
