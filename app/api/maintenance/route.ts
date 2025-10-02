@@ -137,25 +137,27 @@ export async function POST(request: NextRequest) {
     }
 
     // Update the car's current mileage if the new odometer reading is higher or if no current mileage exists
-    const { data: currentCar } = await supabase
-      .from('cars')
-      .select('current_mileage')
-      .eq('id', car_id)
-      .eq('user_id', user.id)
-      .single()
-
-    const newMileage = parseInt(mileage)
-    const shouldUpdate = !currentCar?.current_mileage || currentCar.current_mileage < newMileage
-
-    if (shouldUpdate) {
-      const { error: updateError } = await supabase
+    if (mileage) {
+      const { data: currentCar } = await supabase
         .from('cars')
-        .update({ current_mileage: newMileage })
+        .select('current_mileage')
         .eq('id', car_id)
         .eq('user_id', user.id)
+        .single()
 
-      if (updateError) {
-        console.error('Error updating car mileage:', updateError)
+      const newMileage = parseInt(mileage)
+      const shouldUpdate = !currentCar?.current_mileage || currentCar.current_mileage < newMileage
+
+      if (shouldUpdate) {
+        const { error: updateError } = await supabase
+          .from('cars')
+          .update({ current_mileage: newMileage })
+          .eq('id', car_id)
+          .eq('user_id', user.id)
+
+        if (updateError) {
+          console.error('Error updating car mileage:', updateError)
+        }
       }
     }
 

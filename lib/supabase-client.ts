@@ -25,12 +25,16 @@ export interface Car {
 
 // Team management types
 export interface UserProfile {
-  user_id: string
+  id: string
+  email?: string
+  full_name?: string
+  avatar_url?: string
   subscription_plan: 'free' | 'personal' | 'business'
   max_vehicles: number
   max_invited_users: number
   is_primary_user: boolean
   created_at: string
+  updated_at?: string
 }
 
 export interface InvitedUser {
@@ -94,15 +98,6 @@ export interface MaintenanceRecord {
   next_service_mileage?: number
   notes?: string
   created_by_user_id?: string
-  created_at: string
-  updated_at: string
-}
-
-export interface UserProfile {
-  id: string
-  email: string
-  full_name?: string
-  avatar_url?: string
   created_at: string
   updated_at: string
 }

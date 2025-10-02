@@ -1,328 +1,142 @@
-# Bruce Truong - Site Reliability Engineer Portfolio
+# FleetReq - Vehicle Fleet Management & Maintenance Platform
 
-A professional, enterprise-grade portfolio website showcasing Site Reliability Engineering expertise and full-stack development skills. Built with modern technologies and production-ready features, demonstrating the same quality and attention to detail that goes into enterprise infrastructure.
+A professional SaaS platform for vehicle maintenance tracking and fuel efficiency monitoring. Designed for families, small contractors, and service businesses who need reliable vehicle management without enterprise complexity.
 
-🌐 **Live Site**: [brucetruong.com](https://brucetruong.com)
-🚀 **SRE Professional** • **60B+ Documents Migrated** • **Production Systems Expert**
+🌐 **Live Site**: [fleetreq.vercel.app](https://fleetreq.vercel.app)
+🚀 **Full-Stack SaaS** • **Freemium Model** • **Production-Ready**
 
-## 🎯 Technical Highlights & Professional Features
+---
 
-### 🔐 **Security & Authentication**
-- **GitHub OAuth Integration** - Secure popup-based authentication flow with Supabase
-- **Row Level Security (RLS)** - Database-level security ensuring data isolation
-- **Zero-Flash OAuth** - Optimized authentication preventing home page redirects
-- **HTTPS-Only** - Production security with proper certificate management
+## 🎯 What is FleetReq?
 
-### 🏗️ **Enterprise Architecture & Infrastructure**
-- **Next.js 15 App Router** - Latest framework with server components and streaming
-- **TypeScript** - Full type safety across the entire application stack
-- **Supabase Backend** - PostgreSQL with real-time subscriptions and edge functions
-- **RESTful API Design** - Professional API architecture with proper error handling
-- **Responsive PWA** - Progressive Web App with offline capabilities
+FleetReq helps you **stop guessing when maintenance is due** and **track every dollar spent on vehicles**. Perfect for:
 
-### 📊 **Production-Grade Analytics & Monitoring**
-- **Real-Time Analytics Dashboard** - Chart.js integration with interactive data visualization
-- **Custom Metrics Tracking** - Professional KPI dashboards with weekly/monthly/yearly views
-- **Performance Monitoring** - Google Analytics integration with privacy compliance
-- **SEO Optimization** - Structured data, meta tags, sitemap, and search optimization
+- **Families** managing 2-3 personal vehicles
+- **Small Contractors** tracking 5-15 work vehicles
+- **Service Businesses** needing tax-compliant mileage logs
 
-### 🛠️ **DevOps & Deployment Excellence**
-- **Automated CI/CD** - GitHub Actions with Vercel deployment pipeline
-- **Environment Management** - Proper env variable handling and secret management
-- **Code Quality** - ESLint, TypeScript, and automated testing workflows
-- **Performance Optimization** - Image optimization, code splitting, and caching strategies
+### Key Features
 
-### 💼 **Professional Applications**
+- ✅ **Automated Maintenance Alerts** - Never miss an oil change or brake inspection
+- ✅ **Fuel Efficiency Tracking** - MPG analytics with weekly/monthly/yearly trends
+- ✅ **Color-Coded Status** - 🟢 Good / 🟡 Warning / 🔴 Overdue at a glance
+- ✅ **Tax Mileage Logging** - IRS-compliant business deduction tracking (Business tier)
+- ✅ **Multi-User Teams** - Invite drivers and mechanics (Business tier)
+- ✅ **Professional Reports** - Export analytics for tax season (Business tier)
 
-#### **Gas Mileage & Maintenance Tracker** - *Full-Stack Production Application*
-- **Multi-User SaaS Platform** - Complete user management with role-based access
-- **Advanced Analytics Engine** - Automated MPG calculations with trend analysis
-- **Maintenance Management System** - Color-coded status indicators and automated alerts
-- **Data Visualization** - Interactive charts with exportable analytics reports
-- **Mobile-Responsive Design** - Touch-friendly interface optimized for field use
+---
 
-#### **Professional Portfolio Features**
-- **Photography Gallery** - Lightbox gallery with Instagram API integration
-- **Contact Management** - Formspree integration with spam protection
-- **PDF Resume System** - Dynamic resume download with version control
-- **Search Functionality** - Site-wide search with indexed content and keyboard shortcuts
+## 💰 Pricing Tiers
+
+### **Free Tier** - Try Before You Buy
+- 1 vehicle maximum
+- Basic fuel tracking & MPG analysis
+- **View-only** maintenance status
+- 90-day data history
+
+### **Personal Tier** - $4/month
+- Up to 3 vehicles
+- **Full maintenance tracking** (add/edit alerts)
+- Unlimited data history
+- Fuel efficiency analytics
+- Export capabilities
+
+### **Business Tier** - $12/vehicle/month
+- Unlimited vehicles (4+ recommended)
+- Up to 6 team members
+- Tax mileage tracking (IRS-compliant)
+- Professional reporting & analytics
+- Priority support
+
+**Why these prices?** Personal tier = "coffee money" impulse purchase. Business tier = 65% below market average ($35/vehicle/month typical).
+
+---
+
+## 🛠️ Technology Stack
+
+### **Frontend**
+- **Next.js 15** - App Router with Server Components
+- **TypeScript** - Full type safety
+- **Tailwind CSS** - Professional design system
+- **Chart.js** - Interactive fuel efficiency graphs
+
+### **Backend**
+- **Supabase** - PostgreSQL database with Row Level Security (RLS)
+- **Supabase Auth** - Email/Password + Google OAuth
+- **RESTful APIs** - Clean API architecture with proper error handling
+- **Edge Functions** - Globally distributed backend
+
+### **Hosting & DevOps**
+- **Vercel** - Auto-deployment from GitHub main branch
+- **GitHub Actions** - Automated CI/CD pipeline
+- **Environment Management** - Secure .env.local configuration
+
+---
 
 ## 📋 Prerequisites
 
-- **Node.js** (version 18 or higher) - [Download here](https://nodejs.org/)
-  - This includes npm automatically
+- **Node.js 18+** - [Download here](https://nodejs.org/)
 - **Git** - For cloning the repository
+- **Supabase Account** - Free tier works fine ([supabase.com](https://supabase.com))
+
+---
 
 ## 🚀 Quick Start
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/DeeAhTee/my-resume-site.git
-   cd my-resume-site
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   # This installs Next.js, Tailwind CSS, TypeScript, and all other dependencies
-   ```
-
-3. **Set up environment variables**
-   ```bash
-   # Create .env.local file (see Configuration section for details)
-   touch .env.local
-   # Add your Google Analytics ID and Supabase credentials
-   ```
-
-4. **Run the development server**
-   ```bash
-   npm run dev
-   ```
-
-   **⚠️ Important**: The dev server must run on port 3000 for GitHub OAuth to work properly.
-
-   **If port 3000 is in use:**
-   ```bash
-   # Find and kill the process using port 3000
-   netstat -ano | findstr :3000
-   taskkill /PID <PID_NUMBER> /F
-
-   # Then restart dev server
-   npm run dev
-   ```
-
-5. **Open in browser**
-   Navigate to [http://localhost:3000](http://localhost:3000)
-
-   **Note**: Mileage tracker OAuth requires localhost:3000 (configured in Supabase)
-
-## 📁 Project Structure
-
-```
-app/
-├── components/          # Reusable UI components
-│   ├── BackgroundAnimation.tsx    # Animated background
-│   ├── ContactForm.tsx           # Formspree contact form
-│   ├── HeroSection.tsx           # Home page hero
-│   ├── PDFDownload.tsx           # PDF resume download
-│   ├── PhotographyGallery.tsx    # Photo gallery with lightbox
-│   ├── LoadingStates.tsx         # Loading components (spinner, button)
-│   ├── Testimonials.tsx          # Client testimonials display
-│   ├── TestimonialCarousel.tsx   # Carousel for multiple testimonials
-│   └── OAuthRedirectHandler.tsx  # GitHub OAuth flow handler
-├── about/              # About page with personal stories
-├── contact/            # Contact page with Formspree form
-├── projects/           # Projects showcase
-├── resume/             # Resume page with PDF download
-├── mileage/            # Gas Mileage & Maintenance Tracker
-├── api/                # API routes for Supabase integration
-└── globals.css         # Global styles and Tailwind
-public/
-├── Bruce_Truong_Resume.pdf       # Static PDF resume file
-├── images/             # Static images and photos
-└── icons/              # Favicon and app icons
+### 1. Clone the Repository
+```bash
+git clone git@github.com:FleetReq/platform.git
+cd fleetreq-platform
 ```
 
-## 🛠️ Enterprise Technology Stack
+### 2. Install Dependencies
+```bash
+npm install
+```
 
-### **Frontend Architecture**
-- **Next.js 15** - Latest React framework with App Router, Server Components, and Streaming
-- **TypeScript** - Complete type safety and enhanced developer experience
-- **Tailwind CSS** - Utility-first CSS framework with custom component system
-- **React 19** - Latest React with concurrent features and improved performance
-
-### **Backend & Database**
-- **Supabase** - PostgreSQL with Edge Functions, real-time subscriptions, and Row Level Security
-- **RESTful APIs** - Professional API design with proper error handling and validation
-- **GitHub OAuth** - Secure authentication with popup-based flow optimization
-- **Edge Computing** - Globally distributed backend for optimal performance
-
-### **Analytics & Monitoring**
-- **Chart.js** - Professional data visualization with interactive dashboards
-- **Google Analytics** - Privacy-compliant user analytics and performance tracking
-- **Real-time Metrics** - Live dashboard updates with WebSocket connections
-- **Custom KPI Tracking** - Business intelligence and reporting systems
-
-### **DevOps & Deployment**
-- **Vercel** - Enterprise hosting with automatic deployments and edge optimization
-- **GitHub Actions** - Automated CI/CD pipeline with testing and quality checks
-- **Environment Management** - Secure configuration and secret management
-- **Performance Optimization** - Image optimization, code splitting, and progressive loading
-
-### **Professional Integrations**
-- **Formspree** - Enterprise contact form handling with spam protection
-- **Instagram API** - Social media integration for photography portfolio
-- **PDF Generation** - Dynamic document serving and version control
-- **Search Engine** - Custom search implementation with keyboard shortcuts
-
-## 🎖️ Site Reliability Engineering Skills Demonstrated
-
-### **Infrastructure Automation**
-- **Infrastructure as Code** - Automated deployment and environment management
-- **CI/CD Pipelines** - GitHub Actions with automated testing and deployment
-- **Environment Consistency** - Reproducible builds across development and production
-- **Monitoring & Alerting** - Performance tracking with automated incident response
-
-### **Scalability & Performance**
-- **Edge Computing** - Global content delivery and optimization
-- **Database Optimization** - Efficient queries with proper indexing and caching
-- **Load Balancing** - Automatic scaling and traffic distribution
-- **Performance Monitoring** - Real-time metrics and alerting systems
-
-### **Security & Compliance**
-- **Authentication Security** - OAuth implementation with proper session management
-- **Data Protection** - Row Level Security and encrypted data transmission
-- **Access Control** - Role-based permissions and user management
-- **Security Headers** - HTTPS enforcement and security best practices
-
-### **Production Reliability**
-- **Zero-Downtime Deployments** - Automated deployment with rollback capabilities
-- **Error Handling** - Comprehensive error tracking and recovery mechanisms
-- **Data Backup & Recovery** - Automated backup systems with disaster recovery
-- **High Availability** - Multi-region deployment with failover capabilities
-
-## 🔧 Configuration
-
-### Environment Variables
-
-Create a `.env.local` file in the root directory with the following variables:
+### 3. Set Up Environment Variables
+Create `.env.local` in the root directory:
 
 ```bash
-# Google Analytics
-NEXT_PUBLIC_GA_ID=G-YOUR-GA-ID-HERE
-
-# Supabase Configuration (for Gas Mileage Tracker)
+# Supabase Configuration (REQUIRED)
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+
+# Google Analytics (Optional)
+NEXT_PUBLIC_GA_ID=G-YOUR-GA-ID-HERE
 ```
 
-### Gas Mileage & Maintenance Tracker Setup
+**Where to find Supabase credentials:**
+1. Go to [supabase.com](https://supabase.com) → Create new project
+2. Project Settings → API
+3. Copy `Project URL` and `anon/public` key
 
-The mileage tracker is a full-stack application using Supabase as the backend:
+### 4. Set Up Database Schema
+Run these SQL files in **Supabase Dashboard → SQL Editor** (in order):
 
-1. **Create Supabase Project**
-   - Go to [https://supabase.com](https://supabase.com)
-   - Create a new project
-   - Copy your project URL and anon key to `.env.local`
+1. `supabase/01-create-user-profiles-table.sql` - User subscription data
+2. `supabase/02-create-trigger.sql` - Auto-create profiles on signup
+3. `supabase/03-update-test-users.sql` - Set up test accounts
+4. `supabase/13-fix-handle-new-user-security.sql` - Security fix
 
-2. **Set up Database Schema**
-   - Run the SQL in `database/supabase-schema.sql` in your Supabase SQL editor
-   - This creates tables for cars, fill-ups, maintenance records, and user profiles
+**Test accounts will be created:**
+- `test-free@fleetreq.com` / `TestFree123!` (Free tier)
+- `test-personal@fleetreq.com` / `TestPersonal123!` (Personal tier)
+- `test-business@fleetreq.com` / `TestBusiness123!` (Business tier)
 
-3. **Configure GitHub OAuth**
-   - In Supabase Dashboard → Authentication → Providers
-   - Enable GitHub provider
-   - Add your GitHub OAuth credentials
-   - Set redirect URL to: `https://your-domain.com/mileage`
+### 5. Configure Google OAuth (Optional)
+1. Supabase Dashboard → Authentication → Providers → Enable Google
+2. Follow Supabase's Google OAuth setup guide
+3. Add redirect URL: `http://localhost:3000/auth/callback`
 
-4. **Features Include**
-   - ✅ Multi-car tracking with user authentication
-   - ✅ Professional analytics dashboard with Chart.js integration
-   - ✅ Interactive charts with weekly/monthly/yearly views
-   - ✅ Advanced maintenance management with color-coded status indicators
-   - ✅ Automatic MPG calculations and trend analysis
-   - ✅ Complete maintenance record keeping with due date tracking
-   - ✅ Owner/read-only access modes with professional status indicators
-   - ✅ Row Level Security for data privacy
-   - ✅ Responsive mobile-friendly interface with modern design patterns
-
-### Contact Form Setup (Formspree)
-
-The contact form uses [Formspree](https://formspree.io) for form handling:
-
-1. **Create Formspree Account**
-   - Go to [https://formspree.io](https://formspree.io)
-   - Create a new form for your contact page
-   - Get your form endpoint (format: `https://formspree.io/f/YOUR_FORM_ID`)
-
-2. **Update Form Endpoint**
-   - Edit `app/components/ContactForm.tsx`
-   - Replace the fetch URL with your Formspree endpoint
-
-3. **Form Features**
-   - ✅ Client-side validation
-   - ✅ Spam protection
-   - ✅ Email notifications
-   - ✅ Success/error handling
-
-### PDF Resume Setup
-
-To customize the PDF resume:
-1. Create your professional resume using Word, Google Docs, or your preferred tool
-2. Export as PDF with the filename `Bruce_Truong_Resume.pdf`
-3. Replace the existing file in `/public/Bruce_Truong_Resume.pdf`
-4. The download button will automatically serve your new PDF
-
-## 📱 Features Overview
-
-### PDF Resume Download
-- Static PDF file serving
-- Professional resume format
-- Direct download functionality
-- Easy to update - simply replace `/public/Bruce_Truong_Resume.pdf`
-
-### Contact Form (Formspree Integration)
-- Real form submissions (no mailto fallbacks)
-- Client-side validation with TypeScript
-- Loading states and success/error feedback
-- Spam protection and email notifications
-- Mobile-friendly design
-
-### Photography Gallery
-- Lightbox photo viewer with navigation
-- Instagram integration and links
-- Responsive grid layout
-- Touch/swipe support for mobile
-
-### Privacy-Focused Design
-- No phone numbers on public pages
-- Strategic information disclosure
-- Clean, professional presentation
-- Reduced spam/robocall exposure
-
-### Performance & UX
-- Image optimization with Next.js
-- Loading skeletons and states
-- Dark/light mode with system detection
-- Responsive design for all devices
-
-## 🚀 Deployment
-
-The site deploys automatically to Vercel when pushing to the main branch via GitHub integration.
-
-### Available Scripts
-
+### 6. Start Development Server
 ```bash
-npm run dev      # Start development server
-npm run build    # Build for production
-npm run start    # Start production server locally
-npm run lint     # Run ESLint for code quality
-```
-
-### Deployment Process
-
-1. **Push to GitHub** - Commit and push changes to main branch
-2. **Automatic Build** - Vercel detects changes and builds automatically
-3. **Live in Minutes** - Changes appear on brucetruong.com within 2-3 minutes
-
-## 🔧 Troubleshooting
-
-### GitHub OAuth Issues
-
-**Problem**: OAuth redirects to localhost instead of live site
-**Solution**: Check Supabase URL Configuration:
-- Site URL: `https://brucetruong.com`
-- Redirect URLs: `https://brucetruong.com/mileage`, `http://localhost:3000/mileage`
-
-**Problem**: "Cannot find module" errors in development
-**Solution**: Clear Next.js cache and restart:
-```bash
-rm -rf .next
 npm run dev
 ```
 
-**Problem**: Port 3000 in use
-**Solution**: Kill the process and restart:
+**⚠️ CRITICAL**: Must run on **port 3000** for Google OAuth to work!
+
+**If port 3000 is in use:**
 ```bash
 # Windows
 netstat -ano | findstr :3000
@@ -330,49 +144,173 @@ taskkill /PID <PID_NUMBER> /F
 
 # macOS/Linux
 lsof -ti:3000 | xargs kill -9
+
+# Then restart
+npm run dev
 ```
 
-### Environment Variables
-
-Required for mileage tracker functionality:
-- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous key
-- `NEXT_PUBLIC_GA_ID` - Google Analytics measurement ID
-
-### Development Notes
-
-- **Port 3000 Required**: Mileage tracker OAuth is configured for localhost:3000
-- **Cache Issues**: Clear browser cache for OAuth problems (use incognito mode)
-- **Database Access**: Row Level Security ensures user data isolation
-
-## 🎯 Professional Results & Impact
-
-This portfolio demonstrates the same engineering excellence and attention to detail that I bring to enterprise infrastructure projects:
-
-- **✅ Production-Ready Architecture** - Built with enterprise patterns and best practices
-- **✅ Security-First Design** - Implements proper authentication, authorization, and data protection
-- **✅ Performance Optimized** - Achieves 90+ Lighthouse scores across all metrics
-- **✅ Scalable Infrastructure** - Designed to handle growth and high-traffic scenarios
-- **✅ Monitoring & Observability** - Full analytics and performance tracking implementation
-
-## 🚀 Why This Matters for SRE
-
-This website serves as a practical demonstration of:
-
-1. **Infrastructure Automation** - Automated CI/CD and deployment processes
-2. **Security Implementation** - OAuth, RLS, and security best practices
-3. **Performance Engineering** - Optimization techniques and monitoring
-4. **Full-Stack Capability** - End-to-end application development and maintenance
-5. **Production Operations** - Real-world application with 24/7 availability
-
-## 📞 Professional Contact
-
-- **🌐 Portfolio**: [brucetruong.com](https://brucetruong.com)
-- **✉️ Email**: careers@brucetruong.com
-- **💼 LinkedIn**: [linkedin.com/in/brucentruong](https://linkedin.com/in/brucentruong)
-- **⚡ GitHub**: [github.com/DeeAhTee](https://github.com/DeeAhTee)
+### 7. Open in Browser
+Navigate to **[http://localhost:3000](http://localhost:3000)**
 
 ---
 
-**Site Reliability Engineer** • **Next.js 15** • **TypeScript** • **Enterprise Architecture**
-*Demonstrating production-grade development and infrastructure expertise*
+## 📁 Project Structure
+
+```
+fleetreq-platform/
+├── app/
+│   ├── page.tsx                    # Landing page with pricing
+│   ├── mileage/page.tsx            # Main dashboard application (2500+ lines)
+│   ├── pricing/page.tsx            # Detailed pricing table
+│   ├── components/
+│   │   ├── BackgroundAnimation.tsx # Animated gradient background
+│   │   └── UpgradePrompt.tsx       # Paywall overlays
+│   ├── api/
+│   │   ├── cars/route.ts           # Vehicle CRUD
+│   │   ├── fill-ups/route.ts       # Fuel tracking
+│   │   ├── maintenance/route.ts    # Maintenance records
+│   │   └── stats/route.ts          # Public aggregate stats
+│   └── globals.css                 # Design system & animations
+├── components/
+│   └── AuthComponent.tsx           # Authentication UI
+├── lib/
+│   ├── supabase.ts                 # Server-side Supabase clients
+│   └── supabase-client.ts          # Client-side + helper functions
+├── supabase/
+│   └── *.sql                       # Database migrations
+└── __tests__/
+    └── lib/                        # Automated tests (46 passing)
+```
+
+---
+
+## 🔐 Security & Best Practices
+
+### **Row Level Security (RLS)**
+Every table uses Supabase RLS policies:
+- Users can ONLY see their own data
+- Pattern: `auth.uid() = user_id` on all queries
+- Admin users bypass limits in application logic (NOT database)
+
+### **Authentication**
+- Cookie-based sessions (NOT localStorage) for SSR compatibility
+- Uses `@supabase/ssr` package for Next.js 15
+- Google OAuth + Email/Password supported
+
+### **Security Fixes Applied**
+- ✅ Fixed `handle_new_user` function with `SET search_path = public`
+- ✅ Prevents schema injection attacks
+- ✅ CAPTCHA protection ready (enable in Supabase Dashboard)
+
+---
+
+## 🧪 Testing
+
+### **Automated Tests**
+```bash
+npm test
+```
+- 46 tests passing
+- Subscription logic tests
+- Vehicle limit enforcement tests
+- Database schema validation
+
+### **Manual Testing**
+Use `TESTING_CHECKLIST.md` for comprehensive browser testing:
+1. Free tier limits (1 vehicle, view-only maintenance)
+2. Personal tier features (3 vehicles, full maintenance)
+3. Business tier unlimited access
+4. Data isolation between accounts
+
+---
+
+## 🚀 Deployment
+
+### **Automatic Deployment (Vercel)**
+1. Push to `main` branch
+2. Vercel auto-builds and deploys
+3. Live at [fleetreq.vercel.app](https://fleetreq.vercel.app) in 2-3 minutes
+
+### **Manual Deployment**
+```bash
+npm run build    # Build for production
+npm run start    # Test production build locally
+```
+
+### **Environment Variables (Vercel)**
+Add these in Vercel Dashboard → Project Settings → Environment Variables:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `NEXT_PUBLIC_GA_ID` (optional)
+
+---
+
+## 🔧 Troubleshooting
+
+### **Port 3000 Required**
+Google OAuth is configured for `http://localhost:3000/auth/callback`.
+Running on 3001, 3002, etc. will break authentication.
+
+### **"Your project's URL and Key are required"**
+Missing `.env.local` file. Copy from `/d/Documents/coding/my-resume-site/.env.local` or create new one.
+
+### **Data Not Showing After Login**
+Check RLS policies in Supabase Dashboard → Authentication → Policies.
+All tables should have `auth.uid() = user_id` policies.
+
+### **OAuth Redirect Issues**
+Supabase Dashboard → Authentication → URL Configuration:
+- Site URL: `https://fleetreq.vercel.app`
+- Redirect URLs: `https://fleetreq.vercel.app/auth/callback`, `http://localhost:3000/auth/callback`
+
+---
+
+## 📊 Business Strategy
+
+### **Target Market - Dual Funnel**
+1. **Families** (Volume) - 100M+ potential users, $4/month Personal tier
+2. **Small Contractors** (Revenue) - 6M businesses, $12/vehicle/month Business tier
+
+### **Freemium Conversion Strategy**
+Free tier is **intentionally limited** to prevent account sharing:
+- View-only maintenance (can't add alerts)
+- 90-day history limit
+- Essential features behind paywall drives upgrades
+
+### **Mobile Strategy (Phase 2)**
+Free mobile app for massive App Store downloads → brand awareness → contractor discovery.
+
+---
+
+## 🎯 Roadmap
+
+### **Immediate (Next Week)**
+- [ ] Update browser tab icon (favicon)
+- [ ] First-time UX improvements
+- [ ] Data retention enforcement (90-day limit)
+- [ ] Enable CAPTCHA protection
+
+### **Short-term (Next Month)**
+- [ ] Stripe billing integration
+- [ ] Professional reporting (Business tier)
+- [ ] Team invitation system
+- [ ] Excel import tools for contractors
+
+### **Medium-term (3-6 Months)**
+- [ ] PWA/Mobile app launch
+- [ ] Advanced analytics dashboard
+- [ ] Custom branding (Business tier)
+- [ ] Domain purchase (fleetreq.com)
+
+---
+
+## 📞 Contact & Support
+
+- **Live Site**: [fleetreq.vercel.app](https://fleetreq.vercel.app)
+- **GitHub**: [github.com/FleetReq/platform](https://github.com/FleetReq/platform)
+- **Issues**: [GitHub Issues](https://github.com/FleetReq/platform/issues)
+
+---
+
+**FleetReq Platform** • **Next.js 15** • **TypeScript** • **Supabase**
+*Professional vehicle management for families and small businesses*
