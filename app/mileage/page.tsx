@@ -480,6 +480,23 @@ function RecordsManager({
     { value: 'registration', label: 'Registration' }
   ]
 
+  // Show empty state if no cars
+  if (cars.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </div>
+        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">No Records Yet</h3>
+        <p className="text-gray-600 dark:text-gray-300 mb-6">
+          Add a vehicle first to start tracking your fill-ups and maintenance records.
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -1837,27 +1854,26 @@ export default function MileageTracker() {
           </div>
 
           {/* Right Column - Navigation Tabs + Charts/Forms */}
-          <div className="lg:col-span-2 space-y-6">
-              {/* Navigation Tabs */}
-              <div className="relative flex space-x-1 glass-morphism rounded-xl p-1 shadow-elegant">
-                {/* First-Time User Tutorial Speech Bubble - Overlays on tabs */}
-                {dataLoaded && cars.length === 0 && (
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none">
-                    <div className="relative inline-block bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-2xl px-6 py-4 shadow-2xl animate-bounce-gentle">
-                      <div className="flex items-center gap-3">
-                        <span className="text-3xl">👋</span>
-                        <div>
-                          <p className="font-semibold text-lg">Welcome to FleetReq!</p>
-                          <p className="text-sm text-blue-50">Get started by clicking "Add Car" below!</p>
-                        </div>
+          <div className="lg:col-span-2 space-y-6 relative">
+              {/* First-Time User Tutorial Speech Bubble - Positioned over content */}
+              {dataLoaded && cars.length === 0 && activeTab !== 'add-car' && (
+                <div className="fixed top-[200px] left-[calc(50%+120px)] transform -translate-x-1/2 z-[100] pointer-events-none">
+                  <div className="relative inline-block bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-2xl px-6 py-4 shadow-2xl animate-bounce-gentle">
+                    {/* Upward-pointing arrow positioned to point at Add Car tab (second tab) */}
+                    <div className="absolute -top-3 left-12 w-0 h-0 border-l-[12px] border-r-[12px] border-b-[12px] border-transparent border-b-purple-500"></div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">👋</span>
+                      <div>
+                        <p className="font-semibold text-lg">Welcome to FleetReq!</p>
+                        <p className="text-sm text-blue-50">Get started by clicking "Add Car" above!</p>
                       </div>
-                      {/* Speech bubble pointer pointing to Add Car tab */}
-                      <div className="absolute bottom-4 -left-3 w-0 h-0 border-t-8 border-b-8 border-r-8 border-transparent border-r-purple-500"></div>
                     </div>
                   </div>
-                )}
+                </div>
+              )}
 
-
+              {/* Navigation Tabs */}
+              <div className="relative flex space-x-1 glass-morphism rounded-xl p-1 shadow-elegant">
                 {[
                   { id: 'dashboard', label: 'Graph', adminOnly: false },
                   { id: 'add-car', label: 'Add Car', adminOnly: false },
@@ -1869,9 +1885,9 @@ export default function MileageTracker() {
                   // Check if vehicle limit reached (only for Add Car tab)
                   const isVehicleLimitReached = tab.id === 'add-car' && cars.length >= maxVehicles
 
-                  // Disable data tabs (Graph, Fill-up, Maintenance, Records) when no cars
-                  const requiresCars = ['dashboard', 'add-fillup', 'add-maintenance', 'records'].includes(tab.id)
-                  const isDisabledNoCars = requiresCars && cars.length === 0
+                  // All tabs are now accessible - they show empty states if no cars exist
+                  // Only disable based on admin access or vehicle limit
+                  const isDisabledNoCars = false // Removed: all tabs accessible with empty states
 
                   const isDisabled = (tab.adminOnly && !userIsOwner) || isVehicleLimitReached || isDisabledNoCars
                   const isActive = activeTab === tab.id
@@ -1891,6 +1907,10 @@ export default function MileageTracker() {
                     tooltipMessage = 'Admin access required'
                   }
 
+                  // Add gold ring for Add Car tab when tutorial is showing (no pulsing)
+                  const showTutorial = dataLoaded && cars.length === 0 && activeTab !== 'add-car'
+                  const shouldHighlight = showTutorial && tab.id === 'add-car'
+
                   return (
                     <button
                       key={tab.id}
@@ -1903,6 +1923,10 @@ export default function MileageTracker() {
                           : isDisabled
                           ? 'text-gray-400 dark:text-gray-500 cursor-not-allowed opacity-60'
                           : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-gray-800/50'
+                      } ${
+                        shouldHighlight
+                          ? 'ring-4 ring-amber-400 dark:ring-amber-500 shadow-[0_0_20px_rgba(251,191,36,0.8)]'
+                          : ''
                       }`}
                     >
                       {tabLabel}
@@ -2126,19 +2150,17 @@ export default function MileageTracker() {
                       </svg>
                     </div>
                     <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                      {userIsOwner ? 'Add a Vehicle First' : 'No vehicle data available'}
+                      Add a Vehicle First
                     </h3>
                     <p className="text-gray-600 dark:text-gray-300 mb-6">
-                      {userIsOwner ? 'You need to add a vehicle before you can track fill-ups or maintenance.' : 'Vehicle data is not available in demo mode.'}
+                      You need to add a vehicle before you can track {activeTab === 'add-fillup' ? 'fill-ups' : 'maintenance'}.
                     </p>
-                    {userIsOwner && (
-                      <button
-                        onClick={() => setActiveTab('add-car')}
-                        className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
-                      >
-                        Add Your First Vehicle
-                      </button>
-                    )}
+                    <button
+                      onClick={() => setActiveTab('add-car')}
+                      className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                    >
+                      Add Your First Vehicle
+                    </button>
                   </div>
                 </div>
               )}
