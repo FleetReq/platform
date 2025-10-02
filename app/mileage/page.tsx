@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useLayoutEffect, useCallback, useMemo, useTransition } from 'react'
+import { flushSync } from 'react-dom'
 import Link from 'next/link'
 import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner, isAdmin, getUserSubscriptionPlan, getUserMaxVehicles, hasFeatureAccess, getUpgradeMessage } from '@/lib/supabase-client'
 import BackgroundAnimation from '../components/BackgroundAnimation'
@@ -1282,8 +1283,9 @@ function UserSettings({ cars, onCarDeleted }: { cars?: Car[], onCarDeleted?: () 
 
 export default function MileageTracker() {
   const [user, setUser] = useState<User | null>(null)
-  const [authLoading, setAuthLoading] = useState(true)
+  // Removed authLoading - using user && (loading || !dataLoaded) pattern instead
   const [cars, setCars] = useState<Car[]>([])
+  const [dataLoaded, setDataLoaded] = useState(false) // Track if initial data load is complete
   const [stats, setStats] = useState<UserStats | null>(null)
   const [fillUps, setFillUps] = useState<FillUp[]>([])
   const [maintenanceRecords, setMaintenanceRecords] = useState<MaintenanceRecord[]>([])
@@ -1296,20 +1298,11 @@ export default function MileageTracker() {
   const [chartView, setChartView] = useState<'weekly' | 'monthly' | 'yearly'>('monthly')
   const [selectedCarId, setSelectedCarId] = useState<string | null>(null)
 
-  // Set default car to 2006 Camry when cars are loaded
+  // Set default car to first car when cars are loaded
+  // TODO: Add default_car_id to user_profiles table for user preference
   useEffect(() => {
     if (cars.length > 0 && !selectedCarId) {
-      const camry2006 = cars.find(car =>
-        car.year === 2006 &&
-        car.make.toLowerCase().includes('toyota') &&
-        car.model.toLowerCase().includes('camry')
-      )
-      if (camry2006) {
-        setSelectedCarId(camry2006.id)
-      } else {
-        // Fallback to first car if no 2006 Camry found
-        setSelectedCarId(cars[0].id)
-      }
+      setSelectedCarId(cars[0].id)
     }
   }, [cars, selectedCarId])
 
@@ -1323,8 +1316,14 @@ export default function MileageTracker() {
   // Handle auth state changes from AuthComponent
   const handleAuthChange = useCallback(async (newUser: User | null) => {
     console.log('Auth state changed:', newUser ? `${newUser.email} (${newUser.id})` : 'null')
+
+    // If user is logging in, reset loading states to show spinner
+    if (newUser) {
+      setLoading(true)
+      setDataLoaded(false)
+    }
+
     setUser(newUser)
-    setAuthLoading(false)
     setUserIsOwner(newUser ? isOwner(newUser.id) : false)
 
     // Load subscription plan and max vehicles for authenticated users
@@ -1338,13 +1337,28 @@ export default function MileageTracker() {
       setMaxVehicles(1)
     }
 
-    setLoading(false)
-
-    // Load data for the new user (or demo data if no user) - but don't await it
-    loadData().catch(error => {
+    // Load data for the new user (or demo data if no user)
+    await loadData().catch(error => {
       console.error('Error loading data:', error)
     })
+
+    // After data is loaded, mark loading as complete
+    if (newUser) {
+      setLoading(false)
+    }
   }, [])
+
+  // Mark data as loaded only after loading completes
+  // Add minimum delay to ensure smooth transition and no flash
+  useEffect(() => {
+    if (!loading) {
+      // Wait at least 300ms to show spinner as intentional loading state, not a flash
+      const timer = setTimeout(() => {
+        setDataLoaded(true)
+      }, 300)
+      return () => clearTimeout(timer)
+    }
+  }, [loading])
 
   // Initialize auth state and clean up URL parameters
   useEffect(() => {
@@ -1375,11 +1389,11 @@ export default function MileageTracker() {
         }
       }
 
-      // Always set loading to false after auth check
-      setLoading(false)
+      // Load initial data BEFORE setting loading to false
+      await loadData().catch(console.error)
 
-      // Load initial data
-      loadData().catch(console.error)
+      // Set loading to false AFTER data is loaded
+      setLoading(false)
     }
 
     initializeAuth()
@@ -1389,39 +1403,25 @@ export default function MileageTracker() {
     try {
       if (!supabase) return
 
-      // Load cars
-      const carsResponse = await fetch('/api/cars', {
-        credentials: 'include'
-      })
-      if (carsResponse.ok) {
-        const { cars } = await carsResponse.json()
-        setCars(cars || [])
-      }
+      // Fetch ALL data first before setting any state
+      const [carsResponse, statsResponse, fillUpsResponse, maintenanceResponse] = await Promise.all([
+        fetch('/api/cars', { credentials: 'include' }),
+        fetch('/api/stats'),
+        fetch('/api/fill-ups?limit=50', { credentials: 'include' }),
+        fetch('/api/maintenance?limit=50', { credentials: 'include' })
+      ])
 
-      // Load stats
-      const statsResponse = await fetch('/api/stats')
-      if (statsResponse.ok) {
-        const { stats } = await statsResponse.json()
-        setStats(stats)
-      }
+      // Extract data
+      const carsData = carsResponse.ok ? (await carsResponse.json()).cars || [] : []
+      const statsData = statsResponse.ok ? (await statsResponse.json()).stats : null
+      const fillUpsData = fillUpsResponse.ok ? (await fillUpsResponse.json()).fillUps || [] : []
+      const maintenanceData = maintenanceResponse.ok ? (await maintenanceResponse.json()).maintenanceRecords || [] : []
 
-      // Load fill-ups for chart (last 50 records)
-      const fillUpsResponse = await fetch('/api/fill-ups?limit=50', {
-        credentials: 'include'
-      })
-      if (fillUpsResponse.ok) {
-        const { fillUps } = await fillUpsResponse.json()
-        setFillUps(fillUps || [])
-      }
-
-      // Load maintenance records for alerts
-      const maintenanceResponse = await fetch('/api/maintenance?limit=50', {
-        credentials: 'include'
-      })
-      if (maintenanceResponse.ok) {
-        const { maintenanceRecords } = await maintenanceResponse.json()
-        setMaintenanceRecords(maintenanceRecords || [])
-      }
+      // Set ALL state in one batch - React will batch these updates
+      setCars(carsData)
+      setStats(statsData)
+      setFillUps(fillUpsData)
+      setMaintenanceRecords(maintenanceData)
     } catch (error) {
       console.error('Error loading data:', error)
     }
@@ -1547,22 +1547,12 @@ export default function MileageTracker() {
   }
 
 
-  if (loading) {
+  // Show data loading screen (only for authenticated users fetching data)
+  if (user && (loading || !dataLoaded)) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    )
-  }
-
-  // Show loading while checking auth (but still render AuthComponent to trigger callback)
-  if (authLoading) {
-    return (
-      <div className="h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 relative flex items-center justify-center">
-        <div className="hidden">
-          <AuthComponent onAuthChange={handleAuthChange} />
-        </div>
-        <div className="text-white text-xl">Loading...</div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-4"></div>
+        <div className="text-gray-700 dark:text-gray-300 text-lg">Loading your vehicles...</div>
       </div>
     )
   }
@@ -1720,11 +1710,19 @@ export default function MileageTracker() {
         {/* Professional 3-column layout */}
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Left Column - Vehicle Info, Performance, and Maintenance */}
-          {cars.length > 0 && (
-            <div className="lg:col-span-1 space-y-6">
-              {/* Vehicle Selector */}
-              <div className="card-professional p-4">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Selected Vehicle</h3>
+          <div className="lg:col-span-1 space-y-6">
+            {/* Vehicle Selector */}
+            <div className="card-professional p-4">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Selected Vehicle</h3>
+              {cars.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <p className="text-sm font-medium">Add a car to unlock</p>
+                </div>
+              ) : (
+                <>
                 <div className="relative mb-3">
                   <select
                     value={selectedCarId || ''}
@@ -1754,12 +1752,21 @@ export default function MileageTracker() {
                     />
                   </div>
                 )}
-              </div>
+                </>
+              )}
+            </div>
 
-              {/* Performance Overview - Compact */}
-              <div className="card-professional p-4">
-                <h3 className="text-sm font-bold mb-3 text-gradient-primary">Performance Overview</h3>
-                {stats && (
+            {/* Performance Overview - Compact */}
+            <div className="card-professional p-4">
+              <h3 className="text-sm font-bold mb-3 text-gradient-primary">Performance Overview</h3>
+              {cars.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <p className="text-sm font-medium">Add a car to unlock</p>
+                </div>
+              ) : stats ? (
                   <div className="grid grid-cols-2 gap-2">
                     <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                       <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mx-auto mb-1">
@@ -1804,10 +1811,21 @@ export default function MileageTracker() {
                       <div className="text-xs text-gray-600 dark:text-gray-300">Spent</div>
                     </div>
                   </div>
-                )}
-              </div>
+                ) : null}
+            </div>
 
-              {/* Maintenance Status - Dynamic */}
+            {/* Maintenance Status - Dynamic */}
+            {cars.length === 0 ? (
+              <div className="card-professional p-4">
+                <h3 className="text-sm font-bold mb-3 text-gradient-primary">Maintenance Status</h3>
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <p className="text-sm font-medium">Add a car to unlock</p>
+                </div>
+              </div>
+            ) : (
               <MaintenanceStatusGrid
                 selectedCarId={selectedCarId}
                 cars={cars}
@@ -1815,13 +1833,31 @@ export default function MileageTracker() {
                 subscriptionPlan={userSubscriptionPlan}
                 userId={user?.id || null}
               />
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Right Column - Navigation Tabs + Charts/Forms */}
-          <div className={`${cars.length > 0 ? 'lg:col-span-2' : 'lg:col-span-3'} space-y-6`}>
+          <div className="lg:col-span-2 space-y-6">
               {/* Navigation Tabs */}
-              <div className="flex space-x-1 glass-morphism rounded-xl p-1 shadow-elegant">
+              <div className="relative flex space-x-1 glass-morphism rounded-xl p-1 shadow-elegant">
+                {/* First-Time User Tutorial Speech Bubble - Overlays on tabs */}
+                {dataLoaded && cars.length === 0 && (
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none">
+                    <div className="relative inline-block bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-2xl px-6 py-4 shadow-2xl animate-bounce-gentle">
+                      <div className="flex items-center gap-3">
+                        <span className="text-3xl">👋</span>
+                        <div>
+                          <p className="font-semibold text-lg">Welcome to FleetReq!</p>
+                          <p className="text-sm text-blue-50">Get started by clicking "Add Car" below!</p>
+                        </div>
+                      </div>
+                      {/* Speech bubble pointer pointing to Add Car tab */}
+                      <div className="absolute bottom-4 -left-3 w-0 h-0 border-t-8 border-b-8 border-r-8 border-transparent border-r-purple-500"></div>
+                    </div>
+                  </div>
+                )}
+
+
                 {[
                   { id: 'dashboard', label: 'Graph', adminOnly: false },
                   { id: 'add-car', label: 'Add Car', adminOnly: false },
@@ -2004,12 +2040,12 @@ export default function MileageTracker() {
                     selectedCarId={selectedCarId}
                     cars={cars}
                     maintenanceRecords={maintenanceRecords}
-                    subscriptionPlan={subscriptionPlan}
+                    subscriptionPlan={userSubscriptionPlan}
                     userId={user?.id || null}
                   />
 
                   {/* Add Maintenance Form (Personal+ only) */}
-                  {hasFeatureAccess(user?.id || null, subscriptionPlan, 'maintenance_tracking') ? (
+                  {hasFeatureAccess(user?.id || null, userSubscriptionPlan, 'maintenance_tracking') ? (
                     <div className="card-professional p-6 mt-6">
                       <AddMaintenanceForm cars={cars} onSuccess={() => { loadData(); setActiveTab('dashboard'); }} />
                     </div>
