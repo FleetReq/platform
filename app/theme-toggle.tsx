@@ -36,18 +36,18 @@ export function ThemeToggle() {
   };
 
   const getLabel = () => {
-    if (theme === "light") return "Switch to dark mode";
-    return "Switch to light mode";
+    if (theme === "light") return "Light Mode";
+    return "Dark Mode";
   };
 
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 rounded-lg bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors duration-200"
+      className="hidden md:inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors duration-200"
       aria-label={getLabel()}
-      title={getLabel()}
     >
       {getIcon()}
+      <span>{getLabel()}</span>
     </button>
   );
 }

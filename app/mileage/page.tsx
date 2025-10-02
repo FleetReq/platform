@@ -68,7 +68,8 @@ type MaintenanceStatus = 'good' | 'warning' | 'overdue' | 'unknown'
 function getMaintenanceStatus(
   maintenanceType: string,
   lastMaintenanceRecord: MaintenanceRecord | null,
-  currentMileage: number | null
+  currentMileage: number | null,
+  subscriptionTier: 'free' | 'personal' | 'business' = 'free'
 ): MaintenanceStatus {
   const interval = MAINTENANCE_INTERVALS[maintenanceType]
   if (!interval) return 'unknown'
@@ -79,14 +80,14 @@ function getMaintenanceStatus(
   let timeStatus: MaintenanceStatus = 'good'
   let mileageStatus: MaintenanceStatus = 'good'
 
-  // Priority 1: Check user-specified next service date
-  if (lastMaintenanceRecord.next_service_date) {
+  // Priority 1: Check user-specified next service date (Personal+ only)
+  if (lastMaintenanceRecord.next_service_date && subscriptionTier !== 'free') {
     const nextServiceDate = new Date(lastMaintenanceRecord.next_service_date)
     const daysUntilService = (nextServiceDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
 
     if (daysUntilService <= 0) {
       timeStatus = 'overdue'
-    } else if (daysUntilService <= 30) { // 30 days = yellow warning
+    } else if (daysUntilService <= 30 && subscriptionTier !== 'free') { // Yellow warnings: Personal+ only
       timeStatus = 'warning'
     }
   } else if (interval.months) {
@@ -97,18 +98,19 @@ function getMaintenanceStatus(
 
     if (timeProgress >= (interval.redThreshold || 1.0)) {
       timeStatus = 'overdue'
-    } else if (timeProgress >= (interval.yellowThreshold || 0.8)) {
+    } else if (timeProgress >= (interval.yellowThreshold || 0.8) && subscriptionTier !== 'free') {
+      // Yellow warnings: Personal+ only
       timeStatus = 'warning'
     }
   }
 
-  // Priority 2: Check user-specified next service mileage
-  if (lastMaintenanceRecord.next_service_mileage && currentMileage !== null) {
+  // Priority 2: Check user-specified next service mileage (Personal+ only)
+  if (lastMaintenanceRecord.next_service_mileage && currentMileage !== null && subscriptionTier !== 'free') {
     const milesUntilService = lastMaintenanceRecord.next_service_mileage - currentMileage
 
     if (milesUntilService <= 0) {
       mileageStatus = 'overdue'
-    } else if (milesUntilService <= 1000) { // 1000 miles = yellow warning
+    } else if (milesUntilService <= 1000 && subscriptionTier !== 'free') { // Yellow warnings: Personal+ only
       mileageStatus = 'warning'
     }
   } else if (interval.miles && lastMaintenanceRecord.mileage && currentMileage !== null) {
@@ -118,7 +120,8 @@ function getMaintenanceStatus(
 
     if (mileageProgress >= (interval.redThreshold || 1.0)) {
       mileageStatus = 'overdue'
-    } else if (mileageProgress >= (interval.yellowThreshold || 0.8)) {
+    } else if (mileageProgress >= (interval.yellowThreshold || 0.8) && subscriptionTier !== 'free') {
+      // Yellow warnings: Personal+ only
       mileageStatus = 'warning'
     }
   }
@@ -209,7 +212,8 @@ function MaintenanceStatusGrid({
             const status = getMaintenanceStatus(
               key,
               latestRecord || null,
-              selectedCar?.current_mileage || null
+              selectedCar?.current_mileage || null,
+              subscriptionPlan
             )
 
             return (
@@ -1311,7 +1315,7 @@ export default function MileageTracker() {
   const [userIsOwner, setUserIsOwner] = useState(false)
   const [userSubscriptionPlan, setUserSubscriptionPlan] = useState<'free' | 'personal' | 'business'>('free')
   const [maxVehicles, setMaxVehicles] = useState<number>(1)
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'records' | 'settings'>('add-car')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'records' | 'settings'>('dashboard')
   const [chartView, setChartView] = useState<'weekly' | 'monthly' | 'yearly'>('monthly')
   const [selectedCarId, setSelectedCarId] = useState<string | null>(null)
 
@@ -1322,13 +1326,6 @@ export default function MileageTracker() {
       setSelectedCarId(cars[0].id)
     }
   }, [cars, selectedCarId])
-
-  // Auto-switch to dashboard when first car is added (for new users)
-  useEffect(() => {
-    if (cars.length > 0 && activeTab === 'add-car') {
-      setActiveTab('dashboard')
-    }
-  }, [cars.length, activeTab])
 
   // Handle auth state changes from AuthComponent
   const handleAuthChange = useCallback(async (newUser: User | null) => {
@@ -1697,31 +1694,6 @@ export default function MileageTracker() {
     <div className="relative overflow-hidden min-h-screen">
       <BackgroundAnimation />
 
-      {/* Admin/Demo Mode Toggle Corner */}
-      <div className="fixed bottom-6 right-6 z-50">
-        {user && (
-          <div className="flex items-center gap-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg border border-gray-200/50 dark:border-gray-700/50">
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-sm text-gray-900 dark:text-white font-medium">
-                Welcome, {user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'}
-              </span>
-              {isAdmin(user.id) && (
-                <span className="text-xs bg-purple-600 text-white px-2 py-0.5 rounded-full font-semibold">
-                  ADMIN
-                </span>
-              )}
-            </div>
-            <button
-              onClick={signOut}
-              className="text-sm bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded font-medium transition-colors"
-            >
-              Sign Out
-            </button>
-          </div>
-        )}
-      </div>
-
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {/* Professional 3-column layout */}
@@ -2068,56 +2040,14 @@ export default function MileageTracker() {
                     userId={user?.id || null}
                   />
 
-                  {/* Add Maintenance Form (Personal+ only) */}
-                  {hasFeatureAccess(user?.id || null, userSubscriptionPlan, 'maintenance_tracking') ? (
-                    <div className="card-professional p-6 mt-6">
-                      <AddMaintenanceForm cars={cars} onSuccess={() => { loadData(); setActiveTab('dashboard'); }} />
-                    </div>
-                  ) : (
-                    <div className="card-professional p-6 mt-6 relative">
-                      {/* Grayed out preview of form */}
-                      <div className="opacity-30 pointer-events-none">
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Add Maintenance Record</h2>
-                        <div className="space-y-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Vehicle</label>
-                            <select className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
-                              <option>Select a vehicle...</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Maintenance Type</label>
-                            <select className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
-                              <option>Select maintenance type...</option>
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Paywall overlay */}
-                      <div className="absolute inset-0 flex items-center justify-center bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg">
-                        <div className="text-center px-6 max-w-md">
-                          <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                            </svg>
-                          </div>
-                          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                            Maintenance Tracking Locked
-                          </h3>
-                          <p className="text-gray-600 dark:text-gray-400 mb-6">
-                            Upgrade to <span className="font-semibold text-blue-600 dark:text-blue-400">Personal</span> or <span className="font-semibold text-purple-600 dark:text-purple-400">Business</span> to add and track maintenance records
-                          </p>
-                          <Link
-                            href="/pricing"
-                            className="inline-block bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
-                          >
-                            View Pricing
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  {/* Add Maintenance Form (all users) */}
+                  <div className="card-professional p-6 mt-6">
+                    <AddMaintenanceForm
+                      cars={cars}
+                      onSuccess={() => { loadData(); setActiveTab('dashboard'); }}
+                      subscriptionPlan={userSubscriptionPlan}
+                    />
+                  </div>
                 </>
               )}
 
@@ -2519,7 +2449,7 @@ function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void
 }
 
 // Add Maintenance Form Component
-function AddMaintenanceForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void }) {
+function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan = 'free' }: { cars: Car[], onSuccess: () => void, subscriptionPlan?: 'free' | 'personal' | 'business' }) {
   const [formData, setFormData] = useState({
     car_id: cars[0]?.id || '',
     date: new Date().toISOString().split('T')[0],
@@ -2698,28 +2628,35 @@ function AddMaintenanceForm({ cars, onSuccess }: { cars: Car[], onSuccess: () =>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Next Service Date</label>
-            <input
-              type="date"
-              value={formData.next_service_date}
-              onChange={(e) => setFormData({ ...formData, next_service_date: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            />
+        {/* Next Service fields - Personal+ only */}
+        {subscriptionPlan !== 'free' && (
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-gray-700 dark:text-gray-300 mb-2">
+                Next Service Date <span className="text-xs text-blue-600 dark:text-blue-400">(Personal+)</span>
+              </label>
+              <input
+                type="date"
+                value={formData.next_service_date}
+                onChange={(e) => setFormData({ ...formData, next_service_date: e.target.value })}
+                className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 dark:text-gray-300 mb-2">
+                Next Service Mileage <span className="text-xs text-blue-600 dark:text-blue-400">(Personal+)</span>
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={formData.next_service_mileage}
+                onChange={(e) => setFormData({ ...formData, next_service_mileage: e.target.value })}
+                className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                placeholder="Miles"
+              />
+            </div>
           </div>
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Next Service Mileage</label>
-            <input
-              type="number"
-              min="0"
-              value={formData.next_service_mileage}
-              onChange={(e) => setFormData({ ...formData, next_service_mileage: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-              placeholder="Miles"
-            />
-          </div>
-        </div>
+        )}
 
         <div>
           <label className="block text-gray-700 dark:text-gray-300 mb-2">Notes</label>

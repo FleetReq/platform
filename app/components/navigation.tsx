@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import { ThemeToggle } from "../theme-toggle";
 import Search from "./Search";
+import { SubscriptionBadge } from "./SubscriptionBadge";
+import { supabase, getUserSubscriptionPlan } from "@/lib/supabase-client";
 
 const navigationItems = [
   { name: "Home", href: "/" },
@@ -15,7 +17,72 @@ const navigationItems = [
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
-  
+  const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+  const [subscriptionTier, setSubscriptionTier] = useState<'free' | 'personal' | 'business'>('free');
+  const [subscriptionStartDate, setSubscriptionStartDate] = useState<string | null>(null);
+
+  // Fetch user and subscription tier
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!supabase) return;
+
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      setUser(currentUser);
+
+      if (currentUser) {
+        const tier = await getUserSubscriptionPlan(currentUser.id);
+        setSubscriptionTier(tier);
+
+        // Fetch subscription start date from user_profiles
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('subscription_start_date')
+          .eq('id', currentUser.id)
+          .single();
+
+        if (profile?.subscription_start_date) {
+          setSubscriptionStartDate(profile.subscription_start_date);
+        }
+      }
+    };
+
+    fetchUserData();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        const tier = await getUserSubscriptionPlan(session.user.id);
+        setSubscriptionTier(tier);
+
+        // Fetch subscription start date
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('subscription_start_date')
+          .eq('id', session.user.id)
+          .single();
+
+        if (profile?.subscription_start_date) {
+          setSubscriptionStartDate(profile.subscription_start_date);
+        }
+      } else {
+        setSubscriptionTier('free');
+        setSubscriptionStartDate(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    if (!supabase) return;
+    await supabase.auth.signOut();
+    setUser(null);
+    setSubscriptionTier('free');
+    router.push('/');
+  };
+
   // Helper function to check if current page matches navigation item
   const isCurrentPage = (href: string) => {
     // Remove trailing slash from pathname for comparison
@@ -27,9 +94,9 @@ export function Navigation() {
   return (
     <nav className="bg-white/98 dark:bg-gray-900/98 backdrop-blur-2xl border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20 gap-4">
-          {/* Left: Logo */}
-          <div className="flex items-center flex-shrink-0 min-w-0">
+        <div className="relative flex items-center justify-between h-20 gap-4">
+          {/* Left: Logo + Badge */}
+          <div className="flex items-center flex-shrink-0 min-w-0 gap-2 z-10">
             <Link href="/" className="group">
               <div className="flex items-center space-x-3">
                 <div className="hidden sm:block min-w-0">
@@ -38,10 +105,11 @@ export function Navigation() {
                 </div>
               </div>
             </Link>
+            {user && <SubscriptionBadge tier={subscriptionTier} subscriptionStartDate={subscriptionStartDate} />}
           </div>
 
-          {/* Center: Desktop Navigation */}
-          <div className="hidden md:flex justify-center flex-1 max-w-md">
+          {/* Center: Desktop Navigation - Absolutely centered */}
+          <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2">
             <div className="flex items-center space-x-1 bg-gray-50/80 dark:bg-gray-800/50 rounded-full px-2 py-2 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
               {navigationItems.map((item) => (
                 <Link
@@ -59,15 +127,38 @@ export function Navigation() {
             </div>
           </div>
 
-          {/* Right: Search, CTA, Theme Toggle */}
-          <div className="flex items-center flex-shrink-0 space-x-2">
-            {/* Search - Desktop */}
-            <div className="hidden lg:block">
-              <Search className="w-48" />
-            </div>
-
+          {/* Right: Welcome, Sign Out, Theme Toggle */}
+          <div className="flex items-center flex-shrink-0 space-x-2 z-10">
+            {/* Welcome message - shown when logged in */}
+            {user && (
+              <div className="hidden md:flex items-center px-3 py-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                <span className="text-sm text-gray-900 dark:text-white font-medium">
+                  Welcome, {(() => {
+                    const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+                    const parts = fullName.split(' ');
+                    if (parts.length > 1) {
+                      return `${parts[0]} ${parts[parts.length - 1].charAt(0)}.`;
+                    }
+                    return fullName;
+                  })()}!
+                </span>
+              </div>
+            )}
 
             <ThemeToggle />
+
+            {/* Sign Out button - shown when logged in */}
+            {user && (
+              <button
+                onClick={handleSignOut}
+                className="hidden md:inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors duration-200"
+              >
+                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Sign Out
+              </button>
+            )}
 
             {/* Mobile menu button */}
             <div className="md:hidden">
@@ -96,11 +187,6 @@ export function Navigation() {
       {isOpen && (
         <div className="md:hidden border-t border-gray-100 dark:border-gray-800">
           <div className="px-6 py-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl">
-            {/* Search - Mobile */}
-            <div className="mb-6">
-              <Search className="w-full" />
-            </div>
-
             {/* Mobile Navigation Links */}
             <div className="space-y-2 mb-6">
               {navigationItems.map((item) => (
@@ -119,18 +205,33 @@ export function Navigation() {
               ))}
             </div>
 
-            {/* Mobile CTA */}
+            {/* Mobile CTA / Sign Out */}
             <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
-              <Link
-                href="/mileage"
-                className="w-full inline-flex items-center justify-center px-6 py-3 bg-blue-600 dark:bg-blue-500 text-white text-base font-medium rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 transition-all duration-300"
-                onClick={() => setIsOpen(false)}
-              >
-                Start Free Trial
-                <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </Link>
+              {user ? (
+                <button
+                  onClick={() => {
+                    handleSignOut();
+                    setIsOpen(false);
+                  }}
+                  className="w-full inline-flex items-center justify-center px-6 py-3 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white text-base font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300"
+                >
+                  <svg className="mr-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  Sign Out
+                </button>
+              ) : (
+                <Link
+                  href="/mileage"
+                  className="w-full inline-flex items-center justify-center px-6 py-3 bg-blue-600 dark:bg-blue-500 text-white text-base font-medium rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 transition-all duration-300"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Start Free Trial
+                  <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                </Link>
+              )}
             </div>
           </div>
         </div>
