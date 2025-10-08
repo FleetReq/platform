@@ -2009,27 +2009,15 @@ export default function MileageTracker() {
                 </div>
               )}
 
-              {/* Maintenance Tab - View/Edit based on subscription */}
+              {/* Maintenance Tab - Add Maintenance Form */}
               {activeTab === 'add-maintenance' && cars.length > 0 && (
-                <>
-                  {/* Maintenance Status Grid (visible to all) */}
-                  <MaintenanceStatusGrid
-                    selectedCarId={selectedCarId}
+                <div className="card-professional p-6">
+                  <AddMaintenanceForm
                     cars={cars}
-                    maintenanceRecords={maintenanceRecords}
+                    onSuccess={() => { loadData(); setActiveTab('dashboard'); }}
                     subscriptionPlan={userSubscriptionPlan}
-                    userId={user?.id || null}
                   />
-
-                  {/* Add Maintenance Form (all users) */}
-                  <div className="card-professional p-6 mt-6">
-                    <AddMaintenanceForm
-                      cars={cars}
-                      onSuccess={() => { loadData(); setActiveTab('dashboard'); }}
-                      subscriptionPlan={userSubscriptionPlan}
-                    />
-                  </div>
-                </>
+                </div>
               )}
 
               {/* Records Management */}
