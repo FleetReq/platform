@@ -2,8 +2,8 @@ name: Supabase Keep-Alive
 
 on:
   schedule:
-    # Runs daily at 12:00 PM UTC (cron syntax: minute hour day month weekday)
-    - cron: '0 12 * * *'
+    # Runs daily at 7:00 AM PST / 8:00 AM PDT (3:00 PM UTC - cron uses UTC time)
+    - cron: '0 15 * * *'
   workflow_dispatch: # Allows manual trigger for testing
 
 jobs:
