@@ -132,7 +132,11 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('Error creating maintenance record:', error)
-      return NextResponse.json({ error: 'Failed to create maintenance record' }, { status: 500 })
+      return NextResponse.json({
+        error: 'Failed to create maintenance record',
+        details: error.message,
+        code: error.code
+      }, { status: 500 })
     }
 
     // Update the car's current mileage if the new odometer reading is higher or if no current mileage exists

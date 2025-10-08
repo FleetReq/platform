@@ -95,7 +95,11 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('Error creating car:', error)
-      return NextResponse.json({ error: 'Failed to create car' }, { status: 500 })
+      return NextResponse.json({
+        error: 'Failed to create car',
+        details: error.message,
+        code: error.code
+      }, { status: 500 })
     }
 
     return NextResponse.json({ car }, { status: 201 })
