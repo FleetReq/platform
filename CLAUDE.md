@@ -10,7 +10,7 @@
 ### **0. CLAUDE.md is Auto-Loaded (Verify Context)**
 **This CLAUDE.md file is automatically loaded by Claude Code at session start.**
 - If starting a session, verify I have context by referencing recent work
-- Review all 6 Critical Development Principles before any work
+- Review all 7 Critical Development Principles before any work
 - Check Recent Session Summary for latest context
 - Review Current Tasks & Priorities for active work
 - Verify Pre-Session Setup Checklist is complete
@@ -56,6 +56,14 @@
 - **Example**: If `created_by_user_id` doesn't exist in fill_ups, check maintenance_records, cars, etc.
 - **Rationale**: Prevents users from hitting the same bug in multiple places. One fix session should solve the problem completely, not create a whack-a-mole situation.
 
+### **6. Always Verify Against SCHEMA.md Before Database Operations**
+**Before writing ANY database INSERT/UPDATE code, check SCHEMA.md for exact column names.**
+- **Read SCHEMA.md first**: Verify table structure, column names, constraints, and triggers
+- **Don't assume**: Column names like `user_id` vs `owner_id` vs `created_by_user_id` are critical
+- **Check for auto-calculated fields**: Never manually insert fields calculated by triggers (e.g., `mpg`)
+- **Update SCHEMA.md**: If you modify database schema in Supabase, update SCHEMA.md immediately
+- **Rationale**: Prevents "column does not exist" errors and ensures data integrity. SCHEMA.md is the single source of truth for database structure.
+
 ---
 
 ## 🎯 Repository Information
@@ -74,7 +82,7 @@
 
 ### **0. Read This Entire CLAUDE.md File First**
 **⚠️ MANDATORY: I do this proactively at the start of EVERY session (see Principle #0)**
-- Read all 6 Critical Development Principles
+- Read all 7 Critical Development Principles
 - Check Recent Session Summary for latest context
 - Review Current Tasks & Priorities
 - Verify this Pre-Session Setup Checklist is complete

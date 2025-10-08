@@ -1,0 +1,279 @@
+# FleetReq Database Schema
+
+> **CRITICAL**: Always verify column names against this schema before writing to the database.
+> Last Updated: 2025-10-08
+
+---
+
+## Table of Contents
+1. [auth.users](#authusers) (Supabase managed)
+2. [user_profiles](#user_profiles)
+3. [cars](#cars)
+4. [fill_ups](#fill_ups)
+5. [maintenance_records](#maintenance_records)
+6. [profiles](#profiles) (legacy, may be unused)
+
+---
+
+## auth.users
+**Managed by Supabase Auth** - Do not modify directly
+
+- `id` - uuid (primary key)
+- `email` - text
+- `encrypted_password` - text
+- `email_confirmed_at` - timestamp
+- `created_at` - timestamp
+- `updated_at` - timestamp
+- User metadata stored in `raw_user_meta_data` and `raw_app_meta_data`
+
+---
+
+## user_profiles
+
+**Subscription and user metadata**
+
+```sql
+CREATE TABLE public.user_profiles (
+  id uuid NOT NULL,
+  email text NULL,
+  full_name text NULL,
+  avatar_url text NULL,
+  github_id text NULL,
+  is_admin boolean NULL DEFAULT false,
+  created_at timestamp with time zone NULL DEFAULT now(),
+  updated_at timestamp with time zone NULL DEFAULT now(),
+  subscription_plan text NOT NULL DEFAULT 'free'::text,
+  max_vehicles integer NOT NULL DEFAULT 1,
+  max_invited_users integer NOT NULL DEFAULT 0,
+  is_primary_user boolean NOT NULL DEFAULT true,
+  subscription_start_date timestamp without time zone NULL,
+  current_tier_start_date timestamp without time zone NULL,
+
+  CONSTRAINT user_profiles_pkey PRIMARY KEY (id),
+  CONSTRAINT user_profiles_github_id_key UNIQUE (github_id),
+  CONSTRAINT user_profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users (id),
+  CONSTRAINT user_profiles_subscription_plan_check CHECK (
+    subscription_plan = ANY (ARRAY['free'::text, 'personal'::text, 'business'::text])
+  )
+)
+```
+
+**Key Columns:**
+- `id` - Links to auth.users.id (one-to-one)
+- `subscription_plan` - 'free' | 'personal' | 'business'
+- `max_vehicles` - Enforced limit (1 for free, 3 for personal, 999 for business)
+- `is_admin` - Bypass all limits, show purple badge
+
+---
+
+## cars
+
+**User vehicles**
+
+```sql
+CREATE TABLE public.cars (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  make text NOT NULL,
+  model text NOT NULL,
+  year integer NOT NULL,
+  color text NULL,
+  license_plate text NULL,
+  nickname text NULL,
+  created_at timestamp with time zone NULL DEFAULT now(),
+  updated_at timestamp with time zone NULL DEFAULT now(),
+  current_mileage integer NULL,
+
+  CONSTRAINT cars_pkey PRIMARY KEY (id),
+  CONSTRAINT cars_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users (id) ON DELETE CASCADE,
+  CONSTRAINT cars_year_check CHECK ((year >= 1900) AND (year <= 2030))
+)
+```
+
+**Indexes:**
+- `idx_cars_user_id` on `user_id`
+- `idx_cars_current_mileage` on `current_mileage`
+
+**Triggers:**
+- `update_cars_updated_at` - Auto-updates `updated_at` timestamp
+
+**Key Columns:**
+- `user_id` - Owner of the vehicle (NOT `owner_id`)
+- `current_mileage` - Automatically updated from fill_ups/maintenance records
+
+---
+
+## fill_ups
+
+**Fuel tracking records**
+
+```sql
+CREATE TABLE public.fill_ups (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  car_id uuid NOT NULL,
+  date date NOT NULL DEFAULT CURRENT_DATE,
+  odometer_reading integer NOT NULL,
+  gallons numeric(6, 3) NOT NULL,
+  price_per_gallon numeric(5, 3) NULL,
+  total_cost numeric(8, 2) NULL,
+  gas_station text NULL,
+  location text NULL,
+  notes text NULL,
+  mpg numeric(5, 2) NULL,
+  created_at timestamp with time zone NULL DEFAULT now(),
+  updated_at timestamp with time zone NULL DEFAULT now(),
+  fuel_type character varying(20) NULL DEFAULT NULL,
+  created_by_user_id uuid NULL,
+
+  CONSTRAINT fill_ups_pkey PRIMARY KEY (id),
+  CONSTRAINT fill_ups_car_id_fkey FOREIGN KEY (car_id) REFERENCES cars (id) ON DELETE CASCADE,
+  CONSTRAINT fk_fill_ups_created_by_user FOREIGN KEY (created_by_user_id) REFERENCES auth.users (id),
+  CONSTRAINT fill_ups_gallons_check CHECK (gallons > 0),
+  CONSTRAINT fill_ups_odometer_reading_check CHECK (odometer_reading >= 0),
+  CONSTRAINT fill_ups_price_per_gallon_check CHECK (price_per_gallon IS NULL OR price_per_gallon > 0),
+  CONSTRAINT fill_ups_total_cost_check CHECK (total_cost IS NULL OR total_cost > 0)
+)
+```
+
+**Indexes:**
+- `idx_fill_ups_car_id` on `car_id`
+- `idx_fill_ups_date` on `date`
+- `idx_fill_ups_fuel_type` on `fuel_type`
+- `idx_fill_ups_created_by_user_id` on `created_by_user_id`
+
+**Triggers:**
+- `update_fill_ups_updated_at` - Auto-updates `updated_at` timestamp
+- `calculate_fill_up_mpg` - Auto-calculates `mpg` field on INSERT/UPDATE
+
+**Key Columns:**
+- `car_id` - Links to cars table
+- `created_by_user_id` - User who created the record (for team features)
+- `mpg` - **AUTO-CALCULATED by trigger** - Do NOT insert manually
+- `total_cost` - Optional, can be calculated or entered manually
+
+---
+
+## maintenance_records
+
+**Vehicle maintenance tracking**
+
+```sql
+CREATE TABLE public.maintenance_records (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  car_id uuid NOT NULL,
+  date date NOT NULL DEFAULT CURRENT_DATE,
+  type text NOT NULL,
+  description text NULL,
+  cost numeric(8, 2) NULL,
+  mileage integer NULL,
+  service_provider text NULL,
+  location text NULL,
+  next_service_date date NULL,
+  next_service_mileage integer NULL,
+  notes text NULL,
+  created_at timestamp with time zone NULL DEFAULT now(),
+  updated_at timestamp with time zone NULL DEFAULT now(),
+  oil_type character varying(20) NULL DEFAULT NULL,
+  created_by_user_id uuid NULL,
+
+  CONSTRAINT maintenance_records_pkey PRIMARY KEY (id),
+  CONSTRAINT maintenance_records_car_id_fkey FOREIGN KEY (car_id) REFERENCES cars (id) ON DELETE CASCADE,
+  CONSTRAINT fk_maintenance_records_created_by_user FOREIGN KEY (created_by_user_id) REFERENCES auth.users (id),
+  CONSTRAINT maintenance_records_type_check CHECK (
+    type = ANY (ARRAY[
+      'oil_change'::text,
+      'tire_rotation'::text,
+      'brake_inspection'::text,
+      'air_filter'::text,
+      'transmission_service'::text,
+      'coolant_flush'::text,
+      'wipers'::text,
+      'registration'::text
+    ])
+  ),
+  CONSTRAINT maintenance_records_cost_check CHECK (cost >= 0),
+  CONSTRAINT maintenance_records_check CHECK (next_service_mileage >= mileage),
+  CONSTRAINT maintenance_records_mileage_check CHECK (mileage >= 0)
+)
+```
+
+**Indexes:**
+- `idx_maintenance_records_car_id` on `car_id`
+- `idx_maintenance_records_date` on `date`
+- `idx_maintenance_records_type` on `type`
+- `idx_maintenance_records_oil_type` on `oil_type`
+- `idx_maintenance_records_created_by_user_id` on `created_by_user_id`
+
+**Triggers:**
+- `update_maintenance_records_updated_at` - Auto-updates `updated_at` timestamp
+
+**Key Columns:**
+- `car_id` - Links to cars table
+- `created_by_user_id` - User who created the record (for team features)
+- `type` - Must be one of 8 valid maintenance types (see CHECK constraint)
+- `oil_type` - Only relevant for oil_change type
+
+**Valid Maintenance Types:**
+- `oil_change`
+- `tire_rotation`
+- `brake_inspection`
+- `air_filter`
+- `transmission_service`
+- `coolant_flush`
+- `wipers`
+- `registration`
+
+---
+
+## profiles
+
+**Legacy table - may be unused**
+
+```sql
+CREATE TABLE public.profiles (
+  id uuid NOT NULL,
+  email text NOT NULL,
+  full_name text NULL,
+  avatar_url text NULL,
+  created_at timestamp with time zone NULL DEFAULT now(),
+  updated_at timestamp with time zone NULL DEFAULT now(),
+
+  CONSTRAINT profiles_pkey PRIMARY KEY (id),
+  CONSTRAINT profiles_email_key UNIQUE (email),
+  CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users (id) ON DELETE CASCADE
+)
+```
+
+**Status:** May be replaced by `user_profiles` table. Verify if still in use.
+
+---
+
+## Common Patterns
+
+### User ID References
+- **auth.users.id** - Primary user identifier
+- **cars.user_id** - Owner of the vehicle (⚠️ NOT `owner_id`)
+- **created_by_user_id** - User who created a record (for audit/team features)
+
+### Timestamps
+All tables have:
+- `created_at` - Auto-set on INSERT
+- `updated_at` - Auto-updated via trigger on UPDATE
+
+### Cascade Deletes
+- Deleting a user → Deletes their cars, profiles
+- Deleting a car → Deletes fill_ups and maintenance_records
+
+### Auto-Calculated Fields
+- `fill_ups.mpg` - Calculated by `calculate_mpg()` trigger
+- DO NOT manually insert values for auto-calculated fields
+
+---
+
+## Important Notes
+
+1. **Always use `created_by_user_id`** for fill_ups and maintenance_records (it exists!)
+2. **Cars table uses `user_id`** not `owner_id`
+3. **MPG is auto-calculated** - don't insert it manually
+4. **Maintenance types are constrained** - only 8 valid values allowed
+5. **Foreign keys cascade delete** - deleting a car removes all associated records
