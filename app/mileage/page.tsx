@@ -1837,7 +1837,7 @@ export default function MileageTracker() {
                       <span className="text-3xl">👋</span>
                       <div>
                         <p className="font-semibold text-lg">Welcome to FleetReq!</p>
-                        <p className="text-sm text-blue-50">Get started by clicking "Add Car" above!</p>
+                        <p className="text-sm text-blue-50">Get started by clicking &quot;Add Car&quot; above!</p>
                       </div>
                     </div>
                   </div>

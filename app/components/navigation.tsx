@@ -18,7 +18,7 @@ export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string; email?: string; user_metadata?: { full_name?: string } } | null>(null);
   const [subscriptionTier, setSubscriptionTier] = useState<'free' | 'personal' | 'business'>('free');
   const [subscriptionStartDate, setSubscriptionStartDate] = useState<string | null>(null);
 
