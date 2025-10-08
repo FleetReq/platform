@@ -86,7 +86,7 @@ function getMaintenanceStatus(
 
     if (daysUntilService <= 0) {
       timeStatus = 'overdue'
-    } else if (daysUntilService <= 30 && subscriptionTier !== 'free') { // Yellow warnings: Personal+ only
+    } else if (daysUntilService <= 30) { // Yellow warnings: Personal+ only (already checked above)
       timeStatus = 'warning'
     }
   } else if (interval.months) {
