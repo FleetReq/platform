@@ -8,6 +8,11 @@ export async function DELETE(
   try {
     const params = await context.params
     const supabase = await createRouteHandlerClient(request)
+
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
+    }
+
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
