@@ -5,6 +5,10 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await createRouteHandlerClient(request)
 
+    if (!supabase) {
+      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
+    }
+
     // Simple query to keep Supabase active
     const { error } = await supabase
       .from('user_profiles')
