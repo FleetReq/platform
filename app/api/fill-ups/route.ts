@@ -128,7 +128,11 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('Error creating fill-up:', error)
-      return NextResponse.json({ error: 'Failed to create fill-up' }, { status: 500 })
+      return NextResponse.json({
+        error: 'Failed to create fill-up',
+        details: error.message,
+        code: error.code
+      }, { status: 500 })
     }
 
     // Update the car's current mileage if the new odometer reading is higher or if no current mileage exists
