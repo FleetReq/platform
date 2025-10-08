@@ -1,0 +1,23 @@
+name: Supabase Keep-Alive
+
+on:
+  schedule:
+    # Runs daily at 12:00 PM UTC (cron syntax: minute hour day month weekday)
+    - cron: '0 12 * * *'
+  workflow_dispatch: # Allows manual trigger for testing
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase via API
+        run: |
+          curl -f https://fleetreq.vercel.app/api/cron/keep-alive || exit 1
+
+      - name: Log success
+        if: success()
+        run: echo "Keep-alive ping successful at $(date)"
+
+      - name: Log failure
+        if: failure()
+        run: echo "Keep-alive ping failed at $(date)"
