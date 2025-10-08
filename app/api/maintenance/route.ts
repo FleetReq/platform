@@ -114,7 +114,6 @@ export async function POST(request: NextRequest) {
       next_service_date,
       next_service_mileage: next_service_mileage ? parseInt(next_service_mileage) : null,
       notes: notes?.trim(),
-      created_by_user_id: user.id
     }
 
     // Only add oil_type if it exists (for backward compatibility)
