@@ -10,7 +10,7 @@
 ### **0. CLAUDE.md is Auto-Loaded (Verify Context)**
 **This CLAUDE.md file is automatically loaded by Claude Code at session start.**
 - If starting a session, verify I have context by referencing recent work
-- Review all 5 Critical Development Principles before any work
+- Review all 6 Critical Development Principles before any work
 - Check Recent Session Summary for latest context
 - Review Current Tasks & Priorities for active work
 - Verify Pre-Session Setup Checklist is complete
@@ -48,6 +48,14 @@
 - **Keep compact**: Merge duplicates, archive low-priority content to reference sections
 - **Rationale**: Prevents CLAUDE.md from bloating with duplicates. Keeps it efficient and maintainable. Each session should leave it better organized, not longer.
 
+### **5. Apply Fixes Systematically Across Codebase**
+**When fixing a bug, ALWAYS check if the same issue exists in similar files.**
+- **Don't fix in isolation**: If you fix a bug in one API endpoint, check ALL other endpoints
+- **Search for patterns**: Use grep/glob to find similar code that might have the same issue
+- **Apply consistently**: Make the same fix everywhere it's needed in a single session
+- **Example**: If `created_by_user_id` doesn't exist in fill_ups, check maintenance_records, cars, etc.
+- **Rationale**: Prevents users from hitting the same bug in multiple places. One fix session should solve the problem completely, not create a whack-a-mole situation.
+
 ---
 
 ## 🎯 Repository Information
@@ -66,7 +74,7 @@
 
 ### **0. Read This Entire CLAUDE.md File First**
 **⚠️ MANDATORY: I do this proactively at the start of EVERY session (see Principle #0)**
-- Read all 5 Critical Development Principles
+- Read all 6 Critical Development Principles
 - Check Recent Session Summary for latest context
 - Review Current Tasks & Priorities
 - Verify this Pre-Session Setup Checklist is complete
