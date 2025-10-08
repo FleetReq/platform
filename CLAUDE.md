@@ -56,13 +56,15 @@
 - **Example**: If `created_by_user_id` doesn't exist in fill_ups, check maintenance_records, cars, etc.
 - **Rationale**: Prevents users from hitting the same bug in multiple places. One fix session should solve the problem completely, not create a whack-a-mole situation.
 
-### **6. Always Verify Against SCHEMA.md Before Database Operations**
-**Before writing ANY database INSERT/UPDATE code, check SCHEMA.md for exact column names.**
-- **Read SCHEMA.md first**: Verify table structure, column names, constraints, and triggers
+### **6. Always Verify Against SCHEMA.md and FUNCTIONS.md Before Database Operations**
+**Before writing ANY database INSERT/UPDATE code, check both SCHEMA.md and FUNCTIONS.md.**
+- **Read SCHEMA.md first**: Verify table structure, column names, constraints, and indexes
+- **Read FUNCTIONS.md**: Check for triggers that auto-calculate fields or auto-create records
 - **Don't assume**: Column names like `user_id` vs `owner_id` vs `created_by_user_id` are critical
-- **Check for auto-calculated fields**: Never manually insert fields calculated by triggers (e.g., `mpg`)
-- **Update SCHEMA.md**: If you modify database schema in Supabase, update SCHEMA.md immediately
-- **Rationale**: Prevents "column does not exist" errors and ensures data integrity. SCHEMA.md is the single source of truth for database structure.
+- **Never set auto-calculated fields**: Don't manually set `mpg`, `updated_at`, or other trigger-managed fields
+- **Provide required fields for triggers**: E.g., `miles_driven` is needed for `calculate_mpg()` trigger
+- **Update both files**: If you modify schema or functions in Supabase, update SCHEMA.md and FUNCTIONS.md
+- **Rationale**: Prevents "column does not exist" errors, avoids conflicts with triggers, and ensures data integrity. These files are the single source of truth.
 
 ---
 
@@ -313,6 +315,11 @@ if (!hasAccess) {
 - `lib/supabase-client.ts` - Client-side + helpers:
   - `isAdmin()`, `getUserSubscriptionPlan()`, `getUserMaxVehicles()`
   - `hasFeatureAccess()`, `getUpgradeMessage()`
+
+### **Documentation (Critical - Always Check Before DB Operations)**
+- `SCHEMA.md` - Complete database schema (tables, columns, constraints, indexes)
+- `FUNCTIONS.md` - Database functions and triggers (auto-calculated fields, auto-created records)
+- `CLAUDE.md` - Development context and principles (this file)
 
 ### **Styling**
 - `app/globals.css` - Custom classes:
