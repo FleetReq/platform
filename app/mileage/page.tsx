@@ -109,7 +109,7 @@ function getMaintenanceStatus(
 
     if (milesUntilService <= 0) {
       mileageStatus = 'overdue'
-    } else if (milesUntilService <= 1000 && subscriptionTier !== 'free') { // Yellow warnings: Personal+ only
+    } else if (milesUntilService <= 1000) { // Yellow warnings: Personal+ only (already checked above)
       mileageStatus = 'warning'
     }
   } else if (interval.miles && lastMaintenanceRecord.mileage && currentMileage !== null) {
