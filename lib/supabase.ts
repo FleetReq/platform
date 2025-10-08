@@ -14,11 +14,13 @@ export const createRouteHandlerClient = async (request: NextRequest) => {
       get(name: string) {
         return request.cookies.get(name)?.value
       },
-      set(name: string, value: string, options: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      set(_name: string, _value: string, _options: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
         // Can't set cookies in route handlers response directly
         // This will be handled by the response headers
       },
-      remove(name: string, options: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      remove(_name: string, _options: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
         // Can't remove cookies in route handlers response directly
       },
     },

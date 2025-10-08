@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
-import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner, isAdmin, getUserSubscriptionPlan, getUserMaxVehicles, hasFeatureAccess, getUpgradeMessage } from '@/lib/supabase-client'
+import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner, getUserSubscriptionPlan, getUserMaxVehicles, hasFeatureAccess, getUpgradeMessage } from '@/lib/supabase-client'
 import BackgroundAnimation from '../components/BackgroundAnimation'
 import AuthComponent from '../../components/AuthComponent'
 import UpgradePrompt from '../../components/UpgradePrompt'
@@ -1359,7 +1359,7 @@ export default function MileageTracker() {
     if (newUser) {
       setLoading(false)
     }
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Mark data as loaded only after loading completes
   // Add minimum delay to ensure smooth transition and no flash
@@ -1410,7 +1410,7 @@ export default function MileageTracker() {
     }
 
     initializeAuth()
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadData = useCallback(async () => {
     try {
@@ -1440,24 +1440,6 @@ export default function MileageTracker() {
     }
   }, [])
 
-  // Authentication is now handled by AuthComponent
-
-  const signOut = async () => {
-    try {
-      if (!supabase) {
-        throw new Error('Database not configured')
-      }
-
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-      setUser(null)
-      setUserIsOwner(false)
-      // Don't clear cars/stats - reload data to show anonymous view
-      await loadData()
-    } catch (error) {
-      console.error('Error signing out:', error)
-    }
-  }
 
   // Prepare chart data based on selected view
   const prepareChartData = () => {

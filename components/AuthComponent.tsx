@@ -61,7 +61,7 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
     )
 
     return () => subscription.unsubscribe()
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const signInWithEmail = async (e: React.FormEvent) => {
     e.preventDefault()
