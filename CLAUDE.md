@@ -177,6 +177,7 @@ npm run dev  # MUST show: http://localhost:3000
 - **Professional reporting (Business)** - Tax-compliant mileage reports, export to CSV/PDF
 - **Team invitation system (Business)** - Invite users by email, role-based permissions
 - **Excel import tools** - Migration wizard for contractors
+- **Custom autocomplete component** - Replace native `<datalist>` with mobile-friendly autocomplete for gas stations and locations (current implementation works on desktop + Android, but poor iOS support)
 
 ### **🔮 Medium-term (3-6 Months)**
 - **PWA/Mobile app** - Progressive Web App for mobile experience
