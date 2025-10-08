@@ -119,6 +119,7 @@ CREATE TABLE public.fill_ups (
   gas_station text NULL,
   location text NULL,
   notes text NULL,
+  miles_driven integer NULL,
   mpg numeric(5, 2) NULL,
   created_at timestamp with time zone NULL DEFAULT now(),
   updated_at timestamp with time zone NULL DEFAULT now(),
@@ -140,6 +141,7 @@ CREATE TABLE public.fill_ups (
 - `idx_fill_ups_date` on `date`
 - `idx_fill_ups_fuel_type` on `fuel_type`
 - `idx_fill_ups_created_by_user_id` on `created_by_user_id`
+- `idx_fill_ups_miles_driven` on `miles_driven`
 
 **Triggers:**
 - `update_fill_ups_updated_at` - Auto-updates `updated_at` timestamp
@@ -148,8 +150,14 @@ CREATE TABLE public.fill_ups (
 **Key Columns:**
 - `car_id` - Links to cars table
 - `created_by_user_id` - User who created the record (for team features)
-- `mpg` - **AUTO-CALCULATED by trigger** - Do NOT insert manually
+- `miles_driven` - Miles driven since last fill-up (optional, used for MPG calculation)
+- `mpg` - **AUTO-CALCULATED by trigger** from `miles_driven / gallons`
 - `total_cost` - Optional, can be calculated or entered manually
+
+**Important Notes:**
+- `mpg` is auto-calculated by trigger if `miles_driven` is provided
+- `miles_driven` should be calculated from odometer reading differences
+- If `miles_driven` is NULL, `mpg` will remain NULL
 
 ---
 

@@ -98,6 +98,20 @@ export async function POST(request: NextRequest) {
       parseFloat((parseFloat(gallons) * parseFloat(price_per_gallon)).toFixed(2)) :
       null
 
+    // Calculate miles_driven from previous fill-up for MPG calculation
+    const { data: previousFillUp } = await supabase
+      .from('fill_ups')
+      .select('odometer_reading')
+      .eq('car_id', car_id)
+      .order('date', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    const miles_driven = previousFillUp
+      ? parseInt(odometer_reading) - previousFillUp.odometer_reading
+      : null
+
     // Build insert object conditionally to handle missing columns gracefully
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const insertData: Record<string, any> = {
@@ -107,6 +121,7 @@ export async function POST(request: NextRequest) {
       gallons: parseFloat(gallons),
       price_per_gallon: price_per_gallon ? parseFloat(price_per_gallon) : null,
       total_cost,
+      miles_driven,
       gas_station: gas_station?.trim(),
       location: location?.trim(),
       notes: notes?.trim(),
