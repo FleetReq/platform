@@ -58,14 +58,16 @@ export function Navigation() {
         setSubscriptionTier(tier);
 
         // Fetch subscription start date
-        const { data: profile } = await supabase
-          .from('user_profiles')
-          .select('subscription_start_date')
-          .eq('id', session.user.id)
-          .single();
+        if (supabase) {
+          const { data: profile } = await supabase
+            .from('user_profiles')
+            .select('subscription_start_date')
+            .eq('id', session.user.id)
+            .single();
 
-        if (profile?.subscription_start_date) {
-          setSubscriptionStartDate(profile.subscription_start_date);
+          if (profile?.subscription_start_date) {
+            setSubscriptionStartDate(profile.subscription_start_date);
+          }
         }
       } else {
         setSubscriptionTier('free');
