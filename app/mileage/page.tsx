@@ -2237,6 +2237,60 @@ function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void
     consecutive_fillup: true
   })
   const [loading, setLoading] = useState(false)
+  const [recentGasStations, setRecentGasStations] = useState<string[]>([])
+  const [recentLocations, setRecentLocations] = useState<string[]>([])
+
+  // Fetch recent fill-up data for smart defaults and autocomplete
+  useEffect(() => {
+    const fetchRecentData = async () => {
+      if (!formData.car_id) return
+
+      try {
+        const response = await fetch(`/api/fill-ups?car_id=${formData.car_id}&limit=10`)
+        if (response.ok) {
+          const { fillUps } = await response.json()
+
+          if (fillUps && fillUps.length > 0) {
+            const mostRecent = fillUps[0]
+            const selectedCar = cars.find(c => c.id === formData.car_id)
+
+            // Set smart defaults from most recent fill-up and car data
+            setFormData(prev => ({
+              ...prev,
+              odometer_reading: selectedCar?.current_mileage?.toString() || '',
+              gallons: mostRecent.gallons?.toString() || '',
+              price_per_gallon: mostRecent.price_per_gallon?.toString() || '',
+              fuel_type: mostRecent.fuel_type || 'regular'
+            }))
+
+            // Build unique lists for autocomplete (filter out nulls/empty strings)
+            const stations = [...new Set(fillUps
+              .map((f: FillUp) => f.gas_station)
+              .filter((s: string | null) => s && s.trim())
+            )]
+            const locations = [...new Set(fillUps
+              .map((f: FillUp) => f.location)
+              .filter((l: string | null) => l && l.trim())
+            )]
+
+            setRecentGasStations(stations)
+            setRecentLocations(locations)
+          } else {
+            // No previous fill-ups, just set current mileage
+            const selectedCar = cars.find(c => c.id === formData.car_id)
+            setFormData(prev => ({
+              ...prev,
+              odometer_reading: selectedCar?.current_mileage?.toString() || ''
+            }))
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching recent fill-ups:', error)
+      }
+    }
+
+    fetchRecentData()
+  }, [formData.car_id, cars])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -2370,21 +2424,33 @@ function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void
             <label className="block text-gray-700 dark:text-gray-300 mb-2">Gas Station</label>
             <input
               type="text"
+              list="gas-stations-list"
               value={formData.gas_station}
               onChange={(e) => setFormData({ ...formData, gas_station: e.target.value })}
               className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               placeholder="Shell, Chevron, etc."
             />
+            <datalist id="gas-stations-list">
+              {recentGasStations.map((station, idx) => (
+                <option key={idx} value={station} />
+              ))}
+            </datalist>
           </div>
           <div>
             <label className="block text-gray-700 dark:text-gray-300 mb-2">Location</label>
             <input
               type="text"
+              list="locations-list"
               value={formData.location}
               onChange={(e) => setFormData({ ...formData, location: e.target.value })}
               className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               placeholder="City, State"
             />
+            <datalist id="locations-list">
+              {recentLocations.map((location, idx) => (
+                <option key={idx} value={location} />
+              ))}
+            </datalist>
           </div>
         </div>
 
