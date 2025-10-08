@@ -2511,6 +2511,56 @@ function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan = 'free' }: { ca
     notes: ''
   })
   const [loading, setLoading] = useState(false)
+  const [recentServiceProviders, setRecentServiceProviders] = useState<string[]>([])
+  const [recentLocations, setRecentLocations] = useState<string[]>([])
+
+  // Fetch recent maintenance data for smart defaults and autocomplete
+  useEffect(() => {
+    const fetchRecentData = async () => {
+      if (!formData.car_id) return
+
+      try {
+        const response = await fetch(`/api/maintenance?car_id=${formData.car_id}&limit=10`)
+        if (response.ok) {
+          const { maintenanceRecords } = await response.json()
+
+          if (maintenanceRecords && maintenanceRecords.length > 0) {
+            const selectedCar = cars.find(c => c.id === formData.car_id)
+
+            // Set smart defaults from car data
+            setFormData(prev => ({
+              ...prev,
+              mileage: selectedCar?.current_mileage?.toString() || ''
+            }))
+
+            // Build unique lists for autocomplete (filter out nulls/empty strings)
+            const providers = [...new Set(maintenanceRecords
+              .map((m: MaintenanceRecord) => m.service_provider)
+              .filter((p: string | null): p is string => p !== null && p.trim() !== '')
+            )]
+            const locations = [...new Set(maintenanceRecords
+              .map((m: MaintenanceRecord) => m.location)
+              .filter((l: string | null): l is string => l !== null && l.trim() !== '')
+            )]
+
+            setRecentServiceProviders(providers as string[])
+            setRecentLocations(locations as string[])
+          } else {
+            // No previous maintenance, just set current mileage
+            const selectedCar = cars.find(c => c.id === formData.car_id)
+            setFormData(prev => ({
+              ...prev,
+              mileage: selectedCar?.current_mileage?.toString() || ''
+            }))
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching recent maintenance:', error)
+      }
+    }
+
+    fetchRecentData()
+  }, [formData.car_id, cars])
 
   const maintenanceTypes = [
     { value: 'oil_change', label: 'Oil Change' },
@@ -2657,21 +2707,33 @@ function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan = 'free' }: { ca
             <label className="block text-gray-700 dark:text-gray-300 mb-2">Service Provider</label>
             <input
               type="text"
+              list="service-providers-list"
               value={formData.service_provider}
               onChange={(e) => setFormData({ ...formData, service_provider: e.target.value })}
               className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               placeholder="Jiffy Lube, Dealership..."
             />
+            <datalist id="service-providers-list">
+              {recentServiceProviders.map((provider, idx) => (
+                <option key={idx} value={provider} />
+              ))}
+            </datalist>
           </div>
           <div>
             <label className="block text-gray-700 dark:text-gray-300 mb-2">Location</label>
             <input
               type="text"
+              list="maintenance-locations-list"
               value={formData.location}
               onChange={(e) => setFormData({ ...formData, location: e.target.value })}
               className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               placeholder="City, State"
             />
+            <datalist id="maintenance-locations-list">
+              {recentLocations.map((location, idx) => (
+                <option key={idx} value={location} />
+              ))}
+            </datalist>
           </div>
         </div>
 
