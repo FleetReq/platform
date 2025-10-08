@@ -2266,15 +2266,15 @@ function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void
             // Build unique lists for autocomplete (filter out nulls/empty strings)
             const stations = [...new Set(fillUps
               .map((f: FillUp) => f.gas_station)
-              .filter((s: string | null) => s && s.trim())
+              .filter((s: string | null): s is string => s !== null && s.trim() !== '')
             )]
             const locations = [...new Set(fillUps
               .map((f: FillUp) => f.location)
-              .filter((l: string | null) => l && l.trim())
+              .filter((l: string | null): l is string => l !== null && l.trim() !== '')
             )]
 
-            setRecentGasStations(stations)
-            setRecentLocations(locations)
+            setRecentGasStations(stations as string[])
+            setRecentLocations(locations as string[])
           } else {
             // No previous fill-ups, just set current mileage
             const selectedCar = cars.find(c => c.id === formData.car_id)
