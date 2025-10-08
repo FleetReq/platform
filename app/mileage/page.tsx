@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect, useLayoutEffect, useCallback, useMemo, useTransition } from 'react'
-import { flushSync } from 'react-dom'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner, isAdmin, getUserSubscriptionPlan, getUserMaxVehicles, hasFeatureAccess, getUpgradeMessage } from '@/lib/supabase-client'
 import BackgroundAnimation from '../components/BackgroundAnimation'

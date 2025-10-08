@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
     const supabase = await createRouteHandlerClient(request)
 
     // Simple query to keep Supabase active
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('user_profiles')
       .select('id')
       .limit(1)

@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { ThemeToggle } from "../theme-toggle";
-import Search from "./Search";
 import { SubscriptionBadge } from "./SubscriptionBadge";
 import { supabase, getUserSubscriptionPlan } from "@/lib/supabase-client";
 
