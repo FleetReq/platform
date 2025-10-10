@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase'
+import { rateLimit, RATE_LIMITS, getRateLimitHeaders } from '@/lib/rate-limit'
+import { validateUUID } from '@/lib/validation'
 
 export async function DELETE(
   request: NextRequest,
@@ -19,7 +21,20 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const carId = params.id
+    // Rate limiting
+    const rateLimitResult = rateLimit(user.id, RATE_LIMITS.WRITE)
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Please try again later.' },
+        { status: 429, headers: getRateLimitHeaders(rateLimitResult) }
+      )
+    }
+
+    // Validate UUID
+    const carId = validateUUID(params.id)
+    if (!carId) {
+      return NextResponse.json({ error: 'Invalid car ID' }, { status: 400 })
+    }
 
     // Verify the car belongs to the user before deleting
     const { data: car, error: carError } = await supabase
@@ -44,7 +59,13 @@ export async function DELETE(
 
     if (deleteError) {
       console.error('Error deleting car:', deleteError)
-      return NextResponse.json({ error: 'Failed to delete car' }, { status: 500 })
+      return NextResponse.json({
+        error: 'Failed to delete car',
+        // Only expose details in development
+        ...(process.env.NODE_ENV !== 'production' && {
+          details: deleteError.message
+        })
+      }, { status: 500 })
     }
 
     return NextResponse.json({ message: 'Car deleted successfully' })

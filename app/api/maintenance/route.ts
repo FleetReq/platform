@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase'
+import { rateLimit, RATE_LIMITS, getRateLimitHeaders } from '@/lib/rate-limit'
+import { sanitizeString, validateInteger, validateFloat, validateUUID, validateDate, validateMaintenanceType } from '@/lib/validation'
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,6 +16,15 @@ export async function GET(request: NextRequest) {
     if (authError || !user) {
       console.log('No authenticated user, returning empty array')
       return NextResponse.json({ maintenanceRecords: [] })
+    }
+
+    // Rate limiting
+    const rateLimitResult = rateLimit(user.id, RATE_LIMITS.READ)
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Please try again later.' },
+        { status: 429, headers: getRateLimitHeaders(rateLimitResult) }
+      )
     }
 
     const { searchParams } = new URL(request.url)
@@ -67,24 +78,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Rate limiting
+    const rateLimitResult = rateLimit(user.id, RATE_LIMITS.WRITE)
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Please try again later.' },
+        { status: 429, headers: getRateLimitHeaders(rateLimitResult) }
+      )
+    }
+
+    // Parse and validate input
     const body = await request.json()
-    const {
-      car_id,
-      date,
-      type,
-      oil_type,
-      cost,
-      mileage,
-      service_provider,
-      location,
-      next_service_date,
-      next_service_mileage,
-      notes
-    } = body
+
+    const car_id = validateUUID(body.car_id)
+    const date = validateDate(body.date, { allowFuture: false }) || new Date().toISOString().split('T')[0]
+    const type = validateMaintenanceType(body.type)
+    const oil_type = sanitizeString(body.oil_type, { maxLength: 20 })
+    const cost = validateFloat(body.cost, { min: 0, max: 10000, precision: 2 })
+    const mileage = validateInteger(body.mileage, { min: 0, max: 999999 })
+    const service_provider = sanitizeString(body.service_provider, { maxLength: 100 })
+    const location = sanitizeString(body.location, { maxLength: 200 })
+    const next_service_date = validateDate(body.next_service_date, { allowPast: false })
+    const next_service_mileage = validateInteger(body.next_service_mileage, { min: 0, max: 999999 })
+    const notes = sanitizeString(body.notes, { maxLength: 500 })
 
     if (!car_id || !type) {
       return NextResponse.json(
-        { error: 'Car ID and type are required' },
+        { error: 'Valid car ID and maintenance type are required' },
         { status: 400 }
       )
     }
@@ -105,21 +125,21 @@ export async function POST(request: NextRequest) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const insertData: Record<string, any> = {
       car_id,
-      date: date || new Date().toISOString().split('T')[0],
+      date,
       type,
-      cost: cost ? parseFloat(cost) : null,
-      mileage: mileage ? parseInt(mileage) : null,
-      service_provider: service_provider?.trim(),
-      location: location?.trim(),
+      cost,
+      mileage,
+      service_provider,
+      location,
       next_service_date,
-      next_service_mileage: next_service_mileage ? parseInt(next_service_mileage) : null,
-      notes: notes?.trim(),
+      next_service_mileage,
+      notes,
       created_by_user_id: user.id
     }
 
     // Only add oil_type if it exists (for backward compatibility)
     if (oil_type) {
-      insertData.oil_type = oil_type.trim()
+      insertData.oil_type = oil_type
     }
 
     const { data: maintenanceRecord, error } = await supabase
@@ -135,8 +155,11 @@ export async function POST(request: NextRequest) {
       console.error('Error creating maintenance record:', error)
       return NextResponse.json({
         error: 'Failed to create maintenance record',
-        details: error.message,
-        code: error.code
+        // Only expose details in development
+        ...(process.env.NODE_ENV !== 'production' && {
+          details: error.message,
+          code: error.code
+        })
       }, { status: 500 })
     }
 
@@ -149,7 +172,7 @@ export async function POST(request: NextRequest) {
         .eq('user_id', user.id)
         .single()
 
-      const newMileage = parseInt(mileage)
+      const newMileage = mileage
       const shouldUpdate = !currentCar?.current_mileage || currentCar.current_mileage < newMileage
 
       if (shouldUpdate) {
