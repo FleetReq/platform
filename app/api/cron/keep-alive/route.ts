@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString(),
       message: 'Supabase keep-alive ping successful with write activity',
       operations: operationResults,
-      nextPing: 'Expected in 6 hours'
+      nextPing: 'Expected in 4 hours'
     })
   } catch (error) {
     console.error('Keep-alive cron failed:', error)
