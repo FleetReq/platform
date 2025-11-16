@@ -142,7 +142,7 @@ npm run dev  # MUST show: http://localhost:3000
 
 ## 📝 Recent Session Summary
 
-### **Latest Session (2025-01-16) - Keep-Alive, Security Fixes, Navigation Bug**
+### **Latest Session (2025-01-16) - Keep-Alive, Security, Navigation, Performance Metrics**
 1. ✅ **Supabase keep-alive system** - Prevents free-tier auto-pause
    - Created `heartbeat` table with auto-cleanup (keeps last 100 records)
    - Added write operations (INSERT + DELETE + SELECT, not just SELECT-only)
@@ -166,6 +166,17 @@ npm run dev  # MUST show: http://localhost:3000
    - Fixed infinite "Loading..." when Supabase client is null
    - Now shows clear error message if environment variables are missing
    - Clicking "App" while logged in now goes directly to the app (not login page)
+6. ✅ **Naming options research** - Documented comprehensive naming alternatives
+   - Added FleetSync, KarDock, AutoDock, CarDock, VehicleDock analysis
+   - Market fit comparison table for B2B vs consumer appeal
+   - Selected fleetreq.app as primary domain (available on Namecheap)
+7. ✅ **PWA strategy planning** - Mobile app vs PWA decision
+   - Decided: PWA first (Phase 1), native apps later (Phase 2 after PMF)
+   - PWA promoted to high priority (quick win, 80% of native app benefits)
+8. 📋 **Performance overview redesign planned** - Tax metrics for contractors
+   - Identified "Spent" metric confusion (fuel only, no YTD, no tax value)
+   - Planned Cost Per Mile, YTD calculations, Tax Deduction display
+   - Promoted to #1 priority (core value prop for contractor market)
 
 ### **Previous Session (2025-10-10) - Security Hardening**
 1. ✅ **Security analysis completed** - Comprehensive review of application security
@@ -200,12 +211,31 @@ npm run dev  # MUST show: http://localhost:3000
   - Test in both light and dark mode
 
 ### **🆕 Next Immediate (This Week)**
-1. **Integrate security improvements** (HIGH PRIORITY)
+1. **Redesign Performance Overview with Tax Metrics** (HIGHEST PRIORITY - Core Value Prop)
+   - **Problem**: Current "Spent" metric is confusing (fuel only, no YTD, no tax value)
+   - **Solution**: Add critical tax/business metrics for contractor market
+   - **Implementation**:
+     - Add **Cost Per Mile** calculation: `(fuel + maintenance) / total miles`
+     - Add **YTD Total Cost**: Fuel + Maintenance year-to-date
+     - Add **YTD Business Miles**: For tax deduction calculation
+     - Add **Standard Mileage Deduction**: Business miles × $0.67 (IRS rate)
+     - Add **This Month** spending: Current month fuel + maintenance
+     - Split display by tier: Business (tax focus) vs Personal (budgeting focus)
+   - **Phase 1 Metrics** (This Week):
+     - Cost Per Mile, YTD Fuel, YTD Maintenance, This Month, Tax Deduction (Business only)
+   - **Phase 2** (Next Month):
+     - Business vs Personal mileage split, Monthly trends, Projected annual costs
+   - **Why #1 Priority**: Core value proposition for contractors ("Save $8,000+ on taxes")
+   - **Files to modify**:
+     - `app/api/stats/route.ts` - Add YTD/monthly calculations
+     - `app/mileage/page.tsx` - Redesign performance overview UI
+     - Add business/personal trip categorization (future)
+2. **Integrate security improvements** (HIGH PRIORITY)
    - Add rate limiting to all API routes (lib/rate-limit.ts)
    - Add input validation to all API routes (lib/validation.ts)
    - Remove debug info from production responses (app/api/cars/route.ts)
    - Test security headers at securityheaders.com
-2. **Add PWA (Progressive Web App) support** (HIGH PRIORITY - Quick Win)
+3. **Add PWA (Progressive Web App) support** (HIGH PRIORITY - Quick Win)
    - Install next-pwa package
    - Configure manifest.json (app name, icons, colors)
    - Add service worker for offline support
@@ -213,10 +243,10 @@ npm run dev  # MUST show: http://localhost:3000
    - Test on iOS Safari + Android Chrome
    - **Effort**: 2-3 days | **Impact**: 80% of native app benefits with 20% of effort
    - **Why now**: Users can add fill-ups/maintenance on-the-go, works offline, installable on home screen
-3. **Update browser tab icon (favicon)** - Currently shows Vercel default icon instead of custom FleetReq branding
-4. **First-time UX improvements** - Better onboarding flow for new users
-5. **Data retention enforcement** - 90-day limit for free tier
-6. **Bug fixes from testing** - Address any issues found during manual testing
+4. **Update browser tab icon (favicon)** - Currently shows Vercel default icon instead of custom FleetReq branding
+5. **First-time UX improvements** - Better onboarding flow for new users
+6. **Data retention enforcement** - 90-day limit for free tier
+7. **Bug fixes from testing** - Address any issues found during manual testing
 
 ### **📅 Short-term (Next Month)**
 - **Stripe billing integration** - Subscription management, payment processing
