@@ -22,7 +22,9 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
     // Get initial session
     const getSession = async () => {
       if (!supabase) {
-        console.log('AuthComponent: No supabase client')
+        console.error('AuthComponent: No supabase client - check environment variables')
+        setLoading(false) // ← FIX: Set loading to false even if supabase is null
+        setError('Configuration error: Unable to connect to authentication service. Please contact support.')
         return
       }
 
