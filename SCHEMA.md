@@ -1,7 +1,7 @@
 # FleetReq Database Schema
 
 > **CRITICAL**: Always verify column names against this schema before writing to the database.
-> Last Updated: 2025-10-08
+> Last Updated: 2025-01-16
 
 ---
 
@@ -11,7 +11,7 @@
 3. [cars](#cars)
 4. [fill_ups](#fill_ups)
 5. [maintenance_records](#maintenance_records)
-6. [profiles](#profiles) (legacy, may be unused)
+6. [heartbeat](#heartbeat) (system table)
 
 ---
 
@@ -58,6 +58,11 @@ CREATE TABLE public.user_profiles (
 )
 ```
 
+**RLS Policies:**
+- `user_profiles_select_policy` - Users can only view their own profile
+- `user_profiles_insert_policy` - Users can create their own profile
+- `user_profiles_update_policy` - Users can only update their own profile
+
 **Key Columns:**
 - `id` - Links to auth.users.id (one-to-one)
 - `subscription_plan` - 'free' | 'personal' | 'business'
@@ -96,6 +101,12 @@ CREATE TABLE public.cars (
 
 **Triggers:**
 - `update_cars_updated_at` - Auto-updates `updated_at` timestamp
+
+**RLS Policies:**
+- `users_select_own_cars` - Users can only view their own cars
+- `users_insert_own_cars` - Users can create cars for themselves
+- `users_update_own_cars` - Users can only update their own cars
+- `users_delete_own_cars` - Users can only delete their own cars
 
 **Key Columns:**
 - `user_id` - Owner of the vehicle (NOT `owner_id`)
@@ -146,6 +157,12 @@ CREATE TABLE public.fill_ups (
 **Triggers:**
 - `update_fill_ups_updated_at` - Auto-updates `updated_at` timestamp
 - `calculate_fill_up_mpg` - Auto-calculates `mpg` field on INSERT/UPDATE
+
+**RLS Policies:**
+- `Users can view fill-ups for their cars or records they created` - Restricts to car owner OR record creator
+- `Users can insert own fill-ups` - Anyone authenticated can create fill-ups
+- `Users can update own fill-ups` - Restricts to car owner
+- `Users can delete own fill-ups` - Restricts to car owner
 
 **Key Columns:**
 - `car_id` - Links to cars table
@@ -215,6 +232,12 @@ CREATE TABLE public.maintenance_records (
 **Triggers:**
 - `update_maintenance_records_updated_at` - Auto-updates `updated_at` timestamp
 
+**RLS Policies:**
+- `Users can view maintenance records for their cars or records th...` - Restricts to car owner OR record creator
+- `Users can insert own maintenance records` - Anyone authenticated can create maintenance records
+- `Users can update own maintenance records` - Restricts to car owner
+- `Users can delete own maintenance records` - Restricts to car owner
+
 **Key Columns:**
 - `car_id` - Links to cars table
 - `created_by_user_id` - User who created the record (for team features)
@@ -233,26 +256,32 @@ CREATE TABLE public.maintenance_records (
 
 ---
 
-## profiles
+## heartbeat
 
-**Legacy table - may be unused**
+**System table for Supabase keep-alive**
 
 ```sql
-CREATE TABLE public.profiles (
-  id uuid NOT NULL,
-  email text NOT NULL,
-  full_name text NULL,
-  avatar_url text NULL,
-  created_at timestamp with time zone NULL DEFAULT now(),
-  updated_at timestamp with time zone NULL DEFAULT now(),
-
-  CONSTRAINT profiles_pkey PRIMARY KEY (id),
-  CONSTRAINT profiles_email_key UNIQUE (email),
-  CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users (id) ON DELETE CASCADE
+CREATE TABLE public.heartbeat (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  pinged_at timestamptz NOT NULL DEFAULT NOW(),
+  source text NOT NULL DEFAULT 'cron',
+  metadata jsonb
 )
 ```
 
-**Status:** May be replaced by `user_profiles` table. Verify if still in use.
+**Purpose:** Prevents Supabase free-tier auto-pause by tracking database activity
+
+**Indexes:**
+- `idx_heartbeat_pinged_at` on `pinged_at DESC`
+
+**RLS Policies:**
+- `Service role can manage heartbeat` - Only service_role can read/write (system table)
+
+**Managed By:**
+- `.github/workflows/keep-alive.yml` - GitHub Actions cron (every 4 hours)
+- `app/api/cron/keep-alive/route.ts` - API endpoint
+
+**Auto-Cleanup:** Keeps only the last 100 records (old records deleted automatically)
 
 ---
 
