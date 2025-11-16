@@ -200,15 +200,23 @@ npm run dev  # MUST show: http://localhost:3000
   - Test in both light and dark mode
 
 ### **🆕 Next Immediate (This Week)**
-1. **Integrate security improvements** (HIGH PRIORITY - NEW)
+1. **Integrate security improvements** (HIGH PRIORITY)
    - Add rate limiting to all API routes (lib/rate-limit.ts)
    - Add input validation to all API routes (lib/validation.ts)
    - Remove debug info from production responses (app/api/cars/route.ts)
    - Test security headers at securityheaders.com
-2. **Update browser tab icon (favicon)** - Currently shows Vercel default icon instead of custom FleetReq branding
-3. **First-time UX improvements** - Better onboarding flow for new users
-4. **Data retention enforcement** - 90-day limit for free tier
-5. **Bug fixes from testing** - Address any issues found during manual testing
+2. **Add PWA (Progressive Web App) support** (HIGH PRIORITY - Quick Win)
+   - Install next-pwa package
+   - Configure manifest.json (app name, icons, colors)
+   - Add service worker for offline support
+   - Enable "Install App" prompt for mobile users
+   - Test on iOS Safari + Android Chrome
+   - **Effort**: 2-3 days | **Impact**: 80% of native app benefits with 20% of effort
+   - **Why now**: Users can add fill-ups/maintenance on-the-go, works offline, installable on home screen
+3. **Update browser tab icon (favicon)** - Currently shows Vercel default icon instead of custom FleetReq branding
+4. **First-time UX improvements** - Better onboarding flow for new users
+5. **Data retention enforcement** - 90-day limit for free tier
+6. **Bug fixes from testing** - Address any issues found during manual testing
 
 ### **📅 Short-term (Next Month)**
 - **Stripe billing integration** - Subscription management, payment processing
@@ -218,10 +226,14 @@ npm run dev  # MUST show: http://localhost:3000
 - **Custom autocomplete component** - Replace native `<datalist>` with mobile-friendly autocomplete for gas stations and locations (current implementation works on desktop + Android, but poor iOS support)
 
 ### **🔮 Medium-term (3-6 Months)**
-- **PWA/Mobile app** - Progressive Web App for mobile experience
+- **Native mobile apps (iOS + Android)** - After PWA proves product-market fit
+  - Build when: >60% mobile usage, $10k+ MRR, App Store visibility becomes critical
+  - Use React Native or Flutter for shared codebase
+  - Cost: ~$30k, 3 months dev time
+  - Features PWA can't handle: GPS background tracking, advanced offline sync
 - **Advanced analytics** - Cost per mile, predictive maintenance
 - **Custom branding (Business)** - Company logo, custom colors, branded reports
-- **Domain purchase** - Register fleetreq.com when ready
+- **Domain purchase** - Register fleetreq.app when ready for launch
 
 ---
 
