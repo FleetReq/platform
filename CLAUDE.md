@@ -703,9 +703,64 @@ More downloads → App Store rankings → Organic discovery → More users → H
 - Status: Hold registration until ready for launch
 
 ### **Other Options Researched**
+
+**Original List:**
 - **FleetSync** - Emphasizes synchronization and real-time updates
 - fleetix.com, vehiclx.com, recordfleet.com, fleetrek.com
 - All available if rebrand needed for consumer market
+
+**"Dock" Concept (Storage/Organization Focus):**
+- **KarDock** - Car Dock or Car Documents
+  - Pros: Short, memorable, modern/tech sound, consumer-friendly
+  - Cons: "K" spelling seems gimmicky, confusion with car phone mounts, less professional for B2B
+  - Target: Families/consumers (1-3 vehicles)
+  - Perception: Slightly Germanic/Nordic feel, not strongly tied to any language
+- **CarDock** - Normal spelling, more professional than KarDock
+  - Pros: Clear concept, professional, no gimmicks
+  - Cons: Still risk of confusion with phone mounts
+  - Target: Balanced consumer/B2B
+- **AutoDock** - Broader appeal than "Car"
+  - Pros: Professional, "Auto" includes trucks/commercial vehicles, avoids phone mount confusion
+  - Cons: Less personal/friendly than "Car"
+  - Target: Broader market (consumers + light commercial)
+- **VehicleDock** - Most professional option
+  - Pros: Professional, clear, B2B-friendly
+  - Cons: Longer, less catchy, more corporate
+  - Target: B2B-first
+
+**"Keep/Log/Vault" Concepts (Record-Keeping Focus):**
+- **KarKeep** - Emphasizes record-keeping
+  - Pros: Rhymes (catchy), clear purpose
+  - Cons: "K" spelling issue, less tech-sounding
+  - Target: Families/personal use
+- **KarLog** - Simple, clear logging concept
+  - Pros: Short, clear, developer-friendly
+  - Cons: "K" spelling, sounds technical/boring
+  - Target: DIY enthusiasts, hobbyists
+- **KarVault** - Security/storage focus
+  - Pros: Implies security, professional
+  - Cons: "K" spelling, might seem too serious
+  - Target: Document storage, compliance-focused
+
+**Market Fit Analysis:**
+| Name | B2B Contractors | Families/Consumers | Professional | Tech-Savvy |
+|------|----------------|--------------------|--------------| ------------|
+| FleetReq | ✅ Strong | ⚠️ Weak | ✅ Yes | ✅ Neutral |
+| FleetSync | ✅ Strong | ✅ Good | ✅ Yes | ✅ Strong |
+| KarDock | ⚠️ Weak | ✅ Strong | 🤷 Casual | ✅ Strong |
+| CarDock | 🤷 Neutral | ✅ Strong | ✅ Good | ✅ Good |
+| AutoDock | ✅ Good | ✅ Good | ✅ Yes | ✅ Good |
+| VehicleDock | ✅ Strong | ⚠️ Weak | ✅ Yes | 🤷 Neutral |
+
+**Recommendation by Strategy:**
+- **B2B-first, expand to consumers**: FleetReq.app or VehicleDock
+- **Consumer-first, expand to B2B**: AutoDock or CarDock
+- **Pure consumer focus**: KarDock or KarKeep
+- **Balanced dual-market**: AutoDock or FleetSync
+
+**Domain Priority Check:**
+- fleetreq.app - ✅ Available on Namecheap
+- Other domains - Not yet checked
 
 ---
 
