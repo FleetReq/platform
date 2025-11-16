@@ -142,7 +142,16 @@ npm run dev  # MUST show: http://localhost:3000
 
 ## 📝 Recent Session Summary
 
-### **Latest Session (2025-10-10) - Security Hardening**
+### **Latest Session (2025-01-16) - Supabase Keep-Alive Solution**
+1. ✅ **Root cause analysis** - Researched why daily cron job wasn't preventing auto-pause
+2. ✅ **Increased frequency** - Changed from daily to every 4 hours (matches proven solutions)
+3. ✅ **Added write operations** - INSERT + DELETE + SELECT (not just SELECT-only queries)
+4. ✅ **Created heartbeat table** - Dedicated table with auto-cleanup (keeps last 100 records)
+5. ✅ **Updated GitHub Actions** - Now runs 6x per day instead of once daily
+6. ✅ **Tested in production** - Verified endpoint working with all operations successful
+7. ✅ **Added SUPABASE_SERVICE_ROLE_KEY** - Required for system operations on heartbeat table
+
+### **Previous Session (2025-10-10) - Security Hardening**
 1. ✅ **Security analysis completed** - Comprehensive review of application security
 2. ✅ **Security headers configured** - Added vercel.json with CSP, HSTS, X-Frame-Options, etc.
 3. ✅ **Rate limiting library created** - lib/rate-limit.ts with multiple tier limits
@@ -242,8 +251,9 @@ npm run dev  # MUST show: http://localhost:3000
 - `cars` → Vehicles (fk: `user_id` → `auth.users.id`) ⚠️ Uses `user_id` NOT `owner_id`
 - `fill_ups` → Fuel records (fk: `car_id` → `cars.id`)
 - `maintenance_records` → Maintenance (fk: `car_id` → `cars.id`)
+- `heartbeat` → Keep-alive activity tracking (system table, service_role only)
 
-**RLS Policies**: All tables use `auth.uid() = user_id` pattern for data isolation
+**RLS Policies**: User tables use `auth.uid() = user_id` pattern. System tables (heartbeat) use service_role only.
 
 ### **Authentication Architecture**
 
@@ -303,6 +313,41 @@ if (!hasAccess) {
   // Display paywall overlay
 }
 ```
+
+### **Supabase Keep-Alive (Auto-Pause Prevention)**
+
+**Problem**: Supabase free-tier pauses projects after 7 days of inactivity.
+
+**Solution**: Automated keep-alive system with write operations every 4 hours.
+
+**Components**:
+- `.github/workflows/keep-alive.yml` - GitHub Actions cron (runs every 4 hours)
+- `app/api/cron/keep-alive/route.ts` - API endpoint that performs database operations
+- `supabase/migrations/20250116_create_heartbeat_table.sql` - Heartbeat table migration
+- `public.heartbeat` table - Tracks all keep-alive pings with auto-cleanup
+
+**Schedule**: Runs 6 times per day at 00:00, 04:00, 08:00, 12:00, 16:00, 20:00 UTC
+
+**Operations per ping**:
+1. **INSERT** - Adds heartbeat record (proves write activity)
+2. **DELETE** - Removes old records beyond last 100 (proves write activity + keeps table small)
+3. **SELECT** - Reads from 4 tables (verifies database accessibility)
+
+**Environment Variables Required**:
+- `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
+- `SUPABASE_SERVICE_ROLE_KEY` - Service role key (bypasses RLS for system operations)
+
+**Why this works**:
+- **Frequency**: 4-hour intervals match proven community solutions (Chrome extensions)
+- **Write operations**: INSERT + DELETE ensure "meaningful" activity beyond SELECT-only queries
+- **Research-based**: Community reports indicate SELECT-only queries may not prevent pausing
+
+**Monitoring**:
+- Check GitHub Actions logs: Verify workflow runs every 4 hours
+- Check Supabase heartbeat table: Verify records are being inserted
+- Endpoint test: `curl https://fleetreq.vercel.app/api/cron/keep-alive`
+
+**Rationale**: Root cause solution based on community research. Combines frequent pings (4hrs) with write operations (INSERT/DELETE) to maximize activity recognition by Supabase's auto-pause detection system.
 
 ---
 
