@@ -142,14 +142,30 @@ npm run dev  # MUST show: http://localhost:3000
 
 ## 📝 Recent Session Summary
 
-### **Latest Session (2025-01-16) - Supabase Keep-Alive Solution**
-1. ✅ **Root cause analysis** - Researched why daily cron job wasn't preventing auto-pause
-2. ✅ **Increased frequency** - Changed from daily to every 4 hours (matches proven solutions)
-3. ✅ **Added write operations** - INSERT + DELETE + SELECT (not just SELECT-only queries)
-4. ✅ **Created heartbeat table** - Dedicated table with auto-cleanup (keeps last 100 records)
-5. ✅ **Updated GitHub Actions** - Now runs 6x per day instead of once daily
-6. ✅ **Tested in production** - Verified endpoint working with all operations successful
-7. ✅ **Added SUPABASE_SERVICE_ROLE_KEY** - Required for system operations on heartbeat table
+### **Latest Session (2025-01-16) - Keep-Alive, Security Fixes, Navigation Bug**
+1. ✅ **Supabase keep-alive system** - Prevents free-tier auto-pause
+   - Created `heartbeat` table with auto-cleanup (keeps last 100 records)
+   - Added write operations (INSERT + DELETE + SELECT, not just SELECT-only)
+   - Increased frequency from daily to every 4 hours (6x per day)
+   - Added `SUPABASE_SERVICE_ROLE_KEY` to Vercel environment variables
+   - Tested in production - all operations successful
+2. ✅ **Critical security fix** - Fixed data leak vulnerability
+   - Removed "Allow public read for demo" policies on `fill_ups` and `maintenance_records`
+   - Users can now only see their own data (proper RLS enforcement)
+   - Cleaned up duplicate SELECT policies (one clean policy per table)
+3. ✅ **Database security audit** - Verified database isolation
+   - Confirmed all tables have RLS enabled
+   - Verified all database roles are legitimate Supabase system roles
+   - Verified `profiles` table is unused (can be safely dropped)
+4. ✅ **Documentation updates**
+   - Updated SCHEMA.md with RLS policies for all tables
+   - Added `heartbeat` table documentation to SCHEMA.md
+   - Removed legacy `profiles` table from documentation
+   - Updated CLAUDE.md with complete session summary
+5. ✅ **Navigation bug fix** - AuthComponent stuck in loading state
+   - Fixed infinite "Loading..." when Supabase client is null
+   - Now shows clear error message if environment variables are missing
+   - Clicking "App" while logged in now goes directly to the app (not login page)
 
 ### **Previous Session (2025-10-10) - Security Hardening**
 1. ✅ **Security analysis completed** - Comprehensive review of application security
