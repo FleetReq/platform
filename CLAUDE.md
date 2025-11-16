@@ -699,6 +699,7 @@ More downloads → App Store rankings → Organic discovery → More users → H
 - Status: Hold registration until ready for launch
 
 ### **Other Options Researched**
+- **FleetSync** - Emphasizes synchronization and real-time updates
 - fleetix.com, vehiclx.com, recordfleet.com, fleetrek.com
 - All available if rebrand needed for consumer market
 
