@@ -693,7 +693,11 @@ More downloads → App Store rankings → Organic discovery → More users → H
 ## 🌐 REFERENCE: Domain & Branding
 
 ### **Selected: FleetReq**
-- Domain: fleetreq.com (available, not registered yet)
+- **Primary Domain**: fleetreq.app (available on Namecheap)
+  - Perfect for web/mobile app
+  - Modern, trusted extension
+  - Appeals to both consumers and businesses
+- **Alternative**: fleetreq.com (available, not registered yet)
 - Concept: Fleet Requests + Fleet Records (dual meaning)
 - Appeals to: Contractors (work orders) + Admins (compliance)
 - Status: Hold registration until ready for launch
