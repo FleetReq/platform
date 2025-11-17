@@ -1,7 +1,7 @@
 # FleetReq Database Schema
 
 > **CRITICAL**: Always verify column names against this schema before writing to the database.
-> Last Updated: 2025-01-16
+> Last Updated: 2025-11-17
 
 ---
 

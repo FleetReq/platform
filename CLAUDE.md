@@ -142,7 +142,48 @@ npm run dev  # MUST show: http://localhost:3000
 
 ## 📝 Recent Session Summary
 
-### **Latest Session (2025-01-17) - Stripe Integration & Tax Tracking**
+### **Latest Session (2025-11-17) - Subscription Cancellation & Account Cleanup**
+1. ✅ **Pricing page improvements** - Prevented downgrades and aligned button styling
+   - Added subscription plan detection on page load
+   - Created `getButtonText()` to show "Current Plan", "Downgrade to X", or default text
+   - Created `isButtonDisabled()` to disable current plan and downgrades
+   - Created `getButtonStyle()` to apply muted gray for disabled states
+   - All downgrade/current plan buttons now use `bg-gray-500 text-gray-300`
+2. ✅ **Database migration** - Added cancellation and deletion tracking
+   - Migration: `20250117_add_cancellation_tracking.sql`
+   - Added 4 new columns to `user_profiles`:
+     - `subscription_end_date` - Date when subscription ends/renews
+     - `cancellation_requested_at` - Timestamp when user requested cancellation
+     - `scheduled_deletion_date` - Date when data will be deleted (subscription_end + 30 days)
+     - `cancellation_reason` - Optional reason provided by user
+   - Created index for cleanup cron job lookups
+3. ✅ **Subscription cancellation flow** - Account Settings UI + backend API
+   - Added subscription management section in Settings
+   - Shows current plan with color coding and renewal date
+   - Created `/api/subscription/cancel` route with Stripe integration
+   - Handles `cancel_at_period_end` for Stripe subscriptions
+   - Calculates 30-day grace period after subscription ends
+   - Updates user_profiles with cancellation tracking data
+4. ✅ **Account deletion UX improvements** - Scary modal with confirmation
+   - Removed persistent yellow warning box from Settings
+   - Changed to simple "Delete Account" red button
+   - Redesigned modal to be SCARY with red header and warnings
+   - Required confirmation text input: user must type "Confirm Deletion"
+   - Button only enables when text matches exactly
+5. ✅ **Automated cleanup cron job** - Daily deletion of expired accounts
+   - Created `/api/cron/cleanup-expired-accounts` route
+   - GET endpoint: Preview accounts ready for deletion (read-only)
+   - POST endpoint: Delete accounts where `scheduled_deletion_date < NOW()`
+   - Uses service role to bypass RLS for system operations
+   - Deletes data in proper order: cars → profiles → auth users
+   - Created GitHub Actions workflow running daily at midnight
+   - Returns detailed report of deleted accounts and errors
+6. ✅ **Documentation updates** - Updated SCHEMA.md
+   - Added cancellation columns to user_profiles schema
+   - Documented purpose of each column in Key Columns section
+   - Updated Last Updated date to 2025-11-17
+
+### **Previous Session (2025-01-17) - Stripe Integration & Tax Tracking**
 1. ✅ **Tax Tracking improvements** - Added Business % metric
    - Fixed incorrect `cost_per_mile` display in Tax Tracking panel
    - Added `business_percentage` calculation to stats API
@@ -435,6 +476,55 @@ if (!hasAccess) {
 - Endpoint test: `curl https://fleetreq.vercel.app/api/cron/keep-alive`
 
 **Rationale**: Root cause solution based on community research. Combines frequent pings (4hrs) with write operations (INSERT/DELETE) to maximize activity recognition by Supabase's auto-pause detection system.
+
+---
+
+### **Automated Account Cleanup (GDPR Compliance)**
+
+**Problem**: Need to permanently delete user data after subscription cancellation grace period.
+
+**Solution**: Automated daily cleanup system that deletes accounts past their scheduled deletion date.
+
+**Components**:
+- `.github/workflows/cleanup-expired-accounts.yml` - GitHub Actions cron (runs daily)
+- `app/api/cron/cleanup-expired-accounts/route.ts` - API endpoint that deletes expired accounts
+- `supabase/migrations/20250117_add_cancellation_tracking.sql` - Cancellation tracking migration
+- `user_profiles.scheduled_deletion_date` - Date when account should be deleted
+
+**Schedule**: Runs daily at 00:00 UTC (midnight)
+
+**Cancellation Flow**:
+1. User clicks "Delete Account" in Settings
+2. User confirms by typing "Confirm Deletion" in scary modal
+3. Backend calls `/api/subscription/cancel`:
+   - Cancels Stripe subscription with `cancel_at_period_end: true`
+   - Sets `cancellation_requested_at` to NOW()
+   - Sets `subscription_end_date` to current period end
+   - Sets `scheduled_deletion_date` to subscription_end + 30 days
+4. Account remains active until `subscription_end_date`
+5. 30-day grace period for reactivation
+6. Daily cron job deletes all data after `scheduled_deletion_date` passes
+
+**Deletion Order** (cleanup cron job):
+1. Delete all cars (cascades to fill_ups and maintenance_records)
+2. Delete user_profiles record
+3. Delete from auth.users (Supabase Admin API)
+
+**API Endpoints**:
+- `GET /api/cron/cleanup-expired-accounts` - Preview accounts ready for deletion (read-only)
+- `POST /api/cron/cleanup-expired-accounts` - Execute deletion (returns detailed report)
+
+**Environment Variables Required**:
+- `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
+- `SUPABASE_SERVICE_ROLE_KEY` - Service role key (bypasses RLS for system operations)
+- `CRON_SECRET` - Optional authorization token for cron endpoints
+
+**Monitoring**:
+- Check GitHub Actions logs: Verify workflow runs daily
+- Check user_profiles table: Monitor `scheduled_deletion_date` column
+- Endpoint test: `curl -X POST https://fleetreq.vercel.app/api/cron/cleanup-expired-accounts`
+
+**Rationale**: GDPR compliance requires permanent deletion of user data upon request. 30-day grace period balances user protection (accidental cancellation) with legal requirements (right to be forgotten).
 
 ---
 
@@ -835,7 +925,7 @@ More downloads → App Store rankings → Organic discovery → More users → H
 
 ---
 
-*Last Updated: 2025-10-10*
-*Session: Security hardening - headers, rate limiting, input validation*
-*Status: Security libraries implemented, API integration pending*
-*Next: Integrate security improvements into API routes, then deploy and test*
+*Last Updated: 2025-11-17*
+*Session: Subscription cancellation & account cleanup automation*
+*Status: Complete subscription management system with GDPR-compliant data deletion*
+*Next: Manual browser testing of subscription cancellation flow and account deletion*
