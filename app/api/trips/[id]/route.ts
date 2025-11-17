@@ -73,7 +73,7 @@ export async function PATCH(
     } = body
 
     // Build update object with only provided fields
-    const updateData: any = {}
+    const updateData: Record<string, string | number | null> = {}
 
     if (car_id !== undefined) {
       // Verify the car belongs to the user

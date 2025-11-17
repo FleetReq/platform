@@ -1807,7 +1807,7 @@ export default function MileageTracker() {
                           </div>
                         </div>
                         <div className="text-[10px] text-amber-600 dark:text-amber-400 text-center bg-amber-50 dark:bg-amber-900/20 rounded p-1.5 border border-amber-200 dark:border-amber-800">
-                          💡 Use "Add Trip" tab to log business trips for tax deductions
+                          💡 Use &quot;Add Trip&quot; tab to log business trips for tax deductions
                         </div>
                         <div className="text-[10px] text-gray-500 dark:text-gray-400 text-center">
                           IRS rate: $0.70/mile (2025) • Tracks business purpose trips
