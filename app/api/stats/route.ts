@@ -65,7 +65,8 @@ export async function GET(request: NextRequest) {
             best_mpg: 0,
             worst_mpg: 0,
             total_miles: 0,
-            cost_per_mile: 0
+            cost_per_mile: 0,
+            business_miles: 0
           }
         })
       }
@@ -92,6 +93,17 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Failed to fetch maintenance stats' }, { status: 500 })
       }
 
+      // Get trip stats for business miles calculation
+      const { data: tripStats, error: tripError } = await supabase
+        .from('trips')
+        .select('miles, purpose')
+        .in('car_id', carIds)
+
+      if (tripError) {
+        console.error('Error fetching trip stats:', tripError)
+        return NextResponse.json({ error: 'Failed to fetch trip stats' }, { status: 500 })
+      }
+
       // Calculate statistics
       const mpgValues = fillUpStats
         .map(f => f.mpg)
@@ -103,6 +115,11 @@ export async function GET(request: NextRequest) {
 
       // Calculate total miles driven (sum of miles_driven from all fill-ups)
       const totalMiles = fillUpStats.reduce((sum, f) => sum + (f.miles_driven || 0), 0)
+
+      // Calculate business miles from trips table (sum of miles where purpose='business')
+      const businessMiles = tripStats
+        ? tripStats.reduce((sum, t) => sum + (t.purpose === 'business' ? (t.miles || 0) : 0), 0)
+        : 0
 
       // Calculate cost per mile (total expenses / total miles)
       const totalExpenses = totalSpent + totalMaintenanceCost
@@ -122,7 +139,9 @@ export async function GET(request: NextRequest) {
         worst_mpg: mpgValues.length > 0 ? Math.min(...mpgValues) : 0,
         // New metrics for Budget Focus panel
         total_miles: Math.round(totalMiles),
-        cost_per_mile: Math.round(costPerMile * 100) / 100
+        cost_per_mile: Math.round(costPerMile * 100) / 100,
+        // Business miles for tax tracking
+        business_miles: Math.round(businessMiles)
       }
 
       return NextResponse.json({ stats })
