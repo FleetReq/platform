@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Use service role client to bypass RLS for system operations
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     // Research shows SELECT-only queries may not be sufficient to prevent pausing
 
     // 1. INSERT: Write a heartbeat record (proves write activity)
-    const { data: insertData, error: insertError } = await supabase
+    const { error: insertError } = await supabase
       .from('heartbeat')
       .insert({
         source: 'github-actions',
