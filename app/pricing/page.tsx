@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase-client'
 
 interface PricingTier {
   name: string
@@ -11,6 +13,7 @@ interface PricingTier {
   highlighted?: boolean
   buttonText: string
   buttonStyle: string
+  tier: 'free' | 'personal' | 'business'
 }
 
 const pricingTiers: PricingTier[] = [
@@ -28,7 +31,8 @@ const pricingTiers: PricingTier[] = [
       "Web access only"
     ],
     buttonText: "Get Started Free",
-    buttonStyle: "bg-gray-600 hover:bg-gray-700 text-white"
+    buttonStyle: "bg-gray-600 hover:bg-gray-700 text-white",
+    tier: "free"
   },
   {
     name: "Personal",
@@ -47,7 +51,8 @@ const pricingTiers: PricingTier[] = [
     ],
     highlighted: true,
     buttonText: "Start Personal Plan",
-    buttonStyle: "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+    buttonStyle: "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white",
+    tier: "personal"
   },
   {
     name: "Business",
@@ -64,8 +69,9 @@ const pricingTiers: PricingTier[] = [
       "Advanced mobile features",
       "Priority support"
     ],
-    buttonText: "Contact Sales",
-    buttonStyle: "bg-gray-800 hover:bg-gray-900 text-white"
+    buttonText: "Subscribe to Business",
+    buttonStyle: "bg-gray-800 hover:bg-gray-900 text-white",
+    tier: "business"
   }
 ]
 
@@ -89,6 +95,57 @@ const allFeatures = [
 
 export default function PricingPage() {
   const [showAnnual, setShowAnnual] = useState(false)
+  const [loading, setLoading] = useState<string | null>(null)
+  const router = useRouter()
+
+  const handleSubscribe = async (tier: 'free' | 'personal' | 'business') => {
+    // Free tier - just go to app
+    if (tier === 'free') {
+      router.push('/mileage')
+      return
+    }
+
+    setLoading(tier)
+
+    try {
+      // Check if user is logged in
+      const { data: { session } } = await supabase.auth.getSession()
+
+      if (!session) {
+        // Redirect to login/signup
+        router.push('/mileage') // Auth component will handle login
+        setLoading(null)
+        return
+      }
+
+      // Create checkout session
+      const response = await fetch('/api/checkout/session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tier,
+          vehicleCount: tier === 'business' ? 4 : undefined, // Default to 4 vehicles for business
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create checkout session')
+      }
+
+      // Redirect to Stripe Checkout
+      if (data.url) {
+        window.location.href = data.url
+      }
+    } catch (error) {
+      console.error('Checkout error:', error)
+      alert('Failed to start checkout. Please try again.')
+      setLoading(null)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
@@ -187,8 +244,12 @@ export default function PricingPage() {
                   ))}
                 </ul>
 
-                <button className={`w-full py-3 px-6 rounded-lg font-medium transition-all duration-200 ${tier.buttonStyle}`}>
-                  {tier.buttonText}
+                <button
+                  onClick={() => handleSubscribe(tier.tier)}
+                  disabled={loading === tier.tier}
+                  className={`w-full py-3 px-6 rounded-lg font-medium transition-all duration-200 ${tier.buttonStyle} disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  {loading === tier.tier ? 'Loading...' : tier.buttonText}
                 </button>
               </div>
             </div>
