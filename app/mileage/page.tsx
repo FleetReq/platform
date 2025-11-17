@@ -45,6 +45,7 @@ interface UserStats {
   total_miles: number
   cost_per_mile: number
   business_miles: number
+  business_percentage: number
 }
 
 interface MaintenanceInterval {
@@ -1781,7 +1782,7 @@ export default function MileageTracker() {
                       <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4zm2.5 2.1h-15V5h15v14.1zm0-16.1h-15c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
                       </svg>
-                      <h4 className="text-xs font-semibold text-gray-900 dark:text-white">Tax Tracking</h4>
+                      <h4 className="text-xs font-semibold text-gray-900 dark:text-white">Tax Tracking 2025</h4>
                       {userSubscriptionPlan === 'free' && (
                         <span className="ml-auto text-[10px] px-2 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded">
                           🔒 LOCKED
@@ -1801,9 +1802,9 @@ export default function MileageTracker() {
                             <div className="text-xs font-bold text-blue-600 dark:text-blue-400">${Math.round(stats.business_miles * 0.70).toLocaleString()}</div>
                             <div className="text-[10px] text-gray-600 dark:text-gray-400">Tax Deduction</div>
                           </div>
-                          <div className="text-center p-2 bg-orange-50 dark:bg-orange-900/20 rounded">
-                            <div className="text-xs font-bold text-orange-600 dark:text-orange-400">${stats.cost_per_mile}</div>
-                            <div className="text-[10px] text-gray-600 dark:text-gray-400">$/Mile</div>
+                          <div className="text-center p-2 bg-green-50 dark:bg-green-900/20 rounded">
+                            <div className="text-xs font-bold text-green-600 dark:text-green-400">{stats.business_percentage}%</div>
+                            <div className="text-[10px] text-gray-600 dark:text-gray-400">Business</div>
                           </div>
                         </div>
                         <div className="text-[10px] text-amber-600 dark:text-amber-400 text-center bg-amber-50 dark:bg-amber-900/20 rounded p-1.5 border border-amber-200 dark:border-amber-800">

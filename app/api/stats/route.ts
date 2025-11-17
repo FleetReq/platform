@@ -66,7 +66,8 @@ export async function GET(request: NextRequest) {
             worst_mpg: 0,
             total_miles: 0,
             cost_per_mile: 0,
-            business_miles: 0
+            business_miles: 0,
+            business_percentage: 0
           }
         })
       }
@@ -121,6 +122,9 @@ export async function GET(request: NextRequest) {
         ? tripStats.reduce((sum, t) => sum + (t.purpose === 'business' ? (t.miles || 0) : 0), 0)
         : 0
 
+      // Calculate business percentage (business miles / total miles * 100)
+      const businessPercentage = totalMiles > 0 ? (businessMiles / totalMiles) * 100 : 0
+
       // Calculate cost per mile (total expenses / total miles)
       const totalExpenses = totalSpent + totalMaintenanceCost
       const costPerMile = totalMiles > 0 ? totalExpenses / totalMiles : 0
@@ -141,7 +145,8 @@ export async function GET(request: NextRequest) {
         total_miles: Math.round(totalMiles),
         cost_per_mile: Math.round(costPerMile * 100) / 100,
         // Business miles for tax tracking
-        business_miles: Math.round(businessMiles)
+        business_miles: Math.round(businessMiles),
+        business_percentage: Math.round(businessPercentage * 10) / 10 // Round to 1 decimal (e.g., 45.3%)
       }
 
       return NextResponse.json({ stats })
