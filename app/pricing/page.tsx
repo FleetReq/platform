@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase-client'
+import { supabase, getUserSubscriptionPlan } from '@/lib/supabase-client'
 
 interface PricingTier {
   name: string
@@ -70,7 +70,7 @@ const pricingTiers: PricingTier[] = [
       "Priority support"
     ],
     buttonText: "Subscribe to Business",
-    buttonStyle: "bg-gray-800 hover:bg-gray-900 text-white",
+    buttonStyle: "bg-gray-600 hover:bg-gray-700 text-white",
     tier: "business"
   }
 ]
@@ -96,7 +96,60 @@ const allFeatures = [
 export default function PricingPage() {
   const [showAnnual, setShowAnnual] = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
+  const [currentPlan, setCurrentPlan] = useState<'free' | 'personal' | 'business' | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
   const router = useRouter()
+
+  // Fetch user's current subscription plan
+  useEffect(() => {
+    async function fetchUserPlan() {
+      if (!supabase) return
+
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user) {
+        setUserId(session.user.id)
+        const plan = await getUserSubscriptionPlan(session.user.id)
+        setCurrentPlan(plan)
+      }
+    }
+
+    fetchUserPlan()
+  }, [])
+
+  // Get button text based on current plan
+  const getButtonText = (tier: PricingTier) => {
+    if (!currentPlan) return tier.buttonText
+
+    const tierOrder = { free: 0, personal: 1, business: 2 }
+    const currentTierLevel = tierOrder[currentPlan]
+    const targetTierLevel = tierOrder[tier.tier]
+
+    if (currentTierLevel === targetTierLevel) {
+      return 'Current Plan'
+    } else if (currentTierLevel > targetTierLevel) {
+      return `Downgrade to ${tier.name}`
+    } else {
+      return tier.buttonText
+    }
+  }
+
+  // Check if button should be disabled
+  const isButtonDisabled = (tier: PricingTier) => {
+    if (loading === tier.tier) return true
+    if (!currentPlan) return false
+
+    const tierOrder = { free: 0, personal: 1, business: 2 }
+    const currentTierLevel = tierOrder[currentPlan]
+    const targetTierLevel = tierOrder[tier.tier]
+
+    // Disable current plan button
+    if (currentTierLevel === targetTierLevel) return true
+
+    // Disable downgrades (lower tier than current)
+    if (currentTierLevel > targetTierLevel) return true
+
+    return false
+  }
 
   const handleSubscribe = async (tier: 'free' | 'personal' | 'business') => {
     // Free tier - just go to app
@@ -196,15 +249,15 @@ export default function PricingPage() {
           {pricingTiers.map((tier) => (
             <div
               key={tier.name}
-              className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden ${
+              className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg ${
                 tier.highlighted
                   ? 'ring-2 ring-blue-600 ring-offset-2 dark:ring-offset-gray-900 transform scale-105'
                   : ''
               }`}
             >
               {tier.highlighted && (
-                <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-1 rounded-full text-sm font-medium">
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
+                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-1 rounded-full text-sm font-medium shadow-lg">
                     Most Popular
                   </span>
                 </div>
@@ -253,10 +306,10 @@ export default function PricingPage() {
 
                 <button
                   onClick={() => handleSubscribe(tier.tier)}
-                  disabled={loading === tier.tier}
+                  disabled={isButtonDisabled(tier)}
                   className={`w-full py-3 px-6 rounded-lg font-medium transition-all duration-200 ${tier.buttonStyle} disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
-                  {loading === tier.tier ? 'Loading...' : tier.buttonText}
+                  {loading === tier.tier ? 'Loading...' : getButtonText(tier)}
                 </button>
               </div>
             </div>
