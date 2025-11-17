@@ -1020,6 +1020,7 @@ function UserSettings({ cars, onCarDeleted }: { cars?: Car[], onCarDeleted?: () 
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [isCancelling, setIsCancelling] = useState(false)
   const [cancellationReason, setCancellationReason] = useState('')
+  const [confirmationText, setConfirmationText] = useState('')
 
   useEffect(() => {
     const getUser = async () => {
@@ -1157,10 +1158,11 @@ function UserSettings({ cars, onCarDeleted }: { cars?: Car[], onCarDeleted?: () 
       const data = await response.json()
       setMessage({
         type: 'success',
-        text: `Subscription cancelled. Your account will remain active until ${new Date(data.subscription_end_date).toLocaleDateString()}. All data will be deleted 30 days after that date.`
+        text: `Account deletion scheduled. Your account will remain active until ${new Date(data.subscription_end_date).toLocaleDateString()}. All data will be permanently deleted 30 days after that date.`
       })
       setShowCancelModal(false)
       setCancellationReason('')
+      setConfirmationText('')
 
       // Refresh subscription info
       if (supabase) {
@@ -1258,27 +1260,13 @@ function UserSettings({ cars, onCarDeleted }: { cars?: Car[], onCarDeleted?: () 
           </div>
 
           {subscriptionPlan !== 'free' && (
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-1">
-                    Cancel Subscription
-                  </h4>
-                  <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-3">
-                    Your account will remain active until {subscriptionEndDate ? new Date(subscriptionEndDate).toLocaleDateString() : 'your subscription ends'}.
-                    All your data will be permanently deleted 30 days after that date.
-                  </p>
-                  <button
-                    onClick={() => setShowCancelModal(true)}
-                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
-                  >
-                    Cancel Subscription
-                  </button>
-                </div>
-              </div>
+            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+              <button
+                onClick={() => setShowCancelModal(true)}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                Delete Account
+              </button>
             </div>
           )}
 
@@ -1309,28 +1297,62 @@ function UserSettings({ cars, onCarDeleted }: { cars?: Car[], onCarDeleted?: () 
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                  Cancel Subscription?
+                <h3 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-3">
+                  ⚠️ DELETE ACCOUNT?
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                  This action cannot be undone. Your subscription will remain active until{' '}
-                  <span className="font-semibold">{subscriptionEndDate ? new Date(subscriptionEndDate).toLocaleDateString() : 'the end of your billing period'}</span>.
-                  All your data will be <span className="font-semibold text-red-600 dark:text-red-400">permanently deleted</span> 30 days after that date.
-                </p>
+                <div className="space-y-3 text-sm text-gray-700 dark:text-gray-300">
+                  <p className="font-semibold">
+                    This action is <span className="text-red-600 dark:text-red-400 uppercase">permanent and cannot be undone</span>.
+                  </p>
+                  <p>
+                    Your subscription will remain active until{' '}
+                    <span className="font-semibold text-gray-900 dark:text-white">
+                      {subscriptionEndDate ? new Date(subscriptionEndDate).toLocaleDateString() : 'the end of your billing period'}
+                    </span>.
+                  </p>
+                  <p className="font-semibold text-red-600 dark:text-red-400">
+                    30 days after that date, ALL of your data will be permanently deleted:
+                  </p>
+                  <ul className="list-disc list-inside space-y-1 pl-2">
+                    <li>All vehicles and their information</li>
+                    <li>All fuel fill-up records</li>
+                    <li>All maintenance records</li>
+                    <li>All trip tracking data</li>
+                    <li>Your account and profile</li>
+                  </ul>
+                  <p className="font-semibold pt-2">
+                    There is no way to recover this data after deletion.
+                  </p>
+                </div>
               </div>
             </div>
 
             <div className="mb-4">
               <label htmlFor="cancellationReason" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Why are you cancelling? (Optional)
+                Why are you leaving? (Optional)
               </label>
               <textarea
                 id="cancellationReason"
                 value={cancellationReason}
                 onChange={(e) => setCancellationReason(e.target.value)}
-                rows={3}
-                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 resize-none"
-                placeholder="Help us improve by sharing your feedback..."
+                rows={2}
+                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 resize-none text-sm"
+                placeholder="Help us improve..."
+              />
+            </div>
+
+            <div className="mb-6 bg-red-50 dark:bg-red-900/20 border-2 border-red-300 dark:border-red-800 rounded-lg p-4">
+              <label htmlFor="confirmationText" className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
+                To confirm deletion, type <span className="text-red-600 dark:text-red-400 font-mono">Confirm Deletion</span> below:
+              </label>
+              <input
+                id="confirmationText"
+                type="text"
+                value={confirmationText}
+                onChange={(e) => setConfirmationText(e.target.value)}
+                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border-2 border-red-300 dark:border-red-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-200 dark:focus:ring-red-900"
+                placeholder="Type: Confirm Deletion"
+                autoComplete="off"
               />
             </div>
 
@@ -1339,18 +1361,19 @@ function UserSettings({ cars, onCarDeleted }: { cars?: Car[], onCarDeleted?: () 
                 onClick={() => {
                   setShowCancelModal(false)
                   setCancellationReason('')
+                  setConfirmationText('')
                 }}
                 disabled={isCancelling}
                 className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg font-medium transition-colors disabled:opacity-50"
               >
-                Keep Subscription
+                Cancel
               </button>
               <button
                 onClick={handleCancelSubscription}
-                disabled={isCancelling}
-                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                disabled={isCancelling || confirmationText !== 'Confirm Deletion'}
+                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
               >
-                {isCancelling ? 'Cancelling...' : 'Confirm Cancellation'}
+                {isCancelling ? 'Deleting...' : 'Delete My Account'}
               </button>
             </div>
           </div>
