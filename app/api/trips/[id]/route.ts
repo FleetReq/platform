@@ -6,9 +6,10 @@ export const dynamic = 'force-dynamic'
 // DELETE /api/trips/[id] - Delete a specific trip
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await context.params
     const supabase = await createRouteHandlerClient(request)
     if (!supabase) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
@@ -44,9 +45,10 @@ export async function DELETE(
 // PATCH /api/trips/[id] - Update a specific trip
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await context.params
     const supabase = await createRouteHandlerClient(request)
     if (!supabase) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
