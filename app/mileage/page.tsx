@@ -1893,6 +1893,7 @@ export default function MileageTracker() {
                   { id: 'dashboard', label: 'Graph', adminOnly: false },
                   { id: 'add-car', label: 'Add Car', adminOnly: false },
                   { id: 'add-fillup', label: 'Add Fill-up', adminOnly: false },
+                  { id: 'add-trip', label: 'Add Trip', adminOnly: false },
                   { id: 'add-maintenance', label: 'Maintenance', adminOnly: false },
                   { id: 'records', label: 'Records', adminOnly: false },
                   { id: 'settings', label: 'Settings', adminOnly: false }
@@ -2068,6 +2069,13 @@ export default function MileageTracker() {
               {activeTab === 'add-fillup' && cars.length > 0 && (
                 <div className="card-professional p-6">
                   <AddFillUpForm cars={cars} onSuccess={() => { loadData(); setActiveTab('dashboard'); }} />
+                </div>
+              )}
+
+              {/* Trip Tab - Add Trip Form */}
+              {activeTab === 'add-trip' && cars.length > 0 && (
+                <div className="card-professional p-6">
+                  <AddTripForm cars={cars} onSuccess={() => { loadData(); setActiveTab('dashboard'); }} />
                 </div>
               )}
 
@@ -2539,6 +2547,181 @@ function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void
           className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-3 rounded-lg transition-colors duration-200"
         >
           {loading ? 'Adding...' : 'Add Fill-up'}
+        </button>
+      </form>
+    </div>
+  )
+}
+
+// Add Trip Form Component
+function AddTripForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void }) {
+  const [formData, setFormData] = useState({
+    car_id: cars[0]?.id || '',
+    date: new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }),
+    start_location: '',
+    end_location: '',
+    purpose: 'business',
+    business_purpose: '',
+    miles: '',
+    notes: ''
+  })
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+
+    try {
+      const response = await fetch('/api/trips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          miles: parseFloat(formData.miles)
+        })
+      })
+
+      if (response.ok) {
+        alert('Trip added successfully!')
+        // Reset form
+        setFormData({
+          car_id: cars[0]?.id || '',
+          date: new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }),
+          start_location: '',
+          end_location: '',
+          purpose: 'business',
+          business_purpose: '',
+          miles: '',
+          notes: ''
+        })
+        onSuccess()
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Failed to add trip')
+      }
+    } catch (error) {
+      console.error('Error adding trip:', error)
+      alert('Failed to add trip')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Add Trip</h2>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-gray-700 dark:text-gray-300 mb-2">Car *</label>
+            <select
+              required
+              value={formData.car_id}
+              onChange={(e) => setFormData({ ...formData, car_id: e.target.value })}
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            >
+              {cars.map((car) => (
+                <option key={car.id} value={car.id}>
+                  {car.nickname || `${car.year} ${car.make} ${car.model}`}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-gray-700 dark:text-gray-300 mb-2">Date *</label>
+            <input
+              type="date"
+              required
+              value={formData.date}
+              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            />
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-gray-700 dark:text-gray-300 mb-2">Start Location</label>
+            <input
+              type="text"
+              value={formData.start_location}
+              onChange={(e) => setFormData({ ...formData, start_location: e.target.value })}
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              placeholder="Home, Office, etc."
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700 dark:text-gray-300 mb-2">End Location *</label>
+            <input
+              type="text"
+              required
+              value={formData.end_location}
+              onChange={(e) => setFormData({ ...formData, end_location: e.target.value })}
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              placeholder="Client site, Job location, etc."
+            />
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-gray-700 dark:text-gray-300 mb-2">Purpose *</label>
+            <select
+              required
+              value={formData.purpose}
+              onChange={(e) => setFormData({ ...formData, purpose: e.target.value })}
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            >
+              <option value="business">Business</option>
+              <option value="personal">Personal</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-gray-700 dark:text-gray-300 mb-2">Miles Driven *</label>
+            <input
+              type="number"
+              required
+              min="0"
+              step="0.1"
+              value={formData.miles}
+              onChange={(e) => setFormData({ ...formData, miles: e.target.value })}
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              placeholder="25.5"
+            />
+          </div>
+        </div>
+
+        {formData.purpose === 'business' && (
+          <div>
+            <label className="block text-gray-700 dark:text-gray-300 mb-2">Business Purpose * (IRS Required)</label>
+            <input
+              type="text"
+              required
+              value={formData.business_purpose}
+              onChange={(e) => setFormData({ ...formData, business_purpose: e.target.value })}
+              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              placeholder="Client meeting at ABC Corp, Job site visit for Project X, etc."
+            />
+          </div>
+        )}
+
+        <div>
+          <label className="block text-gray-700 dark:text-gray-300 mb-2">Notes</label>
+          <textarea
+            value={formData.notes}
+            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            rows={3}
+            placeholder="Additional trip details..."
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50"
+        >
+          {loading ? 'Adding...' : 'Add Trip'}
         </button>
       </form>
     </div>
