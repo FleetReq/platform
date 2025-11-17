@@ -97,7 +97,6 @@ export default function PricingPage() {
   const [showAnnual, setShowAnnual] = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
   const [currentPlan, setCurrentPlan] = useState<'free' | 'personal' | 'business' | null>(null)
-  const [userId, setUserId] = useState<string | null>(null)
   const router = useRouter()
 
   // Fetch user's current subscription plan
@@ -107,7 +106,6 @@ export default function PricingPage() {
 
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
-        setUserId(session.user.id)
         const plan = await getUserSubscriptionPlan(session.user.id)
         setCurrentPlan(plan)
       }
@@ -149,6 +147,22 @@ export default function PricingPage() {
     if (currentTierLevel > targetTierLevel) return true
 
     return false
+  }
+
+  // Get button style - use muted gray for disabled states
+  const getButtonStyle = (tier: PricingTier) => {
+    if (!currentPlan) return tier.buttonStyle
+
+    const tierOrder = { free: 0, personal: 1, business: 2 }
+    const currentTierLevel = tierOrder[currentPlan]
+    const targetTierLevel = tierOrder[tier.tier]
+
+    // Use muted style for current plan or downgrades
+    if (currentTierLevel >= targetTierLevel) {
+      return 'bg-gray-500 text-gray-300 cursor-not-allowed'
+    }
+
+    return tier.buttonStyle
   }
 
   const handleSubscribe = async (tier: 'free' | 'personal' | 'business') => {
@@ -307,7 +321,7 @@ export default function PricingPage() {
                 <button
                   onClick={() => handleSubscribe(tier.tier)}
                   disabled={isButtonDisabled(tier)}
-                  className={`w-full py-3 px-6 rounded-lg font-medium transition-all duration-200 ${tier.buttonStyle} disabled:opacity-50 disabled:cursor-not-allowed`}
+                  className={`w-full py-3 px-6 rounded-lg font-medium transition-all duration-200 ${getButtonStyle(tier)}`}
                 >
                   {loading === tier.tier ? 'Loading...' : getButtonText(tier)}
                 </button>

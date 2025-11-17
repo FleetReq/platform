@@ -1015,12 +1015,31 @@ function UserSettings({ cars, onCarDeleted }: { cars?: Car[], onCarDeleted?: () 
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   const [deletingCarId, setDeletingCarId] = useState<string | null>(null)
   const [confirmDeleteCarId, setConfirmDeleteCarId] = useState<string | null>(null)
+  const [subscriptionPlan, setSubscriptionPlan] = useState<'free' | 'personal' | 'business'>('free')
+  const [subscriptionEndDate, setSubscriptionEndDate] = useState<string | null>(null)
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [isCancelling, setIsCancelling] = useState(false)
+  const [cancellationReason, setCancellationReason] = useState('')
 
   useEffect(() => {
     const getUser = async () => {
       if (!supabase) return
       const { data: { user } } = await supabase.auth.getUser()
       setCurrentUser(user)
+
+      // Fetch subscription info
+      if (user) {
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('subscription_plan, subscription_end_date')
+          .eq('id', user.id)
+          .single()
+
+        if (profile) {
+          setSubscriptionPlan(profile.subscription_plan as 'free' | 'personal' | 'business')
+          setSubscriptionEndDate(profile.subscription_end_date)
+        }
+      }
     }
     getUser()
   }, [])
@@ -1117,7 +1136,68 @@ function UserSettings({ cars, onCarDeleted }: { cars?: Car[], onCarDeleted?: () 
     }
   }
 
+  const handleCancelSubscription = async () => {
+    if (!currentUser) return
+
+    setIsCancelling(true)
+    try {
+      const response = await fetch('/api/subscription/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reason: cancellationReason
+        })
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to cancel subscription')
+      }
+
+      const data = await response.json()
+      setMessage({
+        type: 'success',
+        text: `Subscription cancelled. Your account will remain active until ${new Date(data.subscription_end_date).toLocaleDateString()}. All data will be deleted 30 days after that date.`
+      })
+      setShowCancelModal(false)
+      setCancellationReason('')
+
+      // Refresh subscription info
+      if (supabase) {
+        const { data: profile } = await supabase.from('user_profiles')
+          .select('subscription_plan, subscription_end_date')
+          .eq('id', currentUser.id)
+          .single()
+
+        if (profile) {
+          setSubscriptionPlan(profile.subscription_plan as 'free' | 'personal' | 'business')
+          setSubscriptionEndDate(profile.subscription_end_date)
+        }
+      }
+    } catch (error) {
+      setMessage({
+        type: 'error',
+        text: error instanceof Error ? error.message : 'Failed to cancel subscription'
+      })
+    } finally {
+      setIsCancelling(false)
+    }
+  }
+
   const isGoogleLinked = currentUser?.app_metadata?.providers?.includes('google')
+
+  const getPlanDisplayName = (plan: string) => {
+    return plan.charAt(0).toUpperCase() + plan.slice(1)
+  }
+
+  const getPlanColor = (plan: string) => {
+    switch (plan) {
+      case 'free': return 'text-gray-600 dark:text-gray-400'
+      case 'personal': return 'text-blue-600 dark:text-blue-400'
+      case 'business': return 'text-yellow-600 dark:text-yellow-400'
+      default: return 'text-gray-600'
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -1149,6 +1229,133 @@ function UserSettings({ cars, onCarDeleted }: { cars?: Car[], onCarDeleted?: () 
           </div>
         </div>
       </div>
+
+      {/* Subscription Management */}
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Subscription Management</h3>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+            <div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Current Plan</div>
+              <div className={`text-xl font-bold ${getPlanColor(subscriptionPlan)}`}>
+                {getPlanDisplayName(subscriptionPlan)}
+              </div>
+            </div>
+            {subscriptionPlan !== 'free' && subscriptionEndDate && (
+              <div className="text-right">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  Renews on
+                </div>
+                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                  {new Date(subscriptionEndDate).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {subscriptionPlan !== 'free' && (
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                <div className="flex-1">
+                  <h4 className="font-semibold text-yellow-900 dark:text-yellow-100 mb-1">
+                    Cancel Subscription
+                  </h4>
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-3">
+                    Your account will remain active until {subscriptionEndDate ? new Date(subscriptionEndDate).toLocaleDateString() : 'your subscription ends'}.
+                    All your data will be permanently deleted 30 days after that date.
+                  </p>
+                  <button
+                    onClick={() => setShowCancelModal(true)}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
+                  >
+                    Cancel Subscription
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {subscriptionPlan === 'free' && (
+            <div className="text-center py-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                Upgrade to unlock more vehicles, full maintenance tracking, and professional features
+              </p>
+              <a
+                href="/pricing"
+                className="inline-block px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+              >
+                View Pricing Plans
+              </a>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Cancellation Confirmation Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-start gap-4 mb-4">
+              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  Cancel Subscription?
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                  This action cannot be undone. Your subscription will remain active until{' '}
+                  <span className="font-semibold">{subscriptionEndDate ? new Date(subscriptionEndDate).toLocaleDateString() : 'the end of your billing period'}</span>.
+                  All your data will be <span className="font-semibold text-red-600 dark:text-red-400">permanently deleted</span> 30 days after that date.
+                </p>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label htmlFor="cancellationReason" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Why are you cancelling? (Optional)
+              </label>
+              <textarea
+                id="cancellationReason"
+                value={cancellationReason}
+                onChange={(e) => setCancellationReason(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 resize-none"
+                placeholder="Help us improve by sharing your feedback..."
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowCancelModal(false)
+                  setCancellationReason('')
+                }}
+                disabled={isCancelling}
+                className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+              >
+                Keep Subscription
+              </button>
+              <button
+                onClick={handleCancelSubscription}
+                disabled={isCancelling}
+                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+              >
+                {isCancelling ? 'Cancelling...' : 'Confirm Cancellation'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Linked Accounts */}
       <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
