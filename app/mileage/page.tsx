@@ -42,6 +42,8 @@ interface UserStats {
   recent_mpg: number
   best_mpg: number
   worst_mpg: number
+  total_miles: number
+  cost_per_mile: number
 }
 
 interface MaintenanceInterval {
@@ -1725,9 +1727,10 @@ export default function MileageTracker() {
               )}
             </div>
 
-            {/* Performance Overview - Compact */}
-            <div className="card-professional p-4">
-              <h3 className="text-sm font-bold mb-3 text-gradient-primary">Performance Overview</h3>
+            {/* Performance Overview - Dual Panel Design */}
+            <div className="card-professional p-4 space-y-3">
+              <h3 className="text-sm font-bold text-gradient-primary">Performance Overview</h3>
+
               {cars.length === 0 ? (
                 <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                   <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1736,51 +1739,111 @@ export default function MileageTracker() {
                   <p className="text-sm font-medium">Add a car to unlock</p>
                 </div>
               ) : stats ? (
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                      <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mx-auto mb-1">
-                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
-                        </svg>
-                      </div>
-                      <div className="text-sm font-bold text-blue-600 dark:text-blue-400">{stats.total_cars}</div>
-                      <div className="text-xs text-gray-600 dark:text-gray-300">Cars</div>
+                <div className="space-y-3">
+                  {/* Budget Focus Panel (Always Visible) */}
+                  <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+                      </svg>
+                      <h4 className="text-xs font-semibold text-gray-900 dark:text-white">Budget Focus</h4>
                     </div>
-
-                    <div className="text-center p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
-                      <div className="w-6 h-6 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center mx-auto mb-1">
-                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                        </svg>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
+                        <div className="text-xs font-bold text-blue-600 dark:text-blue-400">${stats.total_spent}</div>
+                        <div className="text-[10px] text-gray-600 dark:text-gray-400">Fuel</div>
                       </div>
-                      <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{stats.average_mpg}</div>
-                      <div className="text-xs text-gray-600 dark:text-gray-300">MPG</div>
+                      <div className="text-center p-2 bg-purple-50 dark:bg-purple-900/20 rounded">
+                        <div className="text-xs font-bold text-purple-600 dark:text-purple-400">${stats.total_maintenance_cost}</div>
+                        <div className="text-[10px] text-gray-600 dark:text-gray-400">Maint.</div>
+                      </div>
+                      <div className="text-center p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded">
+                        <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400">${Math.round((stats.total_spent + stats.total_maintenance_cost) * 100) / 100}</div>
+                        <div className="text-[10px] text-gray-600 dark:text-gray-400">Total</div>
+                      </div>
                     </div>
-
-                    <div className="text-center p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                      <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center mx-auto mb-1">
-                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M5 18v-2h2v-3h2v-2h6v2h2v3h2v2H5zM9 4v4l1.5 1L12 8l1.5 1L15 4V2H9v2z"/>
-                          <circle cx="7" cy="16" r="1"/>
-                          <circle cx="17" cy="16" r="1"/>
-                          <path d="M12 8v3" stroke="white" strokeWidth="2" fill="none"/>
-                        </svg>
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      <div className="text-center p-2 bg-orange-50 dark:bg-orange-900/20 rounded">
+                        <div className="text-xs font-bold text-orange-600 dark:text-orange-400">${stats.cost_per_mile}</div>
+                        <div className="text-[10px] text-gray-600 dark:text-gray-400">Cost/Mile</div>
                       </div>
-                      <div className="text-sm font-bold text-purple-600 dark:text-purple-400">{stats.total_fill_ups}</div>
-                      <div className="text-xs text-gray-600 dark:text-gray-300">Fill-ups</div>
-                    </div>
-
-                    <div className="text-center p-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                      <div className="w-6 h-6 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center mx-auto mb-1">
-                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
-                        </svg>
+                      <div className="text-center p-2 bg-gray-50 dark:bg-gray-700/20 rounded">
+                        <div className="text-xs font-bold text-gray-900 dark:text-gray-200">{stats.total_miles.toLocaleString()}</div>
+                        <div className="text-[10px] text-gray-600 dark:text-gray-400">Miles</div>
                       </div>
-                      <div className="text-sm font-bold text-orange-600 dark:text-orange-400">${stats.total_spent}</div>
-                      <div className="text-xs text-gray-600 dark:text-gray-300">Spent</div>
                     </div>
                   </div>
-                ) : null}
+
+                  {/* Tax Tracking Panel (Locked for Free Tier) */}
+                  <div className="relative border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4zm2.5 2.1h-15V5h15v14.1zm0-16.1h-15c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
+                      </svg>
+                      <h4 className="text-xs font-semibold text-gray-900 dark:text-white">Tax Tracking</h4>
+                      {userSubscriptionPlan === 'free' && (
+                        <span className="ml-auto text-[10px] px-2 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded">
+                          🔒 LOCKED
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Show metrics for Personal/Business, locked overlay for Free */}
+                    {userSubscriptionPlan !== 'free' ? (
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-3 gap-2">
+                          <div className="text-center p-2 bg-gray-50 dark:bg-gray-700/20 rounded">
+                            <div className="text-xs font-bold text-gray-900 dark:text-gray-200">{stats.total_miles.toLocaleString()}</div>
+                            <div className="text-[10px] text-gray-600 dark:text-gray-400">Miles Tracked</div>
+                          </div>
+                          <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
+                            <div className="text-xs font-bold text-blue-600 dark:text-blue-400">${Math.round(stats.total_miles * 0.70).toLocaleString()}</div>
+                            <div className="text-[10px] text-gray-600 dark:text-gray-400">Potential Ded.</div>
+                          </div>
+                          <div className="text-center p-2 bg-orange-50 dark:bg-orange-900/20 rounded">
+                            <div className="text-xs font-bold text-orange-600 dark:text-orange-400">${stats.cost_per_mile}</div>
+                            <div className="text-[10px] text-gray-600 dark:text-gray-400">$/Mile</div>
+                          </div>
+                        </div>
+                        <div className="text-[10px] text-amber-600 dark:text-amber-400 text-center bg-amber-50 dark:bg-amber-900/20 rounded p-1.5 border border-amber-200 dark:border-amber-800">
+                          ⚠️ Track business trips separately for accurate deductions
+                        </div>
+                        <div className="text-[10px] text-gray-500 dark:text-gray-400 text-center">
+                          IRS rate: $0.70/mile (2025) • Trip tracking coming soon
+                        </div>
+                      </div>
+                    ) : (
+                      /* Locked State for Free Tier */
+                      <div className="relative">
+                        <div className="filter blur-sm pointer-events-none select-none">
+                          <div className="grid grid-cols-3 gap-2">
+                            <div className="text-center p-2 bg-gray-50 dark:bg-gray-700/20 rounded">
+                              <div className="text-xs font-bold text-gray-900 dark:text-gray-200">12,450</div>
+                              <div className="text-[10px] text-gray-600 dark:text-gray-400">Miles Tracked</div>
+                            </div>
+                            <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
+                              <div className="text-xs font-bold text-blue-600 dark:text-blue-400">$8,715</div>
+                              <div className="text-[10px] text-gray-600 dark:text-gray-400">Potential Ded.</div>
+                            </div>
+                            <div className="text-center p-2 bg-orange-50 dark:bg-orange-900/20 rounded">
+                              <div className="text-xs font-bold text-orange-600 dark:text-orange-400">$0.45</div>
+                              <div className="text-[10px] text-gray-600 dark:text-gray-400">$/Mile</div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <Link
+                            href="/pricing#personal"
+                            className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-2 rounded-lg font-medium shadow-lg transition-colors"
+                          >
+                            Upgrade to Personal - $4/mo
+                          </Link>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : null}
             </div>
 
             {/* Maintenance Status - Dynamic */}

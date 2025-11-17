@@ -63,15 +63,17 @@ export async function GET(request: NextRequest) {
             total_maintenance_cost: 0,
             recent_mpg: 0,
             best_mpg: 0,
-            worst_mpg: 0
+            worst_mpg: 0,
+            total_miles: 0,
+            cost_per_mile: 0
           }
         })
       }
 
-      // Get fill-up stats
+      // Get fill-up stats (including miles_driven for total miles calculation)
       const { data: fillUpStats, error: fillUpError } = await supabase
         .from('fill_ups')
-        .select('mpg, gallons, total_cost')
+        .select('mpg, gallons, total_cost, miles_driven')
         .in('car_id', carIds)
 
       if (fillUpError) {
@@ -99,6 +101,13 @@ export async function GET(request: NextRequest) {
       const totalSpent = fillUpStats.reduce((sum, f) => sum + (f.total_cost || 0), 0)
       const totalMaintenanceCost = maintenanceStats.reduce((sum, m) => sum + (m.cost || 0), 0)
 
+      // Calculate total miles driven (sum of miles_driven from all fill-ups)
+      const totalMiles = fillUpStats.reduce((sum, f) => sum + (f.miles_driven || 0), 0)
+
+      // Calculate cost per mile (total expenses / total miles)
+      const totalExpenses = totalSpent + totalMaintenanceCost
+      const costPerMile = totalMiles > 0 ? totalExpenses / totalMiles : 0
+
       const stats = {
         total_cars: cars.length,
         total_fill_ups: fillUpStats.length,
@@ -110,7 +119,10 @@ export async function GET(request: NextRequest) {
         total_maintenance_cost: Math.round(totalMaintenanceCost * 100) / 100,
         recent_mpg: mpgValues.length > 0 ? mpgValues[0] : 0,
         best_mpg: mpgValues.length > 0 ? Math.max(...mpgValues) : 0,
-        worst_mpg: mpgValues.length > 0 ? Math.min(...mpgValues) : 0
+        worst_mpg: mpgValues.length > 0 ? Math.min(...mpgValues) : 0,
+        // New metrics for Budget Focus panel
+        total_miles: Math.round(totalMiles),
+        cost_per_mile: Math.round(costPerMile * 100) / 100
       }
 
       return NextResponse.json({ stats })
