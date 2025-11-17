@@ -142,7 +142,36 @@ npm run dev  # MUST show: http://localhost:3000
 
 ## 📝 Recent Session Summary
 
-### **Latest Session (2025-01-16) - Keep-Alive, Security, Navigation, Performance Metrics**
+### **Latest Session (2025-01-17) - Stripe Integration & Tax Tracking**
+1. ✅ **Tax Tracking improvements** - Added Business % metric
+   - Fixed incorrect `cost_per_mile` display in Tax Tracking panel
+   - Added `business_percentage` calculation to stats API
+   - Changed title to "Tax Tracking 2025" for year context
+   - Replaced "$/Mile" with "Business %" metric (shows % of miles that are business)
+   - Formula: `(business_miles / total_miles) * 100`
+2. ✅ **ESLint warnings fixed** - Clean build with zero warnings
+   - Fixed unused `request` parameter in keep-alive route
+   - Removed unused `insertData` variable
+3. ✅ **Complete Stripe integration** - Full payment processing system
+   - Set up Stripe account (test mode sandbox)
+   - Added API keys to `.env.local` and Vercel environment variables
+   - Installed Stripe SDK package
+   - Created checkout session API route (`/api/checkout/session`)
+   - Built success/cancel pages (`/checkout/success`, `/checkout/cancel`)
+   - Implemented webhook handler (`/api/webhooks/stripe`)
+   - Added `stripe_customer_id` column to `user_profiles` table
+   - Connected pricing page buttons to Stripe checkout flow
+   - Automatic subscription status updates via webhooks
+4. ✅ **Database migration** - Added Stripe customer linking
+   - Migration: `20250117_add_stripe_customer_id.sql`
+   - Links Supabase users to Stripe customers for billing
+   - Indexed for fast lookups
+5. 📋 **Pricing tiers configured**
+   - Personal: $4/month flat rate
+   - Business: $12/vehicle/month (4+ vehicles recommended)
+   - Free: Redirects to /mileage (no checkout needed)
+
+### **Previous Session (2025-01-16) - Keep-Alive, Security, Navigation, Performance Metrics**
 1. ✅ **Supabase keep-alive system** - Prevents free-tier auto-pause
    - Created `heartbeat` table with auto-cleanup (keeps last 100 records)
    - Added write operations (INSERT + DELETE + SELECT, not just SELECT-only)
