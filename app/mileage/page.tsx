@@ -1388,25 +1388,24 @@ export default function MileageTracker() {
         window.history.replaceState({}, '', newUrl.pathname + newUrl.search)
       }
 
-      // Initialize auth state
+      // Initialize auth state - FIX: Use handleAuthChange to properly initialize all state
       if (supabase) {
         try {
           const { data: { session } } = await supabase.auth.getSession()
           const currentUser = session?.user ?? null
-          setUser(currentUser)
-          setUserIsOwner(currentUser ? isOwner(currentUser.id) : false)
+
+          // FIX: Call handleAuthChange instead of setting state directly
+          // This ensures subscription plan, max vehicles, and data are all loaded properly
+          await handleAuthChange(currentUser)
         } catch (error) {
           console.error('Error getting session:', error)
-          setUser(null)
-          setUserIsOwner(false)
+          await handleAuthChange(null)
+          setLoading(false)
         }
+      } else {
+        // No supabase client - show error state
+        setLoading(false)
       }
-
-      // Load initial data BEFORE setting loading to false
-      await loadData().catch(console.error)
-
-      // Set loading to false AFTER data is loaded
-      setLoading(false)
     }
 
     initializeAuth()
