@@ -109,6 +109,13 @@ export default function PricingPage() {
 
     try {
       // Check if user is logged in
+      if (!supabase) {
+        console.error('Supabase client not configured')
+        alert('Configuration error. Please check environment variables.')
+        setLoading(null)
+        return
+      }
+
       const { data: { session } } = await supabase.auth.getSession()
 
       if (!session) {
