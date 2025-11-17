@@ -48,6 +48,11 @@ CREATE TABLE public.user_profiles (
   is_primary_user boolean NOT NULL DEFAULT true,
   subscription_start_date timestamp without time zone NULL,
   current_tier_start_date timestamp without time zone NULL,
+  subscription_end_date timestamp with time zone NULL,
+  cancellation_requested_at timestamp with time zone NULL,
+  scheduled_deletion_date timestamp with time zone NULL,
+  cancellation_reason text NULL,
+  stripe_customer_id text NULL,
 
   CONSTRAINT user_profiles_pkey PRIMARY KEY (id),
   CONSTRAINT user_profiles_github_id_key UNIQUE (github_id),
@@ -68,6 +73,11 @@ CREATE TABLE public.user_profiles (
 - `subscription_plan` - 'free' | 'personal' | 'business'
 - `max_vehicles` - Enforced limit (1 for free, 3 for personal, 999 for business)
 - `is_admin` - Bypass all limits, show purple badge
+- `stripe_customer_id` - Stripe customer ID for billing
+- `subscription_end_date` - Date when subscription ends/renews
+- `cancellation_requested_at` - Timestamp when user requested cancellation
+- `scheduled_deletion_date` - Date when all user data will be permanently deleted (subscription_end + 30 days)
+- `cancellation_reason` - Optional reason provided by user for cancellation
 
 ---
 

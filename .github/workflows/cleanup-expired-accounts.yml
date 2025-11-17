@@ -1,0 +1,25 @@
+name: Cleanup Expired Accounts
+
+on:
+  schedule:
+    # Runs daily at 00:00 UTC (midnight)
+    # Deletes accounts past their scheduled_deletion_date (subscription_end + 30 days grace period)
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allows manual trigger for testing
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cleanup expired accounts
+        run: |
+          curl -f -X POST https://fleetreq.vercel.app/api/cron/cleanup-expired-accounts \
+            -H "Content-Type: application/json" || exit 1
+
+      - name: Log success
+        if: success()
+        run: echo "Account cleanup completed successfully at $(date)"
+
+      - name: Log failure
+        if: failure()
+        run: echo "Account cleanup failed at $(date)"
