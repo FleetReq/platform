@@ -89,7 +89,7 @@ export async function updateStripeSubscriptionQuantity(
     )
 
     // Update subscription quantity
-    const updatedSubscription = await stripe.subscriptions.update(subscription.id, {
+    await stripe.subscriptions.update(subscription.id, {
       items: [{
         id: subscriptionItem.id,
         quantity: newVehicleCount,

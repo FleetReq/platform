@@ -215,7 +215,7 @@ export default function PricingPage() {
         },
         body: JSON.stringify({
           tier,
-          vehicleCount: tier === 'business' ? 4 : undefined, // Default to 4 vehicles for business
+          vehicleCount: undefined, // Only personal tier reaches here (business handled separately)
         }),
       })
 
