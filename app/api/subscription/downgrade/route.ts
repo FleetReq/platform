@@ -126,7 +126,8 @@ export async function POST(request: NextRequest) {
     let downgradeEffectiveDate: Date | null = null
 
     // Handle Stripe subscription cancellation
-    if (profile?.stripe_customer_id && currentTier !== 'free') {
+    // Note: currentTier is never 'free' at this point (early return on line 49)
+    if (profile?.stripe_customer_id) {
       try {
         // Get active subscription
         const subscriptions = await stripe.subscriptions.list({
