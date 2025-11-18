@@ -79,7 +79,9 @@ export async function updateStripeSubscriptionQuantity(
     // Calculate days remaining in current period
     // Note: As of Stripe API 2025-03-31, period fields moved from subscription to subscription item level
     const now = Math.floor(Date.now() / 1000) // Current timestamp in seconds
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const periodEnd = (subscriptionItem as any).current_period_end as number
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const periodStart = (subscriptionItem as any).current_period_start as number
     const totalDays = (periodEnd - periodStart) / 86400 // Convert seconds to days
     const daysRemaining = (periodEnd - now) / 86400
