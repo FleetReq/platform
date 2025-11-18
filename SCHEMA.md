@@ -85,6 +85,12 @@ CREATE TABLE public.user_profiles (
 - `downgrade_effective_date` - Date when downgrade takes effect (end of current billing period)
 - `downgrade_requested_at` - Timestamp when user requested the downgrade
 
+**Downgrade Automation:**
+- `.github/workflows/execute-pending-downgrades.yml` - GitHub Actions cron (daily at midnight UTC)
+- `app/api/cron/execute-pending-downgrades/route.ts` - API endpoint that executes downgrades
+- Automatically updates `subscription_plan` when `downgrade_effective_date` is reached
+- Clears pending downgrade fields after execution
+
 ---
 
 ## cars

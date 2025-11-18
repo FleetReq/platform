@@ -1,0 +1,25 @@
+name: Execute Pending Downgrades
+
+on:
+  schedule:
+    # Runs daily at 00:00 UTC (midnight)
+    # Executes downgrades that have reached their effective date (end of billing period)
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allows manual trigger for testing
+
+jobs:
+  execute-downgrades:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Execute pending downgrades
+        run: |
+          curl -f -X POST https://fleetreq.vercel.app/api/cron/execute-pending-downgrades \
+            -H "Content-Type: application/json" || exit 1
+
+      - name: Log success
+        if: success()
+        run: echo "Pending downgrades executed successfully at $(date)"
+
+      - name: Log failure
+        if: failure()
+        run: echo "Downgrade execution failed at $(date)"
