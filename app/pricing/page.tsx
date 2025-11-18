@@ -125,6 +125,10 @@ export default function PricingPage() {
     if (currentTierLevel === targetTierLevel) {
       return 'Current Plan'
     } else if (currentTierLevel > targetTierLevel) {
+      // Don't allow downgrades to Free - show "Not Available"
+      if (tier.tier === 'free') {
+        return 'Downgrades Not Available'
+      }
       return `Downgrade to ${tier.name}`
     } else {
       return tier.buttonText
@@ -143,7 +147,10 @@ export default function PricingPage() {
     // Disable current plan button
     if (currentTierLevel === targetTierLevel) return true
 
-    // Disable downgrades (lower tier than current)
+    // Disable downgrades to Free for paid users (Personal/Business)
+    if (tier.tier === 'free' && currentTierLevel > 0) return true
+
+    // Disable other downgrades (lower tier than current)
     if (currentTierLevel > targetTierLevel) return true
 
     return false
