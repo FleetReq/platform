@@ -108,7 +108,7 @@ export function Navigation() {
         <div className="relative flex items-center justify-between h-20 gap-4">
           {/* Left: Logo + Badge */}
           <div className="flex items-center flex-shrink-0 min-w-0 gap-2 z-10">
-            <Link href="/" className="group">
+            <Link href={user ? "/mileage" : "/"} className="group">
               <div className="flex items-center space-x-3">
                 <div className="hidden sm:block min-w-0">
                   <div className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight truncate">Fleet<span className="text-blue-600 dark:text-blue-400">Req</span></div>

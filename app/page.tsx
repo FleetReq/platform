@@ -1,10 +1,5 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import OAuthRedirectHandler from './components/OAuthRedirectHandler';
-import { supabase } from '@/lib/supabase-client';
 
 const structuredData = {
   "@context": "https://schema.org",
@@ -35,22 +30,6 @@ const structuredData = {
 };
 
 export default function Home() {
-  const router = useRouter();
-
-  // Redirect logged-in users to the app
-  useEffect(() => {
-    const checkAuthAndRedirect = async () => {
-      if (!supabase) return;
-
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        router.push('/mileage');
-      }
-    };
-
-    checkAuthAndRedirect();
-  }, [router]);
-
   return (
     <>
       {/* OAuth Redirect Handler */}
