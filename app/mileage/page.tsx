@@ -1257,7 +1257,7 @@ function UserSettings({ cars, onCarDeleted }: { cars?: Car[], onCarDeleted?: () 
       setVehiclesToDelete([])
 
       // Refresh data
-      await fetchData()
+      if (onCarDeleted) onCarDeleted()
     } catch (error) {
       setMessage({
         type: 'error',
