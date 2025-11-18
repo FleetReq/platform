@@ -7,7 +7,12 @@ import { ThemeToggle } from "../theme-toggle";
 import { SubscriptionBadge } from "./SubscriptionBadge";
 import { supabase, getUserSubscriptionPlan } from "@/lib/supabase-client";
 
-const navigationItems = [
+const baseNavigationItems = [
+  { name: "Home", href: "/" },
+  { name: "Pricing", href: "/pricing" },
+];
+
+const authenticatedNavigationItems = [
   { name: "Home", href: "/" },
   { name: "Pricing", href: "/pricing" },
   { name: "App", href: "/mileage" },
@@ -94,6 +99,9 @@ export function Navigation() {
     return normalizedPathname === normalizedHref;
   };
 
+  // Get navigation items based on auth state
+  const navigationItems = user ? authenticatedNavigationItems : baseNavigationItems;
+
   return (
     <nav className="bg-white/98 dark:bg-gray-900/98 backdrop-blur-2xl border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -130,7 +138,7 @@ export function Navigation() {
             </div>
           </div>
 
-          {/* Right: Welcome, Sign Out, Theme Toggle */}
+          {/* Right: Welcome, Sign Out/Sign In, Theme Toggle */}
           <div className="flex items-center flex-shrink-0 space-x-2 z-10">
             {/* Welcome message - shown when logged in */}
             {user && (
@@ -149,6 +157,19 @@ export function Navigation() {
             )}
 
             <ThemeToggle />
+
+            {/* Sign In button - shown when logged out */}
+            {!user && (
+              <Link
+                href="/mileage"
+                className="hidden md:inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-lg transition-colors duration-200 shadow-sm"
+              >
+                Sign In
+                <svg className="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                </svg>
+              </Link>
+            )}
 
             {/* Sign Out button - shown when logged in */}
             {user && (
@@ -208,7 +229,7 @@ export function Navigation() {
               ))}
             </div>
 
-            {/* Mobile CTA / Sign Out */}
+            {/* Mobile CTA / Sign Out / Sign In */}
             <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
               {user ? (
                 <button
@@ -226,12 +247,12 @@ export function Navigation() {
               ) : (
                 <Link
                   href="/mileage"
-                  className="w-full inline-flex items-center justify-center px-6 py-3 bg-blue-600 dark:bg-blue-500 text-white text-base font-medium rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 transition-all duration-300"
+                  className="w-full inline-flex items-center justify-center px-6 py-3 bg-blue-600 dark:bg-blue-500 text-white text-base font-medium rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 transition-all duration-300 shadow-sm"
                   onClick={() => setIsOpen(false)}
                 >
-                  Start Free Trial
+                  Sign In
                   <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                   </svg>
                 </Link>
               )}
