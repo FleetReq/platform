@@ -1499,12 +1499,12 @@ function UserSettings({ cars, onCarDeleted }: { cars?: Car[], onCarDeleted?: () 
             </h3>
 
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              You have {cars.length} vehicles but the {downgradeTargetTier} tier allows {downgradeTargetTier === 'free' ? 1 : 3}.
+              You have {cars?.length || 0} vehicles but the {downgradeTargetTier} tier allows {downgradeTargetTier === 'free' ? 1 : 3}.
               Please select {vehiclesNeededToDelete} vehicle{vehiclesNeededToDelete > 1 ? 's' : ''} to remove:
             </p>
 
             <div className="space-y-2 mb-6 max-h-80 overflow-y-auto">
-              {cars.map((car) => (
+              {cars?.map((car) => (
                 <div
                   key={car.id}
                   onClick={() => {
