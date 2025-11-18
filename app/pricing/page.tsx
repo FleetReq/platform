@@ -263,7 +263,7 @@ export default function PricingPage() {
           {pricingTiers.map((tier) => (
             <div
               key={tier.name}
-              className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg ${
+              className={`relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg flex flex-col ${
                 tier.highlighted
                   ? 'ring-2 ring-blue-600 ring-offset-2 dark:ring-offset-gray-900 transform scale-105'
                   : ''
@@ -277,7 +277,7 @@ export default function PricingPage() {
                 </div>
               )}
 
-              <div className="p-8">
+              <div className="p-8 flex flex-col flex-grow">
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                   {tier.name}
                 </h3>
@@ -305,7 +305,7 @@ export default function PricingPage() {
                   )}
                 </div>
 
-                <ul className="space-y-4 mb-8">
+                <ul className="space-y-4 mb-8 flex-grow">
                   {tier.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-center">
                       <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
