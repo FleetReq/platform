@@ -108,12 +108,37 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Delete old trips for free tier users
+    const { data: oldTrips, error: tripsSelectError } = await supabaseAdmin
+      .from('trips')
+      .select('id')
+      .lt('date', cutoffDate)
+      .in('user_id', freeUserIds)
+
+    let deletedTrips = 0
+    if (tripsSelectError) {
+      console.error('Error selecting old trips:', tripsSelectError)
+    } else if (oldTrips && oldTrips.length > 0) {
+      const tripIds = oldTrips.map(t => t.id)
+      const { error: tripsDeleteError } = await supabaseAdmin
+        .from('trips')
+        .delete()
+        .in('id', tripIds)
+
+      if (tripsDeleteError) {
+        console.error('Error deleting old trips:', tripsDeleteError)
+      } else {
+        deletedTrips = tripIds.length
+      }
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Free tier data cleanup completed',
       freeUsersCount: freeUsers.length,
       deletedFillUps,
       deletedMaintenance,
+      deletedTrips,
       cutoffDate,
       timestamp: new Date().toISOString()
     })
@@ -190,11 +215,19 @@ export async function GET() {
       .lt('date', cutoffDate)
       .in('cars.user_id', freeUserIds)
 
+    // Count old trips
+    const { count: tripsCount } = await supabaseAdmin
+      .from('trips')
+      .select('id', { count: 'exact', head: true })
+      .lt('date', cutoffDate)
+      .in('user_id', freeUserIds)
+
     return NextResponse.json({
       message: 'Preview of data that would be deleted (read-only)',
       freeUsersCount: freeUsers.length,
       fillUpsToDelete: fillUpsCount || 0,
       maintenanceToDelete: maintenanceCount || 0,
+      tripsToDelete: tripsCount || 0,
       cutoffDate,
       note: 'Use POST request to actually delete the data'
     })

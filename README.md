@@ -224,6 +224,37 @@ Use `TESTING_CHECKLIST.md` for comprehensive browser testing:
 
 ---
 
+## 🛠️ Important Commands
+
+### **Monitor Free Tier Data Cleanup**
+Preview what data would be deleted (read-only):
+```bash
+curl https://fleetreq.vercel.app/api/cron/cleanup-free-tier-data
+```
+
+Response shows:
+- Number of free tier users
+- Fill-ups to delete (older than 90 days)
+- Maintenance records to delete
+- Trips to delete
+- Cutoff date
+
+**Note**: This is a read-only preview. The actual deletion runs automatically via GitHub Actions daily at 02:00 UTC.
+
+### **Manual Cleanup Execution** (Admin Only)
+```bash
+curl -X POST https://fleetreq.vercel.app/api/cron/cleanup-free-tier-data
+```
+
+### **Test Keep-Alive Ping**
+```bash
+curl https://fleetreq.vercel.app/api/cron/keep-alive
+```
+
+Verifies Supabase connection and prevents auto-pause on free tier projects.
+
+---
+
 ## 🚀 Deployment
 
 ### **Automatic Deployment (Vercel)**
@@ -274,7 +305,9 @@ Supabase Dashboard → Authentication → URL Configuration:
 ### **Freemium Conversion Strategy**
 Free tier is **intentionally limited** to prevent account sharing:
 - View-only maintenance (can't add alerts)
-- 90-day history limit
+- **90-day history limit** (enforced via API validation + automated cleanup)
+- Cannot add data older than 90 days
+- Old data automatically deleted daily
 - Essential features behind paywall drives upgrades
 
 ### **Mobile Strategy (Phase 2)**
@@ -284,10 +317,15 @@ Free mobile app for massive App Store downloads → brand awareness → contract
 
 ## 🎯 Roadmap
 
+### **Recently Completed** ✅
+- [x] Data retention enforcement (90-day limit for free tier)
+- [x] Automated cleanup cron job (runs daily at 02:00 UTC)
+- [x] API validation for old data entry prevention
+- [x] Pricing page improvements (disabled downgrades to free)
+
 ### **Immediate (Next Week)**
 - [ ] Update browser tab icon (favicon)
 - [ ] First-time UX improvements
-- [ ] Data retention enforcement (90-day limit)
 - [ ] Enable CAPTCHA protection
 
 ### **Short-term (Next Month)**

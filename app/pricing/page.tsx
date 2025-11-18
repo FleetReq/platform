@@ -125,9 +125,9 @@ export default function PricingPage() {
     if (currentTierLevel === targetTierLevel) {
       return 'Current Plan'
     } else if (currentTierLevel > targetTierLevel) {
-      // Don't allow downgrades to Free - show "Not Available"
+      // For paid users looking at Free tier, just show default text (no special message)
       if (tier.tier === 'free') {
-        return 'Downgrades Not Available'
+        return tier.buttonText
       }
       return `Downgrade to ${tier.name}`
     } else {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase'
+import { getUserSubscriptionPlan } from '@/lib/supabase-client'
 
 export const dynamic = 'force-dynamic'
 
@@ -115,6 +116,24 @@ export async function POST(request: NextRequest) {
         { error: 'Miles must be a positive number' },
         { status: 400 }
       )
+    }
+
+    // Check 90-day data retention limit for free tier users
+    const userPlan = await getUserSubscriptionPlan(user.id)
+    if (userPlan === 'free') {
+      const ninetyDaysAgo = new Date()
+      ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
+      const tripDate = new Date(date)
+
+      if (tripDate < ninetyDaysAgo) {
+        return NextResponse.json(
+          {
+            error: 'Free tier users can only add data from the last 90 days. Upgrade to Personal or Business for unlimited history.',
+            upgradeRequired: true
+          },
+          { status: 403 }
+        )
+      }
     }
 
     // Verify the car belongs to the user
