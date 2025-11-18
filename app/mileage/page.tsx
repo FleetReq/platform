@@ -1418,7 +1418,7 @@ function UserSettings({ cars, onCarDeleted }: { cars?: Car[], onCarDeleted?: () 
 
             <div className="space-y-4 mb-6">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Select the tier you want to downgrade to. You'll keep your current {subscriptionPlan} tier access until the end of your billing period.
+                Select the tier you want to downgrade to. You&apos;ll keep your current {subscriptionPlan} tier access until the end of your billing period.
               </p>
 
               {/* Tier Selection */}
