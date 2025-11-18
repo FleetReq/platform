@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase'
+import { getUserSubscriptionPlan } from '@/lib/supabase-client'
+import { updateStripeSubscriptionQuantity } from '@/lib/stripe-helpers'
 import { rateLimit, RATE_LIMITS, getRateLimitHeaders } from '@/lib/rate-limit'
 import { validateUUID } from '@/lib/validation'
 
@@ -68,7 +70,39 @@ export async function DELETE(
       }, { status: 500 })
     }
 
-    return NextResponse.json({ message: 'Car deleted successfully' })
+    // Handle Stripe subscription update for Business tier users
+    let prorationInfo = null
+    const userPlan = await getUserSubscriptionPlan(user.id)
+
+    if (userPlan === 'business') {
+      // Get new vehicle count (after deletion)
+      const { count: vehicleCount } = await supabase
+        .from('cars')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+
+      // Update Stripe subscription quantity (vehicleCount could be 0 if last vehicle deleted)
+      const newCount = vehicleCount || 0
+      if (newCount >= 0) {
+        const result = await updateStripeSubscriptionQuantity(user.id, Math.max(1, newCount))
+
+        if (result.success) {
+          prorationInfo = {
+            prorationAmount: result.prorationAmount,
+            isCredit: result.isCredit,
+            message: result.message
+          }
+        } else {
+          console.error('Failed to update Stripe subscription:', result.error)
+          // Don't fail the deletion if Stripe update fails - log and continue
+        }
+      }
+    }
+
+    return NextResponse.json({
+      message: 'Car deleted successfully',
+      proration: prorationInfo
+    })
   } catch (error) {
     console.error('Error in DELETE /api/cars/[id]:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

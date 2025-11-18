@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase'
+import { getUserSubscriptionPlan } from '@/lib/supabase-client'
+import { updateStripeSubscriptionQuantity } from '@/lib/stripe-helpers'
 import { rateLimit, RATE_LIMITS, getRateLimitHeaders } from '@/lib/rate-limit'
 import { sanitizeString, validateYear, validateInteger, validateLicensePlate, validateUUID } from '@/lib/validation'
 
@@ -131,7 +133,37 @@ export async function POST(request: NextRequest) {
       }, { status: 500 })
     }
 
-    return NextResponse.json({ car }, { status: 201 })
+    // Handle Stripe subscription update for Business tier users
+    let prorationInfo = null
+    const userPlan = await getUserSubscriptionPlan(user.id)
+
+    if (userPlan === 'business') {
+      // Get new vehicle count (including the one just added)
+      const { count: vehicleCount } = await supabase
+        .from('cars')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+
+      if (vehicleCount) {
+        // Update Stripe subscription quantity
+        const result = await updateStripeSubscriptionQuantity(user.id, vehicleCount)
+
+        if (result.success) {
+          prorationInfo = {
+            prorationAmount: result.prorationAmount,
+            message: result.message
+          }
+        } else {
+          console.error('Failed to update Stripe subscription:', result.error)
+          // Don't fail the car creation if Stripe update fails - log and continue
+        }
+      }
+    }
+
+    return NextResponse.json({
+      car,
+      proration: prorationInfo
+    }, { status: 201 })
   } catch (error) {
     console.error('API error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

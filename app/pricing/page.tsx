@@ -97,6 +97,8 @@ export default function PricingPage() {
   const [showAnnual, setShowAnnual] = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
   const [currentPlan, setCurrentPlan] = useState<'free' | 'personal' | 'business' | null>(null)
+  const [showVehicleModal, setShowVehicleModal] = useState(false)
+  const [vehicleCount, setVehicleCount] = useState(4)
   const router = useRouter()
 
   // Fetch user's current subscription plan
@@ -179,6 +181,12 @@ export default function PricingPage() {
       return
     }
 
+    // Business tier - show vehicle count selector modal
+    if (tier === 'business') {
+      setShowVehicleModal(true)
+      return
+    }
+
     setLoading(tier)
 
     try {
@@ -218,6 +226,54 @@ export default function PricingPage() {
       }
 
       // Redirect to Stripe Checkout
+      if (data.url) {
+        window.location.href = data.url
+      }
+    } catch (error) {
+      console.error('Checkout error:', error)
+      alert('Failed to start checkout. Please try again.')
+      setLoading(null)
+    }
+  }
+
+  const handleBusinessCheckout = async () => {
+    setShowVehicleModal(false)
+    setLoading('business')
+
+    try {
+      if (!supabase) {
+        console.error('Supabase client not configured')
+        alert('Configuration error. Please check environment variables.')
+        setLoading(null)
+        return
+      }
+
+      const { data: { session } } = await supabase.auth.getSession()
+
+      if (!session) {
+        router.push('/mileage')
+        setLoading(null)
+        return
+      }
+
+      // Create checkout session with selected vehicle count
+      const response = await fetch('/api/checkout/session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tier: 'business',
+          vehicleCount: vehicleCount,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create checkout session')
+      }
+
       if (data.url) {
         window.location.href = data.url
       }
@@ -509,6 +565,86 @@ export default function PricingPage() {
             </button>
           </div>
         </div>
+
+        {/* Vehicle Count Selector Modal */}
+        {showVehicleModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-8">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                How many vehicles do you need?
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                Business tier: <span className="font-bold text-blue-600 dark:text-blue-400">$12/vehicle/month</span>
+              </p>
+
+              {/* Vehicle Count Input */}
+              <div className="mb-6">
+                <label htmlFor="vehicleCount" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Number of vehicles (min 1)
+                </label>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setVehicleCount(Math.max(1, vehicleCount - 1))}
+                    className="w-10 h-10 flex items-center justify-center bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg font-bold transition-colors"
+                  >
+                    −
+                  </button>
+                  <input
+                    id="vehicleCount"
+                    type="number"
+                    min="1"
+                    max="999"
+                    value={vehicleCount}
+                    onChange={(e) => setVehicleCount(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="flex-1 px-4 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-center text-2xl font-bold text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
+                  />
+                  <button
+                    onClick={() => setVehicleCount(Math.min(999, vehicleCount + 1))}
+                    className="w-10 h-10 flex items-center justify-center bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg font-bold transition-colors"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* Price Calculation */}
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-gray-700 dark:text-gray-300">Monthly cost:</span>
+                  <span className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                    ${(vehicleCount * 12).toFixed(2)}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {vehicleCount} vehicle{vehicleCount !== 1 ? 's' : ''} × $12/month
+                </p>
+              </div>
+
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                💡 You can add more vehicles anytime (prorated billing applies)
+              </p>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowVehicleModal(false)
+                    setVehicleCount(4) // Reset to default
+                  }}
+                  className="flex-1 px-6 py-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleBusinessCheckout}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-medium transition-all shadow-lg"
+                >
+                  Continue to Checkout →
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
