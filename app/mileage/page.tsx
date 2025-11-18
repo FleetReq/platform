@@ -1196,7 +1196,7 @@ function UserSettings({ cars, onCarDeleted }: { cars?: Car[], onCarDeleted?: () 
     switch (plan) {
       case 'free': return 'text-gray-600 dark:text-gray-400'
       case 'personal': return 'text-blue-600 dark:text-blue-400'
-      case 'business': return 'text-yellow-600 dark:text-yellow-400'
+      case 'business': return 'text-purple-600 dark:text-purple-400'
       default: return 'text-gray-600'
     }
   }
@@ -1229,60 +1229,6 @@ function UserSettings({ cars, onCarDeleted }: { cars?: Car[], onCarDeleted?: () 
               {currentUser?.created_at ? new Date(currentUser.created_at).toLocaleDateString() : 'N/A'}
             </span>
           </div>
-        </div>
-      </div>
-
-      {/* Subscription Management */}
-      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Subscription Management</h3>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-            <div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Current Plan</div>
-              <div className={`text-xl font-bold ${getPlanColor(subscriptionPlan)}`}>
-                {getPlanDisplayName(subscriptionPlan)}
-              </div>
-            </div>
-            {subscriptionPlan !== 'free' && subscriptionEndDate && (
-              <div className="text-right">
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Renews on
-                </div>
-                <div className="text-sm font-medium text-gray-900 dark:text-white">
-                  {new Date(subscriptionEndDate).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {subscriptionPlan !== 'free' && (
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-              <button
-                onClick={() => setShowCancelModal(true)}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
-              >
-                Delete Account
-              </button>
-            </div>
-          )}
-
-          {subscriptionPlan === 'free' && (
-            <div className="text-center py-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                Upgrade to unlock more vehicles, full maintenance tracking, and professional features
-              </p>
-              <a
-                href="/pricing"
-                className="inline-block px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-              >
-                View Pricing Plans
-              </a>
-            </div>
-          )}
         </div>
       </div>
 
@@ -1531,6 +1477,60 @@ function UserSettings({ cars, onCarDeleted }: { cars?: Car[], onCarDeleted?: () 
           </div>
         </div>
       )}
+
+      {/* Subscription Management */}
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Subscription Management</h3>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+            <div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Current Plan</div>
+              <div className={`text-xl font-bold ${getPlanColor(subscriptionPlan)}`}>
+                {getPlanDisplayName(subscriptionPlan)}
+              </div>
+            </div>
+            {subscriptionPlan !== 'free' && subscriptionEndDate && (
+              <div className="text-right">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  Renews on
+                </div>
+                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                  {new Date(subscriptionEndDate).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {subscriptionPlan !== 'free' && (
+            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+              <button
+                onClick={() => setShowCancelModal(true)}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                Delete Account
+              </button>
+            </div>
+          )}
+
+          {subscriptionPlan === 'free' && (
+            <div className="text-center py-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                Upgrade to unlock more vehicles, full maintenance tracking, and professional features
+              </p>
+              <a
+                href="/pricing"
+                className="inline-block px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+              >
+                View Pricing Plans
+              </a>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
