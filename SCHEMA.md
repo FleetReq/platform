@@ -52,6 +52,9 @@ CREATE TABLE public.user_profiles (
   cancellation_requested_at timestamp with time zone NULL,
   scheduled_deletion_date timestamp with time zone NULL,
   cancellation_reason text NULL,
+  pending_downgrade_tier text NULL CHECK (pending_downgrade_tier IN ('free', 'personal')),
+  downgrade_effective_date timestamp with time zone NULL,
+  downgrade_requested_at timestamp with time zone NULL,
   stripe_customer_id text NULL,
 
   CONSTRAINT user_profiles_pkey PRIMARY KEY (id),
@@ -78,6 +81,9 @@ CREATE TABLE public.user_profiles (
 - `cancellation_requested_at` - Timestamp when user requested cancellation
 - `scheduled_deletion_date` - Date when all user data will be permanently deleted (subscription_end + 30 days)
 - `cancellation_reason` - Optional reason provided by user for cancellation
+- `pending_downgrade_tier` - The tier user is downgrading to ('free' | 'personal' | null)
+- `downgrade_effective_date` - Date when downgrade takes effect (end of current billing period)
+- `downgrade_requested_at` - Timestamp when user requested the downgrade
 
 ---
 
