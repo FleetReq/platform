@@ -78,8 +78,8 @@ export async function updateStripeSubscriptionQuantity(
 
     // Calculate days remaining in current period
     const now = Math.floor(Date.now() / 1000) // Current timestamp in seconds
-    const periodEnd = subscription.current_period_end
-    const periodStart = subscription.current_period_start
+    const periodEnd = subscription.current_period_end as number
+    const periodStart = subscription.current_period_start as number
     const totalDays = (periodEnd - periodStart) / 86400 // Convert seconds to days
     const daysRemaining = (periodEnd - now) / 86400
 
