@@ -77,9 +77,10 @@ export async function updateStripeSubscriptionQuantity(
     const pricePerVehicle = 12 // $12/vehicle/month
 
     // Calculate days remaining in current period
+    // Note: As of Stripe API 2025-03-31, period fields moved from subscription to subscription item level
     const now = Math.floor(Date.now() / 1000) // Current timestamp in seconds
-    const periodEnd = subscription.current_period_end as number
-    const periodStart = subscription.current_period_start as number
+    const periodEnd = (subscriptionItem as any).current_period_end as number
+    const periodStart = (subscriptionItem as any).current_period_start as number
     const totalDays = (periodEnd - periodStart) / 86400 // Convert seconds to days
     const daysRemaining = (periodEnd - now) / 86400
 
