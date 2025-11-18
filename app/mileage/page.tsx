@@ -1047,6 +1047,14 @@ function UserSettings({ cars, onCarDeleted }: { cars?: Car[], onCarDeleted?: () 
   const [cancellationReason, setCancellationReason] = useState('')
   const [confirmationText, setConfirmationText] = useState('')
 
+  // Downgrade modal state
+  const [showDowngradeModal, setShowDowngradeModal] = useState(false)
+  const [downgradeTargetTier, setDowngradeTargetTier] = useState<'free' | 'personal' | null>(null)
+  const [isDowngrading, setIsDowngrading] = useState(false)
+  const [showVehicleSelectionModal, setShowVehicleSelectionModal] = useState(false)
+  const [vehiclesToDelete, setVehiclesToDelete] = useState<string[]>([])
+  const [vehiclesNeededToDelete, setVehiclesNeededToDelete] = useState(0)
+
   useEffect(() => {
     const getUser = async () => {
       if (!supabase) return
@@ -1211,6 +1219,55 @@ function UserSettings({ cars, onCarDeleted }: { cars?: Car[], onCarDeleted?: () 
     }
   }
 
+  const handleDowngrade = async () => {
+    if (!currentUser || !downgradeTargetTier) return
+
+    setIsDowngrading(true)
+    try {
+      const response = await fetch('/api/subscription/downgrade', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetTier: downgradeTargetTier,
+          vehiclesToDelete: vehiclesToDelete.length > 0 ? vehiclesToDelete : undefined
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        // Check if vehicle selection is required
+        if (data.requiresVehicleSelection) {
+          setVehiclesNeededToDelete(data.vehiclesToDelete)
+          setShowDowngradeModal(false)
+          setShowVehicleSelectionModal(true)
+          setIsDowngrading(false)
+          return
+        }
+        throw new Error(data.error || 'Failed to downgrade subscription')
+      }
+
+      setMessage({
+        type: 'success',
+        text: data.message
+      })
+      setShowDowngradeModal(false)
+      setShowVehicleSelectionModal(false)
+      setDowngradeTargetTier(null)
+      setVehiclesToDelete([])
+
+      // Refresh data
+      await fetchData()
+    } catch (error) {
+      setMessage({
+        type: 'error',
+        text: error instanceof Error ? error.message : 'Failed to downgrade subscription'
+      })
+    } finally {
+      setIsDowngrading(false)
+    }
+  }
+
   const isGoogleLinked = currentUser?.app_metadata?.providers?.includes('google')
 
   const getPlanDisplayName = (plan: string) => {
@@ -1345,6 +1402,161 @@ function UserSettings({ cars, onCarDeleted }: { cars?: Car[], onCarDeleted?: () 
                 className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
               >
                 {isCancelling ? 'Deleting...' : 'Delete My Account'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Downgrade Modal */}
+      {showDowngradeModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              Downgrade Subscription
+            </h3>
+
+            <div className="space-y-4 mb-6">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Select the tier you want to downgrade to. You'll keep your current {subscriptionPlan} tier access until the end of your billing period.
+              </p>
+
+              {/* Tier Selection */}
+              <div className="space-y-2">
+                {subscriptionPlan === 'business' && (
+                  <button
+                    onClick={() => setDowngradeTargetTier('personal')}
+                    className={`w-full p-4 rounded-lg border-2 text-left transition-colors ${
+                      downgradeTargetTier === 'personal'
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                        : 'border-gray-300 dark:border-gray-600 hover:border-blue-300'
+                    }`}
+                  >
+                    <div className="font-semibold text-gray-900 dark:text-white">Personal Tier - $4/month</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Up to 3 vehicles, full maintenance tracking</div>
+                  </button>
+                )}
+                {(subscriptionPlan === 'business' || subscriptionPlan === 'personal') && (
+                  <>
+                    <button
+                      onClick={() => setDowngradeTargetTier('free')}
+                      className={`w-full p-4 rounded-lg border-2 text-left transition-colors ${
+                        downgradeTargetTier === 'free'
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                          : 'border-gray-300 dark:border-gray-600 hover:border-blue-300'
+                      }`}
+                    >
+                      <div className="font-semibold text-gray-900 dark:text-white">Free Tier</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">1 vehicle, 90-day data retention</div>
+                    </button>
+
+                    {downgradeTargetTier === 'free' && (
+                      <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                        <div className="flex items-start gap-2">
+                          <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                          <div className="text-xs text-yellow-800 dark:text-yellow-200">
+                            <strong>Warning:</strong> Data older than 90 days will be automatically deleted on the free tier.
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowDowngradeModal(false)
+                  setDowngradeTargetTier(null)
+                }}
+                disabled={isDowngrading}
+                className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDowngrade}
+                disabled={isDowngrading || !downgradeTargetTier}
+                className="flex-1 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
+              >
+                {isDowngrading ? 'Processing...' : 'Downgrade'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Vehicle Selection Modal */}
+      {showVehicleSelectionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full p-6">
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              Select Vehicles to Remove
+            </h3>
+
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              You have {cars.length} vehicles but the {downgradeTargetTier} tier allows {downgradeTargetTier === 'free' ? 1 : 3}.
+              Please select {vehiclesNeededToDelete} vehicle{vehiclesNeededToDelete > 1 ? 's' : ''} to remove:
+            </p>
+
+            <div className="space-y-2 mb-6 max-h-80 overflow-y-auto">
+              {cars.map((car) => (
+                <div
+                  key={car.id}
+                  onClick={() => {
+                    if (vehiclesToDelete.includes(car.id)) {
+                      setVehiclesToDelete(vehiclesToDelete.filter(id => id !== car.id))
+                    } else if (vehiclesToDelete.length < vehiclesNeededToDelete) {
+                      setVehiclesToDelete([...vehiclesToDelete, car.id])
+                    }
+                  }}
+                  className={`p-3 rounded-lg border-2 cursor-pointer transition-colors ${
+                    vehiclesToDelete.includes(car.id)
+                      ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
+                      : 'border-gray-300 dark:border-gray-600 hover:border-gray-400'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-gray-900 dark:text-white">
+                        {car.year} {car.make} {car.model}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {car.nickname && `"${car.nickname}" • `}{car.license_plate}
+                      </div>
+                    </div>
+                    {vehiclesToDelete.includes(car.id) && (
+                      <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowVehicleSelectionModal(false)
+                  setVehiclesToDelete([])
+                  setShowDowngradeModal(true)
+                }}
+                disabled={isDowngrading}
+                className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+              >
+                Back
+              </button>
+              <button
+                onClick={handleDowngrade}
+                disabled={isDowngrading || vehiclesToDelete.length !== vehiclesNeededToDelete}
+                className="flex-1 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
+              >
+                {isDowngrading ? 'Processing...' : `Remove ${vehiclesToDelete.length}/${vehiclesNeededToDelete} & Downgrade`}
               </button>
             </div>
           </div>
@@ -1532,12 +1744,20 @@ function UserSettings({ cars, onCarDeleted }: { cars?: Car[], onCarDeleted?: () 
 
           {subscriptionPlan !== 'free' && (
             <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-              <button
-                onClick={() => setShowCancelModal(true)}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
-              >
-                Delete Account
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDowngradeModal(true)}
+                  className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  Downgrade Subscription
+                </button>
+                <button
+                  onClick={() => setShowCancelModal(true)}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  Delete Account
+                </button>
+              </div>
             </div>
           )}
 
