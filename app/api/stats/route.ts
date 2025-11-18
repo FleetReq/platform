@@ -67,15 +67,21 @@ export async function GET(request: NextRequest) {
             total_miles: 0,
             cost_per_mile: 0,
             business_miles: 0,
-            business_percentage: 0
+            business_percentage: 0,
+            ytd_fuel_cost: 0,
+            ytd_maintenance_cost: 0,
+            ytd_total_cost: 0,
+            this_month_fuel_cost: 0,
+            this_month_maintenance_cost: 0,
+            this_month_total_cost: 0
           }
         })
       }
 
-      // Get fill-up stats (including miles_driven for total miles calculation)
+      // Get fill-up stats (including miles_driven for total miles calculation and date for YTD/monthly)
       const { data: fillUpStats, error: fillUpError } = await supabase
         .from('fill_ups')
-        .select('mpg, gallons, total_cost, miles_driven')
+        .select('mpg, gallons, total_cost, miles_driven, date')
         .in('car_id', carIds)
 
       if (fillUpError) {
@@ -83,10 +89,10 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Failed to fetch fill-up stats' }, { status: 500 })
       }
 
-      // Get maintenance stats
+      // Get maintenance stats (including date for YTD/monthly calculations)
       const { data: maintenanceStats, error: maintenanceError } = await supabase
         .from('maintenance_records')
-        .select('cost')
+        .select('cost, date')
         .in('car_id', carIds)
 
       if (maintenanceError) {
@@ -129,6 +135,43 @@ export async function GET(request: NextRequest) {
       const totalExpenses = totalSpent + totalMaintenanceCost
       const costPerMile = totalMiles > 0 ? totalExpenses / totalMiles : 0
 
+      // Calculate YTD (Year-to-Date) metrics
+      const now = new Date()
+      const yearStart = new Date(now.getFullYear(), 0, 1) // January 1st of current year
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1) // 1st day of current month
+
+      // YTD fill-up costs
+      const ytdFillUps = fillUpStats.filter(f => {
+        if (!f.date) return false
+        const fillUpDate = new Date(f.date)
+        return fillUpDate >= yearStart
+      })
+      const ytdFuelCost = ytdFillUps.reduce((sum, f) => sum + (f.total_cost || 0), 0)
+
+      // YTD maintenance costs
+      const ytdMaintenance = maintenanceStats.filter(m => {
+        if (!m.date) return false
+        const maintDate = new Date(m.date)
+        return maintDate >= yearStart
+      })
+      const ytdMaintenanceCost = ytdMaintenance.reduce((sum, m) => sum + (m.cost || 0), 0)
+
+      // This Month fill-up costs
+      const thisMonthFillUps = fillUpStats.filter(f => {
+        if (!f.date) return false
+        const fillUpDate = new Date(f.date)
+        return fillUpDate >= monthStart
+      })
+      const thisMonthFuelCost = thisMonthFillUps.reduce((sum, f) => sum + (f.total_cost || 0), 0)
+
+      // This Month maintenance costs
+      const thisMonthMaintenance = maintenanceStats.filter(m => {
+        if (!m.date) return false
+        const maintDate = new Date(m.date)
+        return maintDate >= monthStart
+      })
+      const thisMonthMaintenanceCost = thisMonthMaintenance.reduce((sum, m) => sum + (m.cost || 0), 0)
+
       const stats = {
         total_cars: cars.length,
         total_fill_ups: fillUpStats.length,
@@ -146,7 +189,15 @@ export async function GET(request: NextRequest) {
         cost_per_mile: Math.round(costPerMile * 100) / 100,
         // Business miles for tax tracking
         business_miles: Math.round(businessMiles),
-        business_percentage: Math.round(businessPercentage * 10) / 10 // Round to 1 decimal (e.g., 45.3%)
+        business_percentage: Math.round(businessPercentage * 10) / 10, // Round to 1 decimal (e.g., 45.3%)
+        // YTD (Year-to-Date) metrics
+        ytd_fuel_cost: Math.round(ytdFuelCost * 100) / 100,
+        ytd_maintenance_cost: Math.round(ytdMaintenanceCost * 100) / 100,
+        ytd_total_cost: Math.round((ytdFuelCost + ytdMaintenanceCost) * 100) / 100,
+        // This Month metrics
+        this_month_fuel_cost: Math.round(thisMonthFuelCost * 100) / 100,
+        this_month_maintenance_cost: Math.round(thisMonthMaintenanceCost * 100) / 100,
+        this_month_total_cost: Math.round((thisMonthFuelCost + thisMonthMaintenanceCost) * 100) / 100
       }
 
       return NextResponse.json({ stats })

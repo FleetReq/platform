@@ -46,6 +46,12 @@ interface UserStats {
   cost_per_mile: number
   business_miles: number
   business_percentage: number
+  ytd_fuel_cost: number
+  ytd_maintenance_cost: number
+  ytd_total_cost: number
+  this_month_fuel_cost: number
+  this_month_maintenance_cost: number
+  this_month_total_cost: number
 }
 
 interface MaintenanceInterval {
@@ -1981,27 +1987,17 @@ export default function MileageTracker() {
                       <h4 className="text-xs font-semibold text-gray-900 dark:text-white">Budget Focus</h4>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
-                      <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
-                        <div className="text-xs font-bold text-blue-600 dark:text-blue-400">${stats.total_spent}</div>
-                        <div className="text-[10px] text-gray-600 dark:text-gray-400">Fuel</div>
+                      <div className="text-center p-2 bg-orange-50 dark:bg-orange-900/20 rounded">
+                        <div className="text-xs font-bold text-orange-600 dark:text-orange-400">${stats.cost_per_mile.toFixed(2)}</div>
+                        <div className="text-[10px] text-gray-600 dark:text-gray-400">Cost/Mile</div>
                       </div>
                       <div className="text-center p-2 bg-purple-50 dark:bg-purple-900/20 rounded">
-                        <div className="text-xs font-bold text-purple-600 dark:text-purple-400">${stats.total_maintenance_cost}</div>
-                        <div className="text-[10px] text-gray-600 dark:text-gray-400">Maint.</div>
+                        <div className="text-xs font-bold text-purple-600 dark:text-purple-400">${stats.this_month_total_cost.toFixed(2)}</div>
+                        <div className="text-[10px] text-gray-600 dark:text-gray-400">This Month</div>
                       </div>
                       <div className="text-center p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded">
                         <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400">${Math.round((stats.total_spent + stats.total_maintenance_cost) * 100) / 100}</div>
-                        <div className="text-[10px] text-gray-600 dark:text-gray-400">Total</div>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 mt-2">
-                      <div className="text-center p-2 bg-orange-50 dark:bg-orange-900/20 rounded">
-                        <div className="text-xs font-bold text-orange-600 dark:text-orange-400">${stats.cost_per_mile}</div>
-                        <div className="text-[10px] text-gray-600 dark:text-gray-400">Cost/Mile</div>
-                      </div>
-                      <div className="text-center p-2 bg-gray-50 dark:bg-gray-700/20 rounded">
-                        <div className="text-xs font-bold text-gray-900 dark:text-gray-200">{stats.total_miles.toLocaleString()}</div>
-                        <div className="text-[10px] text-gray-600 dark:text-gray-400">Miles</div>
+                        <div className="text-[10px] text-gray-600 dark:text-gray-400">All-Time</div>
                       </div>
                     </div>
                   </div>
@@ -2025,23 +2021,27 @@ export default function MileageTracker() {
                       <div className="space-y-2">
                         <div className="grid grid-cols-3 gap-2">
                           <div className="text-center p-2 bg-gray-50 dark:bg-gray-700/20 rounded">
-                            <div className="text-xs font-bold text-gray-900 dark:text-gray-200">{stats.business_miles.toLocaleString()}</div>
-                            <div className="text-[10px] text-gray-600 dark:text-gray-400">Business Miles</div>
-                          </div>
-                          <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
-                            <div className="text-xs font-bold text-blue-600 dark:text-blue-400">${Math.round(stats.business_miles * 0.70).toLocaleString()}</div>
-                            <div className="text-[10px] text-gray-600 dark:text-gray-400">Tax Deduction</div>
+                            <div className="text-xs font-bold text-gray-900 dark:text-gray-200">${stats.ytd_total_cost.toFixed(2)}</div>
+                            <div className="text-[10px] text-gray-600 dark:text-gray-400">YTD Total</div>
                           </div>
                           <div className="text-center p-2 bg-green-50 dark:bg-green-900/20 rounded">
-                            <div className="text-xs font-bold text-green-600 dark:text-green-400">{stats.business_percentage}%</div>
+                            <div className="text-xs font-bold text-green-600 dark:text-green-400">${Math.round(stats.business_miles * 0.67).toLocaleString()}</div>
+                            <div className="text-[10px] text-gray-600 dark:text-gray-400">Tax Deduction</div>
+                          </div>
+                          <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
+                            <div className="text-xs font-bold text-blue-600 dark:text-blue-400">{stats.business_percentage}%</div>
                             <div className="text-[10px] text-gray-600 dark:text-gray-400">Business</div>
                           </div>
+                        </div>
+                        <div className="text-center p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded">
+                          <div className="text-[10px] text-gray-600 dark:text-gray-400 mb-0.5">Business Miles (YTD)</div>
+                          <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{stats.business_miles.toLocaleString()}</div>
                         </div>
                         <div className="text-[10px] text-amber-600 dark:text-amber-400 text-center bg-amber-50 dark:bg-amber-900/20 rounded p-1.5 border border-amber-200 dark:border-amber-800">
                           💡 Use &quot;Add Trip&quot; tab to log business trips for tax deductions
                         </div>
                         <div className="text-[10px] text-gray-500 dark:text-gray-400 text-center">
-                          IRS rate: $0.70/mile (2025) • Tracks business purpose trips
+                          IRS rate: $0.67/mile (2025) • Tracks business purpose trips
                         </div>
                       </div>
                     ) : (
