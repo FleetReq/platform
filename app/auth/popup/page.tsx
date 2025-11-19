@@ -32,6 +32,8 @@ export default function AuthPopupCallback() {
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
       const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
+      console.log('Environment check - URL:', supabaseUrl ? 'present' : 'MISSING', 'Key:', supabaseAnonKey ? 'present' : 'MISSING')
+
       if (!supabaseUrl || !supabaseAnonKey) {
         console.error('Supabase environment variables not found')
         authChannel.postMessage({
@@ -47,11 +49,13 @@ export default function AuthPopupCallback() {
       }
 
       const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey)
+      console.log('Supabase client created:', supabase ? 'success' : 'failed')
 
       if (code && supabase) {
         try {
-          console.log('Exchanging code for session in popup...')
+          console.log('Starting exchangeCodeForSession...')
           const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+          console.log('Exchange complete - data:', data ? 'present' : 'none', 'error:', exchangeError || 'none')
 
           if (exchangeError) {
             console.error('Session exchange failed:', exchangeError)
