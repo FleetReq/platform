@@ -32,11 +32,27 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
         return
       }
 
-      const { data: { session } } = await supabase.auth.getSession()
-      console.log('AuthComponent: Initial session loaded, calling onAuthChange with:', session?.user?.email || 'null')
-      setUser(session?.user ?? null)
-      setLoading(false)
-      onAuthChange(session?.user ?? null)
+      try {
+        console.log('🔄 Calling supabase.auth.getSession()...')
+        const { data: { session }, error } = await supabase.auth.getSession()
+        console.log('✅ getSession completed - session:', session ? 'present' : 'null', 'error:', error || 'none')
+
+        if (error) {
+          console.error('❌ getSession error:', error)
+          setLoading(false)
+          setError(error.message)
+          return
+        }
+
+        console.log('AuthComponent: Initial session loaded, calling onAuthChange with:', session?.user?.email || 'null')
+        setUser(session?.user ?? null)
+        setLoading(false)
+        onAuthChange(session?.user ?? null)
+      } catch (err) {
+        console.error('❌ getSession caught exception:', err)
+        setLoading(false)
+        setError('Failed to load session')
+      }
     }
 
     getSession()
