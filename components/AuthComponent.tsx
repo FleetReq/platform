@@ -9,14 +9,6 @@ interface AuthComponentProps {
 }
 
 export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
-  console.log('🔵 AuthComponent: Component mounting, supabase client:', supabase ? 'PRESENT' : 'NULL')
-  console.log('🔍 Environment check:', {
-    url: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'SET' : 'MISSING',
-    urlValue: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + '...',
-    key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'SET' : 'MISSING',
-    keyValue: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 20) + '...'
-  })
-
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [isSigningIn, setIsSigningIn] = useState(false)
@@ -27,88 +19,50 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    console.log('🟢 AuthComponent: useEffect running')
+    // Get initial session
+    const getSession = async () => {
+      if (!supabase) {
+        console.error('AuthComponent: No supabase client - check environment variables')
+        setLoading(false) // ← FIX: Set loading to false even if supabase is null
+        setError('Configuration error: Unable to connect to authentication service. Please contact support.')
+        return
+      }
 
-    if (!supabase) {
-      console.error('AuthComponent: No supabase client - check environment variables')
+      const { data: { session } } = await supabase.auth.getSession()
+      console.log('AuthComponent: Initial session loaded, calling onAuthChange with:', session?.user?.email || 'null')
+      setUser(session?.user ?? null)
       setLoading(false)
-      setError('Configuration error: Unable to connect to authentication service. Please contact support.')
-      return
+      onAuthChange(session?.user ?? null)
     }
 
-    // Listen for auth changes - INITIAL_SESSION event handles initial state
-    console.log('🔔 Setting up onAuthStateChange listener...')
-    let timeoutCleared = false
+    getSession()
+
+    // Listen for auth changes
+    if (!supabase) return
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        try {
-          console.log('🔔 Auth event:', event, 'session:', session ? 'present' : 'null')
+      async (event, session) => {
+        console.log('Auth event:', event)
+        setUser(session?.user ?? null)
+        setLoading(false)
 
-          // Handle initial session loaded from storage
-          if (event === 'INITIAL_SESSION') {
-            timeoutCleared = true
-            console.log('✅ Initial session loaded:', session?.user?.email || 'null')
-            setUser(session?.user ?? null)
-            setLoading(false)
-            onAuthChange(session?.user ?? null)
-            return
-          }
+        // Call onAuthChange for all events including initial session
+        onAuthChange(session?.user ?? null)
 
-          // Handle sign in
-          if (event === 'SIGNED_IN') {
-            console.log('✅ User signed in:', session?.user?.email)
-            setUser(session?.user ?? null)
-            setLoading(false)
-            setError(null)
-            onAuthChange(session?.user ?? null)
-            return
-          }
+        if (event === 'SIGNED_IN') {
+          setError(null)
+        }
 
-          // Handle sign out
-          if (event === 'SIGNED_OUT') {
-            console.log('✅ User signed out')
-            setUser(null)
-            setLoading(false)
-            setError(null)
-            setEmail('')
-            setPassword('')
-            setFullName('')
-            onAuthChange(null)
-            return
-          }
-
-          // If we get here, it's an unknown event
-          console.warn('⚠️ Unknown auth event:', event)
-          // Default behavior: stop loading and set user
-          setUser(session?.user ?? null)
-          setLoading(false)
-          onAuthChange(session?.user ?? null)
-        } catch (error) {
-          console.error('❌ Error in onAuthStateChange callback:', error)
-          setLoading(false)
+        if (event === 'SIGNED_OUT') {
+          setError(null)
+          setEmail('')
+          setPassword('')
+          setFullName('')
         }
       }
     )
 
-    console.log('✅ onAuthStateChange subscription created:', subscription ? 'success' : 'FAILED')
-
-    // Fallback: if INITIAL_SESSION doesn't fire within 1 second, stop loading
-    // This handles the bug where onAuthStateChange doesn't fire in production
-    const timeoutId = setTimeout(() => {
-      if (!timeoutCleared) {
-        console.warn('⏱️ INITIAL_SESSION event did not fire within 1s - showing auth form as fallback')
-        setLoading(false)
-        setUser(null)
-        onAuthChange(null)
-      }
-    }, 1000)
-
-    return () => {
-      console.log('🔕 Unsubscribing from auth changes')
-      clearTimeout(timeoutId)
-      subscription.unsubscribe()
-    }
+    return () => subscription.unsubscribe()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const signInWithEmail = async (e: React.FormEvent) => {
