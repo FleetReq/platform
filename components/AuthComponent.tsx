@@ -10,6 +10,12 @@ interface AuthComponentProps {
 
 export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
   console.log('🔵 AuthComponent: Component mounting, supabase client:', supabase ? 'PRESENT' : 'NULL')
+  console.log('🔍 Environment check:', {
+    url: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'SET' : 'MISSING',
+    urlValue: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + '...',
+    key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'SET' : 'MISSING',
+    keyValue: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 20) + '...'
+  })
 
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
