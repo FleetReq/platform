@@ -54,7 +54,18 @@ export default function AuthPopupCallback() {
       if (code && supabase) {
         try {
           console.log('Starting exchangeCodeForSession...')
-          const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+
+          // Add timeout to detect hanging calls
+          const exchangePromise = supabase.auth.exchangeCodeForSession(code)
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Exchange timeout after 10s')), 10000)
+          )
+
+          const { data, error: exchangeError } = await Promise.race([
+            exchangePromise,
+            timeoutPromise
+          ]) as any
+
           console.log('Exchange complete - data:', data ? 'present' : 'none', 'error:', exchangeError || 'none')
 
           if (exchangeError) {
