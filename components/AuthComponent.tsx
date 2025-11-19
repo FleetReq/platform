@@ -29,61 +29,45 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
   useEffect(() => {
     console.log('🟢 AuthComponent: useEffect running')
 
-    // Get initial session
-    const getSession = async () => {
-      if (!supabase) {
-        console.error('AuthComponent: No supabase client - check environment variables')
-        setLoading(false) // ← FIX: Set loading to false even if supabase is null
-        setError('Configuration error: Unable to connect to authentication service. Please contact support.')
-        return
-      }
-
-      try {
-        console.log('🔄 Calling supabase.auth.getSession()...')
-        const { data: { session }, error } = await supabase.auth.getSession()
-        console.log('✅ getSession completed - session:', session ? 'present' : 'null', 'error:', error || 'none')
-
-        if (error) {
-          console.error('❌ getSession error:', error)
-          setLoading(false)
-          setError(error.message)
-          return
-        }
-
-        console.log('AuthComponent: Initial session loaded, calling onAuthChange with:', session?.user?.email || 'null')
-        setUser(session?.user ?? null)
-        setLoading(false)
-        onAuthChange(session?.user ?? null)
-      } catch (err) {
-        console.error('❌ getSession exception:', err)
-        setLoading(false)
-        setError('Failed to load session')
-      }
+    if (!supabase) {
+      console.error('AuthComponent: No supabase client - check environment variables')
+      setLoading(false)
+      setError('Configuration error: Unable to connect to authentication service. Please contact support.')
+      return
     }
 
-    getSession()
-
-    // Listen for auth changes
-    if (!supabase) return
-
+    // Listen for auth changes - INITIAL_SESSION event handles initial state
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth event:', event)
-        setUser(session?.user ?? null)
-        setLoading(false)
+        console.log('Auth event:', event, 'session:', session ? 'present' : 'null')
 
-        // Call onAuthChange for all events including initial session
-        onAuthChange(session?.user ?? null)
-
-        if (event === 'SIGNED_IN') {
-          setError(null)
+        // Handle initial session loaded from storage
+        if (event === 'INITIAL_SESSION') {
+          console.log('✅ Initial session loaded:', session?.user?.email || 'null')
+          setUser(session?.user ?? null)
+          setLoading(false)
+          onAuthChange(session?.user ?? null)
         }
 
+        // Handle sign in
+        if (event === 'SIGNED_IN') {
+          console.log('✅ User signed in:', session?.user?.email)
+          setUser(session?.user ?? null)
+          setLoading(false)
+          setError(null)
+          onAuthChange(session?.user ?? null)
+        }
+
+        // Handle sign out
         if (event === 'SIGNED_OUT') {
+          console.log('✅ User signed out')
+          setUser(null)
+          setLoading(false)
           setError(null)
           setEmail('')
           setPassword('')
           setFullName('')
+          onAuthChange(null)
         }
       }
     )
