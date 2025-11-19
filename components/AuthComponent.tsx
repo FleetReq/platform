@@ -9,6 +9,8 @@ interface AuthComponentProps {
 }
 
 export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
+  console.log('🔵 AuthComponent: Component mounting, supabase client:', supabase ? 'PRESENT' : 'NULL')
+
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [isSigningIn, setIsSigningIn] = useState(false)
@@ -19,6 +21,8 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    console.log('🟢 AuthComponent: useEffect running')
+
     // Get initial session
     const getSession = async () => {
       if (!supabase) {
