@@ -1,8 +1,5 @@
 'use client'
 
-// Force dynamic rendering to prevent static optimization issues with auth
-export const dynamic = 'force-dynamic'
-
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner, getUserSubscriptionPlan, getUserMaxVehicles, hasFeatureAccess } from '@/lib/supabase-client'
