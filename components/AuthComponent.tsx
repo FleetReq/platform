@@ -40,19 +40,7 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
 
       try {
         console.log('🔄 Calling supabase.auth.getSession()...')
-
-        // Add timeout to prevent infinite hanging
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('getSession timeout after 3s')), 3000)
-        )
-
-        const sessionPromise = supabase.auth.getSession()
-
-        const { data: { session }, error } = await Promise.race([
-          sessionPromise,
-          timeoutPromise
-        ]) as any
-
+        const { data: { session }, error } = await supabase.auth.getSession()
         console.log('✅ getSession completed - session:', session ? 'present' : 'null', 'error:', error || 'none')
 
         if (error) {
@@ -67,11 +55,9 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
         setLoading(false)
         onAuthChange(session?.user ?? null)
       } catch (err) {
-        console.error('⏱️ getSession failed/timeout:', err)
-        // Don't show error to user, just stop loading and show auth form
+        console.error('❌ getSession exception:', err)
         setLoading(false)
-        setUser(null)
-        onAuthChange(null)
+        setError('Failed to load session')
       }
     }
 
@@ -81,7 +67,7 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
     if (!supabase) return
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('Auth event:', event)
         setUser(session?.user ?? null)
         setLoading(false)
