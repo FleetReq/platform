@@ -136,9 +136,8 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
     setError(null)
 
     try {
-      const redirectUrl = window.location.hostname === 'localhost'
-        ? 'http://localhost:3000/auth/popup'
-        : 'https://brucetruong.com/auth/popup'
+      // Use current origin for redirect to support multiple domains
+      const redirectUrl = `${window.location.origin}/auth/popup/`
 
       console.log('OAuth redirect URL:', redirectUrl)
       console.log('Current hostname:', window.location.hostname)
