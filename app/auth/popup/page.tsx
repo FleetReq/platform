@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { supabase } from '@/lib/supabase-client'
+import { createBrowserClient } from '@supabase/ssr'
 
 export default function AuthPopupCallback() {
   useEffect(() => {
@@ -27,6 +27,26 @@ export default function AuthPopupCallback() {
         }
         return
       }
+
+      // Initialize Supabase client directly in popup
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+      if (!supabaseUrl || !supabaseAnonKey) {
+        console.error('Supabase environment variables not found')
+        authChannel.postMessage({
+          type: 'OAUTH_ERROR',
+          error: 'Configuration error'
+        })
+        try {
+          window.close()
+        } catch {
+          window.location.href = 'about:blank'
+        }
+        return
+      }
+
+      const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey)
 
       if (code && supabase) {
         try {
