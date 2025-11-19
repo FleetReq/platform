@@ -37,9 +37,10 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
     }
 
     // Listen for auth changes - INITIAL_SESSION event handles initial state
+    console.log('🔔 Setting up onAuthStateChange listener...')
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth event:', event, 'session:', session ? 'present' : 'null')
+        console.log('🔔 Auth event:', event, 'session:', session ? 'present' : 'null')
 
         // Handle initial session loaded from storage
         if (event === 'INITIAL_SESSION') {
@@ -72,7 +73,12 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
       }
     )
 
-    return () => subscription.unsubscribe()
+    console.log('✅ onAuthStateChange subscription created:', subscription ? 'success' : 'FAILED')
+
+    return () => {
+      console.log('🔕 Unsubscribing from auth changes')
+      subscription.unsubscribe()
+    }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const signInWithEmail = async (e: React.FormEvent) => {
