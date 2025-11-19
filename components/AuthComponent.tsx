@@ -136,16 +136,14 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
     setError(null)
 
     try {
-      // Use current origin for redirect to support multiple domains
-      const redirectUrl = `${window.location.origin}/auth/popup/`
+      // Use redirect-based OAuth flow (more reliable than popup)
+      const redirectUrl = `${window.location.origin}/auth/callback`
 
       console.log('OAuth redirect URL:', redirectUrl)
-      console.log('Current hostname:', window.location.hostname)
 
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          skipBrowserRedirect: true,
           redirectTo: redirectUrl,
           scopes: 'openid email profile',
           queryParams: {
@@ -156,47 +154,7 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
       })
 
       if (error) throw error
-
-      if (data?.url) {
-        const popup = window.open(data.url, 'oauth', 'width=500,height=600')
-
-        // Listen for OAuth success/error messages from popup
-        const authChannel = new BroadcastChannel('supabase-oauth')
-
-        const handleMessage = (event: MessageEvent) => {
-          if (event.data.type === 'OAUTH_SUCCESS') {
-            console.log('OAuth success received')
-            authChannel.close()
-            popup?.close()
-            setIsSigningIn(false)
-            // Trigger a page reload to get the new session
-            window.location.reload()
-          } else if (event.data.type === 'OAUTH_ERROR') {
-            console.error('OAuth error:', event.data.error)
-            authChannel.close()
-            popup?.close()
-            setError(event.data.error || 'OAuth authentication failed')
-            setIsSigningIn(false)
-          }
-        }
-
-        authChannel.addEventListener('message', handleMessage)
-
-        // Fallback: poll for popup close
-        const pollTimer = setInterval(() => {
-          try {
-            if (popup?.closed) {
-              clearInterval(pollTimer)
-              authChannel.close()
-              setIsSigningIn(false)
-            }
-          } catch {
-            clearInterval(pollTimer)
-            authChannel.close()
-            setIsSigningIn(false)
-          }
-        }, 1000)
-      }
+      // Browser will redirect to Google, then back to /auth/callback which handles session
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : 'An error occurred')
       setIsSigningIn(false)
