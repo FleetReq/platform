@@ -15,28 +15,9 @@ const nextConfig: NextConfig = {
   // Performance optimizations
   compress: true,
 
-  // Optimize webpack for bundle size
-  webpack: (config, { dev, isServer }) => {
-    // Optimize production builds
-    if (!dev && !isServer) {
-      config.optimization = {
-        ...config.optimization,
-        splitChunks: {
-          ...config.optimization.splitChunks,
-          cacheGroups: {
-            ...config.optimization.splitChunks?.cacheGroups,
-            vendor: {
-              test: /[\\/]node_modules[\\/]/,
-              name: 'vendors',
-              chunks: 'all',
-            },
-          },
-        },
-      };
-    }
-
-    return config;
-  },
+  // Enable Turbopack (Next.js 16 default bundler)
+  // Turbopack handles optimization automatically - no webpack config needed
+  turbopack: {},
 
 };
 
