@@ -1,12 +1,16 @@
 import { createBrowserClient } from '@supabase/ssr'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+// Create a new Supabase client for browser use
+// Call this function in each component instead of using a singleton
+export function createClient() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}
 
-// Client-side Supabase client - uses cookies for SSR compatibility
-export const supabase = supabaseUrl && supabaseAnonKey
-  ? createBrowserClient(supabaseUrl, supabaseAnonKey)
-  : null
+// Legacy export for backward compatibility (deprecated)
+export const supabase = createClient()
 
 // Database types (shared between client and server)
 export interface Car {
