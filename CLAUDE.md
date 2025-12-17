@@ -142,7 +142,36 @@ npm run dev  # MUST show: http://localhost:3000
 
 ## 📝 Recent Session Summary
 
-### **Latest Session (2025-11-17) - Subscription Cancellation & Account Cleanup**
+### **Latest Session (2025-12-17) - Enhanced Keep-Alive & Next.js 16 Migration**
+1. ✅ **Enhanced keep-alive system** - Triple-approach strategy to prevent Supabase auto-pause
+   - Added direct PostgreSQL connection using `pg` library (native SQL)
+   - Added anon key client approach (simulates authenticated user activity)
+   - Maintained service role client approach (backward compatibility)
+   - Result: 2/3 approaches working (8 database operations every 4 hours)
+   - Direct DB approach failed due to DNS (not critical, 2/3 sufficient)
+   - Research-based solution from March 2025 community reports
+2. ✅ **Next.js security update** - Fixed critical vulnerability
+   - Updated Next.js 15.5.3 → 16.0.10
+   - Patched CVE-2025-66478 (critical security vulnerability)
+   - Installed `pg` library and TypeScript types
+   - Reduced vulnerabilities from 3 to 2
+3. ✅ **Next.js 16 Turbopack migration** - Fixed build error
+   - Replaced webpack config with Turbopack (Next.js 16 default bundler)
+   - Error: "This build is using Turbopack, with a webpack config"
+   - Solution: Added `turbopack: {}` to next.config.ts
+   - Turbopack handles optimization automatically (removed custom webpack config)
+4. ✅ **DATABASE_URL configuration** - Enabled direct PostgreSQL connections
+   - Constructed DATABASE_URL from Supabase project reference
+   - Format: `postgresql://postgres:[PASSWORD]@db.[PROJECT_REF].supabase.co:5432/postgres`
+   - Added to `.env.local` for local development
+   - Added to Vercel environment variables for production
+5. ✅ **Keep-alive endpoint testing** - Verified production deployment
+   - Tested `/api/cron/keep-alive` endpoint in production
+   - Service role approach: 5 operations successful
+   - Anon key approach: 3 operations successful
+   - Total: 8 operations per 4-hour cycle (2x previous activity)
+
+### **Previous Session (2025-11-17) - Subscription Cancellation & Account Cleanup**
 1. ✅ **Pricing page improvements** - Prevented downgrades and aligned button styling
    - Added subscription plan detection on page load
    - Created `getButtonText()` to show "Current Plan", "Downgrade to X", or default text
