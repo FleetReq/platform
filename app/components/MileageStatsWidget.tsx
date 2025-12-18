@@ -70,7 +70,7 @@ export default function MileageStatsWidget() {
           A full-stack application for tracking vehicle fuel efficiency and maintenance records.
         </p>
         <Link
-          href="/mileage"
+          href="/dashboard"
           className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors duration-200"
         >
           View Project
@@ -96,7 +96,7 @@ export default function MileageStatsWidget() {
           </h3>
         </div>
         <Link
-          href="/mileage"
+          href="/dashboard"
           className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium transition-colors duration-200"
         >
           View Details →

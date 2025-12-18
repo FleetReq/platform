@@ -16,7 +16,7 @@ function CheckoutSuccessContent() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer)
-          router.push('/mileage')
+          router.push('/dashboard')
           return 0
         }
         return prev - 1
@@ -63,7 +63,7 @@ function CheckoutSuccessContent() {
         {/* Manual Navigation */}
         <div className="space-y-3">
           <Link
-            href="/mileage"
+            href="/dashboard"
             className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
           >
             Go to Dashboard Now

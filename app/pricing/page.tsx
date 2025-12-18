@@ -177,7 +177,7 @@ export default function PricingPage() {
   const handleSubscribe = async (tier: 'free' | 'personal' | 'business') => {
     // Free tier - just go to app
     if (tier === 'free') {
-      router.push('/mileage')
+      router.push('/dashboard')
       return
     }
 
@@ -202,7 +202,7 @@ export default function PricingPage() {
 
       if (!session) {
         // Redirect to login/signup
-        router.push('/mileage') // Auth component will handle login
+        router.push('/dashboard') // Auth component will handle login
         setLoading(null)
         return
       }
@@ -251,7 +251,7 @@ export default function PricingPage() {
       const { data: { session } } = await supabase.auth.getSession()
 
       if (!session) {
-        router.push('/mileage')
+        router.push('/dashboard')
         setLoading(null)
         return
       }

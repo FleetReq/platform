@@ -90,7 +90,7 @@ export default function OAuthRedirectHandler() {
       const processAuthImmediate = async () => {
         if (!supabase) {
           console.error('Supabase client not available')
-          router.replace('/mileage')
+          router.replace('/dashboard')
           return
         }
 
@@ -99,7 +99,7 @@ export default function OAuthRedirectHandler() {
 
           if (error) {
             console.error('Session exchange failed:', error)
-            router.replace('/mileage')
+            router.replace('/dashboard')
             return
           }
 
@@ -115,13 +115,13 @@ export default function OAuthRedirectHandler() {
             }).catch(console.error)
 
             // Immediate redirect to mileage
-            router.replace('/mileage?auth=success')
+            router.replace('/dashboard?auth=success')
           } else {
-            router.replace('/mileage')
+            router.replace('/dashboard')
           }
         } catch (error) {
           console.error('Auth processing failed:', error)
-          router.replace('/mileage')
+          router.replace('/dashboard')
         }
       }
 
@@ -139,7 +139,7 @@ export default function OAuthRedirectHandler() {
 
       // This is a fresh OAuth redirect from GitHub -> Supabase -> here
       // Redirect to mileage page with auth=success parameter and preserve tokens in hash
-      router.replace('/mileage?auth=success' + hash)
+      router.replace('/dashboard?auth=success' + hash)
 
       // Clear the hash from homepage after redirect to prevent future redirects
       window.history.replaceState(null, '', window.location.pathname)

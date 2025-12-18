@@ -10,7 +10,15 @@ interface AuthComponentProps {
 
 export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
   const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  // Optimistic loading: Check for auth tokens in cookies immediately
+  const [loading, setLoading] = useState(() => {
+    // Check if auth tokens exist in cookies (synchronous check)
+    if (typeof window !== 'undefined') {
+      const hasAuthCookies = document.cookie.includes('sb-') && document.cookie.includes('auth-token')
+      return !hasAuthCookies // Only show loading if no auth cookies found
+    }
+    return true
+  })
   const [isSigningIn, setIsSigningIn] = useState(false)
   const [authMode, setAuthMode] = useState<'signin' | 'signup' | 'reset'>('signin')
   const [email, setEmail] = useState('')
@@ -172,8 +180,8 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: window.location.hostname === 'localhost'
-          ? 'http://localhost:3000/mileage?reset=true'
-          : 'https://brucetruong.com/mileage?reset=true',
+          ? 'http://localhost:3000/dashboard?reset=true'
+          : 'https://fleetreq.vercel.app/dashboard?reset=true',
       })
 
       if (error) throw error

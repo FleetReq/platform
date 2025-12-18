@@ -15,7 +15,7 @@ const baseNavigationItems = [
 const authenticatedNavigationItems = [
   { name: "Home", href: "/" },
   { name: "Pricing", href: "/pricing" },
-  { name: "App", href: "/mileage" },
+  { name: "Dashboard", href: "/dashboard" },
 ];
 
 export function Navigation() {
@@ -108,7 +108,7 @@ export function Navigation() {
         <div className="relative flex items-center justify-between h-20 gap-4">
           {/* Left: Logo + Badge */}
           <div className="flex items-center flex-shrink-0 min-w-0 gap-2 z-10">
-            <Link href={user ? "/mileage" : "/"} className="group">
+            <Link href={user ? "/dashboard" : "/"} className="group">
               <div className="flex items-center space-x-3">
                 <div className="hidden sm:block min-w-0">
                   <div className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight truncate">Fleet<span className="text-blue-600 dark:text-blue-400">Req</span></div>
@@ -161,7 +161,7 @@ export function Navigation() {
             {/* Sign In button - shown when logged out */}
             {!user && (
               <Link
-                href="/mileage"
+                href="/dashboard"
                 className="hidden md:inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-lg transition-colors duration-200 shadow-sm"
               >
                 Sign In
@@ -246,7 +246,7 @@ export function Navigation() {
                 </button>
               ) : (
                 <Link
-                  href="/mileage"
+                  href="/dashboard"
                   className="w-full inline-flex items-center justify-center px-6 py-3 bg-blue-600 dark:bg-blue-500 text-white text-base font-medium rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 transition-all duration-300 shadow-sm"
                   onClick={() => setIsOpen(false)}
                 >
