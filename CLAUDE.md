@@ -142,7 +142,33 @@ npm run dev  # MUST show: http://localhost:3000
 
 ## 📝 Recent Session Summary
 
-### **Latest Session (2025-12-17) - Enhanced Keep-Alive & Next.js 16 Migration**
+### **Latest Session (2025-12-18) - Next.js 16 Proxy Migration & Branding Update**
+1. ✅ **Next.js 16 proxy migration** - Fixed middleware deprecation warning
+   - Migrated `middleware.ts` → `proxy.ts` (Next.js 16 requirement)
+   - Updated function name: `middleware()` → `proxy()`
+   - Runtime change: Now uses Node.js runtime (edge runtime no longer supported in proxy)
+   - Researched official Next.js docs to ensure proper migration
+   - Eliminated Vercel build warning: "middleware file convention is deprecated"
+2. ✅ **Favicon and branding update** - Replaced template with FleetReq branding
+   - Removed dynamic icon generation (`icon.tsx`, `apple-icon.tsx`)
+   - Created static SVG icons (`icon.svg`, `apple-icon.svg`) - Next.js recommended approach
+   - Designed FR logo: White F overlapping with blue R, no background shape
+   - Follows modern icon patterns (shape-based, not geometric backgrounds)
+3. ✅ **Metadata cleanup** - Removed Bruce Truong template content
+   - Updated title: "FleetReq - Fleet Management & Mileage Tracking"
+   - Updated description, keywords for fleet management focus
+   - Fixed OpenGraph and Twitter card metadata
+   - Changed structured data from Person schema to SoftwareApplication schema
+   - Updated footer branding from "Bruce Truong" to "FleetReq"
+4. ✅ **Keep-alive verification** - Confirmed system is working
+   - Verified endpoint responds successfully (8 operations per 4-hour cycle)
+   - GitHub Actions cron: 230+ runs completed, running every 4 hours
+   - Decision: Wait 7+ days to verify Supabase auto-pause prevention
+5. 📋 **Low priority future todo** - Icon refinement
+   - Polish FR logo or create custom branded icon
+   - May coincide with potential rebrand away from "FleetReq" (if/when)
+
+### **Previous Session (2025-12-17) - Enhanced Keep-Alive & Next.js 16 Migration**
 1. ✅ **Enhanced keep-alive system** - Triple-approach strategy to prevent Supabase auto-pause
    - Added direct PostgreSQL connection using `pg` library (native SQL)
    - Added anon key client approach (simulates authenticated user activity)
