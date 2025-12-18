@@ -1,0 +1,21 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- F (top-left, white, behind) -->
+  <text
+    x="10"
+    y="115"
+    font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
+    font-size="160"
+    font-weight="900"
+    fill="white"
+  >F</text>
+
+  <!-- R (bottom-right, blue, overlapping more on top) -->
+  <text
+    x="55"
+    y="170"
+    font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
+    font-size="160"
+    font-weight="900"
+    fill="#2563eb"
+  >R</text>
+</svg>
