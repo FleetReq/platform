@@ -142,7 +142,7 @@ npm run dev  # MUST show: http://localhost:3000
 
 ## 📝 Recent Session Summary
 
-### **Latest Session (2025-12-18) - Next.js 16 Proxy Migration & Branding Update**
+### **Latest Session (2025-12-18) - Route Rename, Loading Fix & Branding**
 1. ✅ **Next.js 16 proxy migration** - Fixed middleware deprecation warning
    - Migrated `middleware.ts` → `proxy.ts` (Next.js 16 requirement)
    - Updated function name: `middleware()` → `proxy()`
@@ -160,11 +160,22 @@ npm run dev  # MUST show: http://localhost:3000
    - Fixed OpenGraph and Twitter card metadata
    - Changed structured data from Person schema to SoftwareApplication schema
    - Updated footer branding from "Bruce Truong" to "FleetReq"
-4. ✅ **Keep-alive verification** - Confirmed system is working
+4. ✅ **Route rename** - /mileage → /dashboard for consistency
+   - Renamed `app/mileage/` directory to `app/dashboard/`
+   - Updated navigation: "App" → "Dashboard"
+   - Updated all internal links throughout codebase (25+ files)
+   - Rationale: `/app` would be redundant with domain, `/dashboard` is professional SaaS convention
+5. ✅ **Loading state fix** - Eliminated "Loading..." flash for logged-in users
+   - Implemented optimistic auth state in AuthComponent
+   - Synchronously checks for Supabase auth cookies before async session call
+   - Only shows loading state if no auth cookies found
+   - Fixes UX issue where logged-in users saw brief "Loading..." on /dashboard and /pricing
+   - Rationale: Instant auth state recognition instead of loading flicker
+6. ✅ **Keep-alive verification** - Confirmed system is working
    - Verified endpoint responds successfully (8 operations per 4-hour cycle)
    - GitHub Actions cron: 230+ runs completed, running every 4 hours
    - Decision: Wait 7+ days to verify Supabase auto-pause prevention
-5. 📋 **Low priority future todo** - Icon refinement
+7. 📋 **Low priority future todo** - Icon refinement
    - Polish FR logo or create custom branded icon
    - May coincide with potential rebrand away from "FleetReq" (if/when)
 
