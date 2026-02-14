@@ -227,14 +227,17 @@ function MaintenanceStatusGrid({
   }
 
   const maintenanceTypes = [
+    // Engine & Fluids
     { key: 'oil_change', label: 'Oil Change', icon: '🛢️' },
+    { key: 'transmission_service', label: 'Transmission', icon: '⚙️' },
+    { key: 'coolant_flush', label: 'Coolant', icon: '🧊' },
+    { key: 'air_filter', label: 'Air Filter', icon: '🌬️' },
+    // Tires & Brakes
     { key: 'tire_rotation', label: 'Tire Rotation', icon: '🔄' },
     { key: 'tire_change', label: 'Tire Change', icon: '🛞' },
     { key: 'brake_pads', label: 'Brake Pads', icon: '🛑' },
     { key: 'rotors', label: 'Rotors', icon: '💿' },
-    { key: 'air_filter', label: 'Air Filter', icon: '🌬️' },
-    { key: 'transmission_service', label: 'Transmission', icon: '⚙️' },
-    { key: 'coolant_flush', label: 'Coolant', icon: '🧊' },
+    // Other
     { key: 'wipers', label: 'Wipers', icon: '🌧️' },
     { key: 'registration', label: 'Registration', icon: '📋' }
   ]
@@ -536,13 +539,13 @@ function RecordsManager({
   const maintenanceTypes = [
     { value: 'all', label: 'All Types' },
     { value: 'oil_change', label: 'Oil Change' },
+    { value: 'transmission_service', label: 'Transmission Service' },
+    { value: 'coolant_flush', label: 'Coolant Flush' },
+    { value: 'air_filter', label: 'Air Filter' },
     { value: 'tire_rotation', label: 'Tire Rotation' },
     { value: 'tire_change', label: 'Tire Change' },
     { value: 'brake_pads', label: 'Brake Pads' },
     { value: 'rotors', label: 'Rotors' },
-    { value: 'air_filter', label: 'Air Filter' },
-    { value: 'transmission_service', label: 'Transmission Service' },
-    { value: 'coolant_flush', label: 'Coolant Flush' },
     { value: 'wipers', label: 'Wipers' },
     { value: 'registration', label: 'Registration' }
   ]
@@ -3303,13 +3306,13 @@ function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan = 'free' }: { ca
 
   const maintenanceTypes = [
     { value: 'oil_change', label: 'Oil Change' },
+    { value: 'transmission_service', label: 'Transmission Service' },
+    { value: 'coolant_flush', label: 'Coolant Flush' },
+    { value: 'air_filter', label: 'Air Filter' },
     { value: 'tire_rotation', label: 'Tire Rotation' },
     { value: 'tire_change', label: 'Tire Change' },
     { value: 'brake_pads', label: 'Brake Pads' },
     { value: 'rotors', label: 'Rotors' },
-    { value: 'air_filter', label: 'Air Filter' },
-    { value: 'transmission_service', label: 'Transmission Service' },
-    { value: 'coolant_flush', label: 'Coolant Flush' },
     { value: 'wipers', label: 'Wipers' },
     { value: 'registration', label: 'Registration' }
   ]
