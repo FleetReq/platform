@@ -23,6 +23,7 @@ These PostgreSQL functions are executed automatically by triggers on specific da
 | `handle_new_user()` | Auto-creates user profile when new user signs up | `auth.users` (AFTER INSERT) |
 | `update_updated_at_column()` | Auto-updates `updated_at` timestamp | `cars`, `fill_ups`, `maintenance_records`, `profiles`, `user_profiles` |
 | `calculate_mpg()` | Auto-calculates MPG from miles_driven and gallons | `fill_ups` |
+| `auto_create_tire_rotation()` | Auto-creates tire_rotation when tire_change is inserted | `maintenance_records` (AFTER INSERT) |
 
 ---
 
@@ -63,6 +64,11 @@ CREATE TRIGGER update_maintenance_records_updated_at
   BEFORE UPDATE ON maintenance_records
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER auto_tire_rotation_on_tire_change
+  AFTER INSERT ON maintenance_records
+  FOR EACH ROW
+  EXECUTE FUNCTION auto_create_tire_rotation();
 ```
 
 ### profiles
@@ -241,6 +247,40 @@ await supabase.from('fill_ups').insert({
 
 ---
 
+### auto_create_tire_rotation()
+
+**Purpose**: Automatically creates a `tire_rotation` record when a `tire_change` is inserted, since new tires reset the rotation interval.
+
+**Trigger**: `AFTER INSERT` on `maintenance_records`
+
+**SQL Code**:
+```sql
+BEGIN
+  IF NEW.type = 'tire_change' THEN
+    INSERT INTO maintenance_records (
+      car_id, date, type, mileage, created_by_user_id, source_record_id, description
+    ) VALUES (
+      NEW.car_id, NEW.date, 'tire_rotation', NEW.mileage,
+      NEW.created_by_user_id, NEW.id, 'Auto-created from tire change'
+    );
+  END IF;
+  RETURN NEW;
+END;
+```
+
+**Behavior**:
+- Only fires when `type = 'tire_change'`
+- Creates a `tire_rotation` record with the same `car_id`, `date`, `mileage`, and `created_by_user_id`
+- Sets `source_record_id` to the tire_change record's ID
+- The `source_record_id` FK has `ON DELETE CASCADE` — deleting the tire_change automatically deletes the auto-created tire_rotation
+
+**Impact on Code**:
+- ✅ Tire rotation interval resets automatically when new tires are installed
+- ✅ Deleting a mistaken tire_change also removes the auto-created tire_rotation
+- ❌ Don't manually create a tire_rotation when adding a tire_change — the trigger handles it
+
+---
+
 ## Important Notes
 
 ### Auto-Calculated Fields - DO NOT SET MANUALLY
@@ -251,6 +291,7 @@ These fields are managed by triggers and should NEVER be set in INSERT/UPDATE:
 ### Auto-Created Records
 These records are created automatically by triggers:
 - ✅ `user_profiles` - Created by `handle_new_user()` when user signs up
+- ✅ `maintenance_records` (tire_rotation) - Created by `auto_create_tire_rotation()` when a tire_change is inserted
 
 ### Function Execution Order
 1. **BEFORE INSERT/UPDATE** triggers run first

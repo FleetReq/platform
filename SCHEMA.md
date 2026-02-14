@@ -242,7 +242,9 @@ CREATE TABLE public.maintenance_records (
   ),
   CONSTRAINT maintenance_records_cost_check CHECK (cost >= 0),
   CONSTRAINT maintenance_records_check CHECK (next_service_mileage >= mileage),
-  CONSTRAINT maintenance_records_mileage_check CHECK (mileage >= 0)
+  CONSTRAINT maintenance_records_mileage_check CHECK (mileage >= 0),
+  source_record_id uuid NULL,
+  CONSTRAINT maintenance_records_source_record_fkey FOREIGN KEY (source_record_id) REFERENCES maintenance_records (id) ON DELETE CASCADE
 )
 ```
 
@@ -252,9 +254,11 @@ CREATE TABLE public.maintenance_records (
 - `idx_maintenance_records_type` on `type`
 - `idx_maintenance_records_oil_type` on `oil_type`
 - `idx_maintenance_records_created_by_user_id` on `created_by_user_id`
+- `idx_maintenance_records_source_record_id` on `source_record_id`
 
 **Triggers:**
 - `update_maintenance_records_updated_at` - Auto-updates `updated_at` timestamp
+- `auto_tire_rotation_on_tire_change` - Auto-creates a `tire_rotation` record when a `tire_change` is inserted
 
 **RLS Policies:**
 - `Users can view maintenance records for their cars or records th...` - Restricts to car owner OR record creator
@@ -267,6 +271,7 @@ CREATE TABLE public.maintenance_records (
 - `created_by_user_id` - User who created the record (for team features)
 - `type` - Must be one of 10 valid maintenance types (see CHECK constraint)
 - `oil_type` - Only relevant for oil_change type
+- `source_record_id` - Links auto-created records to their source (e.g., tire_rotation created from tire_change). FK with ON DELETE CASCADE — deleting the source deletes the auto-created record.
 
 **Valid Maintenance Types:**
 - `oil_change`
