@@ -4,6 +4,7 @@
 --   - Adds source_record_id column to maintenance_records (links auto-created records to their source)
 --   - Creates trigger to auto-insert tire_rotation when tire_change is inserted
 --   - Creates trigger to cascade-delete auto-created records when source record is deleted
+--   - Backfills tire_rotation records for any tire_change records added before this migration
 
 -- 1. Add source_record_id column (nullable FK to self)
 ALTER TABLE maintenance_records
@@ -47,3 +48,20 @@ CREATE TRIGGER auto_tire_rotation_on_tire_change
   AFTER INSERT ON maintenance_records
   FOR EACH ROW
   EXECUTE FUNCTION auto_create_tire_rotation();
+
+-- 4. Backfill: Create tire_rotation records for existing tire_change records
+INSERT INTO maintenance_records (car_id, date, type, mileage, created_by_user_id, source_record_id, description)
+SELECT
+  tc.car_id,
+  tc.date,
+  'tire_rotation',
+  tc.mileage,
+  tc.created_by_user_id,
+  tc.id,
+  'Auto-created from tire change'
+FROM maintenance_records tc
+WHERE tc.type = 'tire_change'
+  AND NOT EXISTS (
+    SELECT 1 FROM maintenance_records tr
+    WHERE tr.source_record_id = tc.id
+  );
