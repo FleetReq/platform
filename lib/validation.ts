@@ -203,6 +203,7 @@ export function validateLicensePlate(input: string | null | undefined): string |
 const VALID_MAINTENANCE_TYPES = [
   'oil_change',
   'tire_rotation',
+  'tire_change',
   'brake_pads',
   'rotors',
   'air_filter',

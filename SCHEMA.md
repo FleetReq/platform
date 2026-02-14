@@ -230,7 +230,9 @@ CREATE TABLE public.maintenance_records (
     type = ANY (ARRAY[
       'oil_change'::text,
       'tire_rotation'::text,
-      'brake_inspection'::text,
+      'tire_change'::text,
+      'brake_pads'::text,
+      'rotors'::text,
       'air_filter'::text,
       'transmission_service'::text,
       'coolant_flush'::text,
@@ -263,13 +265,15 @@ CREATE TABLE public.maintenance_records (
 **Key Columns:**
 - `car_id` - Links to cars table
 - `created_by_user_id` - User who created the record (for team features)
-- `type` - Must be one of 8 valid maintenance types (see CHECK constraint)
+- `type` - Must be one of 10 valid maintenance types (see CHECK constraint)
 - `oil_type` - Only relevant for oil_change type
 
 **Valid Maintenance Types:**
 - `oil_change`
 - `tire_rotation`
-- `brake_inspection`
+- `tire_change`
+- `brake_pads`
+- `rotors`
 - `air_filter`
 - `transmission_service`
 - `coolant_flush`

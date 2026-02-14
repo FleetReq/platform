@@ -63,6 +63,7 @@ interface MaintenanceInterval {
 const MAINTENANCE_INTERVALS: Record<string, MaintenanceInterval> = {
   oil_change: { months: 6, miles: 5000, yellowThreshold: 0.8, redThreshold: 1.0 },
   tire_rotation: { months: 6, miles: 7500, yellowThreshold: 0.8, redThreshold: 1.0 },
+  tire_change: { months: 48, miles: 50000, yellowThreshold: 0.8, redThreshold: 1.0 },
   brake_pads: { months: 12, miles: 40000, yellowThreshold: 0.8, redThreshold: 1.0 },
   rotors: { months: 24, miles: 60000, yellowThreshold: 0.8, redThreshold: 1.0 },
   air_filter: { months: 12, miles: 15000, yellowThreshold: 0.8, redThreshold: 1.0 },
@@ -152,6 +153,32 @@ function getLatestMaintenanceRecord(maintenanceRecords: MaintenanceRecord[], typ
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
 }
 
+// Helper function to get interval display text for a maintenance type
+function getIntervalDisplay(
+  type: string,
+  latestRecord: MaintenanceRecord | null
+): string {
+  const interval = MAINTENANCE_INTERVALS[type]
+  if (!interval) return ''
+
+  // If user has custom next service values, show those
+  const customParts: string[] = []
+  if (latestRecord?.next_service_mileage) {
+    customParts.push(`Next: ${latestRecord.next_service_mileage.toLocaleString()} mi`)
+  }
+  if (latestRecord?.next_service_date) {
+    const date = new Date(latestRecord.next_service_date)
+    customParts.push(`Next: ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`)
+  }
+  if (customParts.length > 0) return customParts.join(' · ')
+
+  // Default intervals
+  const parts: string[] = []
+  if (interval.miles) parts.push(`${(interval.miles / 1000).toFixed(0)}k mi`)
+  if (interval.months) parts.push(`${interval.months} mo`)
+  return parts.length > 0 ? `Every ${parts.join(' / ')}` : ''
+}
+
 // Maintenance Status Grid Component
 function MaintenanceStatusGrid({
   selectedCarId,
@@ -202,6 +229,7 @@ function MaintenanceStatusGrid({
   const maintenanceTypes = [
     { key: 'oil_change', label: 'Oil Change', icon: '🛢️' },
     { key: 'tire_rotation', label: 'Tire Rotation', icon: '🔄' },
+    { key: 'tire_change', label: 'Tire Change', icon: '🛞' },
     { key: 'brake_pads', label: 'Brake Pads', icon: '🛑' },
     { key: 'rotors', label: 'Rotors', icon: '💿' },
     { key: 'air_filter', label: 'Air Filter', icon: '🌬️' },
@@ -249,6 +277,9 @@ function MaintenanceStatusGrid({
                     <span className={`text-xs font-semibold ${getTextColor(status)}`}>
                       {label}
                     </span>
+                  </div>
+                  <div className="ml-6 text-[10px] text-gray-500 dark:text-gray-400 truncate">
+                    {getIntervalDisplay(key, latestRecord)}
                   </div>
                 </div>
               )
@@ -506,6 +537,7 @@ function RecordsManager({
     { value: 'all', label: 'All Types' },
     { value: 'oil_change', label: 'Oil Change' },
     { value: 'tire_rotation', label: 'Tire Rotation' },
+    { value: 'tire_change', label: 'Tire Change' },
     { value: 'brake_pads', label: 'Brake Pads' },
     { value: 'rotors', label: 'Rotors' },
     { value: 'air_filter', label: 'Air Filter' },
@@ -3272,6 +3304,7 @@ function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan = 'free' }: { ca
   const maintenanceTypes = [
     { value: 'oil_change', label: 'Oil Change' },
     { value: 'tire_rotation', label: 'Tire Rotation' },
+    { value: 'tire_change', label: 'Tire Change' },
     { value: 'brake_pads', label: 'Brake Pads' },
     { value: 'rotors', label: 'Rotors' },
     { value: 'air_filter', label: 'Air Filter' },
