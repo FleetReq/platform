@@ -131,10 +131,8 @@ Run these SQL files in **Supabase Dashboard → SQL Editor** (in order):
 
 Then run the migrations in `supabase/migrations/` in date order.
 
-**Test accounts will be created:**
-- `test-free@fleetreq.com` / `TestFree123!` (Free tier)
-- `test-personal@fleetreq.com` / `TestPersonal123!` (Personal tier)
-- `test-business@fleetreq.com` / `TestBusiness123!` (Business tier)
+**Test accounts will be created** (see `CLAUDE.md` for credentials):
+- Free tier, Personal tier, Business tier test users
 
 ### 5. Configure Google OAuth (Optional)
 1. Supabase Dashboard → Authentication → Providers → Enable Google
