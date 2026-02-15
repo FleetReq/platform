@@ -228,7 +228,7 @@ export const hasFeatureAccess = (userId: string, plan: 'free' | 'personal' | 'bu
   if (isAdmin(userId)) return true
 
   const features = {
-    free: ['fuel_tracking', 'basic_analytics'],
+    free: ['fuel_tracking', 'basic_analytics', 'unlimited_history'],
     personal: ['fuel_tracking', 'basic_analytics', 'maintenance_tracking', 'mobile_app', 'unlimited_history', 'receipt_upload'],
     business: ['fuel_tracking', 'basic_analytics', 'maintenance_tracking', 'mobile_app', 'unlimited_history', 'receipt_upload', 'team_collaboration', 'tax_mileage_tracking', 'professional_reporting', 'advanced_mobile_features']
   }
@@ -240,7 +240,7 @@ export const getUpgradeMessage = (feature: string): string => {
   const messages = {
     maintenance_tracking: "Upgrade to Personal ($4/month) to unlock maintenance scheduling and tracking",
     mobile_app: "Upgrade to Personal ($4/month) for mobile app access and detailed notifications",
-    unlimited_history: "Upgrade to Personal ($4/month) for unlimited data history (free plan limited to 90 days)",
+    unlimited_history: "All plans include unlimited data history",
     team_collaboration: "Upgrade to Business ($12/vehicle/month) to invite team members and collaborate",
     tax_mileage_tracking: "Upgrade to Business ($12/vehicle/month) for IRS-compliant business mileage tracking",
     professional_reporting: "Upgrade to Business ($12/vehicle/month) for professional reports and tax compliance",

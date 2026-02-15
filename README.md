@@ -32,7 +32,7 @@ FleetReq helps you **stop guessing when maintenance is due** and **track every d
 - 1 vehicle maximum
 - Basic fuel tracking & MPG analysis
 - **View-only** maintenance status (no yellow warnings)
-- 90-day data history (enforced via daily cleanup)
+- Unlimited data history
 
 ### **Personal Tier** - $4/month
 - Up to 3 vehicles
@@ -219,7 +219,6 @@ fleetreq-platform/
 |----------|----------|----------|---------|
 | **Keep-Alive** | Every 4 hours | `/api/cron/keep-alive` | INSERT/DELETE/SELECT on heartbeat table to prevent Supabase free-tier auto-pause |
 | **Cleanup Expired Accounts** | Daily 00:00 UTC | `/api/cron/cleanup-expired-accounts` | GDPR-compliant deletion of accounts past scheduled deletion date |
-| **Cleanup Free Tier Data** | Daily 02:00 UTC | `/api/cron/cleanup-free-tier-data` | Deletes fill-ups, maintenance, and trips older than 90 days for free tier users |
 | **Execute Pending Downgrades** | Daily | `/api/cron/execute-pending-downgrades` | Processes subscription downgrades when effective date is reached |
 
 ---
@@ -328,7 +327,6 @@ Supabase Dashboard → Authentication → URL Configuration:
 - [x] Subscription cancellation with 30-day grace period
 - [x] Automatic plan downgrades
 - [x] IRS business trip logging with dynamic yearly rates
-- [x] Free tier 90-day data retention enforcement
 - [x] GDPR-compliant account deletion
 - [x] Supabase keep-alive system (prevents auto-pause)
 - [x] Security headers, rate limiting, input validation

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase'
-import { getUserSubscriptionPlan } from '@/lib/supabase-client'
 import { rateLimit, RATE_LIMITS, getRateLimitHeaders } from '@/lib/rate-limit'
 import { sanitizeString, validateInteger, validateFloat, validateUUID, validateDate, validateMaintenanceType } from '@/lib/validation'
 
@@ -119,24 +118,6 @@ export async function POST(request: NextRequest) {
         { error: 'Valid car ID and maintenance type are required' },
         { status: 400 }
       )
-    }
-
-    // Check 90-day data retention limit for free tier users
-    const userPlan = await getUserSubscriptionPlan(user.id)
-    if (userPlan === 'free') {
-      const ninetyDaysAgo = new Date()
-      ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
-      const maintenanceDate = new Date(date)
-
-      if (maintenanceDate < ninetyDaysAgo) {
-        return NextResponse.json(
-          {
-            error: 'Free tier users can only add data from the last 90 days. Upgrade to Personal or Business for unlimited history.',
-            upgradeRequired: true
-          },
-          { status: 403 }
-        )
-      }
     }
 
     // Verify the car belongs to the user

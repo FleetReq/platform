@@ -77,9 +77,6 @@
 3. Select "Free Tier"
 
 **Expected Results:**
-- ✅ Yellow warning box appears when Free tier is selected
-- ✅ Warning text: "Data older than 90 days will be automatically deleted on the free tier"
-- ✅ Warning icon (triangle with exclamation) is visible
 - ✅ Clicking Downgrade triggers vehicle selection modal
 - ✅ Shows "personal tier allows 1" (only 1 vehicle allowed)
 - ✅ Must select all vehicles except 1
@@ -105,7 +102,6 @@
 **Expected Results:**
 - ✅ "Downgrade Subscription" button appears
 - ✅ Modal shows only "Free Tier" option (no Personal tier option)
-- ✅ Yellow 90-day warning appears when Free tier is selected
 - ✅ Clicking Downgrade immediately processes (no vehicle selection needed)
 - ✅ Success message appears
 - ✅ User remains on Personal tier until period end
@@ -125,7 +121,6 @@
 4. Click "Downgrade"
 
 **Expected Results:**
-- ✅ 90-day warning appears
 - ✅ Vehicle selection modal appears
 - ✅ Must select all vehicles except 1
 - ✅ After selection, vehicles are deleted and downgrade is pending

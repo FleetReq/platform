@@ -28,8 +28,8 @@ describe('Subscription Feature Access', () => {
       expect(hasFeatureAccess(userId, plan, 'mobile_app')).toBe(false)
     })
 
-    it('should NOT allow unlimited history', () => {
-      expect(hasFeatureAccess(userId, plan, 'unlimited_history')).toBe(false)
+    it('should allow unlimited history', () => {
+      expect(hasFeatureAccess(userId, plan, 'unlimited_history')).toBe(true)
     })
 
     it('should NOT allow team collaboration', () => {

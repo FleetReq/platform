@@ -194,9 +194,7 @@ export async function POST(request: NextRequest) {
         ? `Your subscription will downgrade to ${targetTier} tier in ${daysUntilDowngrade} day(s). You'll keep ${currentTier} tier access until ${downgradeEffectiveDate.toLocaleDateString()}.`
         : `Your subscription has been downgraded to ${targetTier} tier.`,
       vehiclesDeleted: vehiclesToDelete?.length || 0,
-      dataRetentionWarning: targetTier === 'free'
-        ? 'Data older than 90 days will be automatically deleted on the free tier.'
-        : null
+      dataRetentionWarning: null
     })
   } catch (error) {
     console.error('Error in downgrade API:', error)

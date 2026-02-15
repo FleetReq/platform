@@ -27,7 +27,7 @@ const pricingTiers: PricingTier[] = [
       "1 user",
       "Basic fuel tracking & MPG analysis",
       "View maintenance status",
-      "90-day data history",
+      "Unlimited data history",
       "Web access only"
     ],
     buttonText: "Get Started Free",
@@ -81,7 +81,7 @@ const allFeatures = [
   { name: "Fuel Tracking", free: true, personal: true, business: true },
   { name: "MPG Analysis", free: true, personal: true, business: true },
   { name: "Basic Analytics", free: true, personal: true, business: true },
-  { name: "Data History", free: "90 days", personal: "Unlimited", business: "Unlimited" },
+  { name: "Data History", free: true, personal: true, business: true },
   { name: "Maintenance Tracking", free: false, personal: true, business: true },
   { name: "Maintenance Alerts", free: false, personal: true, business: true },
   { name: "Mobile App Access", free: false, personal: true, business: true },
@@ -501,8 +501,8 @@ export default function PricingPage() {
                   What happens to my data if I downgrade?
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300">
-                  Your data is never deleted. If you downgrade to Personal, data older than 90 days
-                  will be archived but restored if you upgrade again.
+                  Your data is never deleted. All tiers have unlimited data history, so your records
+                  are always safe regardless of your plan.
                 </p>
               </div>
               <div>

@@ -200,7 +200,7 @@ export default function Home() {
                 <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-2">
                   <li>✓ 1 vehicle</li>
                   <li>✓ Basic fuel tracking</li>
-                  <li>✓ 90-day history</li>
+                  <li>✓ Unlimited history</li>
                 </ul>
               </div>
 
