@@ -209,6 +209,11 @@ const VALID_MAINTENANCE_TYPES = [
   'air_filter',
   'transmission_service',
   'coolant_flush',
+  'brake_fluid_flush',
+  'spark_plugs',
+  'battery',
+  'cabin_air_filter',
+  'serpentine_belt',
   'wipers',
   'registration'
 ] as const

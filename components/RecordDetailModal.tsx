@@ -28,6 +28,11 @@ const MAINTENANCE_TYPE_LABELS: Record<string, string> = {
   air_filter: 'Air Filter',
   transmission_service: 'Transmission Service',
   coolant_flush: 'Coolant Flush',
+  brake_fluid_flush: 'Brake Fluid Flush',
+  spark_plugs: 'Spark Plugs',
+  battery: 'Battery',
+  cabin_air_filter: 'Cabin Air Filter',
+  serpentine_belt: 'Serpentine Belt',
   wipers: 'Wipers',
   registration: 'Registration',
 }

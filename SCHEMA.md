@@ -241,6 +241,11 @@ CREATE TABLE public.maintenance_records (
       'air_filter'::text,
       'transmission_service'::text,
       'coolant_flush'::text,
+      'brake_fluid_flush'::text,
+      'spark_plugs'::text,
+      'battery'::text,
+      'cabin_air_filter'::text,
+      'serpentine_belt'::text,
       'wipers'::text,
       'registration'::text
     ])

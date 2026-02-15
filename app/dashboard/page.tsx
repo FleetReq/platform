@@ -92,6 +92,11 @@ const MAINTENANCE_INTERVALS: Record<string, MaintenanceInterval> = {
   air_filter: { months: 12, miles: 15000, yellowThreshold: 0.8, redThreshold: 1.0 },
   transmission_service: { months: 24, miles: 30000, yellowThreshold: 0.8, redThreshold: 1.0 },
   coolant_flush: { months: 24, miles: 30000, yellowThreshold: 0.8, redThreshold: 1.0 },
+  brake_fluid_flush: { months: 24, yellowThreshold: 0.8, redThreshold: 1.0 }, // Time-based only: every 2 years
+  spark_plugs: { months: 36, miles: 30000, yellowThreshold: 0.8, redThreshold: 1.0 },
+  battery: { months: 48, yellowThreshold: 0.8, redThreshold: 1.0 }, // Time-based only: every 4 years
+  cabin_air_filter: { months: 12, miles: 15000, yellowThreshold: 0.8, redThreshold: 1.0 },
+  serpentine_belt: { months: 60, miles: 60000, yellowThreshold: 0.8, redThreshold: 1.0 },
   wipers: { months: 12, yellowThreshold: 0.75, redThreshold: 1.0 }, // Time-based only: 9mo yellow (75% of 12), 12mo red
   registration: { months: 24, yellowThreshold: 0.9, redThreshold: 1.0 } // Time-based only: 2 years, yellow at 21.6mo (90%)
 }
@@ -249,21 +254,64 @@ function MaintenanceStatusGrid({
     }
   }
 
+  const [showUntracked, setShowUntracked] = useState(false)
+
   const maintenanceTypes = [
     // Engine & Fluids
     { key: 'oil_change', label: 'Oil Change', icon: '🛢️' },
     { key: 'transmission_service', label: 'Transmission', icon: '⚙️' },
     { key: 'coolant_flush', label: 'Coolant', icon: '🧊' },
     { key: 'air_filter', label: 'Air Filter', icon: '🌬️' },
+    { key: 'cabin_air_filter', label: 'Cabin Filter', icon: '🌿' },
+    { key: 'spark_plugs', label: 'Spark Plugs', icon: '⚡' },
     // Tires & Brakes
     { key: 'tire_rotation', label: 'Tire Rotation', icon: '🔄' },
     { key: 'tire_change', label: 'Tire Change', icon: '🛞' },
     { key: 'brake_pads', label: 'Brake Pads', icon: '🛑' },
     { key: 'rotors', label: 'Rotors', icon: '💿' },
+    { key: 'brake_fluid_flush', label: 'Brake Fluid', icon: '💧' },
+    // Electrical & Belts
+    { key: 'battery', label: 'Battery', icon: '🔋' },
+    { key: 'serpentine_belt', label: 'Serp. Belt', icon: '🔗' },
     // Other
     { key: 'wipers', label: 'Wipers', icon: '🌧️' },
     { key: 'registration', label: 'Registration', icon: '📋' }
   ]
+
+  // Split types into tracked (has records) and untracked (no records)
+  const trackedTypes = maintenanceTypes.filter(({ key }) =>
+    carMaintenanceRecords.some(r => r.type === key)
+  )
+  const untrackedTypes = maintenanceTypes.filter(({ key }) =>
+    !carMaintenanceRecords.some(r => r.type === key)
+  )
+
+  const renderStatusItem = ({ key, label, icon }: { key: string, label: string, icon: string }, dimmed = false) => {
+    const latestRecord = getLatestMaintenanceRecord(carMaintenanceRecords, key)
+    const status = dimmed ? 'unknown' as MaintenanceStatus : getMaintenanceStatus(
+      key,
+      latestRecord || null,
+      selectedCar?.current_mileage || null,
+      subscriptionPlan
+    )
+
+    return (
+      <div
+        key={key}
+        className={`border-l-4 p-2 rounded-r-lg ${dimmed ? 'border-gray-300 dark:border-gray-600 bg-gray-50/50 dark:bg-gray-800/30' : getStatusColor(status)}`}
+      >
+        <div className="flex items-center">
+          <span className={`text-sm mr-2 ${dimmed ? 'opacity-50' : ''}`}>{icon}</span>
+          <span className={`text-xs font-semibold ${dimmed ? 'text-gray-400 dark:text-gray-500' : getTextColor(status)}`}>
+            {label}
+          </span>
+        </div>
+        <div className="ml-6 text-[10px] text-gray-500 dark:text-gray-400 truncate">
+          {dimmed ? 'No records yet' : getIntervalDisplay(key, latestRecord)}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="card-professional p-4">
@@ -283,40 +331,48 @@ function MaintenanceStatusGrid({
         </div>
 
         {hasMaintenanceAccess ? (
-          <div className="grid grid-cols-2 gap-1">
-            {maintenanceTypes.map(({ key, label, icon }) => {
-              const latestRecord = getLatestMaintenanceRecord(carMaintenanceRecords, key)
-              const status = getMaintenanceStatus(
-                key,
-                latestRecord || null,
-                selectedCar?.current_mileage || null,
-                subscriptionPlan
-              )
-
-              return (
-                <div
-                  key={key}
-                  className={`border-l-4 p-2 rounded-r-lg ${getStatusColor(status)}`}
-                >
-                  <div className="flex items-center">
-                    <span className="text-sm mr-2">{icon}</span>
-                    <span className={`text-xs font-semibold ${getTextColor(status)}`}>
-                      {label}
-                    </span>
-                  </div>
-                  <div className="ml-6 text-[10px] text-gray-500 dark:text-gray-400 truncate">
-                    {getIntervalDisplay(key, latestRecord)}
-                  </div>
+          <>
+            <div className="grid grid-cols-2 gap-1">
+              {trackedTypes.length > 0 ? (
+                trackedTypes.map(item => renderStatusItem(item))
+              ) : (
+                <div className="col-span-2 text-center py-3 text-xs text-gray-500 dark:text-gray-400">
+                  No maintenance records yet. Add your first record below.
                 </div>
-              )
-            })}
-          </div>
+              )}
+            </div>
+
+            {untrackedTypes.length > 0 && (
+              <>
+                <button
+                  onClick={() => setShowUntracked(!showUntracked)}
+                  className="w-full mt-2 py-1.5 text-[11px] text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors flex items-center justify-center gap-1"
+                >
+                  <svg
+                    className={`w-3 h-3 transition-transform ${showUntracked ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                  {showUntracked ? `Hide ${untrackedTypes.length} untracked` : `Show ${untrackedTypes.length} more...`}
+                </button>
+
+                {showUntracked && (
+                  <div className="grid grid-cols-2 gap-1 mt-1">
+                    {untrackedTypes.map(item => renderStatusItem(item, true))}
+                  </div>
+                )}
+              </>
+            )}
+          </>
         ) : (
           <div className="relative">
             {/* Blurred preview */}
             <div className="filter blur-sm pointer-events-none select-none">
               <div className="grid grid-cols-2 gap-1">
-                {maintenanceTypes.map(({ key, label, icon }) => (
+                {maintenanceTypes.slice(0, 6).map(({ key, label, icon }) => (
                   <div
                     key={key}
                     className="border-l-4 p-2 rounded-r-lg border-green-500 bg-green-50 dark:bg-green-900/20"
@@ -570,10 +626,15 @@ function RecordsManager({
     { value: 'transmission_service', label: 'Transmission Service' },
     { value: 'coolant_flush', label: 'Coolant Flush' },
     { value: 'air_filter', label: 'Air Filter' },
+    { value: 'cabin_air_filter', label: 'Cabin Air Filter' },
+    { value: 'spark_plugs', label: 'Spark Plugs' },
     { value: 'tire_rotation', label: 'Tire Rotation' },
     { value: 'tire_change', label: 'Tire Change' },
     { value: 'brake_pads', label: 'Brake Pads' },
     { value: 'rotors', label: 'Rotors' },
+    { value: 'brake_fluid_flush', label: 'Brake Fluid Flush' },
+    { value: 'battery', label: 'Battery' },
+    { value: 'serpentine_belt', label: 'Serpentine Belt' },
     { value: 'wipers', label: 'Wipers' },
     { value: 'registration', label: 'Registration' }
   ]
@@ -3399,10 +3460,15 @@ function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan = 'free', userId
     { value: 'transmission_service', label: 'Transmission Service' },
     { value: 'coolant_flush', label: 'Coolant Flush' },
     { value: 'air_filter', label: 'Air Filter' },
+    { value: 'cabin_air_filter', label: 'Cabin Air Filter' },
+    { value: 'spark_plugs', label: 'Spark Plugs' },
     { value: 'tire_rotation', label: 'Tire Rotation' },
     { value: 'tire_change', label: 'Tire Change' },
     { value: 'brake_pads', label: 'Brake Pads' },
     { value: 'rotors', label: 'Rotors' },
+    { value: 'brake_fluid_flush', label: 'Brake Fluid Flush' },
+    { value: 'battery', label: 'Battery' },
+    { value: 'serpentine_belt', label: 'Serpentine Belt' },
     { value: 'wipers', label: 'Wipers' },
     { value: 'registration', label: 'Registration' }
   ]
