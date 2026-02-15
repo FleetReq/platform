@@ -17,12 +17,12 @@ FleetReq helps you **stop guessing when maintenance is due** and **track every d
 
 ### Key Features
 
-- ✅ **Automated Maintenance Alerts** - Never miss an oil change or brake inspection
-- ✅ **Fuel Efficiency Tracking** - MPG analytics with weekly/monthly/yearly trends
+- ✅ **10 Maintenance Types** - Oil change, tire rotation, tire change, brake pads, rotors, air filter, transmission, coolant, wipers, registration
 - ✅ **Color-Coded Status** - 🟢 Good / 🟡 Warning / 🔴 Overdue at a glance
-- ✅ **Tax Mileage Logging** - IRS-compliant business deduction tracking (Business tier)
-- ✅ **Multi-User Teams** - Invite drivers and mechanics (Business tier)
-- ✅ **Professional Reports** - Export analytics for tax season (Business tier)
+- ✅ **Fuel Efficiency Tracking** - MPG analytics with trends and cost-per-mile
+- ✅ **IRS Tax Deduction Tracking** - Dynamic yearly mileage rates with business trip logging (Business tier)
+- ✅ **Stripe Billing** - Subscription management with cancellation and downgrade flows
+- ✅ **Smart Automation** - Auto-creates tire rotation when tire change is logged
 
 ---
 
@@ -31,21 +31,19 @@ FleetReq helps you **stop guessing when maintenance is due** and **track every d
 ### **Free Tier** - Try Before You Buy
 - 1 vehicle maximum
 - Basic fuel tracking & MPG analysis
-- **View-only** maintenance status
-- 90-day data history
+- **View-only** maintenance status (no yellow warnings)
+- 90-day data history (enforced via daily cleanup)
 
 ### **Personal Tier** - $4/month
 - Up to 3 vehicles
-- **Full maintenance tracking** (add/edit alerts)
+- **Full maintenance tracking** with yellow warning alerts
+- Custom next service date/mileage scheduling
 - Unlimited data history
-- Fuel efficiency analytics
-- Export capabilities
 
 ### **Business Tier** - $12/vehicle/month
 - Unlimited vehicles (4+ recommended)
-- Up to 6 team members
-- Tax mileage tracking (IRS-compliant)
-- Professional reporting & analytics
+- IRS-compliant business trip logging with tax deduction calculations
+- All Personal tier features
 - Priority support
 
 **Why these prices?** Personal tier = "coffee money" impulse purchase. Business tier = 65% below market average ($35/vehicle/month typical).
@@ -55,21 +53,23 @@ FleetReq helps you **stop guessing when maintenance is due** and **track every d
 ## 🛠️ Technology Stack
 
 ### **Frontend**
-- **Next.js 15** - App Router with Server Components
+- **Next.js 16** - App Router with Turbopack bundler
+- **React 19** - Latest React with Server Components
 - **TypeScript** - Full type safety
-- **Tailwind CSS** - Professional design system
+- **Tailwind CSS 3** - Professional design system
 - **Chart.js** - Interactive fuel efficiency graphs
+- **next-themes** - Light/dark mode toggle
 
 ### **Backend**
 - **Supabase** - PostgreSQL database with Row Level Security (RLS)
-- **Supabase Auth** - Email/Password + Google OAuth
-- **RESTful APIs** - Clean API architecture with proper error handling
-- **Edge Functions** - Globally distributed backend
+- **Supabase Auth** - Email/Password + Google OAuth (cookie-based SSR sessions)
+- **Stripe** - Payment processing, subscriptions, webhooks
+- **RESTful APIs** - 29 route handlers with input validation
 
 ### **Hosting & DevOps**
 - **Vercel** - Auto-deployment from GitHub main branch
-- **GitHub Actions** - Automated CI/CD pipeline
-- **Environment Management** - Secure .env.local configuration
+- **GitHub Actions** - 4 automated cron workflows
+- **Security Headers** - CSP, HSTS, X-Frame-Options via vercel.json
 
 ---
 
@@ -102,6 +102,16 @@ Create `.env.local` in the root directory:
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 
+# Stripe (REQUIRED for billing)
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# Supabase Service Role (REQUIRED for cron jobs)
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# Direct DB Connection (for keep-alive)
+DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT_REF].supabase.co:5432/postgres
+
 # Google Analytics (Optional)
 NEXT_PUBLIC_GA_ID=G-YOUR-GA-ID-HERE
 ```
@@ -109,7 +119,7 @@ NEXT_PUBLIC_GA_ID=G-YOUR-GA-ID-HERE
 **Where to find Supabase credentials:**
 1. Go to [supabase.com](https://supabase.com) → Create new project
 2. Project Settings → API
-3. Copy `Project URL` and `anon/public` key
+3. Copy `Project URL`, `anon/public` key, and `service_role` key
 
 ### 4. Set Up Database Schema
 Run these SQL files in **Supabase Dashboard → SQL Editor** (in order):
@@ -118,6 +128,8 @@ Run these SQL files in **Supabase Dashboard → SQL Editor** (in order):
 2. `supabase/02-create-trigger.sql` - Auto-create profiles on signup
 3. `supabase/03-update-test-users.sql` - Set up test accounts
 4. `supabase/13-fix-handle-new-user-security.sql` - Security fix
+
+Then run the migrations in `supabase/migrations/` in date order.
 
 **Test accounts will be created:**
 - `test-free@fleetreq.com` / `TestFree123!` (Free tier)
@@ -159,48 +171,77 @@ Navigate to **[http://localhost:3000](http://localhost:3000)**
 ```
 fleetreq-platform/
 ├── app/
-│   ├── page.tsx                    # Landing page with pricing
-│   ├── mileage/page.tsx            # Main dashboard application (2500+ lines)
-│   ├── pricing/page.tsx            # Detailed pricing table
+│   ├── page.tsx                     # Landing page
+│   ├── dashboard/page.tsx           # Main app dashboard (3500+ lines)
+│   ├── pricing/page.tsx             # Pricing table & comparison
+│   ├── checkout/
+│   │   ├── success/page.tsx         # Post-payment confirmation
+│   │   └── cancel/page.tsx          # Cancelled payment
+│   ├── auth/
+│   │   ├── callback/route.ts       # OAuth redirect handler
+│   │   └── popup-close/page.tsx    # OAuth popup close
 │   ├── components/
-│   │   ├── BackgroundAnimation.tsx # Animated gradient background
-│   │   └── UpgradePrompt.tsx       # Paywall overlays
+│   │   ├── BackgroundAnimation.tsx  # Animated gradient background
+│   │   └── UpgradePrompt.tsx        # Paywall overlays
 │   ├── api/
-│   │   ├── cars/route.ts           # Vehicle CRUD
-│   │   ├── fill-ups/route.ts       # Fuel tracking
-│   │   ├── maintenance/route.ts    # Maintenance records
-│   │   └── stats/route.ts          # Public aggregate stats
+│   │   ├── cars/                    # Vehicle CRUD + delete
+│   │   ├── fill-ups/               # Fuel tracking + bulk import
+│   │   ├── maintenance/            # Maintenance records (10 types)
+│   │   ├── trips/                  # Business/personal trip logging
+│   │   ├── stats/                  # Analytics & metrics
+│   │   ├── checkout/session/       # Stripe checkout
+│   │   ├── webhooks/stripe/        # Stripe webhook handler
+│   │   ├── subscription/           # Cancel & downgrade flows
+│   │   └── cron/                   # 4 automated jobs (see below)
+│   ├── icon.svg                    # FleetReq favicon
 │   └── globals.css                 # Design system & animations
 ├── components/
-│   └── AuthComponent.tsx           # Authentication UI
+│   └── AuthComponent.tsx            # Authentication UI & session
 ├── lib/
-│   ├── supabase.ts                 # Server-side Supabase clients
-│   └── supabase-client.ts          # Client-side + helper functions
+│   ├── supabase.ts                  # Server-side Supabase clients
+│   ├── supabase-client.ts           # Client-side helpers & feature gating
+│   ├── stripe-helpers.ts            # Stripe proration & quantity updates
+│   ├── rate-limit.ts                # API rate limiting (5 tiers)
+│   └── validation.ts               # Input validation & sanitization
 ├── supabase/
-│   └── *.sql                       # Database migrations
-└── __tests__/
-    └── lib/                        # Automated tests (46 passing)
+│   ├── *.sql                        # Base schema setup scripts
+│   └── migrations/                  # 9 database migrations
+├── .github/workflows/               # 4 GitHub Actions cron jobs
+├── __tests__/lib/                   # Automated tests (46 passing)
+├── SCHEMA.md                        # Complete database schema reference
+├── FUNCTIONS.md                     # Database triggers & functions
+└── SECURITY.md                      # Security documentation
 ```
 
 ---
 
-## 🔐 Security & Best Practices
+## ⚙️ Automated Cron Jobs (GitHub Actions)
+
+| Workflow | Schedule | Endpoint | Purpose |
+|----------|----------|----------|---------|
+| **Keep-Alive** | Every 4 hours | `/api/cron/keep-alive` | INSERT/DELETE/SELECT on heartbeat table to prevent Supabase free-tier auto-pause |
+| **Cleanup Expired Accounts** | Daily 00:00 UTC | `/api/cron/cleanup-expired-accounts` | GDPR-compliant deletion of accounts past scheduled deletion date |
+| **Cleanup Free Tier Data** | Daily 02:00 UTC | `/api/cron/cleanup-free-tier-data` | Deletes fill-ups, maintenance, and trips older than 90 days for free tier users |
+| **Execute Pending Downgrades** | Daily | `/api/cron/execute-pending-downgrades` | Processes subscription downgrades when effective date is reached |
+
+---
+
+## 🔐 Security
 
 ### **Row Level Security (RLS)**
-Every table uses Supabase RLS policies:
-- Users can ONLY see their own data
-- Pattern: `auth.uid() = user_id` on all queries
-- Admin users bypass limits in application logic (NOT database)
+- All user tables enforce `auth.uid() = user_id` on every query
+- System tables (heartbeat) restricted to service_role only
+- Admin bypass is application-level only, not database-level
 
 ### **Authentication**
-- Cookie-based sessions (NOT localStorage) for SSR compatibility
-- Uses `@supabase/ssr` package for Next.js 15
-- Google OAuth + Email/Password supported
+- Cookie-based sessions via `@supabase/ssr` (not localStorage)
+- Google OAuth + Email/Password
+- Optimistic auth state (no loading flash for logged-in users)
 
-### **Security Fixes Applied**
-- ✅ Fixed `handle_new_user` function with `SET search_path = public`
-- ✅ Prevents schema injection attacks
-- ✅ CAPTCHA protection ready (enable in Supabase Dashboard)
+### **API Protection**
+- **Rate Limiting** (`lib/rate-limit.ts`): AUTH (10/min), READ (100/min), WRITE (50/min), EXPENSIVE (10/min), ANONYMOUS (5/min)
+- **Input Validation** (`lib/validation.ts`): Sanitization for strings, emails, UUIDs, dates, numbers, enums
+- **Security Headers** (`vercel.json`): CSP, HSTS (2-year max-age), X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy
 
 ---
 
@@ -211,68 +252,11 @@ Every table uses Supabase RLS policies:
 npm test
 ```
 - 46 tests passing
-- Subscription logic tests
-- Vehicle limit enforcement tests
-- Database schema validation
+- Subscription logic validation
+- Vehicle limit enforcement
 
 ### **Manual Testing**
-Use `TESTING_CHECKLIST.md` for comprehensive browser testing:
-1. Free tier limits (1 vehicle, view-only maintenance)
-2. Personal tier features (3 vehicles, full maintenance)
-3. Business tier unlimited access
-4. Data isolation between accounts
-
----
-
-## 🛠️ Important Commands
-
-### **Monitor Free Tier Data Cleanup**
-Preview what data would be deleted (read-only):
-```bash
-curl https://fleetreq.vercel.app/api/cron/cleanup-free-tier-data
-```
-
-Response shows:
-- Number of free tier users
-- Fill-ups to delete (older than 90 days)
-- Maintenance records to delete
-- Trips to delete
-- Cutoff date
-
-**Note**: This is a read-only preview. The actual deletion runs automatically via GitHub Actions daily at 02:00 UTC.
-
-### **Manual Cleanup Execution** (Admin Only)
-```bash
-curl -X POST https://fleetreq.vercel.app/api/cron/cleanup-free-tier-data
-```
-
-### **Test Keep-Alive Ping**
-```bash
-curl https://fleetreq.vercel.app/api/cron/keep-alive
-```
-
-Verifies Supabase connection and prevents auto-pause on free tier projects.
-
----
-
-## 🚀 Deployment
-
-### **Automatic Deployment (Vercel)**
-1. Push to `main` branch
-2. Vercel auto-builds and deploys
-3. Live at [fleetreq.vercel.app](https://fleetreq.vercel.app) in 2-3 minutes
-
-### **Manual Deployment**
-```bash
-npm run build    # Build for production
-npm run start    # Test production build locally
-```
-
-### **Environment Variables (Vercel)**
-Add these in Vercel Dashboard → Project Settings → Environment Variables:
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `NEXT_PUBLIC_GA_ID` (optional)
+Use `TESTING_CHECKLIST.md` for comprehensive browser testing across all 3 tiers.
 
 ---
 
@@ -297,6 +281,25 @@ const IRS_MILEAGE_RATES: Record<number, number> = {
 
 ---
 
+## 🚀 Deployment
+
+### **Automatic Deployment (Vercel)**
+1. Push to `main` branch
+2. Vercel auto-builds and deploys
+3. Live at [fleetreq.vercel.app](https://fleetreq.vercel.app) in 2-3 minutes
+
+### **Environment Variables (Vercel)**
+Add these in Vercel Dashboard → Project Settings → Environment Variables:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `DATABASE_URL`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `NEXT_PUBLIC_GA_ID` (optional)
+
+---
+
 ## 🔧 Troubleshooting
 
 ### **Port 3000 Required**
@@ -304,7 +307,7 @@ Google OAuth is configured for `http://localhost:3000/auth/callback`.
 Running on 3001, 3002, etc. will break authentication.
 
 ### **"Your project's URL and Key are required"**
-Missing `.env.local` file. Copy from `/d/Documents/coding/my-resume-site/.env.local` or create new one.
+Missing `.env.local` file. Create one with the required Supabase variables.
 
 ### **Data Not Showing After Login**
 Check RLS policies in Supabase Dashboard → Authentication → Policies.
@@ -317,49 +320,36 @@ Supabase Dashboard → Authentication → URL Configuration:
 
 ---
 
-## 📊 Business Strategy
-
-### **Target Market - Dual Funnel**
-1. **Families** (Volume) - 100M+ potential users, $4/month Personal tier
-2. **Small Contractors** (Revenue) - 6M businesses, $12/vehicle/month Business tier
-
-### **Freemium Conversion Strategy**
-Free tier is **intentionally limited** to prevent account sharing:
-- View-only maintenance (can't add alerts)
-- **90-day history limit** (enforced via API validation + automated cleanup)
-- Cannot add data older than 90 days
-- Old data automatically deleted daily
-- Essential features behind paywall drives upgrades
-
-### **Mobile Strategy (Phase 2)**
-Free mobile app for massive App Store downloads → brand awareness → contractor discovery.
-
----
-
 ## 🎯 Roadmap
 
-### **Recently Completed** ✅
-- [x] Data retention enforcement (90-day limit for free tier)
-- [x] Automated cleanup cron job (runs daily at 02:00 UTC)
-- [x] API validation for old data entry prevention
-- [x] Pricing page improvements (disabled downgrades to free)
+### **Completed** ✅
+- [x] Fuel tracking with MPG analytics and cost-per-mile
+- [x] 10 maintenance types with interval-based alerts
+- [x] Auto-create tire rotation on tire change
+- [x] Stripe billing with subscription management
+- [x] Subscription cancellation with 30-day grace period
+- [x] Automatic plan downgrades
+- [x] IRS business trip logging with dynamic yearly rates
+- [x] Free tier 90-day data retention enforcement
+- [x] GDPR-compliant account deletion
+- [x] Supabase keep-alive system (prevents auto-pause)
+- [x] Security headers, rate limiting, input validation
+- [x] FleetReq branding and favicon
+- [x] Light/dark mode
+- [x] Future-date input warnings
 
-### **Immediate (Next Week)**
-- [ ] Update browser tab icon (favicon)
-- [ ] First-time UX improvements
-- [ ] Enable CAPTCHA protection
+### **Next Up**
+- [ ] PWA support (service worker, offline, installable)
+- [ ] Professional reporting & CSV/PDF export (Business tier)
+- [ ] Team invitation system (Business tier)
+- [ ] Photo/receipt upload for maintenance records
+- [ ] Custom maintenance intervals per vehicle (Business tier)
 
-### **Short-term (Next Month)**
-- [ ] Stripe billing integration
-- [ ] Professional reporting (Business tier)
-- [ ] Team invitation system
-- [ ] Excel import tools for contractors
-
-### **Medium-term (3-6 Months)**
-- [ ] PWA/Mobile app launch
-- [ ] Advanced analytics dashboard
-- [ ] Custom branding (Business tier)
-- [ ] Domain purchase (fleetreq.com)
+### **Future**
+- [ ] Native mobile apps (iOS + Android)
+- [ ] GPS mileage tracking
+- [ ] OCR auto-extract from receipts
+- [ ] QuickBooks integration
 
 ---
 
@@ -371,5 +361,5 @@ Free mobile app for massive App Store downloads → brand awareness → contract
 
 ---
 
-**FleetReq Platform** • **Next.js 15** • **TypeScript** • **Supabase**
+**FleetReq Platform** • **Next.js 16** • **TypeScript** • **Supabase** • **Stripe**
 *Professional vehicle management for families and small businesses*
