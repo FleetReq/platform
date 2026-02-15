@@ -354,7 +354,7 @@ npm run dev  # MUST show: http://localhost:3000
      - Add **Cost Per Mile** calculation: `(fuel + maintenance) / total miles`
      - Add **YTD Total Cost**: Fuel + Maintenance year-to-date
      - Add **YTD Business Miles**: For tax deduction calculation
-     - Add **Standard Mileage Deduction**: Business miles × $0.67 (IRS rate)
+     - Add **Standard Mileage Deduction**: Business miles × IRS rate (see `IRS_MILEAGE_RATES` in `app/dashboard/page.tsx`)
      - Add **This Month** spending: Current month fuel + maintenance
      - Split display by tier: Business (tax focus) vs Personal (budgeting focus)
    - **Phase 1 Metrics** (This Week):

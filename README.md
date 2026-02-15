@@ -276,6 +276,27 @@ Add these in Vercel Dashboard → Project Settings → Environment Variables:
 
 ---
 
+## 📅 Annual Maintenance
+
+### **IRS Standard Mileage Rate Update (Late December)**
+The IRS announces the new business mileage rate around **December 28-31** each year, effective January 1.
+
+**When announced**, update the `IRS_MILEAGE_RATES` lookup in `app/dashboard/page.tsx`:
+```ts
+const IRS_MILEAGE_RATES: Record<number, number> = {
+  2024: 0.67,
+  2025: 0.70,
+  2026: 0.725,
+  // Add new year here when IRS announces it
+}
+```
+
+**Source**: [IRS Standard Mileage Rates](https://www.irs.gov/tax-professionals/standard-mileage-rates)
+
+> If the new rate isn't added in time, the app automatically falls back to the most recent known rate.
+
+---
+
 ## 🔧 Troubleshooting
 
 ### **Port 3000 Required**
