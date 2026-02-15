@@ -2789,6 +2789,15 @@ function AddCarForm({ onSuccess }: { onSuccess: () => void }) {
   )
 }
 
+// Helper: check if a date string (YYYY-MM-DD) is in the future
+function isFutureDate(dateStr: string): boolean {
+  if (!dateStr) return false
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const inputDate = new Date(dateStr + 'T00:00:00')
+  return inputDate > today
+}
+
 // Add Fill-up Form Component
 function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void }) {
   const [formData, setFormData] = useState({
@@ -2927,8 +2936,11 @@ function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void
               required
               value={formData.date}
               onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className={`w-full px-4 py-2 h-12 border rounded-lg focus:ring-2 dark:bg-gray-700 dark:text-white ${isFutureDate(formData.date) ? 'border-yellow-500 dark:border-yellow-500 focus:ring-yellow-500' : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'}`}
             />
+            {isFutureDate(formData.date) && (
+              <p className="text-yellow-600 dark:text-yellow-400 text-sm mt-1">This date is in the future</p>
+            )}
           </div>
         </div>
 
@@ -3386,8 +3398,11 @@ function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan = 'free' }: { ca
               required
               value={formData.date}
               onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              className={`w-full px-4 py-2 h-12 border rounded-lg focus:ring-2 dark:bg-gray-700 dark:text-white ${isFutureDate(formData.date) ? 'border-yellow-500 dark:border-yellow-500 focus:ring-yellow-500' : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'}`}
             />
+            {isFutureDate(formData.date) && (
+              <p className="text-yellow-600 dark:text-yellow-400 text-sm mt-1">This date is in the future</p>
+            )}
           </div>
         </div>
 
