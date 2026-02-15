@@ -109,7 +109,7 @@ export function getMaintenanceStatus(
     } else if (milesUntilService <= 1000) {
       mileageStatus = 'warning'
     }
-  } else if (interval.miles && lastMaintenanceRecord.mileage && currentMileage !== null) {
+  } else if (interval.miles && lastMaintenanceRecord.mileage != null && currentMileage !== null) {
     // Fallback: Use default mileage interval
     const mileageElapsed = currentMileage - lastMaintenanceRecord.mileage
     const mileageProgress = mileageElapsed / interval.miles
