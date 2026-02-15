@@ -5,6 +5,9 @@ import Link from 'next/link'
 import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner, getUserSubscriptionPlan, getUserMaxVehicles, hasFeatureAccess } from '@/lib/supabase-client'
 import BackgroundAnimation from '../components/BackgroundAnimation'
 import AuthComponent from '../../components/AuthComponent'
+import RecordDetailModal from '../../components/RecordDetailModal'
+import ReceiptPhotoPicker from '../../components/ReceiptPhotoPicker'
+import { useReceiptUpload } from '@/lib/use-receipt-upload'
 import type { User } from '@supabase/supabase-js'
 import {
   Chart as ChartJS,
@@ -350,12 +353,16 @@ function RecordsManager({
   cars,
   fillUps,
   maintenanceRecords,
-  onRecordDeleted
+  onRecordDeleted,
+  userId,
+  subscriptionPlan
 }: {
   cars: Car[],
   fillUps: FillUp[],
   maintenanceRecords: MaintenanceRecord[],
-  onRecordDeleted: () => void
+  onRecordDeleted: () => void,
+  userId: string,
+  subscriptionPlan: 'free' | 'personal' | 'business'
 }) {
   const [searchTerm, setSearchTerm] = useState('')
   const [recordType, setRecordType] = useState<'all' | 'fillups' | 'maintenance'>('all')
@@ -368,6 +375,7 @@ function RecordsManager({
   const [currentPage, setCurrentPage] = useState(1)
   const [jumpToPage, setJumpToPage] = useState('')
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'fillup' | 'maintenance', id: string, description: string } | null>(null)
+  const [selectedRecord, setSelectedRecord] = useState<{ type: 'fillup' | 'maintenance', record: FillUp | MaintenanceRecord, car: Car } | null>(null)
   const recordsPerPage = 20
 
   // Filter records based on search and filters
@@ -766,7 +774,8 @@ function RecordsManager({
                 {paginatedRecords.map((record) => (
                   <tr
                     key={`${record.type}-${record.id}`}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150"
+                    className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 cursor-pointer"
+                    onClick={() => setSelectedRecord({ type: record.type, record: record.record, car: record.car })}
                   >
                     <td className="px-2 py-2 whitespace-nowrap">
                       <div className="flex items-center space-x-1">
@@ -811,11 +820,11 @@ function RecordsManager({
                     </td>
                     <td className="px-2 py-2 whitespace-nowrap text-right">
                       <button
-                        onClick={() => setDeleteConfirm({
+                        onClick={(e) => { e.stopPropagation(); setDeleteConfirm({
                           type: record.type,
                           id: record.id,
                           description: record.description
-                        })}
+                        }); }}
                         className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors duration-200"
                         title="Delete record"
                       >
@@ -907,6 +916,19 @@ function RecordsManager({
           </div>
         )}
       </div>
+
+      {/* Record Detail/Edit Modal */}
+      {selectedRecord && (
+        <RecordDetailModal
+          recordType={selectedRecord.type}
+          record={selectedRecord.record}
+          car={selectedRecord.car}
+          userId={userId}
+          subscriptionPlan={subscriptionPlan}
+          onClose={() => setSelectedRecord(null)}
+          onSaved={() => onRecordDeleted()}
+        />
+      )}
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
@@ -2597,7 +2619,7 @@ export default function MileageTracker() {
               {/* Add Fill-up Form */}
               {activeTab === 'add-fillup' && cars.length > 0 && (
                 <div className="card-professional p-6">
-                  <AddFillUpForm cars={cars} onSuccess={() => { loadData(); setActiveTab('dashboard'); }} />
+                  <AddFillUpForm cars={cars} onSuccess={() => { loadData(); setActiveTab('dashboard'); }} subscriptionPlan={userSubscriptionPlan} userId={user?.id || ''} />
                 </div>
               )}
 
@@ -2615,6 +2637,7 @@ export default function MileageTracker() {
                     cars={cars}
                     onSuccess={() => { loadData(); setActiveTab('dashboard'); }}
                     subscriptionPlan={userSubscriptionPlan}
+                    userId={user?.id || ''}
                   />
                 </div>
               )}
@@ -2627,6 +2650,8 @@ export default function MileageTracker() {
                     fillUps={fillUps}
                     maintenanceRecords={maintenanceRecords}
                     onRecordDeleted={() => loadData()}
+                    userId={user?.id || ''}
+                    subscriptionPlan={userSubscriptionPlan}
                   />
                 </div>
               )}
@@ -2819,7 +2844,9 @@ function isFutureDate(dateStr: string): boolean {
 }
 
 // Add Fill-up Form Component
-function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void }) {
+function AddFillUpForm({ cars, onSuccess, subscriptionPlan = 'free', userId = '' }: { cars: Car[], onSuccess: () => void, subscriptionPlan?: 'free' | 'personal' | 'business', userId?: string }) {
+  const receiptUpload = useReceiptUpload()
+  const canUploadReceipts = hasFeatureAccess(userId, subscriptionPlan, 'receipt_upload')
   const [formData, setFormData] = useState({
     car_id: cars[0]?.id || '',
     date: new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }),
@@ -2893,6 +2920,7 @@ function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void
     setLoading(true)
 
     try {
+      // First, create the record
       const response = await fetch('/api/fill-ups', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2900,6 +2928,22 @@ function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void
       })
 
       if (response.ok) {
+        const { fillUp: createdFillUp } = await response.json()
+
+        // Upload receipt photos if any
+        const pendingPhotos = receiptUpload.files.filter(f => f.status === 'pending')
+        if (pendingPhotos.length > 0 && createdFillUp?.id && userId) {
+          const paths = await receiptUpload.uploadAll(userId, 'fill_ups', createdFillUp.id)
+          if (paths.length > 0) {
+            // Update the record with receipt URLs
+            await fetch(`/api/fill-ups/${createdFillUp.id}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ receipt_urls: paths })
+            })
+          }
+        }
+
         // Reset form to initial state
         setFormData({
           car_id: cars[0]?.id || '',
@@ -2913,6 +2957,7 @@ function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void
           notes: '',
           consecutive_fillup: true
         })
+        receiptUpload.reset()
         // Small delay to ensure API completes before refresh
         setTimeout(() => {
           onSuccess()
@@ -3082,9 +3127,20 @@ function AddFillUpForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void
           </label>
         </div>
 
+        {canUploadReceipts && (
+          <ReceiptPhotoPicker
+            files={receiptUpload.files}
+            canAddMore={receiptUpload.canAddMore}
+            remainingSlots={receiptUpload.remainingSlots}
+            isUploading={receiptUpload.isUploading}
+            onAddFiles={receiptUpload.addFiles}
+            onRemoveFile={receiptUpload.removeFile}
+          />
+        )}
+
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || receiptUpload.isUploading}
           className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-3 rounded-lg transition-colors duration-200"
         >
           {loading ? 'Adding...' : 'Add Fill-up'}
@@ -3270,7 +3326,9 @@ function AddTripForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void }
 }
 
 // Add Maintenance Form Component
-function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan = 'free' }: { cars: Car[], onSuccess: () => void, subscriptionPlan?: 'free' | 'personal' | 'business' }) {
+function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan = 'free', userId = '' }: { cars: Car[], onSuccess: () => void, subscriptionPlan?: 'free' | 'personal' | 'business', userId?: string }) {
+  const receiptUpload = useReceiptUpload()
+  const canUploadReceipts = hasFeatureAccess(userId, subscriptionPlan, 'receipt_upload')
   const [formData, setFormData] = useState({
     car_id: cars[0]?.id || '',
     date: new Date().toISOString().split('T')[0],
@@ -3361,6 +3419,21 @@ function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan = 'free' }: { ca
       })
 
       if (response.ok) {
+        const { maintenanceRecord: createdRecord } = await response.json()
+
+        // Upload receipt photos if any
+        const pendingPhotos = receiptUpload.files.filter(f => f.status === 'pending')
+        if (pendingPhotos.length > 0 && createdRecord?.id && userId) {
+          const paths = await receiptUpload.uploadAll(userId, 'maintenance', createdRecord.id)
+          if (paths.length > 0) {
+            await fetch(`/api/maintenance/${createdRecord.id}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ receipt_urls: paths })
+            })
+          }
+        }
+
         // Reset form to initial state
         setFormData({
           car_id: cars[0]?.id || '',
@@ -3375,6 +3448,7 @@ function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan = 'free' }: { ca
           next_service_mileage: '',
           notes: ''
         })
+        receiptUpload.reset()
         // Small delay to ensure API completes before refresh
         setTimeout(() => {
           onSuccess()
@@ -3557,9 +3631,20 @@ function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan = 'free' }: { ca
           />
         </div>
 
+        {canUploadReceipts && (
+          <ReceiptPhotoPicker
+            files={receiptUpload.files}
+            canAddMore={receiptUpload.canAddMore}
+            remainingSlots={receiptUpload.remainingSlots}
+            isUploading={receiptUpload.isUploading}
+            onAddFiles={receiptUpload.addFiles}
+            onRemoveFile={receiptUpload.removeFile}
+          />
+        )}
+
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || receiptUpload.isUploading}
           className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-3 rounded-lg transition-colors duration-200"
         >
           {loading ? 'Adding...' : 'Add Maintenance Record'}

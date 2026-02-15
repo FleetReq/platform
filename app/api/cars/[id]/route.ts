@@ -53,6 +53,29 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
+    // Collect receipt storage paths before cascade delete
+    const receiptPaths: string[] = []
+    const { data: fillUpsWithReceipts } = await supabase
+      .from('fill_ups')
+      .select('receipt_urls')
+      .eq('car_id', carId)
+      .neq('receipt_urls', '{}')
+    if (fillUpsWithReceipts) {
+      for (const row of fillUpsWithReceipts) {
+        if (row.receipt_urls?.length) receiptPaths.push(...row.receipt_urls)
+      }
+    }
+    const { data: maintenanceWithReceipts } = await supabase
+      .from('maintenance_records')
+      .select('receipt_urls')
+      .eq('car_id', carId)
+      .neq('receipt_urls', '{}')
+    if (maintenanceWithReceipts) {
+      for (const row of maintenanceWithReceipts) {
+        if (row.receipt_urls?.length) receiptPaths.push(...row.receipt_urls)
+      }
+    }
+
     // Delete the car (CASCADE will delete associated fill-ups and maintenance records)
     const { error: deleteError } = await supabase
       .from('cars')
@@ -68,6 +91,13 @@ export async function DELETE(
           details: deleteError.message
         })
       }, { status: 500 })
+    }
+
+    // Clean up receipt storage files (non-blocking)
+    if (receiptPaths.length > 0) {
+      supabase.storage.from('receipts').remove(receiptPaths).catch((err: unknown) => {
+        console.error('Error cleaning up receipt storage for car delete:', err)
+      })
     }
 
     // Handle Stripe subscription update for Business tier users

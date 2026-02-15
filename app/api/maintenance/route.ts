@@ -103,6 +103,17 @@ export async function POST(request: NextRequest) {
     const next_service_mileage = validateInteger(body.next_service_mileage, { min: 0, max: 999999 })
     const notes = sanitizeString(body.notes, { maxLength: 500 })
 
+    // Validate receipt_urls if provided
+    let receipt_urls: string[] | undefined
+    if (Array.isArray(body.receipt_urls)) {
+      if (body.receipt_urls.length > 5) {
+        return NextResponse.json({ error: 'Maximum 5 receipt photos allowed' }, { status: 400 })
+      }
+      receipt_urls = body.receipt_urls.filter(
+        (url: unknown) => typeof url === 'string' && url.length < 500
+      )
+    }
+
     if (!car_id || !type) {
       return NextResponse.json(
         { error: 'Valid car ID and maintenance type are required' },
@@ -159,6 +170,11 @@ export async function POST(request: NextRequest) {
     // Only add oil_type if it exists (for backward compatibility)
     if (oil_type) {
       insertData.oil_type = oil_type
+    }
+
+    // Add receipt_urls if provided
+    if (receipt_urls && receipt_urls.length > 0) {
+      insertData.receipt_urls = receipt_urls
     }
 
     const { data: maintenanceRecord, error } = await supabase

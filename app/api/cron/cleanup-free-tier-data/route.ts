@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     // We need to join with cars to get user_id since fill_ups doesn't have user_id directly
     const { data: oldFillUps, error: fillUpsSelectError } = await supabaseAdmin
       .from('fill_ups')
-      .select('id, car_id, cars!inner(user_id)')
+      .select('id, car_id, receipt_urls, cars!inner(user_id)')
       .lt('date', cutoffDate)
       .in('cars.user_id', freeUserIds)
 
@@ -71,6 +71,12 @@ export async function POST(request: NextRequest) {
     if (fillUpsSelectError) {
       console.error('Error selecting old fill-ups:', fillUpsSelectError)
     } else if (oldFillUps && oldFillUps.length > 0) {
+      // Collect receipt storage paths before deletion
+      const receiptPaths: string[] = []
+      for (const f of oldFillUps) {
+        if (f.receipt_urls?.length) receiptPaths.push(...f.receipt_urls)
+      }
+
       const fillUpIds = oldFillUps.map(f => f.id)
       const { error: fillUpsDeleteError } = await supabaseAdmin
         .from('fill_ups')
@@ -81,13 +87,19 @@ export async function POST(request: NextRequest) {
         console.error('Error deleting old fill-ups:', fillUpsDeleteError)
       } else {
         deletedFillUps = fillUpIds.length
+        // Clean up storage files
+        if (receiptPaths.length > 0) {
+          await supabaseAdmin.storage.from('receipts').remove(receiptPaths).catch((err: unknown) => {
+            console.error('Error cleaning up fill-up receipts:', err)
+          })
+        }
       }
     }
 
     // Delete old maintenance records for free tier users
     const { data: oldMaintenance, error: maintenanceSelectError } = await supabaseAdmin
       .from('maintenance_records')
-      .select('id, car_id, cars!inner(user_id)')
+      .select('id, car_id, receipt_urls, cars!inner(user_id)')
       .lt('date', cutoffDate)
       .in('cars.user_id', freeUserIds)
 
@@ -95,6 +107,12 @@ export async function POST(request: NextRequest) {
     if (maintenanceSelectError) {
       console.error('Error selecting old maintenance:', maintenanceSelectError)
     } else if (oldMaintenance && oldMaintenance.length > 0) {
+      // Collect receipt storage paths before deletion
+      const receiptPaths: string[] = []
+      for (const m of oldMaintenance) {
+        if (m.receipt_urls?.length) receiptPaths.push(...m.receipt_urls)
+      }
+
       const maintenanceIds = oldMaintenance.map(m => m.id)
       const { error: maintenanceDeleteError } = await supabaseAdmin
         .from('maintenance_records')
@@ -105,6 +123,12 @@ export async function POST(request: NextRequest) {
         console.error('Error deleting old maintenance:', maintenanceDeleteError)
       } else {
         deletedMaintenance = maintenanceIds.length
+        // Clean up storage files
+        if (receiptPaths.length > 0) {
+          await supabaseAdmin.storage.from('receipts').remove(receiptPaths).catch((err: unknown) => {
+            console.error('Error cleaning up maintenance receipts:', err)
+          })
+        }
       }
     }
 

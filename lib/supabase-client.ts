@@ -82,6 +82,7 @@ export interface FillUp {
   location?: string
   notes?: string
   mpg?: number
+  receipt_urls?: string[]
   created_by_user_id?: string
   created_at: string
   updated_at: string
@@ -101,6 +102,7 @@ export interface MaintenanceRecord {
   next_service_date?: string
   next_service_mileage?: number
   notes?: string
+  receipt_urls?: string[]
   created_by_user_id?: string
   created_at: string
   updated_at: string
@@ -227,8 +229,8 @@ export const hasFeatureAccess = (userId: string, plan: 'free' | 'personal' | 'bu
 
   const features = {
     free: ['fuel_tracking', 'basic_analytics'],
-    personal: ['fuel_tracking', 'basic_analytics', 'maintenance_tracking', 'mobile_app', 'unlimited_history'],
-    business: ['fuel_tracking', 'basic_analytics', 'maintenance_tracking', 'mobile_app', 'unlimited_history', 'team_collaboration', 'tax_mileage_tracking', 'professional_reporting', 'advanced_mobile_features']
+    personal: ['fuel_tracking', 'basic_analytics', 'maintenance_tracking', 'mobile_app', 'unlimited_history', 'receipt_upload'],
+    business: ['fuel_tracking', 'basic_analytics', 'maintenance_tracking', 'mobile_app', 'unlimited_history', 'receipt_upload', 'team_collaboration', 'tax_mileage_tracking', 'professional_reporting', 'advanced_mobile_features']
   }
 
   return features[plan]?.includes(feature) || false
@@ -241,7 +243,8 @@ export const getUpgradeMessage = (feature: string): string => {
     unlimited_history: "Upgrade to Personal ($4/month) for unlimited data history (free plan limited to 90 days)",
     team_collaboration: "Upgrade to Business ($12/vehicle/month) to invite team members and collaborate",
     tax_mileage_tracking: "Upgrade to Business ($12/vehicle/month) for IRS-compliant business mileage tracking",
-    professional_reporting: "Upgrade to Business ($12/vehicle/month) for professional reports and tax compliance"
+    professional_reporting: "Upgrade to Business ($12/vehicle/month) for professional reports and tax compliance",
+    receipt_upload: "Upgrade to Personal ($4/month) to upload receipt photos"
   }
 
   return messages[feature as keyof typeof messages] || "Upgrade to unlock this feature"

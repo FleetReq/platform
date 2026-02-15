@@ -96,6 +96,17 @@ export async function POST(request: NextRequest) {
     const location = sanitizeString(body.location, { maxLength: 200 })
     const notes = sanitizeString(body.notes, { maxLength: 500 })
 
+    // Validate receipt_urls if provided
+    let receipt_urls: string[] | undefined
+    if (Array.isArray(body.receipt_urls)) {
+      if (body.receipt_urls.length > 5) {
+        return NextResponse.json({ error: 'Maximum 5 receipt photos allowed' }, { status: 400 })
+      }
+      receipt_urls = body.receipt_urls.filter(
+        (url: unknown) => typeof url === 'string' && url.length < 500
+      )
+    }
+
     if (!car_id || !odometer_reading || !gallons) {
       return NextResponse.json(
         { error: 'Valid car ID, odometer reading, and gallons are required' },
@@ -170,6 +181,11 @@ export async function POST(request: NextRequest) {
     // Only add fuel_type if it exists (for backward compatibility)
     if (fuel_type) {
       insertData.fuel_type = fuel_type
+    }
+
+    // Add receipt_urls if provided
+    if (receipt_urls && receipt_urls.length > 0) {
+      insertData.receipt_urls = receipt_urls
     }
 
     const { data: fillUp, error } = await supabase

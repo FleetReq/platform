@@ -63,6 +63,32 @@ export async function POST(request: NextRequest) {
       try {
         const userId = profile.id
 
+        // Delete user's receipt storage folder
+        const { data: storageFiles } = await supabase.storage
+          .from('receipts')
+          .list(userId, { limit: 1000 })
+        if (storageFiles && storageFiles.length > 0) {
+          // List all files recursively and delete them
+          const allPaths: string[] = []
+          const listRecursive = async (prefix: string) => {
+            const { data: items } = await supabase.storage.from('receipts').list(prefix, { limit: 1000 })
+            if (items) {
+              for (const item of items) {
+                const fullPath = `${prefix}/${item.name}`
+                if (item.metadata) {
+                  allPaths.push(fullPath)
+                } else {
+                  await listRecursive(fullPath)
+                }
+              }
+            }
+          }
+          await listRecursive(userId)
+          if (allPaths.length > 0) {
+            await supabase.storage.from('receipts').remove(allPaths)
+          }
+        }
+
         // Delete user data in order (cascades handle most of this, but being explicit)
         // 1. Delete fill_ups (cascades from car deletion)
         // 2. Delete maintenance_records (cascades from car deletion)

@@ -1,7 +1,7 @@
 # FleetReq Database Schema
 
 > **CRITICAL**: Always verify column names against this schema before writing to the database.
-> Last Updated: 2025-11-17
+> Last Updated: 2026-02-15
 
 ---
 
@@ -158,6 +158,7 @@ CREATE TABLE public.fill_ups (
   updated_at timestamp with time zone NULL DEFAULT now(),
   fuel_type character varying(20) NULL DEFAULT NULL,
   created_by_user_id uuid NULL,
+  receipt_urls text[] NOT NULL DEFAULT '{}',
 
   CONSTRAINT fill_ups_pkey PRIMARY KEY (id),
   CONSTRAINT fill_ups_car_id_fkey FOREIGN KEY (car_id) REFERENCES cars (id) ON DELETE CASCADE,
@@ -165,7 +166,8 @@ CREATE TABLE public.fill_ups (
   CONSTRAINT fill_ups_gallons_check CHECK (gallons > 0),
   CONSTRAINT fill_ups_odometer_reading_check CHECK (odometer_reading >= 0),
   CONSTRAINT fill_ups_price_per_gallon_check CHECK (price_per_gallon IS NULL OR price_per_gallon > 0),
-  CONSTRAINT fill_ups_total_cost_check CHECK (total_cost IS NULL OR total_cost > 0)
+  CONSTRAINT fill_ups_total_cost_check CHECK (total_cost IS NULL OR total_cost > 0),
+  CONSTRAINT fill_ups_receipt_urls_max_5 CHECK (array_length(receipt_urls, 1) IS NULL OR array_length(receipt_urls, 1) <= 5)
 )
 ```
 
@@ -192,6 +194,7 @@ CREATE TABLE public.fill_ups (
 - `miles_driven` - Miles driven since last fill-up (optional, used for MPG calculation)
 - `mpg` - **AUTO-CALCULATED by trigger** from `miles_driven / gallons`
 - `total_cost` - Optional, can be calculated or entered manually
+- `receipt_urls` - Array of Supabase Storage paths for receipt photos (max 5). Personal+ only.
 
 **Important Notes:**
 - `mpg` is auto-calculated by trigger if `miles_driven` is provided
@@ -222,10 +225,12 @@ CREATE TABLE public.maintenance_records (
   updated_at timestamp with time zone NULL DEFAULT now(),
   oil_type character varying(20) NULL DEFAULT NULL,
   created_by_user_id uuid NULL,
+  receipt_urls text[] NOT NULL DEFAULT '{}',
 
   CONSTRAINT maintenance_records_pkey PRIMARY KEY (id),
   CONSTRAINT maintenance_records_car_id_fkey FOREIGN KEY (car_id) REFERENCES cars (id) ON DELETE CASCADE,
   CONSTRAINT fk_maintenance_records_created_by_user FOREIGN KEY (created_by_user_id) REFERENCES auth.users (id),
+  CONSTRAINT maintenance_records_receipt_urls_max_5 CHECK (array_length(receipt_urls, 1) IS NULL OR array_length(receipt_urls, 1) <= 5),
   CONSTRAINT maintenance_records_type_check CHECK (
     type = ANY (ARRAY[
       'oil_change'::text,
@@ -272,6 +277,7 @@ CREATE TABLE public.maintenance_records (
 - `type` - Must be one of 10 valid maintenance types (see CHECK constraint)
 - `oil_type` - Only relevant for oil_change type
 - `source_record_id` - Links auto-created records to their source (e.g., tire_rotation created from tire_change). FK with ON DELETE CASCADE — deleting the source deletes the auto-created record.
+- `receipt_urls` - Array of Supabase Storage paths for receipt photos (max 5). Personal+ only.
 
 **Valid Maintenance Types:**
 - `oil_change`
@@ -313,6 +319,31 @@ CREATE TABLE public.heartbeat (
 - `app/api/cron/keep-alive/route.ts` - API endpoint
 
 **Auto-Cleanup:** Keeps only the last 100 records (old records deleted automatically)
+
+---
+
+## Storage: receipts bucket
+
+**Private storage bucket for receipt photos**
+
+```sql
+-- Bucket config
+id: 'receipts'
+public: false
+file_size_limit: 2097152 (2MB)
+allowed_mime_types: ['image/jpeg', 'image/png', 'image/webp']
+```
+
+**Path Convention:** `{user_id}/{record_type}/{record_uuid}/{filename}`
+
+**RLS Policies:**
+- `Users can upload own receipts` - INSERT: `(storage.foldername(name))[1] = auth.uid()::text`
+- `Users can view own receipts` - SELECT: `(storage.foldername(name))[1] = auth.uid()::text`
+- `Users can delete own receipts` - DELETE: `(storage.foldername(name))[1] = auth.uid()::text`
+
+**Feature Gating:** Free tier cannot upload receipts. Personal and Business tiers can upload up to 5 photos per record.
+
+**Cleanup:** Storage files are deleted when records are deleted, cars are deleted, or accounts are cleaned up via cron jobs.
 
 ---
 
