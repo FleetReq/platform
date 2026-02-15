@@ -408,16 +408,16 @@ export default function PricingPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700">
-                  <th className="text-left py-4 px-6 font-medium text-gray-900 dark:text-white">
+                  <th className="text-left py-3 px-3 sm:py-4 sm:px-6 font-medium text-sm sm:text-base text-gray-900 dark:text-white">
                     Features
                   </th>
-                  <th className="text-center py-4 px-6 font-medium text-gray-900 dark:text-white">
+                  <th className="text-center py-3 px-3 sm:py-4 sm:px-6 font-medium text-sm sm:text-base text-gray-900 dark:text-white">
                     Free
                   </th>
-                  <th className="text-center py-4 px-6 font-medium text-blue-600 dark:text-blue-400">
+                  <th className="text-center py-3 px-3 sm:py-4 sm:px-6 font-medium text-sm sm:text-base text-blue-600 dark:text-blue-400">
                     Personal
                   </th>
-                  <th className="text-center py-4 px-6 font-medium text-gray-900 dark:text-white">
+                  <th className="text-center py-3 px-3 sm:py-4 sm:px-6 font-medium text-sm sm:text-base text-gray-900 dark:text-white">
                     Business
                   </th>
                 </tr>
@@ -425,10 +425,10 @@ export default function PricingPage() {
               <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                 {allFeatures.map((feature, index) => (
                   <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                    <td className="py-4 px-6 text-gray-900 dark:text-white font-medium">
+                    <td className="py-3 px-3 sm:py-4 sm:px-6 text-sm sm:text-base text-gray-900 dark:text-white font-medium">
                       {feature.name}
                     </td>
-                    <td className="py-4 px-6 text-center">
+                    <td className="py-3 px-3 sm:py-4 sm:px-6 text-center">
                       {typeof feature.free === 'boolean' ? (
                         feature.free ? (
                           <span className="text-green-500">✓</span>
@@ -436,10 +436,10 @@ export default function PricingPage() {
                           <span className="text-gray-400">✗</span>
                         )
                       ) : (
-                        <span className="text-gray-900 dark:text-white">{feature.free}</span>
+                        <span className="text-gray-900 dark:text-white text-sm">{feature.free}</span>
                       )}
                     </td>
-                    <td className="py-4 px-6 text-center">
+                    <td className="py-3 px-3 sm:py-4 sm:px-6 text-center">
                       {typeof feature.personal === 'boolean' ? (
                         feature.personal ? (
                           <svg className="w-5 h-5 text-green-500 mx-auto" fill="currentColor" viewBox="0 0 20 20">
@@ -456,7 +456,7 @@ export default function PricingPage() {
                         </span>
                       )}
                     </td>
-                    <td className="py-4 px-6 text-center">
+                    <td className="py-3 px-3 sm:py-4 sm:px-6 text-center">
                       {typeof feature.business === 'boolean' ? (
                         feature.business ? (
                           <svg className="w-5 h-5 text-green-500 mx-auto" fill="currentColor" viewBox="0 0 20 20">

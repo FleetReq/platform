@@ -591,7 +591,7 @@ function RecordsManager({
           </div>
 
           {/* Filter Controls */}
-          <div className="grid md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="relative">
               <label className="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium">Created By</label>
               <div className="relative">
@@ -710,10 +710,10 @@ function RecordsManager({
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-24">
                     Date
                   </th>
-                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-28">
+                  <th className="hidden sm:table-cell px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-28">
                     User
                   </th>
-                  <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-32">
+                  <th className="hidden sm:table-cell px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-32">
                     Created
                   </th>
                   <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-32">
@@ -747,12 +747,12 @@ function RecordsManager({
                         {new Date(record.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </span>
                     </td>
-                    <td className="px-2 py-2 whitespace-nowrap">
+                    <td className="hidden sm:table-cell px-2 py-2 whitespace-nowrap">
                       <span className="text-xs text-gray-900 dark:text-white truncate">
                         {uniqueUsers.find(u => u.id === record.user_id)?.name?.split(' ')[0] || `User ${record.user_id?.slice(0, 6) || 'Unknown'}...`}
                       </span>
                     </td>
-                    <td className="px-2 py-2 whitespace-nowrap">
+                    <td className="hidden sm:table-cell px-2 py-2 whitespace-nowrap">
                       <span className="text-xs text-gray-900 dark:text-white">
                         {new Date(record.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </span>
@@ -2416,7 +2416,7 @@ export default function MileageTracker() {
           <div className="lg:col-span-2 space-y-6 relative">
               {/* First-Time User Tutorial Speech Bubble - Positioned over content */}
               {dataLoaded && cars.length === 0 && activeTab !== 'add-car' && (
-                <div className="fixed top-[200px] left-[calc(50%+120px)] transform -translate-x-1/2 z-[100] pointer-events-none">
+                <div className="fixed top-[140px] left-1/2 sm:left-[calc(50%+120px)] transform -translate-x-1/2 z-[100] pointer-events-none">
                   <div className="relative inline-block bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-2xl px-6 py-4 shadow-2xl animate-bounce-gentle">
                     {/* Upward-pointing arrow positioned to point at Add Car tab (second tab) */}
                     <div className="absolute -top-3 left-12 w-0 h-0 border-l-[12px] border-r-[12px] border-b-[12px] border-transparent border-b-purple-500"></div>
@@ -2432,7 +2432,7 @@ export default function MileageTracker() {
               )}
 
               {/* Navigation Tabs */}
-              <div className="relative flex space-x-1 glass-morphism rounded-xl p-1 shadow-elegant">
+              <div className="relative flex space-x-1 overflow-x-auto scrollbar-hide glass-morphism rounded-xl p-1 shadow-elegant">
                 {[
                   { id: 'dashboard', label: 'Graph', adminOnly: false },
                   { id: 'add-car', label: 'Add Car', adminOnly: false },
@@ -2477,7 +2477,7 @@ export default function MileageTracker() {
                       onClick={() => !isDisabled && setActiveTab(tab.id as 'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'records' | 'settings')}
                       disabled={isDisabled}
                       title={tooltipMessage}
-                      className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-300 relative group ${
+                      className={`py-2 px-3 whitespace-nowrap flex-shrink-0 sm:flex-1 rounded-lg text-sm font-medium transition-all duration-300 relative group ${
                         isActive
                           ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-elegant-lg'
                           : isDisabled
