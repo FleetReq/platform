@@ -1,0 +1,24 @@
+name: Weekly Maintenance Notifications
+
+on:
+  schedule:
+    # Monday 8 AM UTC (midnight PST, 3 AM EST)
+    - cron: '0 8 * * 1'
+  workflow_dispatch: # Manual trigger for testing
+
+jobs:
+  send-notifications:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send maintenance notification emails
+        run: |
+          curl -f -L -X POST https://fleetreq.vercel.app/api/cron/maintenance-notifications/ \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" || exit 1
+
+      - name: Log success
+        if: success()
+        run: echo "Maintenance notifications sent at $(date)"
+
+      - name: Log failure
+        if: failure()
+        run: echo "Maintenance notifications failed at $(date)"

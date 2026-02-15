@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import type { Car, FillUp, MaintenanceRecord } from '@/lib/supabase-client'
 import { hasFeatureAccess } from '@/lib/supabase-client'
+import { MAINTENANCE_TYPE_LABELS } from '@/lib/maintenance'
 import { useReceiptUpload } from '@/lib/use-receipt-upload'
 import ReceiptPhotoPicker from './ReceiptPhotoPicker'
 import ReceiptGallery from './ReceiptGallery'
@@ -17,24 +18,6 @@ interface RecordDetailModalProps {
   subscriptionPlan: 'free' | 'personal' | 'business'
   onClose: () => void
   onSaved: () => void
-}
-
-const MAINTENANCE_TYPE_LABELS: Record<string, string> = {
-  oil_change: 'Oil Change',
-  tire_rotation: 'Tire Rotation',
-  tire_change: 'Tire Change',
-  brake_pads: 'Brake Pads',
-  rotors: 'Rotors',
-  air_filter: 'Air Filter',
-  transmission_service: 'Transmission Service',
-  coolant_flush: 'Coolant Flush',
-  brake_fluid_flush: 'Brake Fluid Flush',
-  spark_plugs: 'Spark Plugs',
-  battery: 'Battery',
-  cabin_air_filter: 'Cabin Air Filter',
-  serpentine_belt: 'Serpentine Belt',
-  wipers: 'Wipers',
-  registration: 'Registration',
 }
 
 const FUEL_TYPE_LABELS: Record<string, string> = {

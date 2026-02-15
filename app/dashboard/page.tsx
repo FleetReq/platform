@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner, getUserSubscriptionPlan, getUserMaxVehicles, hasFeatureAccess } from '@/lib/supabase-client'
+import { MAINTENANCE_INTERVALS, getMaintenanceStatus, getLatestMaintenanceRecord, type MaintenanceStatus } from '@/lib/maintenance'
 import BackgroundAnimation from '../components/BackgroundAnimation'
 import AuthComponent from '../../components/AuthComponent'
 import RecordDetailModal from '../../components/RecordDetailModal'
@@ -76,115 +77,10 @@ interface UserStats {
   this_month_total_cost: number
 }
 
-interface MaintenanceInterval {
-  months?: number
-  miles?: number
-  yellowThreshold?: number // percentage (0.75 = 75%)
-  redThreshold?: number // percentage (1.0 = 100%)
-}
-
-const MAINTENANCE_INTERVALS: Record<string, MaintenanceInterval> = {
-  oil_change: { months: 6, miles: 5000, yellowThreshold: 0.8, redThreshold: 1.0 },
-  tire_rotation: { months: 6, miles: 7500, yellowThreshold: 0.8, redThreshold: 1.0 },
-  tire_change: { months: 48, miles: 50000, yellowThreshold: 0.8, redThreshold: 1.0 },
-  brake_pads: { months: 12, miles: 40000, yellowThreshold: 0.8, redThreshold: 1.0 },
-  rotors: { months: 24, miles: 60000, yellowThreshold: 0.8, redThreshold: 1.0 },
-  air_filter: { months: 12, miles: 15000, yellowThreshold: 0.8, redThreshold: 1.0 },
-  transmission_service: { months: 24, miles: 30000, yellowThreshold: 0.8, redThreshold: 1.0 },
-  coolant_flush: { months: 24, miles: 30000, yellowThreshold: 0.8, redThreshold: 1.0 },
-  brake_fluid_flush: { months: 24, yellowThreshold: 0.8, redThreshold: 1.0 }, // Time-based only: every 2 years
-  spark_plugs: { months: 36, miles: 30000, yellowThreshold: 0.8, redThreshold: 1.0 },
-  battery: { months: 48, yellowThreshold: 0.8, redThreshold: 1.0 }, // Time-based only: every 4 years
-  cabin_air_filter: { months: 12, miles: 15000, yellowThreshold: 0.8, redThreshold: 1.0 },
-  serpentine_belt: { months: 60, miles: 60000, yellowThreshold: 0.8, redThreshold: 1.0 },
-  wipers: { months: 12, yellowThreshold: 0.75, redThreshold: 1.0 }, // Time-based only: 9mo yellow (75% of 12), 12mo red
-  registration: { months: 24, yellowThreshold: 0.9, redThreshold: 1.0 } // Time-based only: 2 years, yellow at 21.6mo (90%)
-}
-
-type MaintenanceStatus = 'good' | 'warning' | 'overdue' | 'unknown'
-
-function getMaintenanceStatus(
-  maintenanceType: string,
-  lastMaintenanceRecord: MaintenanceRecord | null,
-  currentMileage: number | null,
-  subscriptionTier: 'free' | 'personal' | 'business' = 'free'
-): MaintenanceStatus {
-  const interval = MAINTENANCE_INTERVALS[maintenanceType]
-  if (!interval) return 'unknown'
-
-  if (!lastMaintenanceRecord) return 'unknown'
-
-  const today = new Date()
-  let timeStatus: MaintenanceStatus = 'good'
-  let mileageStatus: MaintenanceStatus = 'good'
-
-  // Priority 1: Check user-specified next service date (Personal+ only)
-  if (lastMaintenanceRecord.next_service_date && subscriptionTier !== 'free') {
-    const nextServiceDate = new Date(lastMaintenanceRecord.next_service_date)
-    const daysUntilService = (nextServiceDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-
-    if (daysUntilService <= 0) {
-      timeStatus = 'overdue'
-    } else if (daysUntilService <= 30) { // Yellow warnings: Personal+ only (already checked above)
-      timeStatus = 'warning'
-    }
-  } else if (interval.months) {
-    // Fallback: Use default time interval
-    const lastDate = new Date(lastMaintenanceRecord.date)
-    const monthsElapsed = (today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44)
-    const timeProgress = monthsElapsed / interval.months
-
-    if (timeProgress >= (interval.redThreshold || 1.0)) {
-      timeStatus = 'overdue'
-    } else if (timeProgress >= (interval.yellowThreshold || 0.8) && subscriptionTier !== 'free') {
-      // Yellow warnings: Personal+ only
-      timeStatus = 'warning'
-    }
-  }
-
-  // Priority 2: Check user-specified next service mileage (Personal+ only)
-  if (lastMaintenanceRecord.next_service_mileage && currentMileage !== null && subscriptionTier !== 'free') {
-    const milesUntilService = lastMaintenanceRecord.next_service_mileage - currentMileage
-
-    if (milesUntilService <= 0) {
-      mileageStatus = 'overdue'
-    } else if (milesUntilService <= 1000) { // Yellow warnings: Personal+ only (already checked above)
-      mileageStatus = 'warning'
-    }
-  } else if (interval.miles && lastMaintenanceRecord.mileage && currentMileage !== null) {
-    // Fallback: Use default mileage interval
-    const mileageElapsed = currentMileage - lastMaintenanceRecord.mileage
-    const mileageProgress = mileageElapsed / interval.miles
-
-    if (mileageProgress >= (interval.redThreshold || 1.0)) {
-      mileageStatus = 'overdue'
-    } else if (mileageProgress >= (interval.yellowThreshold || 0.8) && subscriptionTier !== 'free') {
-      // Yellow warnings: Personal+ only
-      mileageStatus = 'warning'
-    }
-  }
-
-  // Return the most urgent status (whichever comes first)
-  if (timeStatus === 'overdue' || mileageStatus === 'overdue') {
-    return 'overdue'
-  } else if (timeStatus === 'warning' || mileageStatus === 'warning') {
-    return 'warning'
-  }
-
-  return 'good'
-}
-
-// Helper function to get latest maintenance record for a type
-function getLatestMaintenanceRecord(maintenanceRecords: MaintenanceRecord[], type: string) {
-  return maintenanceRecords
-    .filter(record => record.type === type)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
-}
-
 // Helper function to get interval display text for a maintenance type
 function getIntervalDisplay(
   type: string,
-  latestRecord: MaintenanceRecord | null
+  latestRecord: MaintenanceRecord | null | undefined
 ): string {
   const interval = MAINTENANCE_INTERVALS[type]
   if (!interval) return ''
@@ -1188,6 +1084,10 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free' }: 
   const [cancellationReason, setCancellationReason] = useState('')
   const [confirmationText, setConfirmationText] = useState('')
 
+  // Notification preferences
+  const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(true)
+  const [isTogglingNotifications, setIsTogglingNotifications] = useState(false)
+
   // Downgrade modal state
   const [showDowngradeModal, setShowDowngradeModal] = useState(false)
   const [downgradeTargetTier, setDowngradeTargetTier] = useState<'free' | 'personal' | null>(null)
@@ -1206,13 +1106,14 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free' }: 
       if (user) {
         const { data: profile } = await supabase
           .from('user_profiles')
-          .select('subscription_plan, subscription_end_date')
+          .select('subscription_plan, subscription_end_date, email_notifications_enabled')
           .eq('id', user.id)
           .single()
 
         if (profile) {
           setSubscriptionPlan(profile.subscription_plan as 'free' | 'personal' | 'business')
           setSubscriptionEndDate(profile.subscription_end_date)
+          setEmailNotificationsEnabled(profile.email_notifications_enabled ?? true)
         }
       }
     }
@@ -1452,6 +1353,49 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free' }: 
               {currentUser?.created_at ? new Date(currentUser.created_at).toLocaleDateString() : 'N/A'}
             </span>
           </div>
+        </div>
+      </div>
+
+      {/* Notifications */}
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Notifications</h3>
+        <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+          <div>
+            <div className="font-medium text-gray-900 dark:text-white">Weekly maintenance reminders</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">
+              Get email alerts when maintenance items are overdue{subscriptionPlan !== 'free' ? ' or approaching due' : ''}
+            </div>
+          </div>
+          <button
+            onClick={async () => {
+              if (!supabase || !currentUser) return
+              setIsTogglingNotifications(true)
+              const newValue = !emailNotificationsEnabled
+              const { error } = await supabase
+                .from('user_profiles')
+                .update({ email_notifications_enabled: newValue })
+                .eq('id', currentUser.id)
+              if (!error) {
+                setEmailNotificationsEnabled(newValue)
+                setMessage({ type: 'success', text: newValue ? 'Email notifications enabled' : 'Email notifications disabled' })
+              } else {
+                setMessage({ type: 'error', text: 'Failed to update notification preference' })
+              }
+              setIsTogglingNotifications(false)
+            }}
+            disabled={isTogglingNotifications}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 ${
+              emailNotificationsEnabled ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
+            }`}
+            role="switch"
+            aria-checked={emailNotificationsEnabled}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                emailNotificationsEnabled ? 'translate-x-6' : 'translate-x-1'
+              }`}
+            />
+          </button>
         </div>
       </div>
 

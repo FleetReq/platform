@@ -381,8 +381,7 @@ npm run dev  # MUST show: http://localhost:3000
    - **Why now**: Users can add fill-ups/maintenance on-the-go, works offline, installable on home screen
 4. **Update browser tab icon (favicon)** - Currently shows Vercel default icon instead of custom FleetReq branding
 5. **First-time UX improvements** - Better onboarding flow for new users
-6. **Data retention enforcement** - 90-day limit for free tier
-7. **Bug fixes from testing** - Address any issues found during manual testing
+6. **Bug fixes from testing** - Address any issues found during manual testing
 
 ### **📅 Short-term (Next Month)**
 - **Stripe billing integration** - Subscription management, payment processing
@@ -414,17 +413,17 @@ npm run dev  # MUST show: http://localhost:3000
 
 **1. Free Tier:**
 - **Email**: `test-free@fleetreq.com`
-- **Password**: `TestFree123!`
-- **Limits**: 1 vehicle, view-only maintenance, 90-day history
+- **Password**: `FR-GcD9zG40Ldde1orQ`
+- **Limits**: 1 vehicle, view-only maintenance
 
 **2. Personal Tier:**
 - **Email**: `test-personal@fleetreq.com`
-- **Password**: `TestPersonal123!`
+- **Password**: `FR-ECDUmv9YPDGHpWyP`
 - **Limits**: 3 vehicles, full maintenance access, unlimited history
 
 **3. Business Tier:**
 - **Email**: `test-business@fleetreq.com`
-- **Password**: `TestBusiness123!`
+- **Password**: `FR-HPJs8GpeK9gpYixL`
 - **Limits**: 999 vehicles (unlimited), all features, team collaboration
 
 ---
@@ -594,10 +593,53 @@ if (!hasAccess) {
 
 ---
 
+### **Weekly Maintenance Email Notifications**
+
+**Problem**: Users only see maintenance status when they log into the dashboard. Overdue items can go unnoticed.
+
+**Solution**: Weekly email digest via Resend (free tier: 3,000 emails/month, ~750 users).
+
+**Components**:
+- `.github/workflows/maintenance-notifications.yml` - GitHub Actions cron (Monday 8 AM UTC)
+- `app/api/cron/maintenance-notifications/route.ts` - Computes statuses, sends emails via Resend API
+- `app/api/notifications/unsubscribe/route.ts` - HMAC-signed one-click unsubscribe
+- `lib/maintenance.ts` - Shared maintenance logic (intervals, status calculation, labels)
+- `supabase/migrations/20260215_add_notification_columns.sql` - Migration for notification columns
+
+**Schedule**: Weekly on Mondays at 08:00 UTC
+
+**Who gets emails**:
+- All users with `email_notifications_enabled = true` (default) and at least one car
+- Free tier: overdue alerts only (matching dashboard behavior)
+- Personal/Business: warning + overdue alerts
+
+**Dedup**: Only sends if `last_notification_sent_at` is NULL or >6.5 days ago
+
+**Email source**: `user_profiles.email` with fallback to `supabase.auth.admin.getUserById()`
+
+**Sender**: `onboarding@resend.dev` (Resend free tier default)
+
+**Environment Variables Required**:
+- `RESEND_API_KEY` - Resend API key for sending emails
+- `SUPABASE_SERVICE_ROLE_KEY` - Service role key (bypasses RLS)
+- `CRON_SECRET` - Authorization token for cron endpoints
+- `UNSUBSCRIBE_SECRET` - Optional HMAC secret (falls back to service role key)
+
+**API Endpoints**:
+- `GET /api/cron/maintenance-notifications` - Preview emails that would be sent (dry run)
+- `POST /api/cron/maintenance-notifications` - Send emails and update timestamps
+
+**Monitoring**:
+- Check GitHub Actions logs: Verify workflow runs every Monday
+- Check user_profiles table: Monitor `last_notification_sent_at` column
+- Endpoint test: `curl https://fleetreq.vercel.app/api/cron/maintenance-notifications`
+
+---
+
 ## 📁 Key Files & Structure
 
 ### **Application Core**
-- `app/mileage/page.tsx` - Main dashboard (2500+ lines)
+- `app/dashboard/page.tsx` - Main dashboard (2500+ lines)
 - `app/page.tsx` - Landing page
 - `app/pricing/page.tsx` - Pricing table
 
@@ -617,6 +659,9 @@ if (!hasAccess) {
 - `lib/supabase-client.ts` - Client-side + helpers:
   - `isAdmin()`, `getUserSubscriptionPlan()`, `getUserMaxVehicles()`
   - `hasFeatureAccess()`, `getUpgradeMessage()`
+- `lib/maintenance.ts` - Shared maintenance logic (used by dashboard + cron job):
+  - `MAINTENANCE_INTERVALS`, `MAINTENANCE_TYPE_LABELS`
+  - `getMaintenanceStatus()`, `getLatestMaintenanceRecord()`
 
 ### **Documentation (Critical - Always Check Before DB Operations)**
 - `SCHEMA.md` - Complete database schema (tables, columns, constraints, indexes)
@@ -684,7 +729,7 @@ git push  # Auto-deploys to fleetreq.vercel.app
 - 1 vehicle maximum
 - Basic fuel tracking & MPG
 - **View-only** maintenance status
-- 90-day data history
+- Unlimited data history
 - **Rationale**: Trial for individuals, prevents account sharing through feature limitations
 
 ### **Personal Tier - $4/month**
@@ -721,7 +766,6 @@ Users could share free accounts to avoid paid plan costs.
 - ✅ **Default intervals**: Uses standard maintenance schedules (can't customize)
 - ❌ **No yellow warnings**: Warning status suppressed (80% threshold hidden)
 - ❌ **No custom schedules**: Can't set "next service date" or "next service mileage"
-- ❌ **90-day history limit**: Only last 3 months of data (not yet enforced)
 - ❌ **No data export**: Can't download records
 - ❌ **No receipt photos**: Can't upload documentation
 

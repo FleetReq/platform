@@ -14,7 +14,8 @@ jobs:
       - name: Cleanup expired accounts
         run: |
           curl -f -L -X POST https://fleetreq.vercel.app/api/cron/cleanup-expired-accounts/ \
-            -H "Content-Type: application/json" || exit 1
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" || exit 1
 
       - name: Log success
         if: success()

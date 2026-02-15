@@ -56,6 +56,8 @@ CREATE TABLE public.user_profiles (
   downgrade_effective_date timestamp with time zone NULL,
   downgrade_requested_at timestamp with time zone NULL,
   stripe_customer_id text NULL,
+  email_notifications_enabled boolean NOT NULL DEFAULT true,
+  last_notification_sent_at timestamp with time zone NULL,
 
   CONSTRAINT user_profiles_pkey PRIMARY KEY (id),
   CONSTRAINT user_profiles_github_id_key UNIQUE (github_id),
@@ -84,6 +86,8 @@ CREATE TABLE public.user_profiles (
 - `pending_downgrade_tier` - The tier user is downgrading to ('free' | 'personal' | null)
 - `downgrade_effective_date` - Date when downgrade takes effect (end of current billing period)
 - `downgrade_requested_at` - Timestamp when user requested the downgrade
+- `email_notifications_enabled` - Whether user receives weekly maintenance reminder emails (default true)
+- `last_notification_sent_at` - Timestamp of last notification email sent (dedup guard, min 6.5 day gap)
 
 **Downgrade Automation:**
 - `.github/workflows/execute-pending-downgrades.yml` - GitHub Actions cron (daily at midnight UTC)
