@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner, getUserSubscriptionPlan, getUserMaxVehicles, hasFeatureAccess } from '@/lib/supabase-client'
 import { MAINTENANCE_INTERVALS, getMaintenanceStatus, getLatestMaintenanceRecord, type MaintenanceStatus } from '@/lib/maintenance'
 import BackgroundAnimation from '../components/BackgroundAnimation'
@@ -1854,6 +1855,7 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free' }: 
 }
 
 export default function MileageTracker() {
+  const searchParams = useSearchParams()
   const [user, setUser] = useState<User | null>(null)
   // Removed authLoading - using user && (loading || !dataLoaded) pattern instead
   const [cars, setCars] = useState<Car[]>([])
@@ -1869,6 +1871,15 @@ export default function MileageTracker() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'add-trip' | 'records' | 'settings'>('dashboard')
   const [chartView, setChartView] = useState<'weekly' | 'monthly' | 'yearly'>('monthly')
   const [selectedCarId, setSelectedCarId] = useState<string | null>(null)
+
+  // Read ?tab= URL param to allow navigation from hamburger menu
+  const validTabs = ['dashboard', 'add-car', 'add-fillup', 'add-trip', 'add-maintenance', 'records', 'settings'] as const
+  useEffect(() => {
+    const tabParam = searchParams.get('tab')
+    if (tabParam && validTabs.includes(tabParam as typeof validTabs[number])) {
+      setActiveTab(tabParam as typeof activeTab)
+    }
+  }, [searchParams])
 
   // Set default car to first car when cars are loaded
   // TODO: Add default_car_id to user_profiles table for user preference
