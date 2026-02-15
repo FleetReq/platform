@@ -1172,7 +1172,7 @@ function CurrentMileageEditor({ carId, cars, onUpdate }: { carId: string, cars: 
 }
 
 // User Settings Component
-function UserSettings({ cars, onCarDeleted }: { cars?: Car[], onCarDeleted?: () => void }) {
+function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free' }: { cars?: Car[], onCarDeleted?: () => void, initialSubscriptionPlan?: 'free' | 'personal' | 'business' }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [isChangingPassword, setIsChangingPassword] = useState(false)
   const [currentPassword, setCurrentPassword] = useState('')
@@ -1181,7 +1181,7 @@ function UserSettings({ cars, onCarDeleted }: { cars?: Car[], onCarDeleted?: () 
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   const [deletingCarId, setDeletingCarId] = useState<string | null>(null)
   const [confirmDeleteCarId, setConfirmDeleteCarId] = useState<string | null>(null)
-  const [subscriptionPlan, setSubscriptionPlan] = useState<'free' | 'personal' | 'business'>('free')
+  const [subscriptionPlan, setSubscriptionPlan] = useState<'free' | 'personal' | 'business'>(initialSubscriptionPlan)
   const [subscriptionEndDate, setSubscriptionEndDate] = useState<string | null>(null)
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [isCancelling, setIsCancelling] = useState(false)
@@ -2720,7 +2720,7 @@ export default function MileageTracker() {
               {/* User Settings */}
               {activeTab === 'settings' && (
                 <div className="card-professional p-6">
-                  <UserSettings cars={cars} onCarDeleted={() => loadData()} />
+                  <UserSettings cars={cars} onCarDeleted={() => loadData()} initialSubscriptionPlan={userSubscriptionPlan} />
                 </div>
               )}
 
