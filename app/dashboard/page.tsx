@@ -2278,7 +2278,7 @@ export default function MileageTracker() {
             </div>
 
             {/* Performance Overview - Dual Panel Design */}
-            <div className="card-professional p-4 space-y-3">
+            <div className="card-professional p-4 space-y-3 overflow-hidden">
               <h3 className="text-sm font-bold text-gradient-primary">Performance Overview</h3>
 
               {cars.length === 0 ? (
@@ -2299,16 +2299,16 @@ export default function MileageTracker() {
                       <h4 className="text-xs font-semibold text-gray-900 dark:text-white">Budget Focus</h4>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
-                      <div className="text-center p-2 bg-orange-50 dark:bg-orange-900/20 rounded">
-                        <div className="text-xs font-bold text-orange-600 dark:text-orange-400">${stats.cost_per_mile.toFixed(2)}</div>
+                      <div className="text-center p-2 bg-orange-50 dark:bg-orange-900/20 rounded min-w-0">
+                        <div className="text-xs font-bold text-orange-600 dark:text-orange-400 truncate">${stats.cost_per_mile.toFixed(2)}</div>
                         <div className="text-[10px] text-gray-600 dark:text-gray-400">Cost/Mile</div>
                       </div>
-                      <div className="text-center p-2 bg-purple-50 dark:bg-purple-900/20 rounded">
-                        <div className="text-xs font-bold text-purple-600 dark:text-purple-400">${stats.this_month_total_cost.toFixed(2)}</div>
+                      <div className="text-center p-2 bg-purple-50 dark:bg-purple-900/20 rounded min-w-0">
+                        <div className="text-xs font-bold text-purple-600 dark:text-purple-400 truncate">${stats.this_month_total_cost.toFixed(2)}</div>
                         <div className="text-[10px] text-gray-600 dark:text-gray-400">This Month</div>
                       </div>
-                      <div className="text-center p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded">
-                        <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400">${Math.round((stats.total_spent + stats.total_maintenance_cost) * 100) / 100}</div>
+                      <div className="text-center p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded min-w-0">
+                        <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 truncate">${Math.round((stats.total_spent + stats.total_maintenance_cost) * 100) / 100}</div>
                         <div className="text-[10px] text-gray-600 dark:text-gray-400">All-Time</div>
                       </div>
                     </div>
@@ -2332,16 +2332,16 @@ export default function MileageTracker() {
                     {userSubscriptionPlan !== 'free' ? (
                       <div className="space-y-2">
                         <div className="grid grid-cols-3 gap-2">
-                          <div className="text-center p-2 bg-gray-50 dark:bg-gray-700/20 rounded">
-                            <div className="text-xs font-bold text-gray-900 dark:text-gray-200">${stats.ytd_total_cost.toFixed(2)}</div>
+                          <div className="text-center p-2 bg-gray-50 dark:bg-gray-700/20 rounded min-w-0">
+                            <div className="text-xs font-bold text-gray-900 dark:text-gray-200 truncate">${stats.ytd_total_cost.toFixed(2)}</div>
                             <div className="text-[10px] text-gray-600 dark:text-gray-400">YTD Total</div>
                           </div>
-                          <div className="text-center p-2 bg-green-50 dark:bg-green-900/20 rounded">
-                            <div className="text-xs font-bold text-green-600 dark:text-green-400">${Math.round(stats.business_miles * CURRENT_IRS_RATE).toLocaleString()}</div>
+                          <div className="text-center p-2 bg-green-50 dark:bg-green-900/20 rounded min-w-0">
+                            <div className="text-xs font-bold text-green-600 dark:text-green-400 truncate">${Math.round(stats.business_miles * CURRENT_IRS_RATE).toLocaleString()}</div>
                             <div className="text-[10px] text-gray-600 dark:text-gray-400">Tax Deduction</div>
                           </div>
-                          <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
-                            <div className="text-xs font-bold text-blue-600 dark:text-blue-400">{stats.business_percentage}%</div>
+                          <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded min-w-0">
+                            <div className="text-xs font-bold text-blue-600 dark:text-blue-400 truncate">{stats.business_percentage}%</div>
                             <div className="text-[10px] text-gray-600 dark:text-gray-400">Business</div>
                           </div>
                         </div>
@@ -2361,16 +2361,16 @@ export default function MileageTracker() {
                       <div className="relative">
                         <div className="filter blur-sm pointer-events-none select-none">
                           <div className="grid grid-cols-3 gap-2">
-                            <div className="text-center p-2 bg-gray-50 dark:bg-gray-700/20 rounded">
-                              <div className="text-xs font-bold text-gray-900 dark:text-gray-200">12,450</div>
+                            <div className="text-center p-2 bg-gray-50 dark:bg-gray-700/20 rounded min-w-0">
+                              <div className="text-xs font-bold text-gray-900 dark:text-gray-200 truncate">12,450</div>
                               <div className="text-[10px] text-gray-600 dark:text-gray-400">Miles Tracked</div>
                             </div>
-                            <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
-                              <div className="text-xs font-bold text-blue-600 dark:text-blue-400">$8,715</div>
+                            <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded min-w-0">
+                              <div className="text-xs font-bold text-blue-600 dark:text-blue-400 truncate">$8,715</div>
                               <div className="text-[10px] text-gray-600 dark:text-gray-400">Potential Ded.</div>
                             </div>
-                            <div className="text-center p-2 bg-orange-50 dark:bg-orange-900/20 rounded">
-                              <div className="text-xs font-bold text-orange-600 dark:text-orange-400">$0.45</div>
+                            <div className="text-center p-2 bg-orange-50 dark:bg-orange-900/20 rounded min-w-0">
+                              <div className="text-xs font-bold text-orange-600 dark:text-orange-400 truncate">$0.45</div>
                               <div className="text-[10px] text-gray-600 dark:text-gray-400">$/Mile</div>
                             </div>
                           </div>
