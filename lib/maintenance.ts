@@ -131,6 +131,74 @@ export function getMaintenanceStatus(
   return 'good'
 }
 
+/**
+ * Returns a human-readable detail string for a maintenance item,
+ * e.g. "12,000 mi overdue · 3 months overdue" or "500 mi remaining · 15 days remaining".
+ */
+export function getMaintenanceDetail(
+  maintenanceType: string,
+  lastMaintenanceRecord: MaintenanceRecord | null,
+  currentMileage: number | null,
+  subscriptionTier: 'free' | 'personal' | 'business' = 'free'
+): string {
+  const interval = MAINTENANCE_INTERVALS[maintenanceType]
+  if (!interval || !lastMaintenanceRecord) return ''
+
+  const today = new Date()
+  const parts: string[] = []
+
+  // --- Time detail ---
+  if (lastMaintenanceRecord.next_service_date && subscriptionTier !== 'free') {
+    const nextDate = new Date(lastMaintenanceRecord.next_service_date)
+    const daysLeft = Math.round((nextDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+    if (daysLeft <= 0) {
+      parts.push(`${Math.abs(daysLeft)} days overdue`)
+    } else {
+      parts.push(`${daysLeft} days remaining`)
+    }
+  } else if (interval.months) {
+    const lastDate = new Date(lastMaintenanceRecord.date)
+    const monthsElapsed = (today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44)
+    const monthsRemaining = interval.months - monthsElapsed
+
+    if (monthsRemaining <= 0) {
+      const overdue = Math.abs(monthsRemaining)
+      if (overdue < 1) {
+        parts.push(`${Math.round(overdue * 30)} days overdue`)
+      } else {
+        parts.push(`${Math.round(overdue)} mo overdue`)
+      }
+    } else {
+      if (monthsRemaining < 1) {
+        parts.push(`${Math.round(monthsRemaining * 30)} days remaining`)
+      } else {
+        parts.push(`${Math.round(monthsRemaining)} mo remaining`)
+      }
+    }
+  }
+
+  // --- Mileage detail ---
+  if (lastMaintenanceRecord.next_service_mileage && currentMileage !== null && subscriptionTier !== 'free') {
+    const milesLeft = lastMaintenanceRecord.next_service_mileage - currentMileage
+    if (milesLeft <= 0) {
+      parts.push(`${Math.abs(milesLeft).toLocaleString()} mi overdue`)
+    } else {
+      parts.push(`${milesLeft.toLocaleString()} mi remaining`)
+    }
+  } else if (interval.miles && lastMaintenanceRecord.mileage != null && currentMileage !== null) {
+    const milesElapsed = currentMileage - lastMaintenanceRecord.mileage
+    const milesRemaining = interval.miles - milesElapsed
+
+    if (milesRemaining <= 0) {
+      parts.push(`${Math.abs(milesRemaining).toLocaleString()} mi overdue`)
+    } else {
+      parts.push(`${milesRemaining.toLocaleString()} mi remaining`)
+    }
+  }
+
+  return parts.join(' · ')
+}
+
 export function getLatestMaintenanceRecord(
   maintenanceRecords: MaintenanceRecord[],
   type: string

@@ -4,6 +4,7 @@ import {
   MAINTENANCE_INTERVALS,
   MAINTENANCE_TYPE_LABELS,
   getMaintenanceStatus,
+  getMaintenanceDetail,
   getLatestMaintenanceRecord,
   type MaintenanceStatus,
 } from '@/lib/maintenance'
@@ -23,6 +24,7 @@ interface AlertItem {
   carLabel: string
   maintenanceType: string
   label: string
+  detail: string // e.g. "12,000 mi overdue · 3 mo overdue"
   status: MaintenanceStatus // only 'warning' or 'overdue'
 }
 
@@ -133,17 +135,19 @@ async function computeDigests(): Promise<{ digests: UserDigest[]; skipped: numbe
         const latest = getLatestMaintenanceRecord(carRecords, typeKey)
         if (!latest) continue
 
-        const status = getMaintenanceStatus(typeKey, latest, car.current_mileage ?? null, plan)
+        const mileage = car.current_mileage ?? null
+        const status = getMaintenanceStatus(typeKey, latest, mileage, plan)
+        const detail = getMaintenanceDetail(typeKey, latest, mileage, plan)
 
         if (status === 'overdue') {
           const key = `${car.id}:${typeKey}:overdue`
           if (!alreadySent.has(key)) {
-            alerts.push({ carId: car.id, carLabel, maintenanceType: typeKey, label: MAINTENANCE_TYPE_LABELS[typeKey] || typeKey, status })
+            alerts.push({ carId: car.id, carLabel, maintenanceType: typeKey, label: MAINTENANCE_TYPE_LABELS[typeKey] || typeKey, detail, status })
           }
         } else if (status === 'warning' && plan !== 'free') {
           const key = `${car.id}:${typeKey}:warning`
           if (!alreadySent.has(key)) {
-            alerts.push({ carId: car.id, carLabel, maintenanceType: typeKey, label: MAINTENANCE_TYPE_LABELS[typeKey] || typeKey, status })
+            alerts.push({ carId: car.id, carLabel, maintenanceType: typeKey, label: MAINTENANCE_TYPE_LABELS[typeKey] || typeKey, detail, status })
           }
         }
       }
@@ -192,17 +196,21 @@ function buildEmailHtml(digest: UserDigest): string {
     return grouped
   }
 
-  const renderGroup = (items: AlertItem[], color: string, bgColor: string, statusLabel: string) => {
+  const renderGroup = (items: AlertItem[], color: string, bgColor: string) => {
     const grouped = groupByCar(items)
     let html = ''
     for (const [car, carItems] of Object.entries(grouped)) {
       html += `<tr><td style="padding:12px 16px;border-bottom:1px solid #e5e7eb;">
-        <div style="font-weight:600;color:#1f2937;font-size:14px;margin-bottom:6px;">${car}</div>`
+        <div style="font-weight:600;color:#1f2937;font-size:14px;margin-bottom:8px;">${car}</div>`
       for (const item of carItems) {
-        html += `<div style="display:inline-block;margin:2px 4px 2px 0;padding:3px 10px;border-radius:9999px;font-size:12px;font-weight:500;color:${color};background:${bgColor};">${item.label}</div>`
+        html += `<div style="margin-bottom:6px;">
+          <span style="display:inline-block;padding:3px 10px;border-radius:9999px;font-size:12px;font-weight:500;color:${color};background:${bgColor};">${item.label}</span>`
+        if (item.detail) {
+          html += `<div style="margin-top:2px;padding-left:10px;font-size:11px;color:#6b7280;">${item.detail}</div>`
+        }
+        html += `</div>`
       }
-      html += `<div style="margin-top:4px;font-size:11px;color:#9ca3af;">${statusLabel}</div>
-      </td></tr>`
+      html += `</td></tr>`
     }
     return html
   }
@@ -210,11 +218,11 @@ function buildEmailHtml(digest: UserDigest): string {
   let alertsHtml = ''
   if (overdueAlerts.length > 0) {
     alertsHtml += `<tr><td style="padding:12px 16px;background:#fef2f2;font-weight:700;color:#dc2626;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;">Overdue</td></tr>`
-    alertsHtml += renderGroup(overdueAlerts, '#991b1b', '#fee2e2', 'Past due — service recommended')
+    alertsHtml += renderGroup(overdueAlerts, '#991b1b', '#fee2e2')
   }
   if (warningAlerts.length > 0) {
     alertsHtml += `<tr><td style="padding:12px 16px;background:#fffbeb;font-weight:700;color:#d97706;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;">Approaching Due</td></tr>`
-    alertsHtml += renderGroup(warningAlerts, '#92400e', '#fef3c7', 'Due soon — schedule service')
+    alertsHtml += renderGroup(warningAlerts, '#92400e', '#fef3c7')
   }
 
   const upgradeBlock = subscriptionPlan === 'free'
@@ -361,7 +369,7 @@ export async function GET(request: NextRequest) {
       plan: d.subscriptionPlan,
       overdueCount: d.alerts.filter(a => a.status === 'overdue').length,
       warningCount: d.alerts.filter(a => a.status === 'warning').length,
-      alerts: d.alerts.map(a => `${a.carLabel}: ${a.label} (${a.status})`),
+      alerts: d.alerts.map(a => `${a.carLabel}: ${a.label} (${a.status}) — ${a.detail}`),
     })),
   })
 }
