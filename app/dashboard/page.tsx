@@ -3392,7 +3392,7 @@ function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan = 'free', userId
   const canUploadReceipts = hasFeatureAccess(userId, subscriptionPlan, 'receipt_upload')
   const [formData, setFormData] = useState({
     car_id: cars[0]?.id || '',
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }),
     type: 'oil_change',
     oil_type: 'conventional',
     cost: '',
@@ -3503,7 +3503,7 @@ function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan = 'free', userId
         // Reset form to initial state
         setFormData({
           car_id: cars[0]?.id || '',
-          date: new Date().toISOString().split('T')[0],
+          date: new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }),
           type: 'oil_change',
           oil_type: 'conventional',
           cost: '',
