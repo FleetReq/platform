@@ -58,17 +58,17 @@ CREATE TRIGGER on_auth_user_created
 --
 -- 2. Free User:
 --    Email: test-free@fleetreq.com
---    Password: TestFree123!
+--    Password: See CLAUDE.md (not stored in version control)
 --    Plan: free (1 vehicle, view-only maintenance)
 --
 -- 3. Personal User:
 --    Email: test-personal@fleetreq.com
---    Password: TestPersonal123!
+--    Password: See CLAUDE.md (not stored in version control)
 --    Plan: personal (3 vehicles, full maintenance tracking)
 --
 -- 4. Business User:
 --    Email: test-business@fleetreq.com
---    Password: TestBusiness123!
+--    Password: See CLAUDE.md (not stored in version control)
 --    Plan: business (unlimited vehicles, team collaboration)
 -- ===================================================================
 

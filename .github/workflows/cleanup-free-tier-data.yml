@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Delete data older than 90 days for free tier users
         run: |
-          response=$(curl -X POST https://fleetreq.vercel.app/api/cron/cleanup-free-tier-data \
+          response=$(curl -L -X POST https://fleetreq.vercel.app/api/cron/cleanup-free-tier-data/ \
             -H "Content-Type: application/json" \
             -w "\nHTTP_STATUS:%{http_code}" \
             -s)

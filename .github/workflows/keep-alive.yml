@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Ping Supabase via API
         run: |
-          curl -f https://fleetreq.vercel.app/api/cron/keep-alive || exit 1
+          curl -f -L https://fleetreq.vercel.app/api/cron/keep-alive/ || exit 1
 
       - name: Log success
         if: success()

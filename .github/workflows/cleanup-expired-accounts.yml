@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Cleanup expired accounts
         run: |
-          curl -f -X POST https://fleetreq.vercel.app/api/cron/cleanup-expired-accounts \
+          curl -f -L -X POST https://fleetreq.vercel.app/api/cron/cleanup-expired-accounts/ \
             -H "Content-Type: application/json" || exit 1
 
       - name: Log success

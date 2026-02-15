@@ -11,17 +11,17 @@
 
 ### Free Tier Account
 - **Email**: `test-free@fleetreq.com`
-- **Password**: `TestFree123!`
+- **Password**: See `CLAUDE.md` (not stored in version control)
 - **Expected Limits**: 1 vehicle max, view-only maintenance
 
 ### Personal Tier Account
 - **Email**: `test-personal@fleetreq.com`
-- **Password**: `TestPersonal123!`
+- **Password**: See `CLAUDE.md` (not stored in version control)
 - **Expected Limits**: 3 vehicles max, full maintenance access
 
 ### Business Tier Account
 - **Email**: `test-business@fleetreq.com`
-- **Password**: `TestBusiness123!`
+- **Password**: See `CLAUDE.md` (not stored in version control)
 - **Expected Limits**: 999 vehicles (unlimited), all features
 
 ### Admin Account

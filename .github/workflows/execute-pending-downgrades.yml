@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Execute pending downgrades
         run: |
-          curl -f -X POST https://fleetreq.vercel.app/api/cron/execute-pending-downgrades \
+          curl -f -L -X POST https://fleetreq.vercel.app/api/cron/execute-pending-downgrades/ \
             -H "Content-Type: application/json" || exit 1
 
       - name: Log success
