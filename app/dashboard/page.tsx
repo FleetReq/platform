@@ -2432,7 +2432,7 @@ export default function MileageTracker() {
               )}
 
               {/* Navigation Tabs */}
-              <div className="relative flex flex-wrap sm:flex-nowrap gap-1 glass-morphism rounded-xl p-1 shadow-elegant">
+              <div className="relative grid grid-cols-4 sm:flex gap-1 glass-morphism rounded-xl p-1 shadow-elegant">
                 {[
                   { id: 'dashboard', label: 'Graph', adminOnly: false },
                   { id: 'add-car', label: 'Add Car', adminOnly: false },
@@ -2477,7 +2477,7 @@ export default function MileageTracker() {
                       onClick={() => !isDisabled && setActiveTab(tab.id as 'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'records' | 'settings')}
                       disabled={isDisabled}
                       title={tooltipMessage}
-                      className={`py-2 px-3 whitespace-nowrap flex-grow sm:flex-1 rounded-lg text-sm font-medium transition-all duration-300 relative group ${
+                      className={`py-2 px-2 sm:px-3 text-center sm:flex-1 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 relative group ${
                         isActive
                           ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-elegant-lg'
                           : isDisabled
