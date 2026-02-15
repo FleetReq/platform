@@ -30,6 +30,26 @@ ChartJS.register(
   Filler
 )
 
+// IRS Standard Mileage Rates (business use)
+// Updated annually — IRS announces the new rate in late December for the following year.
+// When the new rate is announced, add the new year + rate here.
+// Source: https://www.irs.gov/tax-professionals/standard-mileage-rates
+const IRS_MILEAGE_RATES: Record<number, number> = {
+  2024: 0.67,
+  2025: 0.70,
+  2026: 0.725,
+}
+
+function getIrsRate(year: number): number {
+  if (IRS_MILEAGE_RATES[year]) return IRS_MILEAGE_RATES[year]
+  // Fall back to most recent known rate if current year isn't added yet
+  const knownYears = Object.keys(IRS_MILEAGE_RATES).map(Number).sort((a, b) => b - a)
+  return IRS_MILEAGE_RATES[knownYears[0]]
+}
+
+const CURRENT_YEAR = new Date().getFullYear()
+const CURRENT_IRS_RATE = getIrsRate(CURRENT_YEAR)
+
 interface UserStats {
   total_cars: number
   total_fill_ups: number
@@ -2302,7 +2322,7 @@ export default function MileageTracker() {
                             <div className="text-[10px] text-gray-600 dark:text-gray-400">YTD Total</div>
                           </div>
                           <div className="text-center p-2 bg-green-50 dark:bg-green-900/20 rounded">
-                            <div className="text-xs font-bold text-green-600 dark:text-green-400">${Math.round(stats.business_miles * 0.67).toLocaleString()}</div>
+                            <div className="text-xs font-bold text-green-600 dark:text-green-400">${Math.round(stats.business_miles * CURRENT_IRS_RATE).toLocaleString()}</div>
                             <div className="text-[10px] text-gray-600 dark:text-gray-400">Tax Deduction</div>
                           </div>
                           <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
@@ -2318,7 +2338,7 @@ export default function MileageTracker() {
                           💡 Use &quot;Add Trip&quot; tab to log business trips for tax deductions
                         </div>
                         <div className="text-[10px] text-gray-500 dark:text-gray-400 text-center">
-                          IRS rate: $0.67/mile (2025) • Tracks business purpose trips
+                          IRS rate: ${CURRENT_IRS_RATE}/mile ({CURRENT_YEAR}) • Tracks business purpose trips
                         </div>
                       </div>
                     ) : (
