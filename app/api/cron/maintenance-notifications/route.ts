@@ -125,7 +125,10 @@ async function computeDigests(): Promise<{ digests: UserDigest[]; skipped: numbe
     )
 
     // 5. Compute statuses, only include NEW transitions
+    //    Also clean up tracking for items that returned to "good"/"unknown"
+    //    so future transitions trigger fresh alerts.
     const alerts: AlertItem[] = []
+    const trackingToDelete: { carId: string; typeKey: string }[] = []
 
     for (const car of cars) {
       const carRecords = maintenanceRecords.filter(r => r.car_id === car.id)
@@ -133,24 +136,41 @@ async function computeDigests(): Promise<{ digests: UserDigest[]; skipped: numbe
 
       for (const typeKey of Object.keys(MAINTENANCE_INTERVALS)) {
         const latest = getLatestMaintenanceRecord(carRecords, typeKey)
-        if (!latest) continue
-
         const mileage = car.current_mileage ?? null
-        const status = getMaintenanceStatus(typeKey, latest, mileage, plan)
-        const detail = getMaintenanceDetail(typeKey, latest, mileage, plan)
+        const status = latest
+          ? getMaintenanceStatus(typeKey, latest, mileage, plan)
+          : 'unknown' as MaintenanceStatus
+        const detail = latest ? getMaintenanceDetail(typeKey, latest, mileage, plan) : ''
 
-        if (status === 'overdue') {
-          const key = `${car.id}:${typeKey}:overdue`
-          if (!alreadySent.has(key)) {
+        const hasWarningTracking = alreadySent.has(`${car.id}:${typeKey}:warning`)
+        const hasOverdueTracking = alreadySent.has(`${car.id}:${typeKey}:overdue`)
+
+        if (status === 'good' || status === 'unknown') {
+          // Item was serviced or record deleted — clear tracking
+          if (hasWarningTracking || hasOverdueTracking) {
+            trackingToDelete.push({ carId: car.id, typeKey })
+          }
+        } else if (status === 'overdue') {
+          if (!alreadySent.has(`${car.id}:${typeKey}:overdue`)) {
             alerts.push({ carId: car.id, carLabel, maintenanceType: typeKey, label: MAINTENANCE_TYPE_LABELS[typeKey] || typeKey, detail, status })
           }
         } else if (status === 'warning' && plan !== 'free') {
-          const key = `${car.id}:${typeKey}:warning`
-          if (!alreadySent.has(key)) {
+          if (!alreadySent.has(`${car.id}:${typeKey}:warning`)) {
             alerts.push({ carId: car.id, carLabel, maintenanceType: typeKey, label: MAINTENANCE_TYPE_LABELS[typeKey] || typeKey, detail, status })
           }
         }
       }
+    }
+
+    // Clean up stale tracking entries (items that returned to good/unknown)
+    for (const { carId, typeKey } of trackingToDelete) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase as any)
+        .from('maintenance_notifications_sent')
+        .delete()
+        .eq('user_id', profile.id)
+        .eq('car_id', carId)
+        .eq('maintenance_type', typeKey)
     }
 
     if (alerts.length === 0) {
