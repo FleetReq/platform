@@ -14,18 +14,16 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 const resendApiKey = process.env.RESEND_API_KEY || ''
 const cronSecret = process.env.CRON_SECRET || ''
 
-// Minimum gap between emails for the same user (6.5 days in ms)
-const MIN_GAP_MS = 6.5 * 24 * 60 * 60 * 1000
-
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 interface AlertItem {
+  carId: string
   carLabel: string
   maintenanceType: string
   label: string
-  status: MaintenanceStatus
+  status: MaintenanceStatus // only 'warning' or 'overdue'
 }
 
 interface UserDigest {
@@ -46,7 +44,7 @@ function isAuthorized(request: NextRequest): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// Core logic — compute digests for all eligible users
+// Core logic — compute digests with transition-based dedup
 // ---------------------------------------------------------------------------
 
 async function computeDigests(): Promise<{ digests: UserDigest[]; skipped: number; errors: string[] }> {
@@ -54,14 +52,11 @@ async function computeDigests(): Promise<{ digests: UserDigest[]; skipped: numbe
   const errors: string[] = []
   let skipped = 0
 
-  // 1. Fetch users who are eligible for a notification
-  const cutoff = new Date(Date.now() - MIN_GAP_MS).toISOString()
-
+  // 1. Fetch users who have notifications enabled
   const { data: profiles, error: profilesError } = await supabase
     .from('user_profiles')
     .select('id, email, subscription_plan')
     .eq('email_notifications_enabled', true)
-    .or(`last_notification_sent_at.is.null,last_notification_sent_at.lt.${cutoff}`)
 
   if (profilesError) {
     errors.push(`Failed to fetch profiles: ${profilesError.message}`)
@@ -115,7 +110,19 @@ async function computeDigests(): Promise<{ digests: UserDigest[]; skipped: numbe
 
     const maintenanceRecords = records || []
 
-    // 4. Compute statuses
+    // 4. Get already-sent notifications for this user
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: sentNotifications } = await (supabase as any)
+      .from('maintenance_notifications_sent')
+      .select('car_id, maintenance_type, status_notified')
+      .eq('user_id', profile.id)
+
+    const alreadySent = new Set(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (sentNotifications || []).map((n: any) => `${n.car_id}:${n.maintenance_type}:${n.status_notified}`)
+    )
+
+    // 5. Compute statuses, only include NEW transitions
     const alerts: AlertItem[] = []
 
     for (const car of cars) {
@@ -124,15 +131,20 @@ async function computeDigests(): Promise<{ digests: UserDigest[]; skipped: numbe
 
       for (const typeKey of Object.keys(MAINTENANCE_INTERVALS)) {
         const latest = getLatestMaintenanceRecord(carRecords, typeKey)
-        if (!latest) continue // skip types with no records (unknown)
+        if (!latest) continue
 
         const status = getMaintenanceStatus(typeKey, latest, car.current_mileage ?? null, plan)
 
-        // Free tier only gets overdue, Personal/Business get warning + overdue
         if (status === 'overdue') {
-          alerts.push({ carLabel, maintenanceType: typeKey, label: MAINTENANCE_TYPE_LABELS[typeKey] || typeKey, status })
+          const key = `${car.id}:${typeKey}:overdue`
+          if (!alreadySent.has(key)) {
+            alerts.push({ carId: car.id, carLabel, maintenanceType: typeKey, label: MAINTENANCE_TYPE_LABELS[typeKey] || typeKey, status })
+          }
         } else if (status === 'warning' && plan !== 'free') {
-          alerts.push({ carLabel, maintenanceType: typeKey, label: MAINTENANCE_TYPE_LABELS[typeKey] || typeKey, status })
+          const key = `${car.id}:${typeKey}:warning`
+          if (!alreadySent.has(key)) {
+            alerts.push({ carId: car.id, carLabel, maintenanceType: typeKey, label: MAINTENANCE_TYPE_LABELS[typeKey] || typeKey, status })
+          }
         }
       }
     }
@@ -159,7 +171,7 @@ function buildEmailSubject(alerts: AlertItem[]): string {
   const parts: string[] = []
   if (overdueCount > 0) parts.push(`🔴 ${overdueCount} overdue`)
   if (warningCount > 0) parts.push(`🟡 ${warningCount} upcoming`)
-  return `${parts.join(', ')} - FleetReq Weekly Summary`
+  return `${parts.join(', ')} - FleetReq Maintenance Alert`
 }
 
 function buildEmailHtml(digest: UserDigest): string {
@@ -225,7 +237,7 @@ function buildEmailHtml(digest: UserDigest): string {
     <!-- Header -->
     <tr><td style="padding:24px 24px 16px;text-align:center;">
       <div style="font-size:20px;font-weight:700;color:#111827;">FleetReq</div>
-      <div style="font-size:13px;color:#6b7280;margin-top:4px;">Weekly Maintenance Summary</div>
+      <div style="font-size:13px;color:#6b7280;margin-top:4px;">Maintenance Alert</div>
     </td></tr>
 
     <!-- Alerts -->
@@ -244,7 +256,7 @@ function buildEmailHtml(digest: UserDigest): string {
     <!-- Footer -->
     <tr><td style="padding:16px 24px;border-top:1px solid #e5e7eb;text-align:center;">
       <p style="margin:0;font-size:11px;color:#9ca3af;line-height:1.5;">
-        You're receiving this because you have maintenance items that need attention.<br/>
+        You're receiving this because a maintenance item changed status.<br/>
         <a href="${unsubscribeUrl}" style="color:#9ca3af;text-decoration:underline;">Unsubscribe</a> · <a href="${dashboardUrl}" style="color:#9ca3af;text-decoration:underline;">Manage preferences</a>
       </p>
     </td></tr>
@@ -288,6 +300,41 @@ async function sendEmail(to: string, subject: string, html: string, unsubscribeU
 }
 
 // ---------------------------------------------------------------------------
+// Record sent notifications so we don't re-send for the same transition
+// ---------------------------------------------------------------------------
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function recordSentAlerts(
+  supabase: any,
+  userId: string,
+  alerts: AlertItem[]
+): Promise<string[]> {
+  const errors: string[] = []
+
+  for (const alert of alerts) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any)
+      .from('maintenance_notifications_sent')
+      .upsert(
+        {
+          user_id: userId,
+          car_id: alert.carId,
+          maintenance_type: alert.maintenanceType,
+          status_notified: alert.status,
+          notified_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id,car_id,maintenance_type,status_notified' }
+      )
+
+    if (error) {
+      errors.push(`Failed to record notification for ${alert.maintenanceType}: ${error.message}`)
+    }
+  }
+
+  return errors
+}
+
+// ---------------------------------------------------------------------------
 // GET — Preview (dry run)
 // ---------------------------------------------------------------------------
 
@@ -320,7 +367,7 @@ export async function GET(request: NextRequest) {
 }
 
 // ---------------------------------------------------------------------------
-// POST — Send emails
+// POST — Send emails for NEW status transitions only
 // ---------------------------------------------------------------------------
 
 export async function POST(request: NextRequest) {
@@ -351,6 +398,11 @@ export async function POST(request: NextRequest) {
 
     if (result.success) {
       sent++
+
+      // Record which alerts were sent so they won't trigger again
+      const recordErrors = await recordSentAlerts(supabase, digest.userId, digest.alerts)
+      errors.push(...recordErrors)
+
       // Update last_notification_sent_at
       const { error: updateError } = await supabase
         .from('user_profiles')

@@ -1,9 +1,9 @@
-name: Weekly Maintenance Notifications
+name: Maintenance Notifications
 
 on:
   schedule:
-    # Monday 8 AM UTC (midnight PST, 3 AM EST)
-    - cron: '0 8 * * 1'
+    # Daily at 8 AM UTC — only sends when items transition to warning/overdue
+    - cron: '0 8 * * *'
   workflow_dispatch: # Manual trigger for testing
 
 jobs:
