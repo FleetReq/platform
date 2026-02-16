@@ -103,7 +103,7 @@ export function Navigation() {
   const navigationItems = user ? authenticatedNavigationItems : baseNavigationItems;
 
   return (
-    <nav className="bg-white/98 dark:bg-gray-900/98 backdrop-blur-2xl border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50">
+    <nav className="bg-white/98 dark:bg-gray-900/98 backdrop-blur-2xl border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50 shadow-sm dark:shadow-none">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative flex items-center justify-between h-20 gap-4">
           {/* Left: Logo + Badge */}
@@ -121,7 +121,7 @@ export function Navigation() {
 
           {/* Center: Desktop Navigation - Absolutely centered */}
           <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2">
-            <div className="flex items-center space-x-1 bg-gray-50/80 dark:bg-gray-800/50 rounded-full px-2 py-2 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex items-center space-x-1 bg-gray-100 dark:bg-gray-800/50 rounded-full px-2 py-2 backdrop-blur-sm border border-gray-200 dark:border-gray-700/50">
               {navigationItems.map((item) => (
                 <Link
                   key={item.name}
