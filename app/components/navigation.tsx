@@ -211,38 +211,6 @@ export function Navigation() {
       {isOpen && (
         <div className="md:hidden border-t border-gray-100 dark:border-gray-800">
           <div className="px-6 py-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl">
-            {/* Dashboard Quick Actions - shown when on /dashboard */}
-            {user && pathname === '/dashboard' && (
-              <div className="mb-4">
-                <div className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider px-4 mb-2">Dashboard</div>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { label: 'Graph', tab: 'dashboard', icon: '📊' },
-                    { label: 'Add Car', tab: 'add-car', icon: '🚗' },
-                    { label: 'Add Fill-up', tab: 'add-fillup', icon: '⛽' },
-                    { label: 'Add Trip', tab: 'add-trip', icon: '🛣️' },
-                    { label: 'Maintenance', tab: 'add-maintenance', icon: '🔧' },
-                    { label: 'Records', tab: 'records', icon: '📋' },
-                    { label: 'Settings', tab: 'settings', icon: '⚙️' },
-                  ].map((item) => (
-                    <Link
-                      key={item.tab}
-                      href={`/dashboard?tab=${item.tab}`}
-                      className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium rounded-lg text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <span>{item.icon}</span>
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Site Navigation Links */}
-            {user && pathname === '/dashboard' && (
-              <div className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider px-4 mb-2">Navigate</div>
-            )}
             <div className="space-y-2 mb-6">
               {navigationItems.map((item) => (
                 <Link
