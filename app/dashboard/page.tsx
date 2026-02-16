@@ -1868,7 +1868,7 @@ export default function MileageTracker() {
   const [userIsOwner, setUserIsOwner] = useState(false)
   const [userSubscriptionPlan, setUserSubscriptionPlan] = useState<'free' | 'personal' | 'business'>('free')
   const [maxVehicles, setMaxVehicles] = useState<number>(1)
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'add-trip' | 'records' | 'settings'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'overview' | 'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'add-trip' | 'records' | 'settings'>('dashboard')
   const [chartView, setChartView] = useState<'weekly' | 'monthly' | 'yearly'>('monthly')
   const [selectedCarId, setSelectedCarId] = useState<string | null>(null)
 
@@ -2243,7 +2243,7 @@ export default function MileageTracker() {
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Left Column - Vehicle Info, Performance, and Maintenance */}
           {/* On mobile: only show on Overview tab (other tabs show content directly without scrolling past) */}
-          <div className={`lg:col-span-1 space-y-6 ${activeTab !== 'dashboard' ? 'hidden lg:block' : ''}`}>
+          <div className={`lg:col-span-1 space-y-6 ${activeTab === 'overview' ? '' : 'hidden lg:block'}`}>
             {/* Vehicle Selector */}
             <div className="card-professional p-4">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Selected Vehicle</h3>
@@ -2446,7 +2446,7 @@ export default function MileageTracker() {
               {/* Navigation Tabs - hidden on mobile (bottom tab bar used instead) */}
               <div className="relative hidden sm:flex gap-1 glass-morphism rounded-xl p-1 shadow-elegant">
                 {[
-                  { id: 'dashboard', label: 'Overview', adminOnly: false },
+                  { id: 'dashboard', label: 'Graph', adminOnly: false },
                   { id: 'add-car', label: 'Add Car', adminOnly: false },
                   { id: 'add-fillup', label: 'Add Fill-up', adminOnly: false },
                   { id: 'add-trip', label: 'Add Trip', adminOnly: false },
@@ -2486,7 +2486,7 @@ export default function MileageTracker() {
                   return (
                     <button
                       key={tab.id}
-                      onClick={() => !isDisabled && setActiveTab(tab.id as 'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'records' | 'settings')}
+                      onClick={() => !isDisabled && setActiveTab(tab.id as 'overview' | 'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'records' | 'settings')}
                       disabled={isDisabled}
                       title={tooltipMessage}
                       className={`py-2 px-2 sm:px-3 text-center sm:flex-1 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 relative group ${
@@ -2514,8 +2514,8 @@ export default function MileageTracker() {
               </div>
 
               {/* Dashboard - Fuel Efficiency Analytics */}
-              {activeTab === 'dashboard' && (
-                <div className="card-professional p-6 relative">
+              {(activeTab === 'dashboard' || activeTab === 'overview') && (
+                <div className={`card-professional p-6 relative ${activeTab === 'overview' ? 'hidden lg:block' : ''}`}>
                   <div className="flex justify-between items-center mb-6">
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white">Fuel Efficiency Analytics</h3>
                     <div className="flex space-x-1">
@@ -2715,7 +2715,7 @@ function MobileBottomTabBar({
   maxVehicles,
 }: {
   activeTab: string
-  setActiveTab: (tab: 'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'add-trip' | 'records' | 'settings') => void
+  setActiveTab: (tab: 'overview' | 'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'add-trip' | 'records' | 'settings') => void
   carsCount: number
   maxVehicles: number
 }) {
@@ -2737,15 +2737,15 @@ function MobileBottomTabBar({
     }
   }, [addMenuOpen])
 
-  const isAddActive = activeTab === 'add-car' || activeTab === 'add-fillup' || activeTab === 'add-trip'
+  const isAddActive = activeTab === 'add-car' || activeTab === 'add-fillup' || activeTab === 'add-trip' || activeTab === 'add-maintenance'
   const isVehicleLimitReached = carsCount >= maxVehicles
 
-  const switchTab = (tab: 'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'add-trip' | 'records' | 'settings') => {
+  const switchTab = (tab: 'overview' | 'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'add-trip' | 'records' | 'settings') => {
     setActiveTab(tab)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const handleAddOption = (tab: 'add-car' | 'add-fillup' | 'add-trip') => {
+  const handleAddOption = (tab: 'add-car' | 'add-fillup' | 'add-trip' | 'add-maintenance') => {
     switchTab(tab)
     setAddMenuOpen(false)
   }
@@ -2759,6 +2759,19 @@ function MobileBottomTabBar({
         <div className="flex items-center justify-around h-16 px-1">
           {/* Overview */}
           <button
+            onClick={() => switchTab('overview')}
+            className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
+              activeTab === 'overview' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'
+            }`}
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+            </svg>
+            <span className="text-[10px] font-medium mt-0.5">Overview</span>
+          </button>
+
+          {/* Graph */}
+          <button
             onClick={() => switchTab('dashboard')}
             className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
               activeTab === 'dashboard' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'
@@ -2767,20 +2780,7 @@ function MobileBottomTabBar({
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
             </svg>
-            <span className="text-[10px] font-medium mt-0.5">Overview</span>
-          </button>
-
-          {/* Records */}
-          <button
-            onClick={() => switchTab('records')}
-            className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
-              activeTab === 'records' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'
-            }`}
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-            </svg>
-            <span className="text-[10px] font-medium mt-0.5">Records</span>
+            <span className="text-[10px] font-medium mt-0.5">Graph</span>
           </button>
 
           {/* Add (center, with popup) */}
@@ -2835,6 +2835,15 @@ function MobileBottomTabBar({
                     </svg>
                     Trip
                   </button>
+                  <button
+                    onClick={() => handleAddOption('add-maintenance')}
+                    className="w-full flex items-center gap-3 px-4 py-3.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors border-t border-gray-100 dark:border-gray-700/50"
+                  >
+                    <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75a4.5 4.5 0 01-4.884 4.484c-1.076-.091-2.264.071-2.95.904l-7.152 8.684a2.548 2.548 0 11-3.586-3.586l8.684-7.152c.833-.686.995-1.874.904-2.95a4.5 4.5 0 016.336-4.486l-3.276 3.276a3.004 3.004 0 002.25 2.25l3.276-3.276c.256.565.398 1.192.398 1.852z" />
+                    </svg>
+                    Maintenance
+                  </button>
                 </div>
                 {/* Arrow pointing down to Add button */}
                 <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[8px] border-r-[8px] border-t-[8px] border-transparent border-t-white dark:border-t-gray-800"></div>
@@ -2842,18 +2851,17 @@ function MobileBottomTabBar({
             )}
           </div>
 
-          {/* Maintenance */}
+          {/* Records */}
           <button
-            onClick={() => switchTab('add-maintenance')}
+            onClick={() => switchTab('records')}
             className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
-              activeTab === 'add-maintenance' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'
+              activeTab === 'records' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'
             }`}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75a4.5 4.5 0 01-4.884 4.484c-1.076-.091-2.264.071-2.95.904l-7.152 8.684a2.548 2.548 0 11-3.586-3.586l8.684-7.152c.833-.686.995-1.874.904-2.95a4.5 4.5 0 016.336-4.486l-3.276 3.276a3.004 3.004 0 002.25 2.25l3.276-3.276c.256.565.398 1.192.398 1.852z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4.867 19.125h.008v.008h-.008v-.008z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
             </svg>
-            <span className="text-[10px] font-medium mt-0.5">Maint.</span>
+            <span className="text-[10px] font-medium mt-0.5">Records</span>
           </button>
 
           {/* Settings */}
