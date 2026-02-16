@@ -161,7 +161,7 @@ export function Navigation() {
             {/* Sign In button - shown when logged out */}
             {!user && (
               <Link
-                href="/dashboard"
+                href="/login"
                 className="hidden md:inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-lg transition-colors duration-200 shadow-sm"
               >
                 Sign In
@@ -245,7 +245,7 @@ export function Navigation() {
                 </button>
               ) : (
                 <Link
-                  href="/dashboard"
+                  href="/login"
                   className="w-full inline-flex items-center justify-center px-6 py-3 bg-blue-600 dark:bg-blue-500 text-white text-base font-medium rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600 transition-all duration-300 shadow-sm"
                   onClick={() => setIsOpen(false)}
                 >

@@ -63,9 +63,20 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  // Refresh the session to ensure it's up to date
+  // Refresh the session and handle auth-based redirects
   try {
-    await supabase.auth.getUser()
+    const { data: { user } } = await supabase.auth.getUser()
+    const pathname = request.nextUrl.pathname
+
+    // Redirect unauthenticated users away from dashboard
+    if (!user && pathname.startsWith('/dashboard')) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
+
+    // Redirect authenticated users away from login
+    if (user && pathname === '/login') {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
   } catch {
     // Handle auth errors silently in middleware
   }

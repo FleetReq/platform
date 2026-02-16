@@ -180,8 +180,8 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: window.location.hostname === 'localhost'
-          ? 'http://localhost:3000/dashboard?reset=true'
-          : 'https://fleetreq.vercel.app/dashboard?reset=true',
+          ? 'http://localhost:3000/login?reset=true'
+          : 'https://fleetreq.vercel.app/login?reset=true',
       })
 
       if (error) throw error

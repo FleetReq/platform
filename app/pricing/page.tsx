@@ -201,8 +201,7 @@ export default function PricingPage() {
       const { data: { session } } = await supabase.auth.getSession()
 
       if (!session) {
-        // Redirect to login/signup
-        router.push('/dashboard') // Auth component will handle login
+        router.push('/login')
         setLoading(null)
         return
       }
@@ -251,7 +250,7 @@ export default function PricingPage() {
       const { data: { session } } = await supabase.auth.getSession()
 
       if (!session) {
-        router.push('/dashboard')
+        router.push('/login')
         setLoading(null)
         return
       }

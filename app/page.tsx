@@ -58,7 +58,7 @@ export default function Home() {
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
                 <Link
-                  href="/dashboard"
+                  href="/login"
                   className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-10 py-4 rounded-lg font-semibold text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                 >
                   Start Free Trial
@@ -253,7 +253,7 @@ export default function Home() {
               Join contractors who&apos;ve saved thousands with better fleet management
             </p>
             <Link
-              href="/dashboard"
+              href="/login"
               className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-12 py-4 rounded-lg font-semibold text-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 inline-block"
             >
               Start Your Free Trial
