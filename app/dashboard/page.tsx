@@ -1860,7 +1860,14 @@ export default function MileageTracker() {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
   const [user, setUser] = useState<User | null>(null)
-  // Removed authLoading - using user && (loading || !dataLoaded) pattern instead
+  // Optimistic auth check: if Supabase cookies exist, assume user is logged in
+  // and show loading spinner instead of flashing the sign-in page
+  const [authChecking, setAuthChecking] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return document.cookie.includes('sb-') && document.cookie.includes('auth-token')
+    }
+    return false
+  })
   const [cars, setCars] = useState<Car[]>([])
   const [dataLoaded, setDataLoaded] = useState(false) // Track if initial data load is complete
   const [stats, setStats] = useState<UserStats | null>(null)
@@ -1895,6 +1902,9 @@ export default function MileageTracker() {
   // Handle auth state changes from AuthComponent
   const handleAuthChange = useCallback(async (newUser: User | null) => {
     console.log('Auth state changed:', newUser ? `${newUser.email} (${newUser.id})` : 'null')
+
+    // Auth has resolved — stop showing the optimistic loading state
+    setAuthChecking(false)
 
     // If user is logging in, reset loading states to show spinner
     if (newUser) {
@@ -2107,8 +2117,8 @@ export default function MileageTracker() {
   }
 
 
-  // Show data loading screen (only for authenticated users fetching data)
-  if (user && (loading || !dataLoaded)) {
+  // Show loading screen while auth is resolving (cookies detected) or data is loading
+  if (authChecking || (user && (loading || !dataLoaded))) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-4"></div>
