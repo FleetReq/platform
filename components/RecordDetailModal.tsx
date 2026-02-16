@@ -330,7 +330,7 @@ function EditMode({
   adjustedCanAddMore: boolean
   adjustedRemaining: number
 }) {
-  const inputClass = "w-full px-3 py-2 h-10 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+  const inputClass = "w-full px-3 py-2 h-10 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
 
   const update = (field: string, value: string) => {
     setEditData({ ...editData, [field]: value })

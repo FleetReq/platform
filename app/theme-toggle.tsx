@@ -43,11 +43,11 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="hidden md:inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors duration-200"
+      className="inline-flex items-center gap-2 px-2 md:px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors duration-200"
       aria-label={getLabel()}
     >
       {getIcon()}
-      <span>{getLabel()}</span>
+      <span className="hidden md:inline">{getLabel()}</span>
     </button>
   );
 }
