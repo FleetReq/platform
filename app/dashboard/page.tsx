@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation'
 import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner, getUserSubscriptionPlan, getUserMaxVehicles, hasFeatureAccess } from '@/lib/supabase-client'
 import { MAINTENANCE_INTERVALS, getMaintenanceStatus, getLatestMaintenanceRecord, type MaintenanceStatus } from '@/lib/maintenance'
 import BackgroundAnimation from '../components/BackgroundAnimation'
+import { useTheme } from '../theme-provider'
 import AuthComponent from '../../components/AuthComponent'
 import RecordDetailModal from '../../components/RecordDetailModal'
 import ReceiptPhotoPicker from '../../components/ReceiptPhotoPicker'
@@ -195,7 +196,7 @@ function MaintenanceStatusGrid({
     return (
       <div
         key={key}
-        className={`border-l-4 p-2 rounded-r-lg ${dimmed ? 'border-gray-300 dark:border-gray-600 bg-gray-50/50 dark:bg-gray-800/30' : getStatusColor(status)}`}
+        className={`border-l-4 p-2 rounded-r-lg ${dimmed ? 'border-gray-300 dark:border-gray-600 bg-gray-100/60 dark:bg-gray-800/30' : getStatusColor(status)}`}
       >
         <div className="flex items-center">
           <span className={`text-sm mr-2 ${dimmed ? 'opacity-50' : ''}`}>{icon}</span>
@@ -821,7 +822,7 @@ function RecordsManager({
                   value={jumpToPage}
                   onChange={(e) => setJumpToPage(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handlePageJump()}
-                  className="w-16 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="w-16 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
                   placeholder="1"
                 />
                 <button
@@ -1856,6 +1857,8 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free' }: 
 
 export default function MileageTracker() {
   const searchParams = useSearchParams()
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
   const [user, setUser] = useState<User | null>(null)
   // Removed authLoading - using user && (loading || !dataLoaded) pattern instead
   const [cars, setCars] = useState<Car[]>([])
@@ -2544,13 +2547,27 @@ export default function MileageTracker() {
                             beginAtZero: false,
                             title: {
                               display: true,
-                              text: 'Miles Per Gallon (MPG)'
+                              text: 'Miles Per Gallon (MPG)',
+                              color: isDark ? '#9ca3af' : '#374151'
+                            },
+                            ticks: {
+                              color: isDark ? '#9ca3af' : '#6b7280'
+                            },
+                            grid: {
+                              color: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'
                             }
                           },
                           x: {
                             title: {
                               display: true,
-                              text: 'Date'
+                              text: 'Date',
+                              color: isDark ? '#9ca3af' : '#374151'
+                            },
+                            ticks: {
+                              color: isDark ? '#9ca3af' : '#6b7280'
+                            },
+                            grid: {
+                              color: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'
                             }
                           }
                         },
@@ -2558,10 +2575,14 @@ export default function MileageTracker() {
                           legend: {
                             display: true,
                             position: 'top' as const,
+                            labels: {
+                              color: isDark ? '#d1d5db' : '#374151'
+                            }
                           },
                           title: {
                             display: true,
-                            text: `MPG Trends - ${chartView.charAt(0).toUpperCase() + chartView.slice(1)} View`
+                            text: `MPG Trends - ${chartView.charAt(0).toUpperCase() + chartView.slice(1)} View`,
+                            color: isDark ? '#f3f4f6' : '#111827'
                           }
                         }
                       }} />
