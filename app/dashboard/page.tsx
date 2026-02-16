@@ -1860,14 +1860,9 @@ export default function MileageTracker() {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
   const [user, setUser] = useState<User | null>(null)
-  // Optimistic auth check: if Supabase cookies exist, assume user is logged in
-  // and show loading spinner instead of flashing the sign-in page
-  const [authChecking, setAuthChecking] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return document.cookie.includes('sb-') && document.cookie.includes('auth-token')
-    }
-    return false
-  })
+  // Start true so SSR renders a loading spinner instead of the sign-in page.
+  // On mount, if no auth cookies are found, immediately flip to false.
+  const [authChecking, setAuthChecking] = useState(true)
   const [cars, setCars] = useState<Car[]>([])
   const [dataLoaded, setDataLoaded] = useState(false) // Track if initial data load is complete
   const [stats, setStats] = useState<UserStats | null>(null)
@@ -1881,6 +1876,14 @@ export default function MileageTracker() {
   const [activeTab, setActiveTab] = useState<'overview' | 'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'add-trip' | 'records' | 'settings'>('overview')
   const [chartView, setChartView] = useState<'weekly' | 'monthly' | 'yearly'>('monthly')
   const [selectedCarId, setSelectedCarId] = useState<string | null>(null)
+
+  // On mount: if no Supabase auth cookies, immediately show sign-in page
+  useEffect(() => {
+    const hasCookies = document.cookie.includes('sb-') && document.cookie.includes('auth-token')
+    if (!hasCookies) {
+      setAuthChecking(false)
+    }
+  }, [])
 
   // Read ?tab= URL param to allow navigation from hamburger menu
   const validTabs = ['dashboard', 'add-car', 'add-fillup', 'add-trip', 'add-maintenance', 'records', 'settings'] as const
