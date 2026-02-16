@@ -36,6 +36,7 @@ export const MAINTENANCE_INTERVALS: Record<string, MaintenanceInterval> = {
   battery: { months: 48, yellowThreshold: 0.8, redThreshold: 1.0 },
   cabin_air_filter: { months: 12, miles: 15000, yellowThreshold: 0.8, redThreshold: 1.0 },
   serpentine_belt: { months: 60, miles: 60000, yellowThreshold: 0.8, redThreshold: 1.0 },
+  differential_fluid: { months: 36, miles: 30000, yellowThreshold: 0.8, redThreshold: 1.0 },
   wipers: { months: 12, yellowThreshold: 0.75, redThreshold: 1.0 },
   registration: { months: 24, yellowThreshold: 0.9, redThreshold: 1.0 },
 }
@@ -54,6 +55,7 @@ export const MAINTENANCE_TYPE_LABELS: Record<string, string> = {
   battery: 'Battery',
   cabin_air_filter: 'Cabin Air Filter',
   serpentine_belt: 'Serpentine Belt',
+  differential_fluid: 'Differential Fluid',
   wipers: 'Wipers',
   registration: 'Registration',
 }

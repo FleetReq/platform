@@ -250,6 +250,7 @@ CREATE TABLE public.maintenance_records (
       'battery'::text,
       'cabin_air_filter'::text,
       'serpentine_belt'::text,
+      'differential_fluid'::text,
       'wipers'::text,
       'registration'::text
     ])
