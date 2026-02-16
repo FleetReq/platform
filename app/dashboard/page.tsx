@@ -2242,7 +2242,8 @@ export default function MileageTracker() {
         {/* Professional 3-column layout */}
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Left Column - Vehicle Info, Performance, and Maintenance */}
-          <div className="lg:col-span-1 space-y-6">
+          {/* On mobile: only show on Overview tab (other tabs show content directly without scrolling past) */}
+          <div className={`lg:col-span-1 space-y-6 ${activeTab !== 'dashboard' ? 'hidden lg:block' : ''}`}>
             {/* Vehicle Selector */}
             <div className="card-professional p-4">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Selected Vehicle</h3>
@@ -2445,7 +2446,7 @@ export default function MileageTracker() {
               {/* Navigation Tabs - hidden on mobile (bottom tab bar used instead) */}
               <div className="relative hidden sm:flex gap-1 glass-morphism rounded-xl p-1 shadow-elegant">
                 {[
-                  { id: 'dashboard', label: 'Graph', adminOnly: false },
+                  { id: 'dashboard', label: 'Overview', adminOnly: false },
                   { id: 'add-car', label: 'Add Car', adminOnly: false },
                   { id: 'add-fillup', label: 'Add Fill-up', adminOnly: false },
                   { id: 'add-trip', label: 'Add Trip', adminOnly: false },
@@ -2739,8 +2740,13 @@ function MobileBottomTabBar({
   const isAddActive = activeTab === 'add-car' || activeTab === 'add-fillup' || activeTab === 'add-trip'
   const isVehicleLimitReached = carsCount >= maxVehicles
 
-  const handleAddOption = (tab: 'add-car' | 'add-fillup' | 'add-trip') => {
+  const switchTab = (tab: 'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'add-trip' | 'records' | 'settings') => {
     setActiveTab(tab)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleAddOption = (tab: 'add-car' | 'add-fillup' | 'add-trip') => {
+    switchTab(tab)
     setAddMenuOpen(false)
   }
 
@@ -2751,9 +2757,9 @@ function MobileBottomTabBar({
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <div className="flex items-center justify-around h-16 px-1">
-          {/* Graph */}
+          {/* Overview */}
           <button
-            onClick={() => setActiveTab('dashboard')}
+            onClick={() => switchTab('dashboard')}
             className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
               activeTab === 'dashboard' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'
             }`}
@@ -2761,12 +2767,12 @@ function MobileBottomTabBar({
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
             </svg>
-            <span className="text-[10px] font-medium mt-0.5">Graph</span>
+            <span className="text-[10px] font-medium mt-0.5">Overview</span>
           </button>
 
           {/* Records */}
           <button
-            onClick={() => setActiveTab('records')}
+            onClick={() => switchTab('records')}
             className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
               activeTab === 'records' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'
             }`}
@@ -2838,7 +2844,7 @@ function MobileBottomTabBar({
 
           {/* Maintenance */}
           <button
-            onClick={() => setActiveTab('add-maintenance')}
+            onClick={() => switchTab('add-maintenance')}
             className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
               activeTab === 'add-maintenance' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'
             }`}
@@ -2852,7 +2858,7 @@ function MobileBottomTabBar({
 
           {/* Settings */}
           <button
-            onClick={() => setActiveTab('settings')}
+            onClick={() => switchTab('settings')}
             className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
               activeTab === 'settings' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'
             }`}
