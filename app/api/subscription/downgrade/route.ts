@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase'
-import { getUserSubscriptionPlan } from '@/lib/supabase-client'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
+import { getUserOrg, getOrgDetails, getOrgSubscriptionPlan } from '@/lib/org'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-10-29.clover',
@@ -42,8 +42,14 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Get current subscription plan
-    const currentTier = await getUserSubscriptionPlan(user.id)
+    // Get user's org membership
+    const membership = await getUserOrg(supabase, user.id)
+    if (!membership) {
+      return NextResponse.json({ error: 'No organization found' }, { status: 404 })
+    }
+
+    // Get current subscription plan from org
+    const currentTier = await getOrgSubscriptionPlan(supabase, user.id)
 
     // Validate downgrade path
     if (currentTier === 'free') {
@@ -64,11 +70,11 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Check vehicle count
+    // Check vehicle count for org
     const { count: vehicleCount } = await supabase
       .from('cars')
       .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
+      .eq('org_id', membership.org_id)
 
     const targetLimit = TIER_LIMITS[targetTier]
     const currentVehicles = vehicleCount || 0
@@ -93,7 +99,7 @@ export async function POST(request: NextRequest) {
           .from('cars')
           .delete()
           .eq('id', vehicleId)
-          .eq('user_id', user.id)
+          .eq('org_id', membership.org_id)
 
         if (deleteError) {
           console.error('Error deleting vehicle during downgrade:', deleteError)
@@ -116,22 +122,18 @@ export async function POST(request: NextRequest) {
       }
     )
 
-    // Get user's profile and Stripe customer ID
-    const { data: profile } = await supabaseAdmin
-      .from('user_profiles')
-      .select('stripe_customer_id')
-      .eq('id', user.id)
-      .single()
+    // Get org's Stripe customer ID
+    const org = await getOrgDetails(supabase, membership.org_id)
 
     let downgradeEffectiveDate: Date | null = null
 
     // Handle Stripe subscription cancellation
-    // Note: currentTier is never 'free' at this point (early return on line 49)
-    if (profile?.stripe_customer_id) {
+    // Note: currentTier is never 'free' at this point (early return above)
+    if (org?.stripe_customer_id) {
       try {
         // Get active subscription
         const subscriptions = await stripe.subscriptions.list({
-          customer: profile.stripe_customer_id,
+          customer: org!.stripe_customer_id!,
           status: 'active',
           limit: 1,
         })
@@ -161,15 +163,15 @@ export async function POST(request: NextRequest) {
       downgradeEffectiveDate = new Date()
     }
 
-    // Update user_profiles with pending downgrade
+    // Update organization with pending downgrade
     const { error: updateError } = await supabaseAdmin
-      .from('user_profiles')
+      .from('organizations')
       .update({
         pending_downgrade_tier: targetTier,
         downgrade_effective_date: downgradeEffectiveDate.toISOString(),
         downgrade_requested_at: new Date().toISOString(),
       })
-      .eq('id', user.id)
+      .eq('id', membership.org_id)
 
     if (updateError) {
       console.error('Error updating user profile with pending downgrade:', updateError)

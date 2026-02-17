@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase'
 import { rateLimit, RATE_LIMITS, getRateLimitHeaders } from '@/lib/rate-limit'
 import { sanitizeString, validateInteger, validateFloat, validateUUID, validateDate, validateMaintenanceType } from '@/lib/validation'
+import { getUserOrg, verifyCarAccess } from '@/lib/org'
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,6 +28,12 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Get user's org membership
+    const membership = await getUserOrg(supabase, user.id)
+    if (!membership) {
+      return NextResponse.json({ maintenanceRecords: [] })
+    }
+
     const { searchParams } = new URL(request.url)
     const carId = searchParams.get('car_id')
     const type = searchParams.get('type')
@@ -38,7 +45,7 @@ export async function GET(request: NextRequest) {
         *,
         cars!inner(*)
       `)
-      .eq('cars.user_id', user.id)
+      .eq('cars.org_id', membership.org_id)
       .order('date', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(limit)
@@ -120,16 +127,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verify the car belongs to the user
-    const { data: car, error: carError } = await supabase
-      .from('cars')
-      .select('id')
-      .eq('id', car_id)
-      .eq('user_id', user.id)
-      .single()
-
-    if (carError || !car) {
+    // Verify user has edit access to this car through their org
+    const carAccess = await verifyCarAccess(supabase, user.id, car_id)
+    if (!carAccess.hasAccess) {
       return NextResponse.json({ error: 'Car not found' }, { status: 404 })
+    }
+    if (!carAccess.canEdit) {
+      return NextResponse.json({ error: 'Viewers cannot add maintenance records' }, { status: 403 })
     }
 
     // Build insert object conditionally to handle missing columns gracefully
@@ -185,7 +189,7 @@ export async function POST(request: NextRequest) {
         .from('cars')
         .select('current_mileage')
         .eq('id', car_id)
-        .eq('user_id', user.id)
+        .eq('org_id', carAccess.orgId!)
         .single()
 
       const newMileage = mileage
@@ -196,7 +200,7 @@ export async function POST(request: NextRequest) {
           .from('cars')
           .update({ current_mileage: newMileage })
           .eq('id', car_id)
-          .eq('user_id', user.id)
+          .eq('org_id', carAccess.orgId!)
 
         if (updateError) {
           console.error('Error updating car mileage:', updateError)

@@ -35,13 +35,13 @@ const pricingTiers: PricingTier[] = [
     tier: "free"
   },
   {
-    name: "Personal",
+    name: "Family",
     price: "$4",
     period: "/month",
     description: "Ideal for families & small vehicle owners",
     features: [
       "Up to 3 vehicles",
-      "1 user",
+      "Up to 3 members",
       "Everything in Free",
       "Full maintenance tracking & alerts",
       "Unlimited data history",
@@ -50,7 +50,7 @@ const pricingTiers: PricingTier[] = [
       "Export capabilities"
     ],
     highlighted: true,
-    buttonText: "Start Personal Plan",
+    buttonText: "Start Family Plan",
     buttonStyle: "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white",
     tier: "personal"
   },
@@ -77,7 +77,7 @@ const pricingTiers: PricingTier[] = [
 
 const allFeatures = [
   { name: "Vehicles", free: "1", personal: "3", business: "Unlimited" },
-  { name: "Team Members", free: "1", personal: "1", business: "6" },
+  { name: "Team Members", free: "1", personal: "3", business: "6" },
   { name: "Fuel Tracking", free: true, personal: true, business: true },
   { name: "MPG Analysis", free: true, personal: true, business: true },
   { name: "Basic Analytics", free: true, personal: true, business: true },
@@ -414,7 +414,7 @@ export default function PricingPage() {
                     Free
                   </th>
                   <th className="text-center py-3 px-3 sm:py-4 sm:px-6 font-medium text-sm sm:text-base text-blue-600 dark:text-blue-400">
-                    Personal
+                    Family
                   </th>
                   <th className="text-center py-3 px-3 sm:py-4 sm:px-6 font-medium text-sm sm:text-base text-gray-900 dark:text-white">
                     Business

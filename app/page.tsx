@@ -208,7 +208,7 @@ export default function Home() {
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-medium">
                   Most Popular
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Personal</h3>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Family</h3>
                 <p className="text-4xl font-bold text-gray-900 dark:text-white mb-4">$4<span className="text-lg">/month</span></p>
                 <p className="text-gray-600 dark:text-gray-300 mb-6">For families & small contractors</p>
                 <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-2">

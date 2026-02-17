@@ -1,17 +1,19 @@
 # FleetReq Database Schema
 
 > **CRITICAL**: Always verify column names against this schema before writing to the database.
-> Last Updated: 2026-02-15
+> Last Updated: 2026-02-16
 
 ---
 
 ## Table of Contents
 1. [auth.users](#authusers) (Supabase managed)
 2. [user_profiles](#user_profiles)
-3. [cars](#cars)
-4. [fill_ups](#fill_ups)
-5. [maintenance_records](#maintenance_records)
-6. [heartbeat](#heartbeat) (system table)
+3. [organizations](#organizations) (NEW)
+4. [org_members](#org_members) (NEW)
+5. [cars](#cars)
+6. [fill_ups](#fill_ups)
+7. [maintenance_records](#maintenance_records)
+8. [heartbeat](#heartbeat) (system table)
 
 ---
 
@@ -30,7 +32,7 @@
 
 ## user_profiles
 
-**Subscription and user metadata**
+**User metadata and preferences**
 
 ```sql
 CREATE TABLE public.user_profiles (
@@ -40,31 +42,14 @@ CREATE TABLE public.user_profiles (
   avatar_url text NULL,
   github_id text NULL,
   is_admin boolean NULL DEFAULT false,
-  created_at timestamp with time zone NULL DEFAULT now(),
-  updated_at timestamp with time zone NULL DEFAULT now(),
-  subscription_plan text NOT NULL DEFAULT 'free'::text,
-  max_vehicles integer NOT NULL DEFAULT 1,
-  max_invited_users integer NOT NULL DEFAULT 0,
-  is_primary_user boolean NOT NULL DEFAULT true,
-  subscription_start_date timestamp without time zone NULL,
-  current_tier_start_date timestamp without time zone NULL,
-  subscription_end_date timestamp with time zone NULL,
-  cancellation_requested_at timestamp with time zone NULL,
-  scheduled_deletion_date timestamp with time zone NULL,
-  cancellation_reason text NULL,
-  pending_downgrade_tier text NULL CHECK (pending_downgrade_tier IN ('free', 'personal')),
-  downgrade_effective_date timestamp with time zone NULL,
-  downgrade_requested_at timestamp with time zone NULL,
-  stripe_customer_id text NULL,
   email_notifications_enabled boolean NOT NULL DEFAULT true,
   last_notification_sent_at timestamp with time zone NULL,
+  created_at timestamp with time zone NULL DEFAULT now(),
+  updated_at timestamp with time zone NULL DEFAULT now(),
 
   CONSTRAINT user_profiles_pkey PRIMARY KEY (id),
   CONSTRAINT user_profiles_github_id_key UNIQUE (github_id),
-  CONSTRAINT user_profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users (id),
-  CONSTRAINT user_profiles_subscription_plan_check CHECK (
-    subscription_plan = ANY (ARRAY['free'::text, 'personal'::text, 'business'::text])
-  )
+  CONSTRAINT user_profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users (id)
 )
 ```
 
@@ -75,36 +60,146 @@ CREATE TABLE public.user_profiles (
 
 **Key Columns:**
 - `id` - Links to auth.users.id (one-to-one)
-- `subscription_plan` - 'free' | 'personal' | 'business'
-- `max_vehicles` - Enforced limit (1 for free, 3 for personal, 999 for business)
 - `is_admin` - Bypass all limits, show purple badge
-- `stripe_customer_id` - Stripe customer ID for billing
-- `subscription_end_date` - Date when subscription ends/renews
-- `cancellation_requested_at` - Timestamp when user requested cancellation
-- `scheduled_deletion_date` - Date when all user data will be permanently deleted (subscription_end + 30 days)
-- `cancellation_reason` - Optional reason provided by user for cancellation
-- `pending_downgrade_tier` - The tier user is downgrading to ('free' | 'personal' | null)
-- `downgrade_effective_date` - Date when downgrade takes effect (end of current billing period)
-- `downgrade_requested_at` - Timestamp when user requested the downgrade
 - `email_notifications_enabled` - Whether user receives weekly maintenance reminder emails (default true)
 - `last_notification_sent_at` - Timestamp of last notification email sent (dedup guard, min 6.5 day gap)
 
-**Downgrade Automation:**
-- `.github/workflows/execute-pending-downgrades.yml` - GitHub Actions cron (daily at midnight UTC)
-- `app/api/cron/execute-pending-downgrades/route.ts` - API endpoint that executes downgrades
-- Automatically updates `subscription_plan` when `downgrade_effective_date` is reached
-- Clears pending downgrade fields after execution
+> **Note:** Subscription/billing fields have moved to the `organizations` table.
+
+---
+
+## organizations
+
+**Multi-tenant organizations for team/fleet management**
+
+```sql
+CREATE TABLE public.organizations (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name text NOT NULL DEFAULT 'My Organization',
+  slug text NULL,
+  subscription_plan text NOT NULL DEFAULT 'free',
+  max_vehicles integer NOT NULL DEFAULT 1,
+  max_members integer NOT NULL DEFAULT 1,
+  stripe_customer_id text NULL,
+  subscription_end_date timestamp with time zone NULL,
+  cancellation_requested_at timestamp with time zone NULL,
+  scheduled_deletion_date timestamp with time zone NULL,
+  cancellation_reason text NULL,
+  pending_downgrade_tier text NULL,
+  downgrade_effective_date timestamp with time zone NULL,
+  downgrade_requested_at timestamp with time zone NULL,
+  created_at timestamp with time zone NULL DEFAULT now(),
+  updated_at timestamp with time zone NULL DEFAULT now(),
+
+  CONSTRAINT organizations_pkey PRIMARY KEY (id),
+  CONSTRAINT organizations_subscription_plan_check CHECK (
+    subscription_plan = ANY (ARRAY['free'::text, 'personal'::text, 'business'::text])
+  ),
+  CONSTRAINT organizations_pending_downgrade_tier_check CHECK (
+    pending_downgrade_tier IN ('free', 'personal')
+  )
+)
+```
+
+**Indexes:**
+- `idx_organizations_stripe_customer_id` on `stripe_customer_id`
+
+**RLS Policies:**
+- `org_members_can_view_org` - Org members can SELECT their org
+- `org_owners_can_update_org` - Only owners can UPDATE their org
+
+**RLS Helper Functions:**
+```sql
+-- Returns org IDs where user is any member
+CREATE FUNCTION user_org_ids() RETURNS SETOF uuid AS $$
+  SELECT org_id FROM org_members WHERE user_id = auth.uid()
+$$ LANGUAGE sql SECURITY DEFINER STABLE;
+
+-- Returns org IDs where user is editor or owner
+CREATE FUNCTION user_editor_org_ids() RETURNS SETOF uuid AS $$
+  SELECT org_id FROM org_members WHERE user_id = auth.uid() AND role IN ('owner', 'editor')
+$$ LANGUAGE sql SECURITY DEFINER STABLE;
+
+-- Returns org IDs where user is owner
+CREATE FUNCTION user_owner_org_ids() RETURNS SETOF uuid AS $$
+  SELECT org_id FROM org_members WHERE user_id = auth.uid() AND role = 'owner'
+$$ LANGUAGE sql SECURITY DEFINER STABLE;
+```
+
+**Key Columns:**
+- `subscription_plan` - 'free' | 'personal' | 'business'
+- `max_vehicles` - Enforced limit (1 for free, 3 for personal/family, 999 for business)
+- `max_members` - Max members (1 for free, 3 for personal/family, 6 for business)
+- `stripe_customer_id` - Stripe customer ID for billing
+- `subscription_end_date` - Date when subscription ends/renews
+- `pending_downgrade_tier` - The tier org is downgrading to ('free' | 'personal' | null)
+- `downgrade_effective_date` - Date when downgrade takes effect
+
+**Tier Limits:**
+
+| | Free | Family (personal) | Business |
+|---|---|---|---|
+| Vehicles | 1 | 3 | Unlimited (999) |
+| Members | 1 | 3 | 6 |
+| DB plan value | 'free' | 'personal' | 'business' |
+
+---
+
+## org_members
+
+**Organization membership and invitations**
+
+```sql
+CREATE TABLE public.org_members (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  org_id uuid NOT NULL,
+  user_id uuid NULL,
+  role text NOT NULL DEFAULT 'viewer',
+  invited_email text NULL,
+  invited_at timestamp with time zone NULL,
+  accepted_at timestamp with time zone NULL,
+  created_at timestamp with time zone NULL DEFAULT now(),
+
+  CONSTRAINT org_members_pkey PRIMARY KEY (id),
+  CONSTRAINT org_members_org_id_fkey FOREIGN KEY (org_id) REFERENCES organizations (id) ON DELETE CASCADE,
+  CONSTRAINT org_members_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users (id) ON DELETE CASCADE,
+  CONSTRAINT org_members_role_check CHECK (role IN ('owner', 'editor', 'viewer'))
+)
+```
+
+**Indexes:**
+- `idx_org_members_org_user` - UNIQUE on `(org_id, user_id)` WHERE `user_id IS NOT NULL`
+- `idx_org_members_org_email` - UNIQUE on `(org_id, invited_email)` WHERE `invited_email IS NOT NULL`
+- `idx_org_members_user_id` on `user_id`
+
+**RLS Policies:**
+- `org_members_select` - Members can view members of their own org
+- `org_members_insert` - Owners can invite new members
+- `org_members_update` - Owners can update member roles
+- `org_members_delete` - Owners can remove members
+
+**Key Columns:**
+- `org_id` - FK to organizations
+- `user_id` - FK to auth.users (NULL for pending invites)
+- `role` - 'owner' | 'editor' | 'viewer'
+- `invited_email` - Email for pending invites (NULL for accepted members)
+
+**Roles:**
+- **Owner** - Full access: billing, manage members, CRUD all data, delete cars
+- **Editor** - Can create/update vehicles, fill-ups, maintenance, trips
+- **Viewer** - Read-only access to all org data
 
 ---
 
 ## cars
 
-**User vehicles**
+**Organization vehicles**
 
 ```sql
 CREATE TABLE public.cars (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
+  org_id uuid NOT NULL,
   make text NOT NULL,
   model text NOT NULL,
   year integer NOT NULL,
@@ -117,25 +212,28 @@ CREATE TABLE public.cars (
 
   CONSTRAINT cars_pkey PRIMARY KEY (id),
   CONSTRAINT cars_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users (id) ON DELETE CASCADE,
+  CONSTRAINT cars_org_id_fkey FOREIGN KEY (org_id) REFERENCES organizations (id) ON DELETE CASCADE,
   CONSTRAINT cars_year_check CHECK ((year >= 1900) AND (year <= 2030))
 )
 ```
 
 **Indexes:**
 - `idx_cars_user_id` on `user_id`
+- `idx_cars_org_id` on `org_id`
 - `idx_cars_current_mileage` on `current_mileage`
 
 **Triggers:**
 - `update_cars_updated_at` - Auto-updates `updated_at` timestamp
 
-**RLS Policies:**
-- `users_select_own_cars` - Users can only view their own cars
-- `users_insert_own_cars` - Users can create cars for themselves
-- `users_update_own_cars` - Users can only update their own cars
-- `users_delete_own_cars` - Users can only delete their own cars
+**RLS Policies (org-based):**
+- `cars_select` - Org members can view cars in their org
+- `cars_insert` - Editors/owners can create cars
+- `cars_update` - Editors/owners can update cars
+- `cars_delete` - Owners only can delete cars
 
 **Key Columns:**
-- `user_id` - Owner of the vehicle (NOT `owner_id`)
+- `user_id` - User who created the vehicle (creator, not access control)
+- `org_id` - Organization the vehicle belongs to (access control)
 - `current_mileage` - Automatically updated from fill_ups/maintenance records
 
 ---
@@ -186,24 +284,18 @@ CREATE TABLE public.fill_ups (
 - `update_fill_ups_updated_at` - Auto-updates `updated_at` timestamp
 - `calculate_fill_up_mpg` - Auto-calculates `mpg` field on INSERT/UPDATE
 
-**RLS Policies:**
-- `Users can view fill-ups for their cars or records they created` - Restricts to car owner OR record creator
-- `Users can insert own fill-ups` - Anyone authenticated can create fill-ups
-- `Users can update own fill-ups` - Restricts to car owner
-- `Users can delete own fill-ups` - Restricts to car owner
+**RLS Policies (org-based):**
+- `fill_ups_select` - Org members can view fill-ups for cars in their org
+- `fill_ups_insert` - Editors/owners can create fill-ups
+- `fill_ups_update` - Editors/owners can update fill-ups
+- `fill_ups_delete` - Owners only can delete fill-ups
 
 **Key Columns:**
 - `car_id` - Links to cars table
-- `created_by_user_id` - User who created the record (for team features)
+- `created_by_user_id` - User who created the record (audit trail)
 - `miles_driven` - Miles driven since last fill-up (optional, used for MPG calculation)
 - `mpg` - **AUTO-CALCULATED by trigger** from `miles_driven / gallons`
-- `total_cost` - Optional, can be calculated or entered manually
 - `receipt_urls` - Array of Supabase Storage paths for receipt photos (max 5). Personal+ only.
-
-**Important Notes:**
-- `mpg` is auto-calculated by trigger if `miles_driven` is provided
-- `miles_driven` should be calculated from odometer reading differences
-- If `miles_driven` is NULL, `mpg` will remain NULL
 
 ---
 
@@ -230,10 +322,12 @@ CREATE TABLE public.maintenance_records (
   oil_type character varying(20) NULL DEFAULT NULL,
   created_by_user_id uuid NULL,
   receipt_urls text[] NOT NULL DEFAULT '{}',
+  source_record_id uuid NULL,
 
   CONSTRAINT maintenance_records_pkey PRIMARY KEY (id),
   CONSTRAINT maintenance_records_car_id_fkey FOREIGN KEY (car_id) REFERENCES cars (id) ON DELETE CASCADE,
   CONSTRAINT fk_maintenance_records_created_by_user FOREIGN KEY (created_by_user_id) REFERENCES auth.users (id),
+  CONSTRAINT maintenance_records_source_record_fkey FOREIGN KEY (source_record_id) REFERENCES maintenance_records (id) ON DELETE CASCADE,
   CONSTRAINT maintenance_records_receipt_urls_max_5 CHECK (array_length(receipt_urls, 1) IS NULL OR array_length(receipt_urls, 1) <= 5),
   CONSTRAINT maintenance_records_type_check CHECK (
     type = ANY (ARRAY[
@@ -257,9 +351,7 @@ CREATE TABLE public.maintenance_records (
   ),
   CONSTRAINT maintenance_records_cost_check CHECK (cost >= 0),
   CONSTRAINT maintenance_records_check CHECK (next_service_mileage >= mileage),
-  CONSTRAINT maintenance_records_mileage_check CHECK (mileage >= 0),
-  source_record_id uuid NULL,
-  CONSTRAINT maintenance_records_source_record_fkey FOREIGN KEY (source_record_id) REFERENCES maintenance_records (id) ON DELETE CASCADE
+  CONSTRAINT maintenance_records_mileage_check CHECK (mileage >= 0)
 )
 ```
 
@@ -275,31 +367,19 @@ CREATE TABLE public.maintenance_records (
 - `update_maintenance_records_updated_at` - Auto-updates `updated_at` timestamp
 - `auto_tire_rotation_on_tire_change` - Auto-creates a `tire_rotation` record when a `tire_change` is inserted
 
-**RLS Policies:**
-- `Users can view maintenance records for their cars or records th...` - Restricts to car owner OR record creator
-- `Users can insert own maintenance records` - Anyone authenticated can create maintenance records
-- `Users can update own maintenance records` - Restricts to car owner
-- `Users can delete own maintenance records` - Restricts to car owner
+**RLS Policies (org-based):**
+- `maintenance_records_select` - Org members can view records for cars in their org
+- `maintenance_records_insert` - Editors/owners can create records
+- `maintenance_records_update` - Editors/owners can update records
+- `maintenance_records_delete` - Owners only can delete records
 
 **Key Columns:**
 - `car_id` - Links to cars table
-- `created_by_user_id` - User who created the record (for team features)
-- `type` - Must be one of 10 valid maintenance types (see CHECK constraint)
+- `created_by_user_id` - User who created the record (audit trail)
+- `type` - Must be one of 16 valid maintenance types (see CHECK constraint)
 - `oil_type` - Only relevant for oil_change type
-- `source_record_id` - Links auto-created records to their source (e.g., tire_rotation created from tire_change). FK with ON DELETE CASCADE — deleting the source deletes the auto-created record.
+- `source_record_id` - Links auto-created records to their source
 - `receipt_urls` - Array of Supabase Storage paths for receipt photos (max 5). Personal+ only.
-
-**Valid Maintenance Types:**
-- `oil_change`
-- `tire_rotation`
-- `tire_change`
-- `brake_pads`
-- `rotors`
-- `air_filter`
-- `transmission_service`
-- `coolant_flush`
-- `wipers`
-- `registration`
 
 ---
 
@@ -318,17 +398,9 @@ CREATE TABLE public.heartbeat (
 
 **Purpose:** Prevents Supabase free-tier auto-pause by tracking database activity
 
-**Indexes:**
-- `idx_heartbeat_pinged_at` on `pinged_at DESC`
-
-**RLS Policies:**
-- `Service role can manage heartbeat` - Only service_role can read/write (system table)
-
 **Managed By:**
 - `.github/workflows/keep-alive.yml` - GitHub Actions cron (every 4 hours)
 - `app/api/cron/keep-alive/route.ts` - API endpoint
-
-**Auto-Cleanup:** Keeps only the last 100 records (old records deleted automatically)
 
 ---
 
@@ -344,25 +416,27 @@ file_size_limit: 2097152 (2MB)
 allowed_mime_types: ['image/jpeg', 'image/png', 'image/webp']
 ```
 
-**Path Convention:** `{user_id}/{record_type}/{record_uuid}/{filename}`
+**Path Convention:** `{org_id}/{record_type}/{record_uuid}/{filename}`
 
-**RLS Policies:**
-- `Users can upload own receipts` - INSERT: `(storage.foldername(name))[1] = auth.uid()::text`
-- `Users can view own receipts` - SELECT: `(storage.foldername(name))[1] = auth.uid()::text`
-- `Users can delete own receipts` - DELETE: `(storage.foldername(name))[1] = auth.uid()::text`
-
-**Feature Gating:** Free tier cannot upload receipts. Personal and Business tiers can upload up to 5 photos per record.
-
-**Cleanup:** Storage files are deleted when records are deleted, cars are deleted, or accounts are cleaned up via cron jobs.
+**RLS Policies (org-based):**
+- Org members can view receipts for their org
+- Editors/owners can upload receipts
+- Owners can delete receipts
 
 ---
 
 ## Common Patterns
 
-### User ID References
-- **auth.users.id** - Primary user identifier
-- **cars.user_id** - Owner of the vehicle (⚠️ NOT `owner_id`)
-- **created_by_user_id** - User who created a record (for audit/team features)
+### Access Control
+- **Organization-based** - All data access is through org membership
+- **cars.org_id** - Determines which org a vehicle belongs to
+- **org_members** - Determines user's role within an org
+- **user_id fields** - Used for audit/creator tracking, NOT access control
+
+### Roles
+- **Owner** - billing, members, full CRUD, delete
+- **Editor** - create/update vehicles and records
+- **Viewer** - read-only
 
 ### Timestamps
 All tables have:
@@ -370,8 +444,9 @@ All tables have:
 - `updated_at` - Auto-updated via trigger on UPDATE
 
 ### Cascade Deletes
-- Deleting a user → Deletes their cars, profiles
+- Deleting an org → Deletes org_members
 - Deleting a car → Deletes fill_ups and maintenance_records
+- Deleting a user → Deletes their cars, profiles, org_members
 
 ### Auto-Calculated Fields
 - `fill_ups.mpg` - Calculated by `calculate_mpg()` trigger
@@ -381,8 +456,9 @@ All tables have:
 
 ## Important Notes
 
-1. **Always use `created_by_user_id`** for fill_ups and maintenance_records (it exists!)
-2. **Cars table uses `user_id`** not `owner_id`
+1. **Access control uses `org_id`** not `user_id` — all queries filter by org membership
+2. **Cars table has both `user_id` (creator) and `org_id` (access control)**
 3. **MPG is auto-calculated** - don't insert it manually
-4. **Maintenance types are constrained** - only 8 valid values allowed
+4. **Maintenance types are constrained** - 16 valid values allowed
 5. **Foreign keys cascade delete** - deleting a car removes all associated records
+6. **DB stores 'personal'** but UI displays as "Family"

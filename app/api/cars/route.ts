@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase'
-import { getUserSubscriptionPlan } from '@/lib/supabase-client'
 import { updateStripeSubscriptionQuantity } from '@/lib/stripe-helpers'
 import { rateLimit, RATE_LIMITS, getRateLimitHeaders } from '@/lib/rate-limit'
 import { sanitizeString, validateYear, validateInteger, validateLicensePlate, validateUUID } from '@/lib/validation'
+import { getUserOrg, getOrgSubscriptionPlan, canEdit } from '@/lib/org'
 
 export async function GET(request: NextRequest) {
   try {
@@ -29,7 +29,14 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    console.log('Cars API: Fetching cars for user:', user.email, user.id)
+    // Get user's org membership
+    const membership = await getUserOrg(supabase, user.id)
+    if (!membership) {
+      console.log('Cars API: No org membership for user:', user.id)
+      return NextResponse.json({ cars: [] })
+    }
+
+    console.log('Cars API: Fetching cars for org:', membership.org_id, 'user:', user.email)
 
     const { data: cars, error: carsError} = await supabase
       .from('cars')
@@ -38,7 +45,7 @@ export async function GET(request: NextRequest) {
         fill_ups!inner(count),
         maintenance_records!inner(count)
       `)
-      .eq('user_id', user.id)
+      .eq('org_id', membership.org_id)
       .order('created_at', { ascending: false })
 
     console.log('Cars API: Query result - cars:', cars?.length || 0, 'error:', carsError?.message || 'none')
@@ -88,6 +95,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Check org membership and editor role
+    const membership = await getUserOrg(supabase, user.id)
+    if (!membership) {
+      return NextResponse.json({ error: 'No organization found' }, { status: 403 })
+    }
+
+    if (!(await canEdit(supabase, user.id))) {
+      return NextResponse.json({ error: 'Viewers cannot add vehicles' }, { status: 403 })
+    }
+
     // Parse and validate input
     const body = await request.json()
 
@@ -110,6 +127,7 @@ export async function POST(request: NextRequest) {
       .from('cars')
       .insert({
         user_id: user.id,
+        org_id: membership.org_id,
         make,
         model,
         year,
@@ -135,14 +153,14 @@ export async function POST(request: NextRequest) {
 
     // Handle Stripe subscription update for Business tier users
     let prorationInfo = null
-    const userPlan = await getUserSubscriptionPlan(user.id)
+    const userPlan = await getOrgSubscriptionPlan(supabase, user.id)
 
     if (userPlan === 'business') {
       // Get new vehicle count (including the one just added)
       const { count: vehicleCount } = await supabase
         .from('cars')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
+        .eq('org_id', membership.org_id)
 
       if (vehicleCount) {
         // Update Stripe subscription quantity
@@ -194,6 +212,16 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
+    // Check org membership and editor role
+    const membership = await getUserOrg(supabase, user.id)
+    if (!membership) {
+      return NextResponse.json({ error: 'No organization found' }, { status: 403 })
+    }
+
+    if (!(await canEdit(supabase, user.id))) {
+      return NextResponse.json({ error: 'Viewers cannot update vehicles' }, { status: 403 })
+    }
+
     // Parse and validate input
     const body = await request.json()
 
@@ -215,7 +243,7 @@ export async function PATCH(request: NextRequest) {
         .from('cars')
         .select('current_mileage')
         .eq('id', carId)
-        .eq('user_id', user.id)
+        .eq('org_id', membership.org_id)
         .single()
 
       const newMileage = current_mileage
@@ -233,7 +261,7 @@ export async function PATCH(request: NextRequest) {
       .from('cars')
       .update({ current_mileage })
       .eq('id', carId)
-      .eq('user_id', user.id) // Ensure user can only update their own cars
+      .eq('org_id', membership.org_id)
       .select()
       .single()
 

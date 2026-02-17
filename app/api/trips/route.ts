@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase'
+import { getUserOrg, verifyCarAccess } from '@/lib/org'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,6 +18,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get user's org membership
+    const membership = await getUserOrg(supabase, user.id)
+    if (!membership) {
+      return NextResponse.json({ trips: [] })
+    }
+
     // Get query parameters for filtering
     const { searchParams } = new URL(request.url)
     const carId = searchParams.get('car_id')
@@ -24,11 +31,11 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get('start_date')
     const endDate = searchParams.get('end_date')
 
-    // Build query with filters
+    // Build query with filters — trips belong to cars which belong to orgs
     let query = supabase
       .from('trips')
-      .select('*')
-      .eq('user_id', user.id)
+      .select('*, cars!inner(org_id)')
+      .eq('cars.org_id', membership.org_id)
       .order('date', { ascending: false })
 
     // Apply filters if provided
@@ -117,19 +124,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verify the car belongs to the user
-    const { data: car, error: carError } = await supabase
-      .from('cars')
-      .select('id')
-      .eq('id', car_id)
-      .eq('user_id', user.id)
-      .single()
-
-    if (carError || !car) {
+    // Verify user has edit access to this car through their org
+    const carAccess = await verifyCarAccess(supabase, user.id, car_id)
+    if (!carAccess.hasAccess) {
       return NextResponse.json(
-        { error: 'Car not found or does not belong to you' },
+        { error: 'Car not found or does not belong to your organization' },
         { status: 404 }
       )
+    }
+    if (!carAccess.canEdit) {
+      return NextResponse.json({ error: 'Viewers cannot add trips' }, { status: 403 })
     }
 
     // Insert the trip

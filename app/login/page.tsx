@@ -1,17 +1,20 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import BackgroundAnimation from '../components/BackgroundAnimation'
 import AuthComponent from '../../components/AuthComponent'
 import type { User } from '@supabase/supabase-js'
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('redirect')
 
   const handleAuthChange = (user: User | null) => {
     if (user) {
-      router.push('/dashboard')
+      router.push(redirectTo || '/dashboard')
     }
   }
 
@@ -85,8 +88,8 @@ export default function LoginPage() {
                   <span className="text-blue-400">FREE (1 user, 1 vehicle)</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-white/10">
-                  <span className="text-white font-medium">Personal</span>
-                  <span className="text-blue-400">$4/month (1 user, 3 vehicles)</span>
+                  <span className="text-white font-medium">Family</span>
+                  <span className="text-blue-400">$4/month (3 members, 3 vehicles)</span>
                 </div>
                 <div className="flex justify-between items-center py-2">
                   <span className="text-white font-medium">Business</span>
@@ -129,5 +132,17 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 flex items-center justify-center">
+        <div className="text-blue-400">Loading...</div>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   )
 }

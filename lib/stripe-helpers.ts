@@ -36,29 +36,40 @@ export async function updateStripeSubscriptionQuantity(
       }
     )
 
-    // Get user's Stripe customer ID
-    const { data: profile, error: profileError } = await supabase
-      .from('user_profiles')
-      .select('stripe_customer_id, subscription_plan')
-      .eq('id', userId)
+    // Get user's org and Stripe customer ID
+    const { data: membership } = await supabase
+      .from('org_members')
+      .select('org_id')
+      .eq('user_id', userId)
+      .limit(1)
       .single()
 
-    if (profileError || !profile) {
-      return { success: false, error: 'User profile not found' }
+    if (!membership) {
+      return { success: false, error: 'User org membership not found' }
+    }
+
+    const { data: org, error: orgError } = await supabase
+      .from('organizations')
+      .select('stripe_customer_id, subscription_plan')
+      .eq('id', membership.org_id)
+      .single()
+
+    if (orgError || !org) {
+      return { success: false, error: 'Organization not found' }
     }
 
     // Only update for Business tier
-    if (profile.subscription_plan !== 'business') {
+    if (org.subscription_plan !== 'business') {
       return { success: false, error: 'Not on Business tier' }
     }
 
-    if (!profile.stripe_customer_id) {
+    if (!org.stripe_customer_id) {
       return { success: false, error: 'No Stripe customer found' }
     }
 
     // Get active subscription for this customer
     const subscriptions = await stripe.subscriptions.list({
-      customer: profile.stripe_customer_id,
+      customer: org.stripe_customer_id,
       status: 'active',
       limit: 1,
     })
@@ -136,18 +147,27 @@ export async function getStripeVehicleCount(userId: string): Promise<number> {
       }
     )
 
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('stripe_customer_id')
-      .eq('id', userId)
+    const { data: membership } = await supabase
+      .from('org_members')
+      .select('org_id')
+      .eq('user_id', userId)
+      .limit(1)
       .single()
 
-    if (!profile?.stripe_customer_id) {
+    if (!membership) return 0
+
+    const { data: org } = await supabase
+      .from('organizations')
+      .select('stripe_customer_id')
+      .eq('id', membership.org_id)
+      .single()
+
+    if (!org?.stripe_customer_id) {
       return 0
     }
 
     const subscriptions = await stripe.subscriptions.list({
-      customer: profile.stripe_customer_id,
+      customer: org.stripe_customer_id,
       status: 'active',
       limit: 1,
     })

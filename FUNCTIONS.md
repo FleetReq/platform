@@ -2,7 +2,7 @@
 
 > **CRITICAL**: Always check this file before modifying database operations or schema.
 > Database functions run automatically and can affect INSERT/UPDATE behavior.
-> Last Updated: 2025-10-08
+> Last Updated: 2026-02-16
 
 ---
 
@@ -20,10 +20,13 @@ These PostgreSQL functions are executed automatically by triggers on specific da
 
 | Function Name | Purpose | Tables Using It |
 |--------------|---------|-----------------|
-| `handle_new_user()` | Auto-creates user profile when new user signs up | `auth.users` (AFTER INSERT) |
-| `update_updated_at_column()` | Auto-updates `updated_at` timestamp | `cars`, `fill_ups`, `maintenance_records`, `profiles`, `user_profiles` |
+| `handle_new_user()` | Auto-creates user profile + org + membership on signup | `auth.users` (AFTER INSERT) |
+| `update_updated_at_column()` | Auto-updates `updated_at` timestamp | `cars`, `fill_ups`, `maintenance_records`, `profiles`, `user_profiles`, `organizations` |
 | `calculate_mpg()` | Auto-calculates MPG from miles_driven and gallons | `fill_ups` |
 | `auto_create_tire_rotation()` | Auto-creates tire_rotation when tire_change is inserted | `maintenance_records` (AFTER INSERT) |
+| `user_org_ids()` | Returns org IDs where user is any member | RLS helper |
+| `user_editor_org_ids()` | Returns org IDs where user is editor or owner | RLS helper |
+| `user_owner_org_ids()` | Returns org IDs where user is owner | RLS helper |
 
 ---
 
@@ -93,35 +96,46 @@ CREATE TRIGGER update_user_profiles_updated_at
 
 ### handle_new_user()
 
-**Purpose**: Automatically creates a user profile with free tier defaults when a new user signs up.
+**Purpose**: Automatically creates a user profile, organization, and org membership when a new user signs up.
 
 **Trigger**: `AFTER INSERT` on `auth.users`
 
 **SQL Code**:
 ```sql
+DECLARE
+  new_org_id uuid;
 BEGIN
-  INSERT INTO public.user_profiles (id, subscription_plan, max_vehicles, max_invited_users)
-  VALUES (NEW.id, 'free', 1, 0)
-  ON CONFLICT (id) DO UPDATE
-  SET subscription_plan = COALESCE(user_profiles.subscription_plan, 'free');
+  -- Create user profile
+  INSERT INTO public.user_profiles (id)
+  VALUES (NEW.id)
+  ON CONFLICT (id) DO NOTHING;
+
+  -- Create a default organization for this user
+  INSERT INTO public.organizations (name, subscription_plan, max_vehicles, max_members)
+  VALUES ('My Organization', 'free', 1, 1)
+  RETURNING id INTO new_org_id;
+
+  -- Make the user the owner of the new org
+  INSERT INTO public.org_members (org_id, user_id, role)
+  VALUES (new_org_id, NEW.id, 'owner');
+
   RETURN NEW;
 END;
 ```
 
 **Behavior**:
 - Executes AFTER a new user is inserted into `auth.users`
-- Creates matching record in `user_profiles` with:
-  - `id` = new user's ID
-  - `subscription_plan` = 'free'
-  - `max_vehicles` = 1
-  - `max_invited_users` = 0
-- If profile already exists (conflict), updates subscription_plan to 'free' if NULL
-- **Important**: This runs automatically - DO NOT manually create user_profiles on signup
+- Creates three records:
+  1. `user_profiles` - basic profile (id only, fields populated later)
+  2. `organizations` - default free-tier org
+  3. `org_members` - user as owner of the new org
+- Every user always has exactly one org (single query path everywhere)
+- **Important**: This runs automatically - DO NOT manually create these records on signup
 
 **Impact on Code**:
-- ✅ User profiles are created automatically
-- ❌ Don't manually INSERT into user_profiles after creating a user
-- ✅ Query user_profiles immediately after signup - it will exist
+- ✅ User profiles, orgs, and memberships are created automatically
+- ❌ Don't manually INSERT into user_profiles or organizations after creating a user
+- ✅ Query org_members immediately after signup - it will exist
 
 ---
 
@@ -291,6 +305,8 @@ These fields are managed by triggers and should NEVER be set in INSERT/UPDATE:
 ### Auto-Created Records
 These records are created automatically by triggers:
 - ✅ `user_profiles` - Created by `handle_new_user()` when user signs up
+- ✅ `organizations` - Created by `handle_new_user()` when user signs up
+- ✅ `org_members` - Created by `handle_new_user()` when user signs up (role='owner')
 - ✅ `maintenance_records` (tire_rotation) - Created by `auto_create_tire_rotation()` when a tire_change is inserted
 
 ### Function Execution Order
@@ -322,5 +338,5 @@ When adding/modifying database functions:
 
 ---
 
-*Last Updated: 2025-10-08*
-*Functions documented: 3 (handle_new_user, update_updated_at_column, calculate_mpg)*
+*Last Updated: 2026-02-16*
+*Functions documented: 7 (handle_new_user, update_updated_at_column, calculate_mpg, auto_create_tire_rotation, user_org_ids, user_editor_org_ids, user_owner_org_ids)*

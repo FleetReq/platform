@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient, getOwnerUserId, isOwner } from '@/lib/supabase'
+import { getUserOrg } from '@/lib/org'
 
 export async function GET(request: NextRequest) {
   try {
@@ -28,21 +29,34 @@ export async function GET(request: NextRequest) {
       // User-specific stats - check authentication
       const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-      // Determine which user's stats to show
-      let targetUserId: string
+      // Determine which user's data to show
+      let orgFilter: { column: string; value: string } | null = null
       if (user && authError === null) {
-        // User is authenticated - show their data or owner's data if they're the owner
-        targetUserId = isOwner(user.id) ? user.id : getOwnerUserId()
-      } else {
-        // No authentication - show owner's data for demo purposes
-        targetUserId = getOwnerUserId()
+        if (isOwner(user.id)) {
+          // Owner: show own org data
+          const membership = await getUserOrg(supabase, user.id)
+          if (membership) {
+            orgFilter = { column: 'org_id', value: membership.org_id }
+          }
+        } else {
+          // Non-owner authenticated: show their org data
+          const membership = await getUserOrg(supabase, user.id)
+          if (membership) {
+            orgFilter = { column: 'org_id', value: membership.org_id }
+          }
+        }
       }
 
-      // Get owner's cars
+      // Fallback for unauthenticated or no-org users: show owner's data for demo
+      if (!orgFilter) {
+        orgFilter = { column: 'user_id', value: getOwnerUserId() }
+      }
+
+      // Get cars
       const { data: cars, error: carsError } = await supabase
         .from('cars')
         .select('id')
-        .eq('user_id', targetUserId)
+        .eq(orgFilter.column, orgFilter.value)
 
       if (carsError) {
         console.error('Error fetching user cars:', carsError)

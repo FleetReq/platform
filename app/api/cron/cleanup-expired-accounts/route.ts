@@ -32,10 +32,10 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Find accounts scheduled for deletion (scheduled_deletion_date has passed)
-    const { data: expiredProfiles, error: fetchError } = await supabase
-      .from('user_profiles')
-      .select('id, email, subscription_plan, scheduled_deletion_date, cancellation_requested_at')
+    // Find orgs scheduled for deletion (scheduled_deletion_date has passed)
+    const { data: expiredOrgs, error: fetchError } = await supabase
+      .from('organizations')
+      .select('id, name, subscription_plan, scheduled_deletion_date, cancellation_requested_at')
       .not('scheduled_deletion_date', 'is', null)
       .lt('scheduled_deletion_date', new Date().toISOString())
 
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!expiredProfiles || expiredProfiles.length === 0) {
+    if (!expiredOrgs || expiredOrgs.length === 0) {
       return NextResponse.json({
         success: true,
         message: 'No accounts to clean up',
@@ -58,17 +58,25 @@ export async function POST(request: NextRequest) {
     const deletedAccounts = []
     const errors = []
 
-    // Delete each expired account
-    for (const profile of expiredProfiles) {
+    // Delete each expired org and its members
+    for (const org of expiredOrgs) {
       try {
-        const userId = profile.id
+        const orgId = org.id
 
-        // Delete user's receipt storage folder
+        // Get all members of this org
+        const { data: members } = await supabase
+          .from('org_members')
+          .select('user_id')
+          .eq('org_id', orgId)
+          .not('user_id', 'is', null)
+
+        const memberUserIds = (members || []).map(m => m.user_id).filter(Boolean)
+
+        // Delete receipt storage for org
         const { data: storageFiles } = await supabase.storage
           .from('receipts')
-          .list(userId, { limit: 1000 })
+          .list(orgId, { limit: 1000 })
         if (storageFiles && storageFiles.length > 0) {
-          // List all files recursively and delete them
           const allPaths: string[] = []
           const listRecursive = async (prefix: string) => {
             const { data: items } = await supabase.storage.from('receipts').list(prefix, { limit: 1000 })
@@ -83,60 +91,69 @@ export async function POST(request: NextRequest) {
               }
             }
           }
-          await listRecursive(userId)
+          await listRecursive(orgId)
           if (allPaths.length > 0) {
             await supabase.storage.from('receipts').remove(allPaths)
           }
         }
 
-        // Delete user data in order (cascades handle most of this, but being explicit)
-        // 1. Delete fill_ups (cascades from car deletion)
-        // 2. Delete maintenance_records (cascades from car deletion)
-        // 3. Delete cars (will cascade delete fill_ups and maintenance_records)
+        // Delete cars (cascades delete fill_ups and maintenance_records)
         const { error: carsError } = await supabase
           .from('cars')
           .delete()
-          .eq('user_id', userId)
+          .eq('org_id', orgId)
 
         if (carsError) {
           throw new Error(`Failed to delete cars: ${carsError.message}`)
         }
 
-        // 4. Delete user_profiles
-        const { error: profileError } = await supabase
-          .from('user_profiles')
+        // Delete org members
+        const { error: membersError } = await supabase
+          .from('org_members')
           .delete()
-          .eq('id', userId)
+          .eq('org_id', orgId)
 
-        if (profileError) {
-          throw new Error(`Failed to delete profile: ${profileError.message}`)
+        if (membersError) {
+          throw new Error(`Failed to delete org members: ${membersError.message}`)
         }
 
-        // 5. Delete from auth.users (Supabase Auth Admin API)
-        const { error: authError } = await supabase.auth.admin.deleteUser(userId)
+        // Delete organization
+        const { error: orgError } = await supabase
+          .from('organizations')
+          .delete()
+          .eq('id', orgId)
 
-        if (authError) {
-          // Log but don't fail if auth deletion fails (profile already deleted)
-          console.error(`Failed to delete auth user ${userId}:`, authError)
+        if (orgError) {
+          throw new Error(`Failed to delete organization: ${orgError.message}`)
+        }
+
+        // Delete user profiles and auth users for all members
+        for (const userId of memberUserIds) {
+          await supabase.from('user_profiles').delete().eq('id', userId)
+          const { error: authError } = await supabase.auth.admin.deleteUser(userId)
+          if (authError) {
+            console.error(`Failed to delete auth user ${userId}:`, authError)
+          }
         }
 
         deletedAccounts.push({
-          user_id: userId,
-          email: profile.email,
-          subscription_plan: profile.subscription_plan,
-          scheduled_deletion_date: profile.scheduled_deletion_date,
-          cancellation_requested_at: profile.cancellation_requested_at,
+          org_id: orgId,
+          org_name: org.name,
+          subscription_plan: org.subscription_plan,
+          scheduled_deletion_date: org.scheduled_deletion_date,
+          cancellation_requested_at: org.cancellation_requested_at,
+          members_deleted: memberUserIds.length,
         })
 
-        console.log(`Deleted account: ${profile.email} (${userId})`)
+        console.log(`Deleted org: ${org.name} (${orgId}), ${memberUserIds.length} members`)
       } catch (deleteError) {
         const errorMessage = deleteError instanceof Error ? deleteError.message : String(deleteError)
         errors.push({
-          user_id: profile.id,
-          email: profile.email,
+          org_id: org.id,
+          org_name: org.name,
           error: errorMessage,
         })
-        console.error(`Error deleting account ${profile.email}:`, errorMessage)
+        console.error(`Error deleting org ${org.name}:`, errorMessage)
       }
     }
 
@@ -187,10 +204,10 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // Find accounts scheduled for deletion
-    const { data: expiredProfiles, error: fetchError } = await supabase
-      .from('user_profiles')
-      .select('id, email, subscription_plan, scheduled_deletion_date, cancellation_requested_at')
+    // Find orgs scheduled for deletion
+    const { data: expiredOrgs, error: fetchError } = await supabase
+      .from('organizations')
+      .select('id, name, subscription_plan, scheduled_deletion_date, cancellation_requested_at')
       .not('scheduled_deletion_date', 'is', null)
       .lt('scheduled_deletion_date', new Date().toISOString())
 
@@ -203,8 +220,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      count: expiredProfiles?.length || 0,
-      accounts: expiredProfiles || [],
+      count: expiredOrgs?.length || 0,
+      accounts: expiredOrgs || [],
     })
   } catch (error) {
     console.error('Check error:', error)

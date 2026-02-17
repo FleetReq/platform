@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase'
-import { getUserSubscriptionPlan } from '@/lib/supabase-client'
 import { updateStripeSubscriptionQuantity } from '@/lib/stripe-helpers'
 import { rateLimit, RATE_LIMITS, getRateLimitHeaders } from '@/lib/rate-limit'
 import { validateUUID } from '@/lib/validation'
+import { getUserOrg, getOrgSubscriptionPlan, isOrgOwner } from '@/lib/org'
 
 export async function DELETE(
   request: NextRequest,
@@ -38,19 +38,26 @@ export async function DELETE(
       return NextResponse.json({ error: 'Invalid car ID' }, { status: 400 })
     }
 
-    // Verify the car belongs to the user before deleting
+    // Check org membership and owner role (only owners can delete cars)
+    const membership = await getUserOrg(supabase, user.id)
+    if (!membership) {
+      return NextResponse.json({ error: 'No organization found' }, { status: 403 })
+    }
+
+    if (!(await isOrgOwner(supabase, user.id))) {
+      return NextResponse.json({ error: 'Only org owners can delete vehicles' }, { status: 403 })
+    }
+
+    // Verify the car belongs to the user's org
     const { data: car, error: carError } = await supabase
       .from('cars')
-      .select('id, user_id')
+      .select('id, org_id')
       .eq('id', carId)
+      .eq('org_id', membership.org_id)
       .single()
 
     if (carError || !car) {
       return NextResponse.json({ error: 'Car not found' }, { status: 404 })
-    }
-
-    if (car.user_id !== user.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
     // Collect receipt storage paths before cascade delete
@@ -102,14 +109,14 @@ export async function DELETE(
 
     // Handle Stripe subscription update for Business tier users
     let prorationInfo = null
-    const userPlan = await getUserSubscriptionPlan(user.id)
+    const userPlan = await getOrgSubscriptionPlan(supabase, user.id)
 
     if (userPlan === 'business') {
       // Get new vehicle count (after deletion)
       const { count: vehicleCount } = await supabase
         .from('cars')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
+        .eq('org_id', membership.org_id)
 
       // Update Stripe subscription quantity (vehicleCount could be 0 if last vehicle deleted)
       const newCount = vehicleCount || 0

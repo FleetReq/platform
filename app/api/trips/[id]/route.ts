@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase'
+import { getUserOrg, isOrgOwner, canEdit } from '@/lib/org'
 
 export const dynamic = 'force-dynamic'
 
@@ -23,12 +24,16 @@ export async function DELETE(
 
     const tripId = params.id
 
-    // Delete the trip (RLS will ensure user can only delete their own trips)
+    // Only org owners can delete trips
+    if (!(await isOrgOwner(supabase, user.id))) {
+      return NextResponse.json({ error: 'Only org owners can delete trips' }, { status: 403 })
+    }
+
+    // Delete the trip (RLS ensures org-scoped access)
     const { error } = await supabase
       .from('trips')
       .delete()
       .eq('id', tripId)
-      .eq('user_id', user.id)
 
     if (error) {
       console.error('Error deleting trip:', error)
@@ -61,6 +66,12 @@ export async function PATCH(
     }
 
     const tripId = params.id
+
+    // Check editor role
+    if (!(await canEdit(supabase, user.id))) {
+      return NextResponse.json({ error: 'Viewers cannot edit trips' }, { status: 403 })
+    }
+
     const body = await request.json()
 
     const {
@@ -78,17 +89,21 @@ export async function PATCH(
     const updateData: Record<string, string | number | null> = {}
 
     if (car_id !== undefined) {
-      // Verify the car belongs to the user
+      // Verify the car belongs to the user's org
+      const membership = await getUserOrg(supabase, user.id)
+      if (!membership) {
+        return NextResponse.json({ error: 'No organization found' }, { status: 403 })
+      }
       const { data: car, error: carError } = await supabase
         .from('cars')
         .select('id')
         .eq('id', car_id)
-        .eq('user_id', user.id)
+        .eq('org_id', membership.org_id)
         .single()
 
       if (carError || !car) {
         return NextResponse.json(
-          { error: 'Car not found or does not belong to you' },
+          { error: 'Car not found or does not belong to your organization' },
           { status: 404 }
         )
       }
@@ -137,12 +152,11 @@ export async function PATCH(
       updateData.business_purpose = business_purpose
     }
 
-    // Update the trip (RLS will ensure user can only update their own trips)
+    // Update the trip (RLS ensures org-scoped access)
     const { data: trip, error } = await supabase
       .from('trips')
       .update(updateData)
       .eq('id', tripId)
-      .eq('user_id', user.id)
       .select()
       .single()
 

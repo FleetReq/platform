@@ -10,6 +10,7 @@ import { useTheme } from '../theme-provider'
 import RecordDetailModal from '../../components/RecordDetailModal'
 import ReceiptPhotoPicker from '../../components/ReceiptPhotoPicker'
 import { useReceiptUpload } from '@/lib/use-receipt-upload'
+import OrgManagement from '@/components/OrgManagement'
 import type { User } from '@supabase/supabase-js'
 import {
   Chart as ChartJS,
@@ -1106,17 +1107,28 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free' }: 
       const { data: { user } } = await supabase.auth.getUser()
       setCurrentUser(user)
 
-      // Fetch subscription info
+      // Fetch subscription info from org + notification prefs from user_profiles
       if (user) {
+        // Get org subscription info
+        try {
+          const orgRes = await fetch('/api/org')
+          if (orgRes.ok) {
+            const orgData = await orgRes.json()
+            setSubscriptionPlan(orgData.org?.subscription_plan as 'free' | 'personal' | 'business' || 'free')
+            setSubscriptionEndDate(orgData.org?.subscription_end_date || null)
+          }
+        } catch {
+          // Fallback handled by defaults
+        }
+
+        // Get notification preferences from user_profiles
         const { data: profile } = await supabase
           .from('user_profiles')
-          .select('subscription_plan, subscription_end_date, email_notifications_enabled')
+          .select('email_notifications_enabled')
           .eq('id', user.id)
           .single()
 
         if (profile) {
-          setSubscriptionPlan(profile.subscription_plan as 'free' | 'personal' | 'business')
-          setSubscriptionEndDate(profile.subscription_end_date)
           setEmailNotificationsEnabled(profile.email_notifications_enabled ?? true)
         }
       }
@@ -1243,17 +1255,16 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free' }: 
       setCancellationReason('')
       setConfirmationText('')
 
-      // Refresh subscription info
-      if (supabase) {
-        const { data: profile } = await supabase.from('user_profiles')
-          .select('subscription_plan, subscription_end_date')
-          .eq('id', currentUser.id)
-          .single()
-
-        if (profile) {
-          setSubscriptionPlan(profile.subscription_plan as 'free' | 'personal' | 'business')
-          setSubscriptionEndDate(profile.subscription_end_date)
+      // Refresh subscription info from org
+      try {
+        const orgRes = await fetch('/api/org')
+        if (orgRes.ok) {
+          const orgData = await orgRes.json()
+          setSubscriptionPlan(orgData.org?.subscription_plan as 'free' | 'personal' | 'business' || 'free')
+          setSubscriptionEndDate(orgData.org?.subscription_end_date || null)
         }
+      } catch {
+        // Fallback handled by defaults
       }
     } catch (error) {
       setMessage({
@@ -1870,6 +1881,8 @@ export default function MileageTracker() {
   const [maintenanceRecords, setMaintenanceRecords] = useState<MaintenanceRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [userIsOwner, setUserIsOwner] = useState(false)
+  const [userOrgRole, setUserOrgRole] = useState<'owner' | 'editor' | 'viewer'>('owner')
+  const [userOrgName, setUserOrgName] = useState<string | null>(null)
   const [userSubscriptionPlan, setUserSubscriptionPlan] = useState<'free' | 'personal' | 'business'>('free')
   const [maxVehicles, setMaxVehicles] = useState<number>(1)
   const [activeTab, setActiveTab] = useState<'overview' | 'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'add-trip' | 'records' | 'settings'>('overview')
@@ -1908,11 +1921,23 @@ export default function MileageTracker() {
     setUser(newUser)
     setUserIsOwner(isOwner(newUser.id))
 
-    // Load subscription plan and max vehicles
+    // Load subscription plan, max vehicles, and org role
     const plan = await getUserSubscriptionPlan(newUser.id)
     setUserSubscriptionPlan(plan)
     const maxVehicles = await getUserMaxVehicles(newUser.id)
     setMaxVehicles(maxVehicles)
+
+    // Fetch org role and name
+    try {
+      const orgRes = await fetch('/api/org')
+      if (orgRes.ok) {
+        const orgData = await orgRes.json()
+        setUserOrgRole(orgData.role || 'owner')
+        setUserOrgName(orgData.org?.name || null)
+      }
+    } catch {
+      // Org not found is OK for legacy users
+    }
 
     // Load data for the user
     await loadData().catch(error => {
@@ -2320,22 +2345,25 @@ export default function MileageTracker() {
               {/* Navigation Tabs - hidden on mobile (bottom tab bar used instead) */}
               <div className="relative hidden sm:flex gap-1 glass-morphism rounded-xl p-1 shadow-elegant">
                 {[
-                  { id: 'dashboard', label: 'Graph', adminOnly: false },
-                  { id: 'add-car', label: 'Add Car', adminOnly: false },
-                  { id: 'add-fillup', label: 'Add Fill-up', adminOnly: false },
-                  { id: 'add-trip', label: 'Add Trip', adminOnly: false },
-                  { id: 'add-maintenance', label: 'Maintenance', adminOnly: false },
-                  { id: 'records', label: 'Records', adminOnly: false },
-                  { id: 'settings', label: 'Settings', adminOnly: false }
+                  { id: 'dashboard', label: 'Graph', adminOnly: false, requiresEdit: false },
+                  { id: 'add-car', label: 'Add Car', adminOnly: false, requiresEdit: true },
+                  { id: 'add-fillup', label: 'Add Fill-up', adminOnly: false, requiresEdit: true },
+                  { id: 'add-trip', label: 'Add Trip', adminOnly: false, requiresEdit: true },
+                  { id: 'add-maintenance', label: 'Maintenance', adminOnly: false, requiresEdit: true },
+                  { id: 'records', label: 'Records', adminOnly: false, requiresEdit: false },
+                  { id: 'settings', label: 'Settings', adminOnly: false, requiresEdit: false }
                 ].map((tab) => {
                   // Check if vehicle limit reached (only for Add Car tab)
                   const isVehicleLimitReached = tab.id === 'add-car' && cars.length >= maxVehicles
 
+                  // Viewers can't access edit tabs
+                  const isViewerBlocked = tab.requiresEdit && userOrgRole === 'viewer'
+
                   // All tabs are now accessible - they show empty states if no cars exist
-                  // Only disable based on admin access or vehicle limit
+                  // Only disable based on admin access, vehicle limit, or viewer role
                   const isDisabledNoCars = false // Removed: all tabs accessible with empty states
 
-                  const isDisabled = (tab.adminOnly && !userIsOwner) || isVehicleLimitReached || isDisabledNoCars
+                  const isDisabled = (tab.adminOnly && !userIsOwner) || isVehicleLimitReached || isDisabledNoCars || isViewerBlocked
                   const isActive = activeTab === tab.id
 
                   // Show vehicle count for Add Car tab
@@ -2345,7 +2373,9 @@ export default function MileageTracker() {
 
                   // Determine tooltip message
                   let tooltipMessage = ''
-                  if (isDisabledNoCars) {
+                  if (isViewerBlocked) {
+                    tooltipMessage = 'View-only access — ask your org owner for editor permissions'
+                  } else if (isDisabledNoCars) {
                     tooltipMessage = 'Add a vehicle first'
                   } else if (isVehicleLimitReached) {
                     tooltipMessage = 'Vehicle limit reached - Upgrade to add more'
@@ -2555,8 +2585,11 @@ export default function MileageTracker() {
 
               {/* User Settings */}
               {activeTab === 'settings' && (
-                <div className="card-professional p-6">
-                  <UserSettings cars={cars} onCarDeleted={() => loadData()} initialSubscriptionPlan={userSubscriptionPlan} />
+                <div className="space-y-6">
+                  <div className="card-professional p-6">
+                    <UserSettings cars={cars} onCarDeleted={() => loadData()} initialSubscriptionPlan={userSubscriptionPlan} />
+                  </div>
+                  <OrgManagement />
                 </div>
               )}
 

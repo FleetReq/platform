@@ -38,10 +38,10 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Find pending downgrades that have reached their effective date
+    // Find orgs with pending downgrades that have reached their effective date
     const { data: pendingDowngrades, error: fetchError } = await supabase
-      .from('user_profiles')
-      .select('id, email, subscription_plan, pending_downgrade_tier, downgrade_effective_date, downgrade_requested_at')
+      .from('organizations')
+      .select('id, name, subscription_plan, pending_downgrade_tier, downgrade_effective_date, downgrade_requested_at')
       .not('pending_downgrade_tier', 'is', null)
       .not('downgrade_effective_date', 'is', null)
       .lt('downgrade_effective_date', new Date().toISOString())
@@ -66,32 +66,31 @@ export async function POST(request: NextRequest) {
     const errors = []
 
     // Execute each pending downgrade
-    for (const profile of pendingDowngrades) {
+    for (const org of pendingDowngrades) {
       try {
-        const userId = profile.id
-        const targetTier = profile.pending_downgrade_tier as 'free' | 'personal'
-        const currentTier = profile.subscription_plan
+        const orgId = org.id
+        const targetTier = org.pending_downgrade_tier as 'free' | 'personal'
+        const currentTier = org.subscription_plan
         const targetLimit = TIER_LIMITS[targetTier]
+        const targetMaxMembers = targetTier === 'free' ? 1 : targetTier === 'personal' ? 3 : 6
 
-        // Check vehicle count
+        // Check vehicle count for org
         const { count: vehicleCount } = await supabase
           .from('cars')
           .select('*', { count: 'exact', head: true })
-          .eq('user_id', userId)
+          .eq('org_id', orgId)
 
         const currentVehicles = vehicleCount || 0
         let vehiclesDeleted = 0
 
         // Safety check: Delete excess vehicles if they still exist
-        // (Should have been deleted during downgrade request, but double-check)
         if (currentVehicles > targetLimit) {
           const excessCount = currentVehicles - targetLimit
 
-          // Get all vehicles ordered by created_at (delete oldest first)
           const { data: vehicles, error: vehiclesError } = await supabase
             .from('cars')
             .select('id')
-            .eq('user_id', userId)
+            .eq('org_id', orgId)
             .order('created_at', { ascending: true })
             .limit(excessCount)
 
@@ -99,7 +98,6 @@ export async function POST(request: NextRequest) {
             throw new Error(`Failed to fetch excess vehicles: ${vehiclesError.message}`)
           }
 
-          // Delete excess vehicles
           if (vehicles && vehicles.length > 0) {
             const vehicleIds = vehicles.map(v => v.id)
             const { error: deleteError } = await supabase
@@ -112,45 +110,47 @@ export async function POST(request: NextRequest) {
             }
 
             vehiclesDeleted = vehicles.length
-            console.log(`Deleted ${vehiclesDeleted} excess vehicles for user ${userId}`)
+            console.log(`Deleted ${vehiclesDeleted} excess vehicles for org ${orgId}`)
           }
         }
 
         // Execute downgrade: Update subscription_plan and clear pending fields
         const { error: updateError } = await supabase
-          .from('user_profiles')
+          .from('organizations')
           .update({
             subscription_plan: targetTier,
+            max_vehicles: targetLimit,
+            max_members: targetMaxMembers,
             current_tier_start_date: new Date().toISOString(),
             pending_downgrade_tier: null,
             downgrade_effective_date: null,
             downgrade_requested_at: null,
           })
-          .eq('id', userId)
+          .eq('id', orgId)
 
         if (updateError) {
-          throw new Error(`Failed to update user profile: ${updateError.message}`)
+          throw new Error(`Failed to update organization: ${updateError.message}`)
         }
 
         executedDowngrades.push({
-          user_id: userId,
-          email: profile.email,
+          org_id: orgId,
+          org_name: org.name,
           previous_tier: currentTier,
           new_tier: targetTier,
-          downgrade_requested_at: profile.downgrade_requested_at,
-          downgrade_effective_date: profile.downgrade_effective_date,
+          downgrade_requested_at: org.downgrade_requested_at,
+          downgrade_effective_date: org.downgrade_effective_date,
           vehicles_deleted: vehiclesDeleted,
         })
 
-        console.log(`Executed downgrade: ${profile.email} (${currentTier} → ${targetTier})`)
+        console.log(`Executed downgrade: ${org.name} (${currentTier} → ${targetTier})`)
       } catch (downgradeError) {
         const errorMessage = downgradeError instanceof Error ? downgradeError.message : String(downgradeError)
         errors.push({
-          user_id: profile.id,
-          email: profile.email,
+          org_id: org.id,
+          org_name: org.name,
           error: errorMessage,
         })
-        console.error(`Error executing downgrade for ${profile.email}:`, errorMessage)
+        console.error(`Error executing downgrade for ${org.name}:`, errorMessage)
       }
     }
 
@@ -201,10 +201,10 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // Find pending downgrades that have reached their effective date
+    // Find orgs with pending downgrades that have reached their effective date
     const { data: pendingDowngrades, error: fetchError } = await supabase
-      .from('user_profiles')
-      .select('id, email, subscription_plan, pending_downgrade_tier, downgrade_effective_date, downgrade_requested_at')
+      .from('organizations')
+      .select('id, name, subscription_plan, pending_downgrade_tier, downgrade_effective_date, downgrade_requested_at')
       .not('pending_downgrade_tier', 'is', null)
       .not('downgrade_effective_date', 'is', null)
       .lt('downgrade_effective_date', new Date().toISOString())

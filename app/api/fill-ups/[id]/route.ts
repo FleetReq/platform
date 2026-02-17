@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient, isOwner } from '@/lib/supabase'
+import { createRouteHandlerClient } from '@/lib/supabase'
 import { rateLimit, RATE_LIMITS, getRateLimitHeaders } from '@/lib/rate-limit'
 import { sanitizeString, validateInteger, validateFloat, validateUUID, validateDate, validateFuelType } from '@/lib/validation'
+import { getUserOrg, canEdit, isOrgOwner } from '@/lib/org'
 
 export async function PATCH(
   request: NextRequest,
@@ -32,12 +33,21 @@ export async function PATCH(
       return NextResponse.json({ error: 'Invalid record ID' }, { status: 400 })
     }
 
-    // Verify record belongs to user
+    // Check org membership and editor role
+    const membership = await getUserOrg(supabase, user.id)
+    if (!membership) {
+      return NextResponse.json({ error: 'No organization found' }, { status: 403 })
+    }
+    if (!(await canEdit(supabase, user.id))) {
+      return NextResponse.json({ error: 'Viewers cannot edit fill-ups' }, { status: 403 })
+    }
+
+    // Verify record belongs to user's org
     const { data: existing, error: fetchError } = await supabase
       .from('fill_ups')
-      .select('id, receipt_urls, cars!inner(user_id)')
+      .select('id, receipt_urls, cars!inner(org_id)')
       .eq('id', validId)
-      .eq('cars.user_id', user.id)
+      .eq('cars.org_id', membership.org_id)
       .single()
 
     if (fetchError || !existing) {
@@ -127,26 +137,32 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Only allow owner to delete fill-ups
-    if (!isOwner(user.id)) {
+    // Only allow org owners to delete fill-ups
+    if (!(await isOrgOwner(supabase, user.id))) {
       return NextResponse.json({
-        error: 'Read-only access: Only the owner can delete fill-ups',
+        error: 'Only org owners can delete fill-ups',
         isReadOnly: true
       }, { status: 403 })
     }
 
     const { id: fillUpId } = await params
 
-    // Verify the fill-up belongs to the user's car and get receipt_urls
+    // Get user's org membership
+    const membership = await getUserOrg(supabase, user.id)
+    if (!membership) {
+      return NextResponse.json({ error: 'No organization found' }, { status: 403 })
+    }
+
+    // Verify the fill-up belongs to the user's org and get receipt_urls
     const { data: fillUp, error: fetchError } = await supabase
       .from('fill_ups')
       .select(`
         id,
         receipt_urls,
-        cars!inner(user_id)
+        cars!inner(org_id)
       `)
       .eq('id', fillUpId)
-      .eq('cars.user_id', user.id)
+      .eq('cars.org_id', membership.org_id)
       .single()
 
     if (fetchError || !fillUp) {

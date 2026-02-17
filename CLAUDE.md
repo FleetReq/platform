@@ -27,6 +27,9 @@ When fixing a bug, grep for the same pattern across ALL similar files. Fix every
 ### 6. Verify SCHEMA.md and FUNCTIONS.md Before DB Operations
 Check column names, constraints, triggers before any INSERT/UPDATE code. Don't assume names (`user_id` vs `owner_id` vs `created_by_user_id`). Don't set auto-calculated fields (`mpg`, `updated_at`). Update both files if schema changes.
 
+### 7. Save Context Continuously
+Update CLAUDE.md immediately after completing work or making strategic decisions — don't wait until end of session. Sessions can hit limits unexpectedly, and anything not written to a file is lost.
+
 ---
 
 ## 🎯 Repository Information
@@ -52,18 +55,18 @@ Check column names, constraints, triggers before any INSERT/UPDATE code. Don't a
 
 ## 📝 Recent Session Summary
 
-### Latest (2025-12-18) - Route Rename, Loading Fix & Branding
-- Next.js 16 proxy migration (`middleware.ts` → `proxy.ts`)
-- Favicon/branding update (static SVG icons, FR logo)
-- Metadata cleanup (removed template content, updated to FleetReq)
-- Route rename `/mileage` → `/dashboard`
-- Loading state fix (optimistic auth state, no flash for logged-in users)
-- Keep-alive verified working (8 ops per 4-hour cycle)
+### Latest (2026-02-16) - Multi-Tenancy / Organizations
+- **Full org-based multi-tenancy implementation** (4 phases complete)
+- Phase 1: SQL migration (`database/org_multi_tenancy.sql`) — organizations, org_members tables, RLS policies, handle_new_user trigger update, data migration
+- Phase 2: All 16 API routes updated (user_id → org_id queries), 4 new org management endpoints (`/api/org/*`), `lib/org.ts` helpers
+- Phase 3: OrgManagement component in Settings tab, invite acceptance page (`/invite/accept`), pricing "Personal" → "Family" rename, UpgradePrompt updated, viewer role restrictions in dashboard
+- Phase 4: Removed old multi_user_schema.sql, old team stubs, updated SCHEMA.md/FUNCTIONS.md/CLAUDE.md
+- **DB migration not yet run** — `database/org_multi_tenancy.sql` needs to be executed against Supabase
 
-### Previous (2025-12-17) - Enhanced Keep-Alive & Next.js 16
-- Enhanced keep-alive (triple-approach: service role + anon key + direct DB)
-- Next.js 15.5.3 → 16.0.10 (security patch CVE-2025-66478)
-- Turbopack migration (replaced webpack config)
+### Previous (2026-02-16) - Login/Dashboard Separation & Maintenance Update
+- Separated `/login` and `/dashboard` into distinct routes
+- Server-side auth redirects in `proxy.ts`
+- Added `differential_fluid` maintenance type
 
 > Full session history: `docs/SESSION_HISTORY.md`
 
@@ -72,7 +75,8 @@ Check column names, constraints, triggers before any INSERT/UPDATE code. Don't a
 ## 📋 Current Tasks & Priorities
 
 ### 🔄 Active
-- [ ] Manual browser testing (all 3 tiers, light/dark, TESTING_CHECKLIST.md)
+- [x] **Run org migration SQL** — Executed `database/org_multi_tenancy.sql` against Supabase (2026-02-16)
+- [ ] Manual browser testing (all 3 tiers + org roles, light/dark, TESTING_CHECKLIST.md)
 
 ### 🆕 Next Up
 1. **Performance Overview redesign** — Tax metrics for contractors (Cost Per Mile, YTD costs, IRS deduction). Core value prop. Files: `app/api/stats/route.ts`, `app/dashboard/page.tsx`
@@ -82,7 +86,6 @@ Check column names, constraints, triggers before any INSERT/UPDATE code. Don't a
 
 ### 📅 Short-term
 - Professional reporting (CSV/PDF export)
-- Team invitation system (Business tier)
 - Excel import wizard
 - Custom autocomplete (replace `<datalist>` for iOS)
 
@@ -90,6 +93,12 @@ Check column names, constraints, triggers before any INSERT/UPDATE code. Don't a
 - Native mobile apps (after PWA proves PMF)
 - Advanced analytics, predictive maintenance
 - Domain purchase (fleetreq.app)
+- **B2B shop model** — White-label for repair shops (`<company>.fleetreq.com`). Shop logs services, customers get reminders. Track ROI: email open/click rates, overdue→completed conversions, "Book Now" clicks. Validate with 2-3 shops before building. See Option C (shop-only, no customer login) as MVP.
+
+### 🧊 Shelved (revisit when revenue justifies API costs)
+- Odometer photo OCR (AI Vision, ~$0.01-0.03/photo)
+- Receipt scanning (AI Vision, ~$0.02-0.05/scan, auto-fill fuel log)
+- Both share same pipeline — building one gets most of the other
 
 ---
 
@@ -116,13 +125,17 @@ Next.js 16 (App Router, TypeScript) · Supabase PostgreSQL (RLS) · Supabase Aut
 | Table | Purpose | Key FK |
 |-------|---------|--------|
 | `auth.users` | Authentication (Supabase managed) | — |
-| `user_profiles` | Subscription plans | `id` → `auth.users.id` |
-| `cars` | Vehicles | `user_id` → `auth.users.id` ⚠️ NOT `owner_id` |
+| `user_profiles` | User preferences (email, name, admin) | `id` → `auth.users.id` |
+| `organizations` | Orgs with billing/subscription | — |
+| `org_members` | Org membership + roles | `org_id` → `organizations.id`, `user_id` → `auth.users.id` |
+| `cars` | Vehicles | `org_id` → `organizations.id`, `user_id` → `auth.users.id` |
 | `fill_ups` | Fuel records | `car_id` → `cars.id` |
 | `maintenance_records` | Maintenance | `car_id` → `cars.id` |
 | `heartbeat` | Keep-alive (service_role only) | — |
 
-RLS: User tables use `auth.uid() = user_id`. System tables use service_role only.
+**Access control**: Org-based via `org_members`. Roles: Owner / Editor / Viewer. RLS uses `user_org_ids()` helper functions.
+**Billing**: Lives on `organizations` table (stripe_customer_id, subscription_plan, etc).
+**Key library**: `lib/org.ts` — `getUserOrg()`, `canEdit()`, `isOrgOwner()`, `verifyCarAccess()`
 
 ### Authentication Architecture
 
@@ -153,19 +166,25 @@ All require `SUPABASE_SERVICE_ROLE_KEY`. Emails also need `RESEND_API_KEY`. Auth
 - `app/pricing/page.tsx` — Pricing table
 
 ### Components
-- `components/AuthComponent.tsx` — Auth UI & session
+- `components/AuthComponent.tsx` — Auth UI & session + pending invite check
+- `components/OrgManagement.tsx` — Team management (members, invites, roles)
 - `components/UpgradePrompt.tsx` — Paywall overlays
 - `app/theme-toggle.tsx` — Light/dark toggle
 
 ### API Routes
-- `app/api/cars/route.ts` — GET/POST/PATCH vehicles
-- `app/api/cars/[id]/route.ts` — DELETE vehicle
-- `app/api/fill-ups/route.ts` — GET/POST fuel records
-- `app/api/maintenance/route.ts` — GET/POST maintenance
+- `app/api/cars/route.ts` — GET/POST/PATCH vehicles (org-scoped)
+- `app/api/cars/[id]/route.ts` — DELETE vehicle (owner only)
+- `app/api/fill-ups/route.ts` — GET/POST fuel records (org-scoped)
+- `app/api/maintenance/route.ts` — GET/POST maintenance (org-scoped)
+- `app/api/org/route.ts` — GET/PATCH org details
+- `app/api/org/members/route.ts` — GET/POST/DELETE members
+- `app/api/org/members/[id]/route.ts` — PATCH member role
+- `app/api/org/accept-invite/route.ts` — POST accept invitation
 
 ### Libraries
 - `lib/supabase.ts` — Server-side clients
 - `lib/supabase-client.ts` — Client-side + helpers (`isAdmin`, `getUserSubscriptionPlan`, `hasFeatureAccess`, etc.)
+- `lib/org.ts` — Org helpers (`getUserOrg`, `canEdit`, `isOrgOwner`, `verifyCarAccess`)
 - `lib/maintenance.ts` — Shared maintenance logic (`MAINTENANCE_INTERVALS`, `getMaintenanceStatus`)
 - `lib/rate-limit.ts` — Rate limiting (not yet integrated into routes)
 - `lib/validation.ts` — Input validation/sanitization (not yet integrated into routes)
@@ -204,18 +223,20 @@ Prefixes: ✨ FEATURE · 🐛 FIX · ♻️ REFACTOR · 🎨 DESIGN · 📝 DOCS
 
 ## 💰 Pricing & Feature Tiers
 
-| | Free | Personal ($4/mo) | Business ($12/vehicle/mo) |
+| | Free | Family ($4/mo) | Business ($12/vehicle/mo) |
 |---|---|---|---|
 | **Vehicles** | 1 | 3 | Unlimited (4+ recommended) |
+| **Members** | 1 | 3 | 6 |
 | **Fuel tracking** | Full | Full | Full |
 | **Maintenance** | View-only (🟢/🔴) | Full + 🟡 warnings | Full + custom intervals |
 | **Custom schedules** | ❌ | Next service date/mileage | Custom intervals |
 | **Data export** | ❌ | CSV + PDF | CSV + PDF + JSON |
 | **Receipt storage** | ❌ | 50MB | Unlimited |
-| **Team** | ❌ | ❌ | Up to 6 members |
+| **Team management** | Hidden | Invite family | Full team management |
 | **Tax reports** | ❌ | ❌ | IRS-compliant |
 | **Target** | Trial users | Families (2-3 cars) | Contractors (5-15 vehicles) |
 
+**DB value**: 'personal' (UI displays as "Family"). Roles: Owner / Editor / Viewer.
 Market position: 65% below competitors ($25-45/vehicle). Dual funnel: families (volume) + contractors (revenue).
 
 > Full strategy, competitive analysis, and branding research: `docs/STRATEGY.md`

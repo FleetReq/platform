@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createRouteHandlerClient } from '@/lib/supabase'
+import { getUserOrg, getOrgDetails } from '@/lib/org'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-10-29.clover',
@@ -30,33 +31,38 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid tier' }, { status: 400 })
     }
 
-    // Get or create Stripe customer
+    // Get user's org
+    const membership = await getUserOrg(supabase, user.id)
+    if (!membership) {
+      return NextResponse.json({ error: 'No organization found' }, { status: 404 })
+    }
+
+    const org = await getOrgDetails(supabase, membership.org_id)
+    if (!org) {
+      return NextResponse.json({ error: 'Organization not found' }, { status: 404 })
+    }
+
+    // Get or create Stripe customer on the org
     let customerId: string
 
-    // Check if user already has a Stripe customer ID in their profile
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('stripe_customer_id')
-      .eq('id', user.id)
-      .single()
-
-    if (profile?.stripe_customer_id) {
-      customerId = profile.stripe_customer_id
+    if (org.stripe_customer_id) {
+      customerId = org.stripe_customer_id
     } else {
       // Create new Stripe customer
       const customer = await stripe.customers.create({
         email: user.email,
         metadata: {
           supabase_user_id: user.id,
+          org_id: membership.org_id,
         },
       })
       customerId = customer.id
 
-      // Save customer ID to user profile
+      // Save customer ID to organization
       await supabase
-        .from('user_profiles')
+        .from('organizations')
         .update({ stripe_customer_id: customerId })
-        .eq('id', user.id)
+        .eq('id', membership.org_id)
     }
 
     // Create line items based on tier

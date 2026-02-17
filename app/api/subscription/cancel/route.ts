@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createRouteHandlerClient } from '@/lib/supabase'
+import { getUserOrg, getOrgDetails } from '@/lib/org'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-10-29.clover',
@@ -26,30 +27,30 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { reason } = body
 
-    // Get user's subscription info
-    const { data: profile, error: profileError } = await supabase
-      .from('user_profiles')
-      .select('subscription_plan, stripe_customer_id, subscription_end_date')
-      .eq('id', user.id)
-      .single()
+    // Get user's org and subscription info
+    const membership = await getUserOrg(supabase, user.id)
+    if (!membership) {
+      return NextResponse.json({ error: 'No organization found' }, { status: 404 })
+    }
 
-    if (profileError || !profile) {
-      return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
+    const org = await getOrgDetails(supabase, membership.org_id)
+    if (!org) {
+      return NextResponse.json({ error: 'Organization not found' }, { status: 404 })
     }
 
     // Can't cancel free tier
-    if (profile.subscription_plan === 'free') {
+    if (org.subscription_plan === 'free') {
       return NextResponse.json({ error: 'Cannot cancel free tier' }, { status: 400 })
     }
 
     // Find and cancel Stripe subscription
-    let subscriptionEndDate = profile.subscription_end_date
+    let subscriptionEndDate = org.subscription_end_date
 
-    if (profile.stripe_customer_id) {
+    if (org.stripe_customer_id) {
       try {
         // Get active subscriptions for this customer
         const subscriptions = await stripe.subscriptions.list({
-          customer: profile.stripe_customer_id,
+          customer: org.stripe_customer_id!,
           status: 'active',
           limit: 1,
         })
@@ -84,17 +85,16 @@ export async function POST(request: NextRequest) {
     const scheduledDeletionDate = new Date(subscriptionEndDate)
     scheduledDeletionDate.setDate(scheduledDeletionDate.getDate() + 30)
 
-    // Update user profile with cancellation info
+    // Update organization with cancellation info
     const { error: updateError } = await supabase
-      .from('user_profiles')
+      .from('organizations')
       .update({
         cancellation_requested_at: new Date().toISOString(),
         cancellation_reason: reason || null,
         subscription_end_date: subscriptionEndDate,
         scheduled_deletion_date: scheduledDeletionDate.toISOString(),
-        updated_at: new Date().toISOString(),
       })
-      .eq('id', user.id)
+      .eq('id', membership.org_id)
 
     if (updateError) {
       console.error('Error updating user profile:', updateError)

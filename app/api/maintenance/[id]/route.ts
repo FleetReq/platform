@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient, isOwner } from '@/lib/supabase'
+import { createRouteHandlerClient } from '@/lib/supabase'
 import { rateLimit, RATE_LIMITS, getRateLimitHeaders } from '@/lib/rate-limit'
 import { sanitizeString, validateInteger, validateFloat, validateUUID, validateDate, validateMaintenanceType } from '@/lib/validation'
+import { getUserOrg, canEdit, isOrgOwner } from '@/lib/org'
 
 export async function PATCH(
   request: NextRequest,
@@ -32,12 +33,21 @@ export async function PATCH(
       return NextResponse.json({ error: 'Invalid record ID' }, { status: 400 })
     }
 
-    // Verify record belongs to user
+    // Check org membership and editor role
+    const membership = await getUserOrg(supabase, user.id)
+    if (!membership) {
+      return NextResponse.json({ error: 'No organization found' }, { status: 403 })
+    }
+    if (!(await canEdit(supabase, user.id))) {
+      return NextResponse.json({ error: 'Viewers cannot edit maintenance records' }, { status: 403 })
+    }
+
+    // Verify record belongs to user's org
     const { data: existing, error: fetchError } = await supabase
       .from('maintenance_records')
-      .select('id, receipt_urls, cars!inner(user_id)')
+      .select('id, receipt_urls, cars!inner(org_id)')
       .eq('id', validId)
-      .eq('cars.user_id', user.id)
+      .eq('cars.org_id', membership.org_id)
       .single()
 
     if (fetchError || !existing) {
@@ -125,26 +135,32 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Only allow owner to delete maintenance records
-    if (!isOwner(user.id)) {
+    // Only allow org owners to delete maintenance records
+    if (!(await isOrgOwner(supabase, user.id))) {
       return NextResponse.json({
-        error: 'Read-only access: Only the owner can delete maintenance records',
+        error: 'Only org owners can delete maintenance records',
         isReadOnly: true
       }, { status: 403 })
     }
 
     const { id: maintenanceId } = await params
 
-    // Verify the maintenance record belongs to the user's car and get receipt_urls
+    // Get user's org membership
+    const membership = await getUserOrg(supabase, user.id)
+    if (!membership) {
+      return NextResponse.json({ error: 'No organization found' }, { status: 403 })
+    }
+
+    // Verify the maintenance record belongs to the user's org and get receipt_urls
     const { data: maintenance, error: fetchError } = await supabase
       .from('maintenance_records')
       .select(`
         id,
         receipt_urls,
-        cars!inner(user_id)
+        cars!inner(org_id)
       `)
       .eq('id', maintenanceId)
-      .eq('cars.user_id', user.id)
+      .eq('cars.org_id', membership.org_id)
       .single()
 
     if (fetchError || !maintenance) {

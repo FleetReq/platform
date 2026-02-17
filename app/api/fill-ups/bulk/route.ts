@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient, isOwner } from '@/lib/supabase'
+import { verifyCarAccess } from '@/lib/org'
 
 interface BulkFillUpData {
   miles: number
@@ -42,15 +43,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verify the car belongs to the user
-    const { data: car, error: carError } = await supabase
-      .from('cars')
-      .select('id')
-      .eq('id', car_id)
-      .eq('user_id', user.id)
-      .single()
-
-    if (carError || !car) {
+    // Verify user has access to this car through their org
+    const carAccess = await verifyCarAccess(supabase, user.id, car_id)
+    if (!carAccess.hasAccess) {
       return NextResponse.json({ error: 'Car not found' }, { status: 404 })
     }
 

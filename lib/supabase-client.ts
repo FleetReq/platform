@@ -15,7 +15,8 @@ export const supabase = createClient()
 // Database types (shared between client and server)
 export interface Car {
   id: string
-  user_id: string  // User who owns this car
+  user_id: string  // User who created this car
+  org_id: string   // Organization this car belongs to
   make: string
   model: string
   year: number
@@ -27,46 +28,16 @@ export interface Car {
   updated_at: string
 }
 
-// Team management types
 export interface UserProfile {
   id: string
   email?: string
   full_name?: string
   avatar_url?: string
-  subscription_plan: 'free' | 'personal' | 'business'
-  max_vehicles: number
-  max_invited_users: number
-  is_primary_user: boolean
+  is_admin?: boolean
+  email_notifications_enabled?: boolean
+  last_notification_sent_at?: string
   created_at: string
   updated_at?: string
-}
-
-export interface InvitedUser {
-  id: string
-  primary_user_id: string
-  invited_email: string
-  can_edit: boolean
-  invited_at: string
-  accepted_at?: string
-  auth_user_id?: string
-  created_at: string
-}
-
-export interface TeamMember {
-  user_id: string
-  email: string
-  primary_user_id: string
-  can_edit: boolean
-  role: 'owner' | 'team_member' | 'none'
-}
-
-export interface SubscriptionLimits {
-  current_vehicles: number
-  max_vehicles: number
-  current_users: number
-  max_users: number
-  can_add_vehicle: boolean
-  can_add_user: boolean
 }
 
 export interface FillUp {
@@ -133,74 +104,38 @@ export const isAdmin = (userId: string): boolean => {
   return ADMIN_USER_IDS.includes(userId)
 }
 
-// Team management helper functions
-export const getTeamMembers = async (primaryUserId: string): Promise<TeamMember[]> => {
-  if (!supabase) return []
-
-  const { data, error } = await supabase
-    .from('team_members')
-    .select('*')
-    .eq('primary_user_id', primaryUserId)
-
-  if (error) {
-    console.error('Error fetching team members:', error)
-    return []
-  }
-
-  return data || []
-}
-
-export const inviteTeamMember = async (email: string, canEdit: boolean): Promise<{ success: boolean, error?: string }> => {
-  if (!supabase) return { success: false, error: 'Supabase not initialized' }
-
-  const { error } = await supabase
-    .from('invited_users')
-    .insert({
-      invited_email: email,
-      can_edit: canEdit
-    })
-    .select()
-
-  if (error) {
-    return { success: false, error: error.message }
-  }
-
-  return { success: true }
-}
-
-export const checkSubscriptionLimits = async (primaryUserId: string): Promise<SubscriptionLimits | null> => {
-  if (!supabase) return null
-
-  const { data, error } = await supabase
-    .rpc('check_subscription_limits', { primary_user_id: primaryUserId })
-
-  if (error) {
-    console.error('Error checking subscription limits:', error)
-    return null
-  }
-
-  return data?.[0] || null
-}
-
-// Subscription plan checking functions
+// Subscription plan checking functions — query through org_members → organizations
 export const getUserSubscriptionPlan = async (userId: string): Promise<'free' | 'personal' | 'business'> => {
   if (!supabase) return 'free'
 
   // Admins always get 'business' plan access
   if (isAdmin(userId)) return 'business'
 
-  const { data, error } = await supabase
-    .from('user_profiles')
-    .select('subscription_plan')
-    .eq('id', userId)
+  // Get user's org membership
+  const { data: membership, error: membershipError } = await supabase
+    .from('org_members')
+    .select('org_id')
+    .eq('user_id', userId)
+    .limit(1)
     .single()
 
-  if (error) {
-    console.error('Error fetching subscription plan:', error)
+  if (membershipError || !membership) {
+    console.error('Error fetching org membership:', membershipError)
     return 'free'
   }
 
-  return data?.subscription_plan || 'free'
+  const { data: org, error: orgError } = await supabase
+    .from('organizations')
+    .select('subscription_plan')
+    .eq('id', membership.org_id)
+    .single()
+
+  if (orgError || !org) {
+    console.error('Error fetching org subscription plan:', orgError)
+    return 'free'
+  }
+
+  return (org.subscription_plan as 'free' | 'personal' | 'business') || 'free'
 }
 
 export const getUserMaxVehicles = async (userId: string): Promise<number> => {
@@ -209,18 +144,31 @@ export const getUserMaxVehicles = async (userId: string): Promise<number> => {
   // Admins get unlimited vehicles
   if (isAdmin(userId)) return 999
 
-  const { data, error } = await supabase
-    .from('user_profiles')
-    .select('max_vehicles')
-    .eq('id', userId)
+  // Get user's org membership
+  const { data: membership, error: membershipError } = await supabase
+    .from('org_members')
+    .select('org_id')
+    .eq('user_id', userId)
+    .limit(1)
     .single()
 
-  if (error) {
-    console.error('Error fetching max vehicles:', error)
+  if (membershipError || !membership) {
+    console.error('Error fetching org membership:', membershipError)
     return 1
   }
 
-  return data?.max_vehicles || 1
+  const { data: org, error: orgError } = await supabase
+    .from('organizations')
+    .select('max_vehicles')
+    .eq('id', membership.org_id)
+    .single()
+
+  if (orgError || !org) {
+    console.error('Error fetching org max vehicles:', orgError)
+    return 1
+  }
+
+  return org.max_vehicles || 1
 }
 
 export const hasFeatureAccess = (userId: string, plan: 'free' | 'personal' | 'business', feature: string): boolean => {

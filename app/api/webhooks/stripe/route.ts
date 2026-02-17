@@ -50,20 +50,38 @@ export async function POST(request: NextRequest) {
           break
         }
 
-        // Update user's subscription in database
+        // Find user's org
+        const { data: membership } = await supabase
+          .from('org_members')
+          .select('org_id')
+          .eq('user_id', userId)
+          .eq('role', 'owner')
+          .single()
+
+        if (!membership) {
+          console.error('No org membership found for user:', userId)
+          break
+        }
+
+        // Determine max vehicles and members based on tier
+        const maxVehicles = tier === 'business' ? 999 : tier === 'personal' ? 3 : 1
+        const maxMembers = tier === 'business' ? 6 : tier === 'personal' ? 3 : 1
+
+        // Update organization's subscription
         const { error } = await supabase
-          .from('user_profiles')
+          .from('organizations')
           .update({
             subscription_plan: tier,
             stripe_customer_id: session.customer as string,
-            updated_at: new Date().toISOString(),
+            max_vehicles: maxVehicles,
+            max_members: maxMembers,
           })
-          .eq('id', userId)
+          .eq('id', membership.org_id)
 
         if (error) {
-          console.error('Error updating user subscription:', error)
+          console.error('Error updating org subscription:', error)
         } else {
-          console.log(`[Stripe Webhook] Updated user ${userId} to ${tier} tier`)
+          console.log(`[Stripe Webhook] Updated org ${membership.org_id} to ${tier} tier`)
         }
 
         break
@@ -73,15 +91,15 @@ export async function POST(request: NextRequest) {
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription
 
-        // Find user by Stripe customer ID
-        const { data: profile } = await supabase
-          .from('user_profiles')
+        // Find org by Stripe customer ID
+        const { data: org } = await supabase
+          .from('organizations')
           .select('id')
           .eq('stripe_customer_id', subscription.customer as string)
           .single()
 
-        if (!profile) {
-          console.error('User not found for customer:', subscription.customer)
+        if (!org) {
+          console.error('Organization not found for customer:', subscription.customer)
           break
         }
 
@@ -102,20 +120,24 @@ export async function POST(request: NextRequest) {
 
         // Check subscription status
         const isActive = subscription.status === 'active' || subscription.status === 'trialing'
+        const activeTier = isActive ? tier : 'free'
+        const maxVehicles = activeTier === 'business' ? 999 : activeTier === 'personal' ? 3 : 1
+        const maxMembers = activeTier === 'business' ? 6 : activeTier === 'personal' ? 3 : 1
 
-        // Update user profile
+        // Update organization
         const { error } = await supabase
-          .from('user_profiles')
+          .from('organizations')
           .update({
-            subscription_plan: isActive ? tier : 'free',
-            updated_at: new Date().toISOString(),
+            subscription_plan: activeTier,
+            max_vehicles: maxVehicles,
+            max_members: maxMembers,
           })
-          .eq('id', profile.id)
+          .eq('id', org.id)
 
         if (error) {
           console.error('Error updating subscription:', error)
         } else {
-          console.log(`[Stripe Webhook] Updated subscription for user ${profile.id}: ${tier} (${subscription.status})`)
+          console.log(`[Stripe Webhook] Updated subscription for org ${org.id}: ${tier} (${subscription.status})`)
         }
 
         break
@@ -124,31 +146,32 @@ export async function POST(request: NextRequest) {
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription
 
-        // Find user by Stripe customer ID
-        const { data: profile } = await supabase
-          .from('user_profiles')
+        // Find org by Stripe customer ID
+        const { data: org } = await supabase
+          .from('organizations')
           .select('id')
           .eq('stripe_customer_id', subscription.customer as string)
           .single()
 
-        if (!profile) {
-          console.error('User not found for customer:', subscription.customer)
+        if (!org) {
+          console.error('Organization not found for customer:', subscription.customer)
           break
         }
 
         // Downgrade to free tier
         const { error } = await supabase
-          .from('user_profiles')
+          .from('organizations')
           .update({
             subscription_plan: 'free',
-            updated_at: new Date().toISOString(),
+            max_vehicles: 1,
+            max_members: 1,
           })
-          .eq('id', profile.id)
+          .eq('id', org.id)
 
         if (error) {
-          console.error('Error downgrading user:', error)
+          console.error('Error downgrading org:', error)
         } else {
-          console.log(`[Stripe Webhook] Downgraded user ${profile.id} to free tier`)
+          console.log(`[Stripe Webhook] Downgraded org ${org.id} to free tier`)
         }
 
         break

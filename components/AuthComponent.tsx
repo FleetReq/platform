@@ -59,6 +59,8 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
 
         if (event === 'SIGNED_IN') {
           setError(null)
+          // Check for pending invitations that match this user's email
+          checkPendingInvites(session?.user || null)
         }
 
         if (event === 'SIGNED_OUT') {
@@ -72,6 +74,27 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
 
     return () => subscription.unsubscribe()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const checkPendingInvites = async (signedInUser: User | null) => {
+    if (!signedInUser?.email || !supabase) return
+
+    try {
+      // Check if this user's email has any pending org invitations
+      const { data: pendingInvites } = await supabase
+        .from('org_members')
+        .select('id')
+        .eq('invited_email', signedInUser.email.toLowerCase())
+        .is('user_id', null)
+        .limit(1)
+
+      if (pendingInvites && pendingInvites.length > 0) {
+        // Redirect to accept the first pending invite
+        window.location.href = `/invite/accept?id=${pendingInvites[0].id}`
+      }
+    } catch (error) {
+      console.error('Error checking pending invites:', error)
+    }
+  }
 
   const signInWithEmail = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -84,13 +84,32 @@ async function computeDigests(): Promise<{ digests: UserDigest[]; skipped: numbe
       email = authUser.user.email
     }
 
-    const plan = (profile.subscription_plan || 'free') as 'free' | 'personal' | 'business'
+    // 2. Get user's org and then cars
+    const { data: membershipData } = await supabase
+      .from('org_members')
+      .select('org_id')
+      .eq('user_id', profile.id)
+      .limit(1)
+      .single()
 
-    // 2. Get user's cars
+    if (!membershipData) {
+      skipped++
+      continue
+    }
+
+    const { data: orgData } = await supabase
+      .from('organizations')
+      .select('subscription_plan')
+      .eq('id', membershipData.org_id)
+      .single()
+
+    // Use org subscription plan
+    const plan = (orgData?.subscription_plan || 'free') as 'free' | 'personal' | 'business'
+
     const { data: cars, error: carsError } = await supabase
       .from('cars')
       .select('id, make, model, year, nickname, current_mileage')
-      .eq('user_id', profile.id)
+      .eq('org_id', membershipData.org_id)
 
     if (carsError || !cars || cars.length === 0) {
       skipped++
