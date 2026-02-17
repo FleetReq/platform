@@ -78,7 +78,11 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
   } catch {
-    // Handle auth errors silently in middleware
+    // Auth check failed — redirect protected routes to login
+    const pathname = request.nextUrl.pathname
+    if (pathname.startsWith('/dashboard')) {
+      return NextResponse.redirect(new URL('/login', request.url))
+    }
   }
 
   return response

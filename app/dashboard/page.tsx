@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner, getUserSubscriptionPlan, getUserMaxVehicles, hasFeatureAccess } from '@/lib/supabase-client'
 import { MAINTENANCE_INTERVALS, getMaintenanceStatus, getLatestMaintenanceRecord, type MaintenanceStatus } from '@/lib/maintenance'
 import BackgroundAnimation from '../components/BackgroundAnimation'
@@ -1859,6 +1859,7 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free' }: 
 
 export default function MileageTracker() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const { theme } = useTheme()
   const isDark = theme === 'dark'
   const [user, setUser] = useState<User | null>(null)
@@ -1895,35 +1896,31 @@ export default function MileageTracker() {
   const handleAuthChange = useCallback(async (newUser: User | null) => {
     console.log('Auth state changed:', newUser ? `${newUser.email} (${newUser.id})` : 'null')
 
-    // If user is logging in, reset loading states to show spinner
-    if (newUser) {
-      setLoading(true)
-      setDataLoaded(false)
+    // No authenticated user — redirect to login page
+    if (!newUser) {
+      router.replace('/login')
+      return
     }
 
+    // User is logging in, reset loading states to show spinner
+    setLoading(true)
+    setDataLoaded(false)
     setUser(newUser)
-    setUserIsOwner(newUser ? isOwner(newUser.id) : false)
+    setUserIsOwner(isOwner(newUser.id))
 
-    // Load subscription plan and max vehicles for authenticated users
-    if (newUser) {
-      const plan = await getUserSubscriptionPlan(newUser.id)
-      setUserSubscriptionPlan(plan)
-      const maxVehicles = await getUserMaxVehicles(newUser.id)
-      setMaxVehicles(maxVehicles)
-    } else {
-      setUserSubscriptionPlan('free')
-      setMaxVehicles(1)
-    }
+    // Load subscription plan and max vehicles
+    const plan = await getUserSubscriptionPlan(newUser.id)
+    setUserSubscriptionPlan(plan)
+    const maxVehicles = await getUserMaxVehicles(newUser.id)
+    setMaxVehicles(maxVehicles)
 
-    // Load data for the new user (or demo data if no user)
+    // Load data for the user
     await loadData().catch(error => {
       console.error('Error loading data:', error)
     })
 
     // After data is loaded, mark loading as complete
-    if (newUser) {
-      setLoading(false)
-    }
+    setLoading(false)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Mark data as loaded only after loading completes
@@ -1953,23 +1950,16 @@ export default function MileageTracker() {
         window.history.replaceState({}, '', newUrl.pathname + newUrl.search)
       }
 
-      // Initialize auth state - FIX: Use handleAuthChange to properly initialize all state
       if (supabase) {
         try {
           const { data: { session } } = await supabase.auth.getSession()
-          const currentUser = session?.user ?? null
-
-          // FIX: Call handleAuthChange instead of setting state directly
-          // This ensures subscription plan, max vehicles, and data are all loaded properly
-          await handleAuthChange(currentUser)
+          await handleAuthChange(session?.user ?? null)
         } catch (error) {
           console.error('Error getting session:', error)
-          await handleAuthChange(null)
-          setLoading(false)
+          router.replace('/login')
         }
       } else {
-        // No supabase client - show error state
-        setLoading(false)
+        router.replace('/login')
       }
     }
 
