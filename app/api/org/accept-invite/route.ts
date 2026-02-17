@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase'
-import { getUserOrg } from '@/lib/org'
 
-// POST /api/org/accept-invite — Accept a pending invitation
+// POST /api/org/accept-invite — Accept a pending invitation (non-destructive: keeps existing memberships)
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createRouteHandlerClient(request)
@@ -39,33 +38,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'This invitation was sent to a different email address' }, { status: 403 })
     }
 
-    // Get user's current org membership
-    const currentMembership = await getUserOrg(supabase, user.id)
-
-    // If user has an existing org, check if it's empty (auto-created) and delete it
-    if (currentMembership) {
-      // Remove user from current org
-      await supabase
-        .from('org_members')
-        .delete()
-        .eq('org_id', currentMembership.org_id)
-        .eq('user_id', user.id)
-
-      // Check if the old org has any remaining members
-      const { count: remainingMembers } = await supabase
-        .from('org_members')
-        .select('*', { count: 'exact', head: true })
-        .eq('org_id', currentMembership.org_id)
-
-      // If no members left, delete the empty org
-      if (!remainingMembers || remainingMembers === 0) {
-        // Delete cars first (cascade will handle fill_ups/maintenance)
-        await supabase.from('cars').delete().eq('org_id', currentMembership.org_id)
-        await supabase.from('organizations').delete().eq('id', currentMembership.org_id)
-      }
-    }
-
     // Accept the invite: link user_id and set accepted_at
+    // Non-destructive — user keeps all existing org memberships and simply gains a new one
     const { data: accepted, error: acceptError } = await supabase
       .from('org_members')
       .update({
@@ -81,10 +55,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to accept invitation' }, { status: 500 })
     }
 
-    return NextResponse.json({
+    // Set active org cookie to the newly joined org
+    const response = NextResponse.json({
       message: 'Invitation accepted successfully',
       membership: accepted,
     })
+    response.cookies.set('fleetreq-active-org', invite.org_id, {
+      httpOnly: false,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365, // 1 year
+    })
+
+    return response
   } catch (error) {
     console.error('API error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

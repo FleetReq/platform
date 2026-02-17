@@ -16,7 +16,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const membership = await getUserOrg(supabase, user.id)
+    const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
+    const membership = await getUserOrg(supabase, user.id, activeOrgId)
     if (!membership) {
       return NextResponse.json({ error: 'No organization found' }, { status: 404 })
     }
@@ -90,11 +91,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    if (!(await isOrgOwner(supabase, user.id))) {
+    const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
+    if (!(await isOrgOwner(supabase, user.id, activeOrgId))) {
       return NextResponse.json({ error: 'Only org owners can invite members' }, { status: 403 })
     }
 
-    const membership = await getUserOrg(supabase, user.id)
+    const membership = await getUserOrg(supabase, user.id, activeOrgId)
     if (!membership) {
       return NextResponse.json({ error: 'No organization found' }, { status: 404 })
     }
@@ -168,11 +170,12 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    if (!(await isOrgOwner(supabase, user.id))) {
+    const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
+    if (!(await isOrgOwner(supabase, user.id, activeOrgId))) {
       return NextResponse.json({ error: 'Only org owners can remove members' }, { status: 403 })
     }
 
-    const membership = await getUserOrg(supabase, user.id)
+    const membership = await getUserOrg(supabase, user.id, activeOrgId)
     if (!membership) {
       return NextResponse.json({ error: 'No organization found' }, { status: 404 })
     }

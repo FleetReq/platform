@@ -29,8 +29,9 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Get user's org membership
-    const membership = await getUserOrg(supabase, user.id)
+    // Get user's org membership (respect active org cookie)
+    const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
+    const membership = await getUserOrg(supabase, user.id, activeOrgId)
     if (!membership) {
       console.log('Cars API: No org membership for user:', user.id)
       return NextResponse.json({ cars: [] })
@@ -95,13 +96,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check org membership and editor role
-    const membership = await getUserOrg(supabase, user.id)
+    // Check org membership and editor role (respect active org cookie)
+    const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
+    const membership = await getUserOrg(supabase, user.id, activeOrgId)
     if (!membership) {
       return NextResponse.json({ error: 'No organization found' }, { status: 403 })
     }
 
-    if (!(await canEdit(supabase, user.id))) {
+    if (!(await canEdit(supabase, user.id, activeOrgId))) {
       return NextResponse.json({ error: 'Viewers cannot add vehicles' }, { status: 403 })
     }
 
@@ -153,7 +155,7 @@ export async function POST(request: NextRequest) {
 
     // Handle Stripe subscription update for Business tier users
     let prorationInfo = null
-    const userPlan = await getOrgSubscriptionPlan(supabase, user.id)
+    const userPlan = await getOrgSubscriptionPlan(supabase, user.id, activeOrgId)
 
     if (userPlan === 'business') {
       // Get new vehicle count (including the one just added)
@@ -212,13 +214,14 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    // Check org membership and editor role
-    const membership = await getUserOrg(supabase, user.id)
+    // Check org membership and editor role (respect active org cookie)
+    const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
+    const membership = await getUserOrg(supabase, user.id, activeOrgId)
     if (!membership) {
       return NextResponse.json({ error: 'No organization found' }, { status: 403 })
     }
 
-    if (!(await canEdit(supabase, user.id))) {
+    if (!(await canEdit(supabase, user.id, activeOrgId))) {
       return NextResponse.json({ error: 'Viewers cannot update vehicles' }, { status: 403 })
     }
 

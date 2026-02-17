@@ -33,12 +33,13 @@ export async function PATCH(
       return NextResponse.json({ error: 'Invalid record ID' }, { status: 400 })
     }
 
-    // Check org membership and editor role
-    const membership = await getUserOrg(supabase, user.id)
+    // Check org membership and editor role (respect active org cookie)
+    const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
+    const membership = await getUserOrg(supabase, user.id, activeOrgId)
     if (!membership) {
       return NextResponse.json({ error: 'No organization found' }, { status: 403 })
     }
-    if (!(await canEdit(supabase, user.id))) {
+    if (!(await canEdit(supabase, user.id, activeOrgId))) {
       return NextResponse.json({ error: 'Viewers cannot edit maintenance records' }, { status: 403 })
     }
 
@@ -136,7 +137,8 @@ export async function DELETE(
     }
 
     // Only allow org owners to delete maintenance records
-    if (!(await isOrgOwner(supabase, user.id))) {
+    const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
+    if (!(await isOrgOwner(supabase, user.id, activeOrgId))) {
       return NextResponse.json({
         error: 'Only org owners can delete maintenance records',
         isReadOnly: true
@@ -146,7 +148,7 @@ export async function DELETE(
     const { id: maintenanceId } = await params
 
     // Get user's org membership
-    const membership = await getUserOrg(supabase, user.id)
+    const membership = await getUserOrg(supabase, user.id, activeOrgId)
     if (!membership) {
       return NextResponse.json({ error: 'No organization found' }, { status: 403 })
     }

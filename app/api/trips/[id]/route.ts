@@ -25,7 +25,8 @@ export async function DELETE(
     const tripId = params.id
 
     // Only org owners can delete trips
-    if (!(await isOrgOwner(supabase, user.id))) {
+    const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
+    if (!(await isOrgOwner(supabase, user.id, activeOrgId))) {
       return NextResponse.json({ error: 'Only org owners can delete trips' }, { status: 403 })
     }
 
@@ -68,7 +69,8 @@ export async function PATCH(
     const tripId = params.id
 
     // Check editor role
-    if (!(await canEdit(supabase, user.id))) {
+    const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
+    if (!(await canEdit(supabase, user.id, activeOrgId))) {
       return NextResponse.json({ error: 'Viewers cannot edit trips' }, { status: 403 })
     }
 
@@ -90,7 +92,7 @@ export async function PATCH(
 
     if (car_id !== undefined) {
       // Verify the car belongs to the user's org
-      const membership = await getUserOrg(supabase, user.id)
+      const membership = await getUserOrg(supabase, user.id, activeOrgId)
       if (!membership) {
         return NextResponse.json({ error: 'No organization found' }, { status: 403 })
       }

@@ -30,20 +30,12 @@ export async function GET(request: NextRequest) {
       const { data: { user }, error: authError } = await supabase.auth.getUser()
 
       // Determine which user's data to show
+      const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
       let orgFilter: { column: string; value: string } | null = null
       if (user && authError === null) {
-        if (isOwner(user.id)) {
-          // Owner: show own org data
-          const membership = await getUserOrg(supabase, user.id)
-          if (membership) {
-            orgFilter = { column: 'org_id', value: membership.org_id }
-          }
-        } else {
-          // Non-owner authenticated: show their org data
-          const membership = await getUserOrg(supabase, user.id)
-          if (membership) {
-            orgFilter = { column: 'org_id', value: membership.org_id }
-          }
+        const membership = await getUserOrg(supabase, user.id, activeOrgId)
+        if (membership) {
+          orgFilter = { column: 'org_id', value: membership.org_id }
         }
       }
 

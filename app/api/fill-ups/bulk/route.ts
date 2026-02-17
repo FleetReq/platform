@@ -44,7 +44,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify user has access to this car through their org
-    const carAccess = await verifyCarAccess(supabase, user.id, car_id)
+    const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
+    const carAccess = await verifyCarAccess(supabase, user.id, car_id, activeOrgId)
     if (!carAccess.hasAccess) {
       return NextResponse.json({ error: 'Car not found' }, { status: 404 })
     }

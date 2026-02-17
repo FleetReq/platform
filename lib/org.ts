@@ -8,6 +8,11 @@ export interface OrgMembership {
   role: OrgRole
 }
 
+export interface OrgMembershipWithDetails extends OrgMembership {
+  org_name: string
+  subscription_plan: 'free' | 'personal' | 'business'
+}
+
 export interface OrgDetails {
   id: string
   name: string
@@ -25,13 +30,59 @@ export interface OrgDetails {
 }
 
 /**
+ * Get ALL org memberships for a user (for the org switcher).
+ */
+export async function getUserOrgs(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<OrgMembershipWithDetails[]> {
+  const { data, error } = await supabase
+    .from('org_members')
+    .select('org_id, role, organizations(name, subscription_plan)')
+    .eq('user_id', userId)
+    .not('accepted_at', 'is', null)
+    .order('created_at', { ascending: true })
+
+  if (error || !data) return []
+
+  return data.map((row: Record<string, unknown>) => {
+    const org = row.organizations as { name: string; subscription_plan: string } | null
+    return {
+      org_id: row.org_id as string,
+      role: row.role as OrgRole,
+      org_name: org?.name || 'Unknown',
+      subscription_plan: (org?.subscription_plan as 'free' | 'personal' | 'business') || 'free',
+    }
+  })
+}
+
+/**
  * Get the user's organization membership (org_id + role).
- * Returns null if user has no membership.
+ * If activeOrgId is provided, verifies membership in that specific org.
+ * Falls back to first membership if no activeOrgId or membership not found.
  */
 export async function getUserOrg(
   supabase: SupabaseClient,
-  userId: string
+  userId: string,
+  activeOrgId?: string | null
 ): Promise<OrgMembership | null> {
+  // If activeOrgId specified, try to get that specific membership
+  if (activeOrgId) {
+    const { data, error } = await supabase
+      .from('org_members')
+      .select('org_id, role')
+      .eq('user_id', userId)
+      .eq('org_id', activeOrgId)
+      .limit(1)
+      .single()
+
+    if (!error && data) {
+      return { org_id: data.org_id, role: data.role as OrgRole }
+    }
+    // Fall through to default if membership not found for that org
+  }
+
+  // Default: return first membership
   const { data, error } = await supabase
     .from('org_members')
     .select('org_id, role')
@@ -66,11 +117,12 @@ export async function getOrgDetails(
  */
 export async function getOrgSubscriptionPlan(
   supabase: SupabaseClient,
-  userId: string
+  userId: string,
+  activeOrgId?: string | null
 ): Promise<'free' | 'personal' | 'business'> {
   if (isAdmin(userId)) return 'business'
 
-  const membership = await getUserOrg(supabase, userId)
+  const membership = await getUserOrg(supabase, userId, activeOrgId)
   if (!membership) return 'free'
 
   const { data, error } = await supabase
@@ -89,11 +141,12 @@ export async function getOrgSubscriptionPlan(
  */
 export async function getOrgMaxVehicles(
   supabase: SupabaseClient,
-  userId: string
+  userId: string,
+  activeOrgId?: string | null
 ): Promise<number> {
   if (isAdmin(userId)) return 999
 
-  const membership = await getUserOrg(supabase, userId)
+  const membership = await getUserOrg(supabase, userId, activeOrgId)
   if (!membership) return 1
 
   const { data, error } = await supabase
@@ -112,11 +165,12 @@ export async function getOrgMaxVehicles(
  */
 export async function canEdit(
   supabase: SupabaseClient,
-  userId: string
+  userId: string,
+  activeOrgId?: string | null
 ): Promise<boolean> {
   if (isAdmin(userId)) return true
 
-  const membership = await getUserOrg(supabase, userId)
+  const membership = await getUserOrg(supabase, userId, activeOrgId)
   if (!membership) return false
   return membership.role === 'owner' || membership.role === 'editor'
 }
@@ -127,11 +181,12 @@ export async function canEdit(
  */
 export async function isOrgOwner(
   supabase: SupabaseClient,
-  userId: string
+  userId: string,
+  activeOrgId?: string | null
 ): Promise<boolean> {
   if (isAdmin(userId)) return true
 
-  const membership = await getUserOrg(supabase, userId)
+  const membership = await getUserOrg(supabase, userId, activeOrgId)
   if (!membership) return false
   return membership.role === 'owner'
 }
@@ -143,7 +198,8 @@ export async function isOrgOwner(
 export async function verifyCarAccess(
   supabase: SupabaseClient,
   userId: string,
-  carId: string
+  carId: string,
+  activeOrgId?: string | null
 ): Promise<{ hasAccess: boolean; canEdit: boolean; isOwner: boolean; orgId: string | null }> {
   if (isAdmin(userId)) {
     // Admin bypass: just check the car exists
@@ -151,7 +207,7 @@ export async function verifyCarAccess(
     return { hasAccess: !!car, canEdit: true, isOwner: true, orgId: car?.org_id || null }
   }
 
-  const membership = await getUserOrg(supabase, userId)
+  const membership = await getUserOrg(supabase, userId, activeOrgId)
   if (!membership) return { hasAccess: false, canEdit: false, isOwner: false, orgId: null }
 
   // Check if the car belongs to the user's org

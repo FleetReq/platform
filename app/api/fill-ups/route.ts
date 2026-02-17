@@ -28,8 +28,9 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Get user's org membership
-    const membership = await getUserOrg(supabase, user.id)
+    // Get user's org membership (respect active org cookie)
+    const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
+    const membership = await getUserOrg(supabase, user.id, activeOrgId)
     if (!membership) {
       return NextResponse.json({ fillUps: [] })
     }
@@ -121,7 +122,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify user has edit access to this car through their org
-    const carAccess = await verifyCarAccess(supabase, user.id, car_id)
+    const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
+    const carAccess = await verifyCarAccess(supabase, user.id, car_id, activeOrgId)
     if (!carAccess.hasAccess) {
       return NextResponse.json({ error: 'Car not found' }, { status: 404 })
     }

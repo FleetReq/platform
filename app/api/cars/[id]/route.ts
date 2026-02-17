@@ -39,12 +39,13 @@ export async function DELETE(
     }
 
     // Check org membership and owner role (only owners can delete cars)
-    const membership = await getUserOrg(supabase, user.id)
+    const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
+    const membership = await getUserOrg(supabase, user.id, activeOrgId)
     if (!membership) {
       return NextResponse.json({ error: 'No organization found' }, { status: 403 })
     }
 
-    if (!(await isOrgOwner(supabase, user.id))) {
+    if (!(await isOrgOwner(supabase, user.id, activeOrgId))) {
       return NextResponse.json({ error: 'Only org owners can delete vehicles' }, { status: 403 })
     }
 
@@ -109,7 +110,7 @@ export async function DELETE(
 
     // Handle Stripe subscription update for Business tier users
     let prorationInfo = null
-    const userPlan = await getOrgSubscriptionPlan(supabase, user.id)
+    const userPlan = await getOrgSubscriptionPlan(supabase, user.id, activeOrgId)
 
     if (userPlan === 'business') {
       // Get new vehicle count (after deletion)

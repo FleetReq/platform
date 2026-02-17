@@ -42,14 +42,15 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Get user's org membership
-    const membership = await getUserOrg(supabase, user.id)
+    // Get user's org membership (respect active org cookie)
+    const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
+    const membership = await getUserOrg(supabase, user.id, activeOrgId)
     if (!membership) {
       return NextResponse.json({ error: 'No organization found' }, { status: 404 })
     }
 
     // Get current subscription plan from org
-    const currentTier = await getOrgSubscriptionPlan(supabase, user.id)
+    const currentTier = await getOrgSubscriptionPlan(supabase, user.id, activeOrgId)
 
     // Validate downgrade path
     if (currentTier === 'free') {

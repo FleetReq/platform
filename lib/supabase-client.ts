@@ -88,6 +88,13 @@ export const getMilesDriven = (currentOdometer: number, previousOdometer: number
   return currentOdometer - previousOdometer
 }
 
+// Read the active org ID from the cookie (client-side only)
+export const getActiveOrgId = (): string | null => {
+  if (typeof document === 'undefined') return null
+  const match = document.cookie.match(/(?:^|;\s*)fleetreq-active-org=([^;]*)/)
+  return match ? decodeURIComponent(match[1]) : null
+}
+
 // Owner user ID for read-only access control
 const OWNER_USER_ID = 'b73a07b2-ed72-41b1-943f-e119afc9eddb'
 
@@ -105,13 +112,39 @@ export const isAdmin = (userId: string): boolean => {
 }
 
 // Subscription plan checking functions — query through org_members → organizations
+// Respects the active org cookie for multi-org users
 export const getUserSubscriptionPlan = async (userId: string): Promise<'free' | 'personal' | 'business'> => {
   if (!supabase) return 'free'
 
   // Admins always get 'business' plan access
   if (isAdmin(userId)) return 'business'
 
-  // Get user's org membership
+  const activeOrgId = getActiveOrgId()
+
+  // If active org cookie is set, query that specific membership
+  if (activeOrgId) {
+    const { data: membership } = await supabase
+      .from('org_members')
+      .select('org_id')
+      .eq('user_id', userId)
+      .eq('org_id', activeOrgId)
+      .limit(1)
+      .single()
+
+    if (membership) {
+      const { data: org } = await supabase
+        .from('organizations')
+        .select('subscription_plan')
+        .eq('id', membership.org_id)
+        .single()
+
+      if (org) {
+        return (org.subscription_plan as 'free' | 'personal' | 'business') || 'free'
+      }
+    }
+  }
+
+  // Fallback: first membership
   const { data: membership, error: membershipError } = await supabase
     .from('org_members')
     .select('org_id')
@@ -144,7 +177,32 @@ export const getUserMaxVehicles = async (userId: string): Promise<number> => {
   // Admins get unlimited vehicles
   if (isAdmin(userId)) return 999
 
-  // Get user's org membership
+  const activeOrgId = getActiveOrgId()
+
+  // If active org cookie is set, query that specific membership
+  if (activeOrgId) {
+    const { data: membership } = await supabase
+      .from('org_members')
+      .select('org_id')
+      .eq('user_id', userId)
+      .eq('org_id', activeOrgId)
+      .limit(1)
+      .single()
+
+    if (membership) {
+      const { data: org } = await supabase
+        .from('organizations')
+        .select('max_vehicles')
+        .eq('id', membership.org_id)
+        .single()
+
+      if (org) {
+        return org.max_vehicles || 1
+      }
+    }
+  }
+
+  // Fallback: first membership
   const { data: membership, error: membershipError } = await supabase
     .from('org_members')
     .select('org_id')

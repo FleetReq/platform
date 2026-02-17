@@ -55,13 +55,21 @@ Update CLAUDE.md immediately after completing work or making strategic decisions
 
 ## 📝 Recent Session Summary
 
-### Latest (2026-02-16) - Multi-Tenancy / Organizations
+### Latest (2026-02-16) - Multi-Org Switching Support
+- **Users can now belong to multiple orgs simultaneously** and switch between them
+- `lib/org.ts`: Added `getUserOrgs()`, modified `getUserOrg()` + 5 helpers to accept optional `activeOrgId`
+- `lib/supabase-client.ts`: Added `getActiveOrgId()` cookie helper, updated client-side plan/vehicle queries
+- All 16 API routes updated to read `fleetreq-active-org` cookie and pass to org helpers
+- New `POST /api/org/switch` endpoint sets cookie to switch active org
+- `GET /api/org?all=true` lists all user's orgs (for switcher dropdown)
+- `POST /api/org/accept-invite` is now **non-destructive** — keeps existing memberships, just adds new one
+- New `OrgSwitcher` component in dashboard left column (hidden for single-org users)
+- Dashboard `handleOrgSwitch` reloads plan, role, and all data; resets selectedCarId
+- Cookie: `fleetreq-active-org` (not httpOnly, sameSite lax, 1yr maxAge)
+
+### Previous (2026-02-16) - Multi-Tenancy / Organizations
 - **Full org-based multi-tenancy implementation** (4 phases complete)
-- Phase 1: SQL migration (`database/org_multi_tenancy.sql`) — organizations, org_members tables, RLS policies, handle_new_user trigger update, data migration
-- Phase 2: All 16 API routes updated (user_id → org_id queries), 4 new org management endpoints (`/api/org/*`), `lib/org.ts` helpers
-- Phase 3: OrgManagement component in Settings tab, invite acceptance page (`/invite/accept`), pricing "Personal" → "Family" rename, UpgradePrompt updated, viewer role restrictions in dashboard
-- Phase 4: Removed old multi_user_schema.sql, old team stubs, updated SCHEMA.md/FUNCTIONS.md/CLAUDE.md
-- **DB migration not yet run** — `database/org_multi_tenancy.sql` needs to be executed against Supabase
+- Phase 1-4: organizations, org_members, RLS, 16 API routes, OrgManagement component, invite flow
 
 ### Previous (2026-02-16) - Login/Dashboard Separation & Maintenance Update
 - Separated `/login` and `/dashboard` into distinct routes
@@ -134,8 +142,9 @@ Next.js 16 (App Router, TypeScript) · Supabase PostgreSQL (RLS) · Supabase Aut
 | `heartbeat` | Keep-alive (service_role only) | — |
 
 **Access control**: Org-based via `org_members`. Roles: Owner / Editor / Viewer. RLS uses `user_org_ids()` helper functions.
-**Billing**: Lives on `organizations` table (stripe_customer_id, subscription_plan, etc).
-**Key library**: `lib/org.ts` — `getUserOrg()`, `canEdit()`, `isOrgOwner()`, `verifyCarAccess()`
+**Multi-org**: Users can belong to multiple orgs. Active org selected via `fleetreq-active-org` cookie. All API routes respect it.
+**Billing**: Lives on `organizations` table (stripe_customer_id, subscription_plan, etc). Each org has independent billing.
+**Key library**: `lib/org.ts` — `getUserOrg()`, `getUserOrgs()`, `canEdit()`, `isOrgOwner()`, `verifyCarAccess()`
 
 ### Authentication Architecture
 
@@ -168,6 +177,7 @@ All require `SUPABASE_SERVICE_ROLE_KEY`. Emails also need `RESEND_API_KEY`. Auth
 ### Components
 - `components/AuthComponent.tsx` — Auth UI & session + pending invite check
 - `components/OrgManagement.tsx` — Team management (members, invites, roles)
+- `components/OrgSwitcher.tsx` — Multi-org dropdown switcher (hidden for single-org users)
 - `components/UpgradePrompt.tsx` — Paywall overlays
 - `app/theme-toggle.tsx` — Light/dark toggle
 
@@ -179,12 +189,13 @@ All require `SUPABASE_SERVICE_ROLE_KEY`. Emails also need `RESEND_API_KEY`. Auth
 - `app/api/org/route.ts` — GET/PATCH org details
 - `app/api/org/members/route.ts` — GET/POST/DELETE members
 - `app/api/org/members/[id]/route.ts` — PATCH member role
-- `app/api/org/accept-invite/route.ts` — POST accept invitation
+- `app/api/org/accept-invite/route.ts` — POST accept invitation (non-destructive)
+- `app/api/org/switch/route.ts` — POST switch active org (sets cookie)
 
 ### Libraries
 - `lib/supabase.ts` — Server-side clients
-- `lib/supabase-client.ts` — Client-side + helpers (`isAdmin`, `getUserSubscriptionPlan`, `hasFeatureAccess`, etc.)
-- `lib/org.ts` — Org helpers (`getUserOrg`, `canEdit`, `isOrgOwner`, `verifyCarAccess`)
+- `lib/supabase-client.ts` — Client-side + helpers (`isAdmin`, `getUserSubscriptionPlan`, `getActiveOrgId`, etc.)
+- `lib/org.ts` — Org helpers (`getUserOrg`, `getUserOrgs`, `canEdit`, `isOrgOwner`, `verifyCarAccess`)
 - `lib/maintenance.ts` — Shared maintenance logic (`MAINTENANCE_INTERVALS`, `getMaintenanceStatus`)
 - `lib/rate-limit.ts` — Rate limiting (not yet integrated into routes)
 - `lib/validation.ts` — Input validation/sanitization (not yet integrated into routes)

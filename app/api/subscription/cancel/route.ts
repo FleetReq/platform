@@ -27,8 +27,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { reason } = body
 
-    // Get user's org and subscription info
-    const membership = await getUserOrg(supabase, user.id)
+    // Get user's org and subscription info (respect active org cookie)
+    const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
+    const membership = await getUserOrg(supabase, user.id, activeOrgId)
     if (!membership) {
       return NextResponse.json({ error: 'No organization found' }, { status: 404 })
     }

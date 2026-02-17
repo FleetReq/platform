@@ -18,11 +18,12 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    if (!(await isOrgOwner(supabase, user.id))) {
+    const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
+    if (!(await isOrgOwner(supabase, user.id, activeOrgId))) {
       return NextResponse.json({ error: 'Only org owners can change roles' }, { status: 403 })
     }
 
-    const membership = await getUserOrg(supabase, user.id)
+    const membership = await getUserOrg(supabase, user.id, activeOrgId)
     if (!membership) {
       return NextResponse.json({ error: 'No organization found' }, { status: 404 })
     }

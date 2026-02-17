@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase'
-import { getUserOrg, getOrgDetails, isOrgOwner } from '@/lib/org'
+import { getUserOrg, getUserOrgs, getOrgDetails, isOrgOwner } from '@/lib/org'
 import { sanitizeString } from '@/lib/validation'
 
 // GET /api/org — Get current user's organization details
+// ?all=true — List all orgs the user belongs to (for org switcher)
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createRouteHandlerClient(request)
@@ -16,7 +17,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const membership = await getUserOrg(supabase, user.id)
+    const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
+    const { searchParams } = new URL(request.url)
+    const allOrgs = searchParams.get('all') === 'true'
+
+    if (allOrgs) {
+      // Return all orgs the user belongs to (for the org switcher)
+      const orgs = await getUserOrgs(supabase, user.id)
+      return NextResponse.json({
+        orgs,
+        active_org_id: activeOrgId,
+      })
+    }
+
+    // Default: return single active org details + role
+    const membership = await getUserOrg(supabase, user.id, activeOrgId)
     if (!membership) {
       return NextResponse.json({ error: 'No organization found' }, { status: 404 })
     }
@@ -49,11 +64,12 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    if (!(await isOrgOwner(supabase, user.id))) {
+    const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
+    if (!(await isOrgOwner(supabase, user.id, activeOrgId))) {
       return NextResponse.json({ error: 'Only org owners can update organization settings' }, { status: 403 })
     }
 
-    const membership = await getUserOrg(supabase, user.id)
+    const membership = await getUserOrg(supabase, user.id, activeOrgId)
     if (!membership) {
       return NextResponse.json({ error: 'No organization found' }, { status: 404 })
     }
