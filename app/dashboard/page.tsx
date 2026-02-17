@@ -2034,6 +2034,8 @@ export default function MileageTracker() {
 
   // Initialize auth state and clean up URL parameters
   useEffect(() => {
+    let isMounted = true
+
     const initializeAuth = async () => {
       // Clean up URL parameters from auth callbacks
       const searchParams = new URLSearchParams(window.location.search)
@@ -2050,17 +2052,32 @@ export default function MileageTracker() {
       if (supabase) {
         try {
           const { data: { session } } = await supabase.auth.getSession()
-          await handleAuthChange(session?.user ?? null)
+          if (isMounted) {
+            await handleAuthChange(session?.user ?? null)
+          }
         } catch (error) {
           console.error('Error getting session:', error)
-          router.replace('/login')
+          if (isMounted) router.replace('/login')
         }
       } else {
         router.replace('/login')
       }
     }
 
+    // Safety timeout: if loading takes >15s, force-resolve to prevent infinite spinner
+    const safetyTimer = setTimeout(() => {
+      if (isMounted) {
+        console.warn('Dashboard loading safety timeout reached')
+        setLoading(false)
+      }
+    }, 15000)
+
     initializeAuth()
+
+    return () => {
+      isMounted = false
+      clearTimeout(safetyTimer)
+    }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadData = useCallback(async () => {
