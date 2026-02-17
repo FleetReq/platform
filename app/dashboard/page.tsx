@@ -1922,28 +1922,30 @@ export default function MileageTracker() {
     setUser(newUser)
     setUserIsOwner(isOwner(newUser.id))
 
-    // Load subscription plan, max vehicles, and org role
-    const plan = await getUserSubscriptionPlan(newUser.id)
-    setUserSubscriptionPlan(plan)
-    const maxVehicles = await getUserMaxVehicles(newUser.id)
-    setMaxVehicles(maxVehicles)
-
-    // Fetch org role and name
     try {
-      const orgRes = await fetch('/api/org')
-      if (orgRes.ok) {
-        const orgData = await orgRes.json()
-        setUserOrgRole(orgData.role || 'owner')
-        setUserOrgName(orgData.org?.name || null)
-      }
-    } catch {
-      // Org not found is OK for legacy users
-    }
+      // Load subscription plan, max vehicles, and org role
+      const plan = await getUserSubscriptionPlan(newUser.id)
+      setUserSubscriptionPlan(plan)
+      const maxVehicles = await getUserMaxVehicles(newUser.id)
+      setMaxVehicles(maxVehicles)
 
-    // Load data for the user
-    await loadData().catch(error => {
-      console.error('Error loading data:', error)
-    })
+      // Fetch org role and name
+      try {
+        const orgRes = await fetch('/api/org')
+        if (orgRes.ok) {
+          const orgData = await orgRes.json()
+          setUserOrgRole(orgData.role || 'owner')
+          setUserOrgName(orgData.org?.name || null)
+        }
+      } catch {
+        // Org not found is OK for legacy users
+      }
+
+      // Load data for the user
+      await loadData()
+    } catch (error) {
+      console.error('Error during auth initialization:', error)
+    }
 
     // After data is loaded, mark loading as complete
     setLoading(false)
