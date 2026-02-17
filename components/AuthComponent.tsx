@@ -41,6 +41,8 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
       setUser(session?.user ?? null)
       setLoading(false)
       onAuthChange(session?.user ?? null)
+      // Check for pending invites on initial load too (not just SIGNED_IN event)
+      checkPendingInvites(session?.user ?? null)
     }
 
     getSession()

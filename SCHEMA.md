@@ -173,10 +173,12 @@ CREATE TABLE public.org_members (
 - `idx_org_members_user_id` on `user_id`
 
 **RLS Policies:**
-- `org_members_select` - Members can view members of their own org
-- `org_members_insert` - Owners can invite new members
-- `org_members_update` - Owners can update member roles
-- `org_members_delete` - Owners can remove members
+- `org_members_can_view_members` - Members can view members of their own org
+- `users_can_view_own_invites` - Users can see pending invites matching their email
+- `org_owners_can_insert_members` - Owners can invite new members
+- `org_owners_can_update_members` - Owners can update member roles
+- `users_can_accept_own_invite` - Invited users can accept their own pending invite
+- `org_owners_can_delete_members` - Owners can remove members
 
 **Key Columns:**
 - `org_id` - FK to organizations

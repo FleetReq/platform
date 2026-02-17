@@ -111,11 +111,25 @@ CREATE POLICY "org_owners_can_update_org" ON organizations
 CREATE POLICY "org_members_can_view_members" ON org_members
   FOR SELECT USING (org_id IN (SELECT user_org_ids()));
 
+-- Allow users to see their own pending invites (matched by email)
+CREATE POLICY "users_can_view_own_invites" ON org_members
+  FOR SELECT USING (
+    invited_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+    AND user_id IS NULL
+  );
+
 CREATE POLICY "org_owners_can_insert_members" ON org_members
   FOR INSERT WITH CHECK (org_id IN (SELECT user_owner_org_ids()));
 
 CREATE POLICY "org_owners_can_update_members" ON org_members
   FOR UPDATE USING (org_id IN (SELECT user_owner_org_ids()));
+
+-- Allow invited users to accept their own invite
+CREATE POLICY "users_can_accept_own_invite" ON org_members
+  FOR UPDATE USING (
+    invited_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+    AND user_id IS NULL
+  );
 
 CREATE POLICY "org_owners_can_delete_members" ON org_members
   FOR DELETE USING (org_id IN (SELECT user_owner_org_ids()));
