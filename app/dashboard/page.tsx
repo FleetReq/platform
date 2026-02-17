@@ -2433,13 +2433,13 @@ export default function MileageTracker() {
               {dataLoaded && cars.length === 0 && activeTab !== 'add-car' && (
                 <div className="fixed top-[140px] left-1/2 sm:left-[calc(50%+120px)] transform -translate-x-1/2 z-[100] pointer-events-none hidden sm:block">
                   <div className="relative inline-block bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-2xl px-6 py-4 shadow-2xl animate-bounce-gentle">
-                    {/* Upward-pointing arrow positioned to point at Add Car tab (second tab) */}
-                    <div className="absolute -top-3 left-12 w-0 h-0 border-l-[12px] border-r-[12px] border-b-[12px] border-transparent border-b-purple-500"></div>
+                    {/* Downward-pointing arrow toward Add Car tab below */}
+                    <div className="absolute -bottom-3 left-12 w-0 h-0 border-l-[12px] border-r-[12px] border-t-[12px] border-transparent border-t-blue-500"></div>
                     <div className="flex items-center gap-3">
                       <span className="text-3xl">👋</span>
                       <div>
                         <p className="font-semibold text-lg">Welcome to FleetReq!</p>
-                        <p className="text-sm text-blue-50">Get started by clicking &quot;Add Car&quot; above!</p>
+                        <p className="text-sm text-blue-50">Get started by clicking &quot;Add Car&quot; below!</p>
                       </div>
                     </div>
                   </div>

@@ -85,10 +85,13 @@ export function Navigation() {
 
   const handleSignOut = async () => {
     if (!supabase) return;
-    await supabase.auth.signOut();
-    setUser(null);
-    setSubscriptionTier('free');
-    router.push('/');
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
+    // Hard navigation to clear all client-side state
+    window.location.href = '/';
   };
 
   // Helper function to check if current page matches navigation item
