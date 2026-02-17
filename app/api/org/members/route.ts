@@ -7,10 +7,10 @@ import { getOrgDetails, isOrgOwner } from '@/lib/org'
 // GET /api/org/members — List members of user's organization
 export async function GET(request: NextRequest) {
   return withOrg(request, async ({ supabase, user, membership }) => {
-    // Use JOIN to fetch profiles in one query (fixes N+1)
+    // Query 1: Get all members (no join — no FK from org_members to user_profiles)
     const { data: members, error } = await supabase
       .from('org_members')
-      .select('id, user_id, role, invited_email, invited_at, accepted_at, created_at, user_profiles(email, full_name, avatar_url)')
+      .select('id, user_id, role, invited_email, invited_at, accepted_at, created_at')
       .eq('org_id', membership.org_id)
       .order('created_at', { ascending: true })
 
@@ -19,11 +19,18 @@ export async function GET(request: NextRequest) {
       return errorResponse('Failed to fetch members', 500)
     }
 
-    // Enrich with fallback data for current user
+    // Query 2: Batch-fetch profiles for all accepted members in one query
+    const userIds = (members || []).filter(m => m.user_id).map(m => m.user_id)
+    const { data: profiles } = userIds.length > 0
+      ? await supabase.from('user_profiles').select('id, email, full_name, avatar_url').in('id', userIds)
+      : { data: [] as { id: string; email: string | null; full_name: string | null; avatar_url: string | null }[] }
+
+    // Merge using a Map for O(1) lookups
+    const profileMap = new Map((profiles || []).map(p => [p.id, p]))
+
+    // Enrich with profile data + fallbacks for current user
     const enrichedMembers = (members || []).map((member) => {
-      // Supabase may return the joined profile as an array or object depending on FK inference
-      const rawProfile = member.user_profiles
-      const profile = (Array.isArray(rawProfile) ? rawProfile[0] : rawProfile) as { email: string | null; full_name: string | null; avatar_url: string | null } | null
+      const profile = member.user_id ? profileMap.get(member.user_id) : null
       const isCurrentUser = member.user_id === user.id
 
       const email = profile?.email

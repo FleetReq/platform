@@ -1001,6 +1001,147 @@ function CurrentMileageEditor({ carId, cars, onUpdate }: { carId: string, cars: 
   )
 }
 
+// Car Detail Editor Component
+function CarDetailEditor({ carId, cars, onUpdate }: { carId: string, cars: Car[], onUpdate: () => void }) {
+  const [editing, setEditing] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const selectedCar = cars.find(car => car.id === carId)
+
+  const [form, setForm] = useState({
+    make: '', model: '', year: '', color: '', license_plate: '', nickname: ''
+  })
+
+  useEffect(() => {
+    if (selectedCar) {
+      setForm({
+        make: selectedCar.make || '',
+        model: selectedCar.model || '',
+        year: selectedCar.year?.toString() || '',
+        color: selectedCar.color || '',
+        license_plate: selectedCar.license_plate || '',
+        nickname: selectedCar.nickname || '',
+      })
+    }
+  }, [selectedCar?.id, selectedCar?.make, selectedCar?.model, selectedCar?.year, selectedCar?.color, selectedCar?.license_plate, selectedCar?.nickname])
+
+  if (!selectedCar) return null
+
+  const handleSave = async () => {
+    if (!form.make.trim() || !form.model.trim() || !form.year.trim()) {
+      alert('Make, model, and year are required')
+      return
+    }
+    setLoading(true)
+    try {
+      const response = await fetch('/api/cars', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          carId,
+          make: form.make.trim(),
+          model: form.model.trim(),
+          year: parseInt(form.year),
+          color: form.color.trim() || null,
+          license_plate: form.license_plate.trim() || null,
+          nickname: form.nickname.trim() || null,
+        })
+      })
+      if (response.ok) {
+        onUpdate()
+        setEditing(false)
+      } else {
+        const data = await response.json()
+        alert(data.error || 'Failed to update vehicle')
+      }
+    } catch {
+      alert('Failed to update vehicle')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setForm({
+      make: selectedCar.make || '',
+      model: selectedCar.model || '',
+      year: selectedCar.year?.toString() || '',
+      color: selectedCar.color || '',
+      license_plate: selectedCar.license_plate || '',
+      nickname: selectedCar.nickname || '',
+    })
+    setEditing(false)
+  }
+
+  if (editing) {
+    return (
+      <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 space-y-2">
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="block text-[10px] font-semibold text-gray-500 dark:text-gray-400">Make *</label>
+            <input value={form.make} onChange={e => setForm(f => ({ ...f, make: e.target.value }))}
+              className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-[10px] font-semibold text-gray-500 dark:text-gray-400">Model *</label>
+            <input value={form.model} onChange={e => setForm(f => ({ ...f, model: e.target.value }))}
+              className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-[10px] font-semibold text-gray-500 dark:text-gray-400">Year *</label>
+            <input type="number" value={form.year} onChange={e => setForm(f => ({ ...f, year: e.target.value }))}
+              className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-[10px] font-semibold text-gray-500 dark:text-gray-400">Color</label>
+            <input value={form.color} onChange={e => setForm(f => ({ ...f, color: e.target.value }))}
+              className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-[10px] font-semibold text-gray-500 dark:text-gray-400">Plate</label>
+            <input value={form.license_plate} onChange={e => setForm(f => ({ ...f, license_plate: e.target.value }))}
+              className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500" />
+          </div>
+          <div>
+            <label className="block text-[10px] font-semibold text-gray-500 dark:text-gray-400">Nickname</label>
+            <input value={form.nickname} onChange={e => setForm(f => ({ ...f, nickname: e.target.value }))}
+              className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500" />
+          </div>
+        </div>
+        <div className="flex space-x-2">
+          <button onClick={handleSave} disabled={loading}
+            className="flex-1 px-2 py-1.5 text-xs bg-green-600 hover:bg-green-700 text-white rounded transition-colors disabled:opacity-50">
+            {loading ? 'Saving...' : 'Save'}
+          </button>
+          <button onClick={handleCancel} disabled={loading}
+            className="flex-1 px-2 py-1.5 text-xs bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors disabled:opacity-50">
+            Cancel
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">Vehicle Details</span>
+        <button onClick={() => setEditing(true)}
+          className="px-2 py-0.5 text-[10px] bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded transition-colors">
+          Edit
+        </button>
+      </div>
+      <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+        <div><span className="text-gray-500 dark:text-gray-400">Year:</span> <span className="text-gray-900 dark:text-white">{selectedCar.year}</span></div>
+        <div><span className="text-gray-500 dark:text-gray-400">Make:</span> <span className="text-gray-900 dark:text-white">{selectedCar.make}</span></div>
+        <div><span className="text-gray-500 dark:text-gray-400">Model:</span> <span className="text-gray-900 dark:text-white">{selectedCar.model}</span></div>
+        {selectedCar.color && <div><span className="text-gray-500 dark:text-gray-400">Color:</span> <span className="text-gray-900 dark:text-white">{selectedCar.color}</span></div>}
+        {selectedCar.license_plate && <div><span className="text-gray-500 dark:text-gray-400">Plate:</span> <span className="text-gray-900 dark:text-white">{selectedCar.license_plate}</span></div>}
+        {selectedCar.nickname && <div className="col-span-2"><span className="text-gray-500 dark:text-gray-400">Nickname:</span> <span className="text-gray-900 dark:text-white">{selectedCar.nickname}</span></div>}
+      </div>
+    </div>
+  )
+}
+
 // User Settings Component
 function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free' }: { cars?: Car[], onCarDeleted?: () => void, initialSubscriptionPlan?: 'free' | 'personal' | 'business' }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
@@ -2137,6 +2278,14 @@ export default function MileageTracker() {
                       cars={cars}
                       onUpdate={loadData}
                     />
+                    {/* Vehicle Detail Editor (hidden for viewers) */}
+                    {userOrgRole !== 'viewer' && (
+                      <CarDetailEditor
+                        carId={selectedCarId}
+                        cars={cars}
+                        onUpdate={loadData}
+                      />
+                    )}
                   </div>
                 )}
                 </>
@@ -2319,7 +2468,7 @@ export default function MileageTracker() {
                   const isDisabledNoCars = false // Removed: all tabs accessible with empty states
 
                   const isDisabled = (tab.adminOnly && !userIsOwner) || isVehicleLimitReached || isDisabledNoCars || isViewerBlocked
-                  const isActive = activeTab === tab.id
+                  const isActive = activeTab === tab.id || (tab.id === 'dashboard' && activeTab === 'overview')
 
                   // Show vehicle count for Add Car tab
                   const tabLabel = tab.id === 'add-car'
@@ -2654,7 +2803,7 @@ function MobileBottomTabBar({
           <button
             onClick={() => switchTab('dashboard')}
             className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors ${
-              activeTab === 'dashboard' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'
+              activeTab === 'dashboard' || activeTab === 'overview' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'
             }`}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
