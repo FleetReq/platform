@@ -1,25 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@/lib/supabase'
+import { RATE_LIMITS } from '@/lib/rate-limit'
+import { withAuth, errorResponse } from '@/lib/api-middleware'
 
 // POST /api/org/switch — Switch the user's active organization
 export async function POST(request: NextRequest) {
-  try {
-    const supabase = await createRouteHandlerClient(request)
-    if (!supabase) {
-      return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
-    }
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
+  return withAuth(request, async ({ supabase, user }) => {
     const body = await request.json()
     const { org_id } = body
 
-    if (!org_id) {
-      return NextResponse.json({ error: 'org_id is required' }, { status: 400 })
-    }
+    if (!org_id) return errorResponse('org_id is required', 400)
 
     // Verify the user has a membership in the target org
     const { data: membership, error: membershipError } = await supabase
@@ -31,24 +20,17 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (membershipError || !membership) {
-      return NextResponse.json({ error: 'You are not a member of this organization' }, { status: 403 })
+      return errorResponse('You are not a member of this organization', 403)
     }
 
-    // Set the active org cookie
-    const response = NextResponse.json({
-      success: true,
-      org_id: membership.org_id,
-    })
+    const response = NextResponse.json({ success: true, org_id: membership.org_id })
     response.cookies.set('fleetreq-active-org', membership.org_id, {
       httpOnly: false,
       sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24 * 365, // 1 year
+      maxAge: 60 * 60 * 24 * 365,
     })
 
     return response
-  } catch (error) {
-    console.error('API error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  }, { rateLimitConfig: RATE_LIMITS.WRITE })
 }

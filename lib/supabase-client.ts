@@ -1,4 +1,5 @@
 import { createBrowserClient } from '@supabase/ssr'
+import { isAdmin as _isAdmin, isOwner as _isOwner } from '@/lib/constants'
 
 // Create a new Supabase client for browser use
 // Call this function in each component instead of using a singleton
@@ -95,29 +96,20 @@ export const getActiveOrgId = (): string | null => {
   return match ? decodeURIComponent(match[1]) : null
 }
 
-// Owner user ID for read-only access control
-const OWNER_USER_ID = 'b73a07b2-ed72-41b1-943f-e119afc9eddb'
+// Re-export from constants for backward compatibility
+export const isOwner = _isOwner
+export const isAdmin = _isAdmin
 
-// Admin user IDs - these users have full access to all features regardless of subscription
-const ADMIN_USER_IDS = ['b73a07b2-ed72-41b1-943f-e119afc9eddb'] // deeahtee@live.com
+// ---------------------------------------------------------------------------
+// Consolidated org value lookup (eliminates duplicated query pattern)
+// ---------------------------------------------------------------------------
 
-// Helper function to check if user is the owner (client-side)
-export const isOwner = (userId: string): boolean => {
-  return userId === OWNER_USER_ID
-}
-
-// Helper function to check if user is an admin
-export const isAdmin = (userId: string): boolean => {
-  return ADMIN_USER_IDS.includes(userId)
-}
-
-// Subscription plan checking functions — query through org_members → organizations
-// Respects the active org cookie for multi-org users
-export const getUserSubscriptionPlan = async (userId: string): Promise<'free' | 'personal' | 'business'> => {
-  if (!supabase) return 'free'
-
-  // Admins always get 'business' plan access
-  if (isAdmin(userId)) return 'business'
+async function getOrgValue<T>(
+  userId: string,
+  field: string,
+  defaultValue: T
+): Promise<T> {
+  if (!supabase) return defaultValue
 
   const activeOrgId = getActiveOrgId()
 
@@ -134,12 +126,13 @@ export const getUserSubscriptionPlan = async (userId: string): Promise<'free' | 
     if (membership) {
       const { data: org } = await supabase
         .from('organizations')
-        .select('subscription_plan')
+        .select(field)
         .eq('id', membership.org_id)
         .single()
 
-      if (org) {
-        return (org.subscription_plan as 'free' | 'personal' | 'business') || 'free'
+      const record = org as Record<string, unknown> | null
+      if (record && record[field] !== undefined) {
+        return record[field] as T
       }
     }
   }
@@ -153,85 +146,36 @@ export const getUserSubscriptionPlan = async (userId: string): Promise<'free' | 
     .single()
 
   if (membershipError || !membership) {
-    console.error('Error fetching org membership:', membershipError)
-    return 'free'
+    return defaultValue
   }
 
   const { data: org, error: orgError } = await supabase
     .from('organizations')
-    .select('subscription_plan')
+    .select(field)
     .eq('id', membership.org_id)
     .single()
 
   if (orgError || !org) {
-    console.error('Error fetching org subscription plan:', orgError)
-    return 'free'
+    return defaultValue
   }
 
-  return (org.subscription_plan as 'free' | 'personal' | 'business') || 'free'
+  return ((org as unknown as Record<string, unknown>)[field] as T) ?? defaultValue
+}
+
+// Subscription plan checking functions — query through org_members -> organizations
+// Respects the active org cookie for multi-org users
+export const getUserSubscriptionPlan = async (userId: string): Promise<'free' | 'personal' | 'business'> => {
+  if (_isAdmin(userId)) return 'business'
+  return getOrgValue(userId, 'subscription_plan', 'free' as const) as Promise<'free' | 'personal' | 'business'>
 }
 
 export const getUserMaxVehicles = async (userId: string): Promise<number> => {
-  if (!supabase) return 1
-
-  // Admins get unlimited vehicles
-  if (isAdmin(userId)) return 999
-
-  const activeOrgId = getActiveOrgId()
-
-  // If active org cookie is set, query that specific membership
-  if (activeOrgId) {
-    const { data: membership } = await supabase
-      .from('org_members')
-      .select('org_id')
-      .eq('user_id', userId)
-      .eq('org_id', activeOrgId)
-      .limit(1)
-      .single()
-
-    if (membership) {
-      const { data: org } = await supabase
-        .from('organizations')
-        .select('max_vehicles')
-        .eq('id', membership.org_id)
-        .single()
-
-      if (org) {
-        return org.max_vehicles || 1
-      }
-    }
-  }
-
-  // Fallback: first membership
-  const { data: membership, error: membershipError } = await supabase
-    .from('org_members')
-    .select('org_id')
-    .eq('user_id', userId)
-    .limit(1)
-    .single()
-
-  if (membershipError || !membership) {
-    console.error('Error fetching org membership:', membershipError)
-    return 1
-  }
-
-  const { data: org, error: orgError } = await supabase
-    .from('organizations')
-    .select('max_vehicles')
-    .eq('id', membership.org_id)
-    .single()
-
-  if (orgError || !org) {
-    console.error('Error fetching org max vehicles:', orgError)
-    return 1
-  }
-
-  return org.max_vehicles || 1
+  if (_isAdmin(userId)) return 999
+  return getOrgValue(userId, 'max_vehicles', 1)
 }
 
 export const hasFeatureAccess = (userId: string, plan: 'free' | 'personal' | 'business', feature: string): boolean => {
-  // Admins have access to all features
-  if (isAdmin(userId)) return true
+  if (_isAdmin(userId)) return true
 
   const features = {
     free: ['fuel_tracking', 'basic_analytics', 'unlimited_history'],

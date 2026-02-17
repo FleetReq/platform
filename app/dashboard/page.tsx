@@ -4,13 +4,16 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner, getUserSubscriptionPlan, getUserMaxVehicles, hasFeatureAccess } from '@/lib/supabase-client'
-import { MAINTENANCE_INTERVALS, getMaintenanceStatus, getLatestMaintenanceRecord, type MaintenanceStatus } from '@/lib/maintenance'
+import { MAINTENANCE_INTERVALS, getMaintenanceStatus, getLatestMaintenanceRecord } from '@/lib/maintenance'
+import { MAINTENANCE_TYPES, MAINTENANCE_TYPE_FILTER_OPTIONS, getStatusColor, getStatusTextColor, getIrsRate, type MaintenanceStatus } from '@/lib/constants'
 import BackgroundAnimation from '../components/BackgroundAnimation'
 import { useTheme } from '../theme-provider'
 import RecordDetailModal from '../../components/RecordDetailModal'
-import ReceiptPhotoPicker from '../../components/ReceiptPhotoPicker'
-import { useReceiptUpload } from '@/lib/use-receipt-upload'
 import OrgManagement from '@/components/OrgManagement'
+import AddCarForm from '@/components/forms/AddCarForm'
+import AddFillUpForm from '@/components/forms/AddFillUpForm'
+import AddTripForm from '@/components/forms/AddTripForm'
+import AddMaintenanceForm from '@/components/forms/AddMaintenanceForm'
 import OrgSwitcher from '@/components/OrgSwitcher'
 import type { User } from '@supabase/supabase-js'
 import {
@@ -36,23 +39,6 @@ ChartJS.register(
   Legend,
   Filler
 )
-
-// IRS Standard Mileage Rates (business use)
-// Updated annually — IRS announces the new rate in late December for the following year.
-// When the new rate is announced, add the new year + rate here.
-// Source: https://www.irs.gov/tax-professionals/standard-mileage-rates
-const IRS_MILEAGE_RATES: Record<number, number> = {
-  2024: 0.67,
-  2025: 0.70,
-  2026: 0.725,
-}
-
-function getIrsRate(year: number): number {
-  if (IRS_MILEAGE_RATES[year]) return IRS_MILEAGE_RATES[year]
-  // Fall back to most recent known rate if current year isn't added yet
-  const knownYears = Object.keys(IRS_MILEAGE_RATES).map(Number).sort((a, b) => b - a)
-  return IRS_MILEAGE_RATES[knownYears[0]]
-}
 
 const CURRENT_YEAR = new Date().getFullYear()
 const CURRENT_IRS_RATE = getIrsRate(CURRENT_YEAR)
@@ -135,49 +121,9 @@ function MaintenanceStatusGrid({
   // Check if user has access to maintenance tracking
   const hasMaintenanceAccess = userId ? hasFeatureAccess(userId, subscriptionPlan, 'maintenance_tracking') : false
 
-  const getStatusColor = (status: MaintenanceStatus) => {
-    switch (status) {
-      case 'good': return 'border-green-500 bg-green-200 dark:bg-green-900/20'
-      case 'warning': return 'border-yellow-500 bg-yellow-200 dark:bg-yellow-900/20'
-      case 'overdue': return 'border-red-500 bg-red-200 dark:bg-red-900/20'
-      default: return 'border-gray-400 bg-gray-200 dark:bg-gray-800/50'
-    }
-  }
-
-  const getTextColor = (status: MaintenanceStatus) => {
-    switch (status) {
-      case 'good': return 'text-green-700 dark:text-green-300'
-      case 'warning': return 'text-yellow-700 dark:text-yellow-300'
-      case 'overdue': return 'text-red-700 dark:text-red-300'
-      default: return 'text-gray-700 dark:text-gray-300'
-    }
-  }
-
   const [showUntracked, setShowUntracked] = useState(false)
 
-  const maintenanceTypes = [
-    // Engine & Fluids
-    { key: 'oil_change', label: 'Oil Change', icon: '🛢️' },
-    { key: 'transmission_service', label: 'Transmission', icon: '⚙️' },
-    { key: 'coolant_flush', label: 'Coolant', icon: '🧊' },
-    { key: 'air_filter', label: 'Air Filter', icon: '🌬️' },
-    { key: 'cabin_air_filter', label: 'Cabin Filter', icon: '🌿' },
-    { key: 'spark_plugs', label: 'Spark Plugs', icon: '⚡' },
-    // Tires & Brakes
-    { key: 'tire_rotation', label: 'Tire Rotation', icon: '🔄' },
-    { key: 'tire_change', label: 'Tire Change', icon: '🛞' },
-    { key: 'brake_pads', label: 'Brake Pads', icon: '🛑' },
-    { key: 'rotors', label: 'Rotors', icon: '💿' },
-    { key: 'brake_fluid_flush', label: 'Brake Fluid', icon: '💧' },
-    // Electrical & Belts
-    { key: 'battery', label: 'Battery', icon: '🔋' },
-    { key: 'serpentine_belt', label: 'Serp. Belt', icon: '🔗' },
-    // Drivetrain
-    { key: 'differential_fluid', label: 'Diff Fluid', icon: '🔧' },
-    // Other
-    { key: 'wipers', label: 'Wipers', icon: '🌧️' },
-    { key: 'registration', label: 'Registration', icon: '📋' }
-  ]
+  const maintenanceTypes = MAINTENANCE_TYPES
 
   // Split types into tracked (has records) and untracked (no records)
   const trackedTypes = maintenanceTypes.filter(({ key }) =>
@@ -199,11 +145,11 @@ function MaintenanceStatusGrid({
     return (
       <div
         key={key}
-        className={`border-l-4 p-2 rounded-r-lg ${dimmed ? 'border-gray-300 dark:border-gray-600 bg-gray-100/60 dark:bg-gray-800/30' : getStatusColor(status)}`}
+        className={`border-l-4 p-2 rounded-r-lg ${dimmed ? 'border-gray-300 dark:border-gray-600 bg-gray-100/60 dark:bg-gray-800/30' : getStatusColor(status as MaintenanceStatus)}`}
       >
         <div className="flex items-center">
           <span className={`text-sm mr-2 ${dimmed ? 'opacity-50' : ''}`}>{icon}</span>
-          <span className={`text-xs font-semibold ${dimmed ? 'text-gray-400 dark:text-gray-500' : getTextColor(status)}`}>
+          <span className={`text-xs font-semibold ${dimmed ? 'text-gray-400 dark:text-gray-500' : getStatusTextColor(status as MaintenanceStatus)}`}>
             {label}
           </span>
         </div>
@@ -521,25 +467,7 @@ function RecordsManager({
     }
   }
 
-  const maintenanceTypes = [
-    { value: 'all', label: 'All Types' },
-    { value: 'oil_change', label: 'Oil Change' },
-    { value: 'transmission_service', label: 'Transmission Service' },
-    { value: 'coolant_flush', label: 'Coolant Flush' },
-    { value: 'air_filter', label: 'Air Filter' },
-    { value: 'cabin_air_filter', label: 'Cabin Air Filter' },
-    { value: 'spark_plugs', label: 'Spark Plugs' },
-    { value: 'tire_rotation', label: 'Tire Rotation' },
-    { value: 'tire_change', label: 'Tire Change' },
-    { value: 'brake_pads', label: 'Brake Pads' },
-    { value: 'rotors', label: 'Rotors' },
-    { value: 'brake_fluid_flush', label: 'Brake Fluid Flush' },
-    { value: 'battery', label: 'Battery' },
-    { value: 'serpentine_belt', label: 'Serpentine Belt' },
-    { value: 'differential_fluid', label: 'Differential Fluid' },
-    { value: 'wipers', label: 'Wipers' },
-    { value: 'registration', label: 'Registration' }
-  ]
+  const maintenanceTypeOptions = MAINTENANCE_TYPE_FILTER_OPTIONS
 
   // Show empty state if no cars
   if (cars.length === 0) {
@@ -573,7 +501,7 @@ function RecordsManager({
                 placeholder="Search by service type, description, notes, location..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
+                className="input-field"
               />
             </div>
             <div className="flex-shrink-0">
@@ -658,7 +586,7 @@ function RecordsManager({
               <select
                 value={selectedCarId}
                 onChange={(e) => setSelectedCarId(e.target.value)}
-                className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
+                className="input-field"
               >
                 <option value="all">All Vehicles</option>
                 {cars.map(car => (
@@ -674,7 +602,7 @@ function RecordsManager({
               <select
                 value={recordType}
                 onChange={(e) => setRecordType(e.target.value as 'all' | 'fillups' | 'maintenance')}
-                className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
+                className="input-field"
               >
                 <option value="all">All Records</option>
                 <option value="fillups">Fill-ups Only</option>
@@ -688,9 +616,9 @@ function RecordsManager({
                 <select
                   value={maintenanceType}
                   onChange={(e) => setMaintenanceType(e.target.value)}
-                  className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
+                  className="input-field"
                 >
-                  {maintenanceTypes.map(type => (
+                  {maintenanceTypeOptions.map(type => (
                     <option key={type.value} value={type.value}>{type.label}</option>
                   ))}
                 </select>
@@ -2046,7 +1974,7 @@ export default function MileageTracker() {
   }, [user, loadData])
 
   // Prepare chart data based on selected view
-  const prepareChartData = () => {
+  const chartData = useMemo(() => {
     if (!fillUps.length) return null
 
     // Sort fill-ups by date (oldest first for chart)
@@ -2143,7 +2071,7 @@ export default function MileageTracker() {
         }
       ]
     }
-  }
+  }, [fillUps, chartView])
 
 
   // Show loading screen while auth is resolving or data is loading
@@ -2466,8 +2394,8 @@ export default function MileageTracker() {
                     </div>
                   </div>
                   <div className="h-96 relative">
-                    {prepareChartData() ? (
-                      <Line data={prepareChartData()!} options={{
+                    {chartData ? (
+                      <Line data={chartData} options={{
                         responsive: true,
                         maintainAspectRatio: false,
                         scales: {
@@ -2835,968 +2763,4 @@ function MobileBottomTabBar({
   )
 }
 
-// Add Car Form Component
-function AddCarForm({ onSuccess }: { onSuccess: () => void }) {
-  const [formData, setFormData] = useState({
-    make: '',
-    model: '',
-    year: '',
-    color: '',
-    license_plate: '',
-    nickname: '',
-    current_mileage: ''
-  })
-  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-
-    try {
-      const response = await fetch('/api/cars', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      })
-
-      if (response.ok) {
-        onSuccess()
-      } else {
-        const error = await response.json()
-        alert(error.error || 'Failed to add car')
-      }
-    } catch (error) {
-      console.error('Error adding car:', error)
-      alert('Failed to add car')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Add New Car</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Make *</label>
-            <input
-              type="text"
-              required
-              value={formData.make}
-              onChange={(e) => setFormData({ ...formData, make: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-              placeholder="Toyota, Honda, Ford..."
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Model *</label>
-            <input
-              type="text"
-              required
-              value={formData.model}
-              onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-              placeholder="Camry, Civic, F-150..."
-            />
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Year *</label>
-            <input
-              type="number"
-              required
-              min="1900"
-              max="2030"
-              value={formData.year}
-              onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-              placeholder="2020"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Color</label>
-            <input
-              type="text"
-              value={formData.color}
-              onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-              placeholder="Silver, Black, Red..."
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">License Plate</label>
-            <input
-              type="text"
-              value={formData.license_plate}
-              onChange={(e) => setFormData({ ...formData, license_plate: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-              placeholder="ABC-1234"
-            />
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Nickname</label>
-            <input
-              type="text"
-              value={formData.nickname}
-              onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-              placeholder="My daily driver, The truck..."
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Current Mileage</label>
-            <input
-              type="number"
-              value={formData.current_mileage}
-              onChange={(e) => setFormData({ ...formData, current_mileage: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-              placeholder="150000"
-            />
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-3 rounded-lg transition-colors duration-200"
-        >
-          {loading ? 'Adding...' : 'Add Car'}
-        </button>
-      </form>
-    </div>
-  )
-}
-
-// Helper: check if a date string (YYYY-MM-DD) is in the future
-function isFutureDate(dateStr: string): boolean {
-  if (!dateStr) return false
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const inputDate = new Date(dateStr + 'T00:00:00')
-  return inputDate > today
-}
-
-// Add Fill-up Form Component
-function AddFillUpForm({ cars, onSuccess, subscriptionPlan = 'free', userId = '' }: { cars: Car[], onSuccess: () => void, subscriptionPlan?: 'free' | 'personal' | 'business', userId?: string }) {
-  const receiptUpload = useReceiptUpload()
-  const canUploadReceipts = hasFeatureAccess(userId, subscriptionPlan, 'receipt_upload')
-  const [formData, setFormData] = useState({
-    car_id: cars[0]?.id || '',
-    date: new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }),
-    odometer_reading: '',
-    gallons: '',
-    price_per_gallon: '',
-    fuel_type: 'regular',
-    gas_station: '',
-    location: '',
-    notes: '',
-    consecutive_fillup: true
-  })
-  const [loading, setLoading] = useState(false)
-  const [recentGasStations, setRecentGasStations] = useState<string[]>([])
-  const [recentLocations, setRecentLocations] = useState<string[]>([])
-
-  // Fetch recent fill-up data for smart defaults and autocomplete
-  useEffect(() => {
-    const fetchRecentData = async () => {
-      if (!formData.car_id) return
-
-      try {
-        const response = await fetch(`/api/fill-ups?car_id=${formData.car_id}&limit=10`)
-        if (response.ok) {
-          const { fillUps } = await response.json()
-
-          if (fillUps && fillUps.length > 0) {
-            const mostRecent = fillUps[0]
-            const selectedCar = cars.find(c => c.id === formData.car_id)
-
-            // Set smart defaults from most recent fill-up and car data
-            setFormData(prev => ({
-              ...prev,
-              odometer_reading: selectedCar?.current_mileage?.toString() || '',
-              gallons: mostRecent.gallons?.toString() || '',
-              price_per_gallon: mostRecent.price_per_gallon?.toString() || '',
-              fuel_type: mostRecent.fuel_type || 'regular'
-            }))
-
-            // Build unique lists for autocomplete (filter out nulls/empty strings)
-            const stations = [...new Set(fillUps
-              .map((f: FillUp) => f.gas_station)
-              .filter((s: string | null): s is string => s !== null && s.trim() !== '')
-            )]
-            const locations = [...new Set(fillUps
-              .map((f: FillUp) => f.location)
-              .filter((l: string | null): l is string => l !== null && l.trim() !== '')
-            )]
-
-            setRecentGasStations(stations as string[])
-            setRecentLocations(locations as string[])
-          } else {
-            // No previous fill-ups, just set current mileage
-            const selectedCar = cars.find(c => c.id === formData.car_id)
-            setFormData(prev => ({
-              ...prev,
-              odometer_reading: selectedCar?.current_mileage?.toString() || ''
-            }))
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching recent fill-ups:', error)
-      }
-    }
-
-    fetchRecentData()
-  }, [formData.car_id, cars])
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-
-    try {
-      // First, create the record
-      const response = await fetch('/api/fill-ups', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      })
-
-      if (response.ok) {
-        const { fillUp: createdFillUp } = await response.json()
-
-        // Upload receipt photos if any
-        const pendingPhotos = receiptUpload.files.filter(f => f.status === 'pending')
-        if (pendingPhotos.length > 0 && createdFillUp?.id && userId) {
-          const paths = await receiptUpload.uploadAll(userId, 'fill_ups', createdFillUp.id)
-          if (paths.length > 0) {
-            // Update the record with receipt URLs
-            await fetch(`/api/fill-ups/${createdFillUp.id}`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ receipt_urls: paths })
-            })
-          }
-        }
-
-        // Reset form to initial state
-        setFormData({
-          car_id: cars[0]?.id || '',
-          date: new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }),
-          odometer_reading: '',
-          gallons: '',
-          price_per_gallon: '',
-          fuel_type: 'regular',
-          gas_station: '',
-          location: '',
-          notes: '',
-          consecutive_fillup: true
-        })
-        receiptUpload.reset()
-        // Small delay to ensure API completes before refresh
-        setTimeout(() => {
-          onSuccess()
-        }, 100)
-      } else {
-        const error = await response.json()
-        alert(error.error || 'Failed to add fill-up')
-      }
-    } catch (error) {
-      console.error('Error adding fill-up:', error)
-      alert('Failed to add fill-up')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Add Fill-up</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Car *</label>
-            <select
-              required
-              value={formData.car_id}
-              onChange={(e) => setFormData({ ...formData, car_id: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-            >
-              {cars.map((car) => (
-                <option key={car.id} value={car.id}>
-                  {car.nickname || `${car.year} ${car.make} ${car.model}`}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Date *</label>
-            <input
-              type="date"
-              required
-              value={formData.date}
-              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              className={`w-full px-4 py-2 h-12 border rounded-lg focus:ring-2 bg-white text-gray-900 dark:bg-gray-700 dark:text-white ${isFutureDate(formData.date) ? 'border-yellow-500 dark:border-yellow-500 focus:ring-yellow-500' : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'}`}
-            />
-            {isFutureDate(formData.date) && (
-              <p className="text-yellow-600 dark:text-yellow-400 text-sm mt-1">This date is in the future</p>
-            )}
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Odometer Reading *</label>
-            <input
-              type="number"
-              required
-              min="0"
-              value={formData.odometer_reading}
-              onChange={(e) => setFormData({ ...formData, odometer_reading: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-              placeholder="Miles"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Gallons *</label>
-            <input
-              type="number"
-              required
-              min="0"
-              step="0.001"
-              value={formData.gallons}
-              onChange={(e) => setFormData({ ...formData, gallons: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-              placeholder="10.5"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Price per Gallon</label>
-            <input
-              type="number"
-              min="0"
-              step="0.001"
-              value={formData.price_per_gallon}
-              onChange={(e) => setFormData({ ...formData, price_per_gallon: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-              placeholder="3.45"
-            />
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Fuel Type</label>
-            <select
-              value={formData.fuel_type}
-              onChange={(e) => setFormData({ ...formData, fuel_type: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-            >
-              <option value="regular">Regular (87 Octane)</option>
-              <option value="midgrade">Midgrade (89 Octane)</option>
-              <option value="premium">Premium (91-93 Octane)</option>
-              <option value="diesel">Diesel</option>
-              <option value="e85">E85 (Flex Fuel)</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Gas Station</label>
-            <input
-              type="text"
-              list="gas-stations-list"
-              value={formData.gas_station}
-              onChange={(e) => setFormData({ ...formData, gas_station: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-              placeholder="Shell, Chevron, etc."
-            />
-            <datalist id="gas-stations-list">
-              {recentGasStations.map((station, idx) => (
-                <option key={idx} value={station} />
-              ))}
-            </datalist>
-          </div>
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Location</label>
-            <input
-              type="text"
-              list="locations-list"
-              value={formData.location}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-              placeholder="City, State"
-            />
-            <datalist id="locations-list">
-              {recentLocations.map((location, idx) => (
-                <option key={idx} value={location} />
-              ))}
-            </datalist>
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-gray-700 dark:text-gray-300 mb-2">Notes</label>
-          <textarea
-            value={formData.notes}
-            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-            rows={3}
-            placeholder="Any additional notes..."
-          />
-        </div>
-
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-          <label className="flex items-start space-x-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={formData.consecutive_fillup}
-              onChange={(e) => setFormData({ ...formData, consecutive_fillup: e.target.checked })}
-              className="mt-1 w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-            />
-            <div className="flex-1">
-              <span className="text-sm font-semibold text-blue-900 dark:text-blue-100">Consecutive Fill-up</span>
-              <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                Check this if this fill-up immediately follows your last fill-up (tank was filled completely both times).
-                This ensures accurate MPG calculations. Uncheck if you missed recording previous fill-ups.
-              </p>
-            </div>
-          </label>
-        </div>
-
-        {canUploadReceipts && (
-          <ReceiptPhotoPicker
-            files={receiptUpload.files}
-            canAddMore={receiptUpload.canAddMore}
-            remainingSlots={receiptUpload.remainingSlots}
-            isUploading={receiptUpload.isUploading}
-            onAddFiles={receiptUpload.addFiles}
-            onRemoveFile={receiptUpload.removeFile}
-          />
-        )}
-
-        <button
-          type="submit"
-          disabled={loading || receiptUpload.isUploading}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-3 rounded-lg transition-colors duration-200"
-        >
-          {loading ? 'Adding...' : 'Add Fill-up'}
-        </button>
-      </form>
-    </div>
-  )
-}
-
-// Add Trip Form Component
-function AddTripForm({ cars, onSuccess }: { cars: Car[], onSuccess: () => void }) {
-  const [formData, setFormData] = useState({
-    car_id: cars[0]?.id || '',
-    date: new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }),
-    start_location: '',
-    end_location: '',
-    purpose: 'business',
-    business_purpose: '',
-    miles: '',
-    notes: ''
-  })
-  const [loading, setLoading] = useState(false)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-
-    try {
-      const response = await fetch('/api/trips', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          miles: parseFloat(formData.miles)
-        })
-      })
-
-      if (response.ok) {
-        alert('Trip added successfully!')
-        // Reset form
-        setFormData({
-          car_id: cars[0]?.id || '',
-          date: new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }),
-          start_location: '',
-          end_location: '',
-          purpose: 'business',
-          business_purpose: '',
-          miles: '',
-          notes: ''
-        })
-        onSuccess()
-      } else {
-        const error = await response.json()
-        alert(error.error || 'Failed to add trip')
-      }
-    } catch (error) {
-      console.error('Error adding trip:', error)
-      alert('Failed to add trip')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Add Trip</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Car *</label>
-            <select
-              required
-              value={formData.car_id}
-              onChange={(e) => setFormData({ ...formData, car_id: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-            >
-              {cars.map((car) => (
-                <option key={car.id} value={car.id}>
-                  {car.nickname || `${car.year} ${car.make} ${car.model}`}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Date *</label>
-            <input
-              type="date"
-              required
-              value={formData.date}
-              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-            />
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Start Location</label>
-            <input
-              type="text"
-              value={formData.start_location}
-              onChange={(e) => setFormData({ ...formData, start_location: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-              placeholder="Home, Office, etc."
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">End Location *</label>
-            <input
-              type="text"
-              required
-              value={formData.end_location}
-              onChange={(e) => setFormData({ ...formData, end_location: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-              placeholder="Client site, Job location, etc."
-            />
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Purpose *</label>
-            <select
-              required
-              value={formData.purpose}
-              onChange={(e) => setFormData({ ...formData, purpose: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-            >
-              <option value="business">Business</option>
-              <option value="personal">Personal</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Miles Driven *</label>
-            <input
-              type="number"
-              required
-              min="0"
-              step="0.1"
-              value={formData.miles}
-              onChange={(e) => setFormData({ ...formData, miles: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-              placeholder="25.5"
-            />
-          </div>
-        </div>
-
-        {formData.purpose === 'business' && (
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Business Purpose * (IRS Required)</label>
-            <input
-              type="text"
-              required
-              value={formData.business_purpose}
-              onChange={(e) => setFormData({ ...formData, business_purpose: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-              placeholder="Client meeting at ABC Corp, Job site visit for Project X, etc."
-            />
-          </div>
-        )}
-
-        <div>
-          <label className="block text-gray-700 dark:text-gray-300 mb-2">Notes</label>
-          <textarea
-            value={formData.notes}
-            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-            rows={3}
-            placeholder="Additional trip details..."
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50"
-        >
-          {loading ? 'Adding...' : 'Add Trip'}
-        </button>
-      </form>
-    </div>
-  )
-}
-
-// Add Maintenance Form Component
-function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan = 'free', userId = '' }: { cars: Car[], onSuccess: () => void, subscriptionPlan?: 'free' | 'personal' | 'business', userId?: string }) {
-  const receiptUpload = useReceiptUpload()
-  const canUploadReceipts = hasFeatureAccess(userId, subscriptionPlan, 'receipt_upload')
-  const [formData, setFormData] = useState({
-    car_id: cars[0]?.id || '',
-    date: new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }),
-    type: 'oil_change',
-    oil_type: 'conventional',
-    cost: '',
-    mileage: '',
-    service_provider: '',
-    location: '',
-    next_service_date: '',
-    next_service_mileage: '',
-    notes: ''
-  })
-  const [loading, setLoading] = useState(false)
-  const [recentServiceProviders, setRecentServiceProviders] = useState<string[]>([])
-  const [recentLocations, setRecentLocations] = useState<string[]>([])
-
-  // Fetch recent maintenance data for smart defaults and autocomplete
-  useEffect(() => {
-    const fetchRecentData = async () => {
-      if (!formData.car_id) return
-
-      try {
-        const response = await fetch(`/api/maintenance?car_id=${formData.car_id}&limit=10`)
-        if (response.ok) {
-          const { maintenanceRecords } = await response.json()
-
-          if (maintenanceRecords && maintenanceRecords.length > 0) {
-            const selectedCar = cars.find(c => c.id === formData.car_id)
-
-            // Set smart defaults from car data
-            setFormData(prev => ({
-              ...prev,
-              mileage: selectedCar?.current_mileage?.toString() || ''
-            }))
-
-            // Build unique lists for autocomplete (filter out nulls/empty strings)
-            const providers = [...new Set(maintenanceRecords
-              .map((m: MaintenanceRecord) => m.service_provider)
-              .filter((p: string | null): p is string => p !== null && p.trim() !== '')
-            )]
-            const locations = [...new Set(maintenanceRecords
-              .map((m: MaintenanceRecord) => m.location)
-              .filter((l: string | null): l is string => l !== null && l.trim() !== '')
-            )]
-
-            setRecentServiceProviders(providers as string[])
-            setRecentLocations(locations as string[])
-          } else {
-            // No previous maintenance, just set current mileage
-            const selectedCar = cars.find(c => c.id === formData.car_id)
-            setFormData(prev => ({
-              ...prev,
-              mileage: selectedCar?.current_mileage?.toString() || ''
-            }))
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching recent maintenance:', error)
-      }
-    }
-
-    fetchRecentData()
-  }, [formData.car_id, cars])
-
-  const maintenanceTypes = [
-    { value: 'oil_change', label: 'Oil Change' },
-    { value: 'transmission_service', label: 'Transmission Service' },
-    { value: 'coolant_flush', label: 'Coolant Flush' },
-    { value: 'air_filter', label: 'Air Filter' },
-    { value: 'cabin_air_filter', label: 'Cabin Air Filter' },
-    { value: 'spark_plugs', label: 'Spark Plugs' },
-    { value: 'tire_rotation', label: 'Tire Rotation' },
-    { value: 'tire_change', label: 'Tire Change' },
-    { value: 'brake_pads', label: 'Brake Pads' },
-    { value: 'rotors', label: 'Rotors' },
-    { value: 'brake_fluid_flush', label: 'Brake Fluid Flush' },
-    { value: 'battery', label: 'Battery' },
-    { value: 'serpentine_belt', label: 'Serpentine Belt' },
-    { value: 'differential_fluid', label: 'Differential Fluid' },
-    { value: 'wipers', label: 'Wipers' },
-    { value: 'registration', label: 'Registration' }
-  ]
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-
-    try {
-      const response = await fetch('/api/maintenance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      })
-
-      if (response.ok) {
-        const { maintenanceRecord: createdRecord } = await response.json()
-
-        // Upload receipt photos if any
-        const pendingPhotos = receiptUpload.files.filter(f => f.status === 'pending')
-        if (pendingPhotos.length > 0 && createdRecord?.id && userId) {
-          const paths = await receiptUpload.uploadAll(userId, 'maintenance', createdRecord.id)
-          if (paths.length > 0) {
-            await fetch(`/api/maintenance/${createdRecord.id}`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ receipt_urls: paths })
-            })
-          }
-        }
-
-        // Reset form to initial state
-        setFormData({
-          car_id: cars[0]?.id || '',
-          date: new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }),
-          type: 'oil_change',
-          oil_type: 'conventional',
-          cost: '',
-          mileage: '',
-          service_provider: '',
-          location: '',
-          next_service_date: '',
-          next_service_mileage: '',
-          notes: ''
-        })
-        receiptUpload.reset()
-        // Small delay to ensure API completes before refresh
-        setTimeout(() => {
-          onSuccess()
-        }, 100)
-      } else {
-        const error = await response.json()
-        alert(error.error || 'Failed to add maintenance record')
-      }
-    } catch (error) {
-      console.error('Error adding maintenance record:', error)
-      alert('Failed to add maintenance record')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Add Maintenance Record</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Car *</label>
-            <select
-              required
-              value={formData.car_id}
-              onChange={(e) => setFormData({ ...formData, car_id: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-            >
-              {cars.map((car) => (
-                <option key={car.id} value={car.id}>
-                  {car.nickname || `${car.year} ${car.make} ${car.model}`}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Date *</label>
-            <input
-              type="date"
-              required
-              value={formData.date}
-              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              className={`w-full px-4 py-2 h-12 border rounded-lg focus:ring-2 bg-white text-gray-900 dark:bg-gray-700 dark:text-white ${isFutureDate(formData.date) ? 'border-yellow-500 dark:border-yellow-500 focus:ring-yellow-500' : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'}`}
-            />
-            {isFutureDate(formData.date) && (
-              <p className="text-yellow-600 dark:text-yellow-400 text-sm mt-1">This date is in the future</p>
-            )}
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Type *</label>
-            <select
-              required
-              value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-            >
-              {maintenanceTypes.map((type) => (
-                <option key={type.value} value={type.value}>
-                  {type.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          {formData.type === 'oil_change' && (
-            <div>
-              <label className="block text-gray-700 dark:text-gray-300 mb-2">Oil Type</label>
-              <select
-                value={formData.oil_type}
-                onChange={(e) => setFormData({ ...formData, oil_type: e.target.value })}
-                className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-              >
-                <option value="conventional">Conventional Oil</option>
-                <option value="full_synthetic">Full Synthetic Oil</option>
-                <option value="synthetic_blend">Synthetic Blend Oil</option>
-              </select>
-            </div>
-          )}
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Odometer Reading</label>
-            <input
-              type="number"
-              min="0"
-              value={formData.mileage}
-              onChange={(e) => setFormData({ ...formData, mileage: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-              placeholder="Miles"
-            />
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Cost</label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={formData.cost}
-              onChange={(e) => setFormData({ ...formData, cost: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-              placeholder="89.99"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Service Provider</label>
-            <input
-              type="text"
-              list="service-providers-list"
-              value={formData.service_provider}
-              onChange={(e) => setFormData({ ...formData, service_provider: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-              placeholder="Jiffy Lube, Dealership..."
-            />
-            <datalist id="service-providers-list">
-              {recentServiceProviders.map((provider, idx) => (
-                <option key={idx} value={provider} />
-              ))}
-            </datalist>
-          </div>
-          <div>
-            <label className="block text-gray-700 dark:text-gray-300 mb-2">Location</label>
-            <input
-              type="text"
-              list="maintenance-locations-list"
-              value={formData.location}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-              placeholder="City, State"
-            />
-            <datalist id="maintenance-locations-list">
-              {recentLocations.map((location, idx) => (
-                <option key={idx} value={location} />
-              ))}
-            </datalist>
-          </div>
-        </div>
-
-        {/* Next Service fields - Personal+ only */}
-        {subscriptionPlan !== 'free' && (
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-gray-700 dark:text-gray-300 mb-2">
-                Next Service Date <span className="text-xs text-blue-600 dark:text-blue-400">(Personal+)</span>
-              </label>
-              <input
-                type="date"
-                value={formData.next_service_date}
-                onChange={(e) => setFormData({ ...formData, next_service_date: e.target.value })}
-                className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700 dark:text-gray-300 mb-2">
-                Next Service Mileage <span className="text-xs text-blue-600 dark:text-blue-400">(Personal+)</span>
-              </label>
-              <input
-                type="number"
-                min="0"
-                value={formData.next_service_mileage}
-                onChange={(e) => setFormData({ ...formData, next_service_mileage: e.target.value })}
-                className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-                placeholder="Miles"
-              />
-            </div>
-          </div>
-        )}
-
-        <div>
-          <label className="block text-gray-700 dark:text-gray-300 mb-2">Notes</label>
-          <textarea
-            value={formData.notes}
-            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white"
-            rows={3}
-            placeholder="Any additional notes..."
-          />
-        </div>
-
-        {canUploadReceipts && (
-          <ReceiptPhotoPicker
-            files={receiptUpload.files}
-            canAddMore={receiptUpload.canAddMore}
-            remainingSlots={receiptUpload.remainingSlots}
-            isUploading={receiptUpload.isUploading}
-            onAddFiles={receiptUpload.addFiles}
-            onRemoveFile={receiptUpload.removeFile}
-          />
-        )}
-
-        <button
-          type="submit"
-          disabled={loading || receiptUpload.isUploading}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-3 rounded-lg transition-colors duration-200"
-        >
-          {loading ? 'Adding...' : 'Add Maintenance Record'}
-        </button>
-      </form>
-    </div>
-  )
-}

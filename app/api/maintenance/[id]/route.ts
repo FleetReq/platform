@@ -1,49 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@/lib/supabase'
-import { rateLimit, RATE_LIMITS, getRateLimitHeaders } from '@/lib/rate-limit'
+import { RATE_LIMITS } from '@/lib/rate-limit'
 import { sanitizeString, validateInteger, validateFloat, validateUUID, validateDate, validateMaintenanceType } from '@/lib/validation'
-import { getUserOrg, canEdit, isOrgOwner } from '@/lib/org'
+import { withOrg, errorResponse } from '@/lib/api-middleware'
+import { canEdit, isOrgOwner } from '@/lib/org'
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    const supabase = await createRouteHandlerClient(request)
-    if (!supabase) {
-      return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
-    }
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const rateLimitResult = rateLimit(user.id, RATE_LIMITS.WRITE)
-    if (!rateLimitResult.success) {
-      return NextResponse.json(
-        { error: 'Rate limit exceeded. Please try again later.' },
-        { status: 429, headers: getRateLimitHeaders(rateLimitResult) }
-      )
-    }
-
+  return withOrg(request, async ({ supabase, user, activeOrgId, membership }) => {
     const { id: maintenanceId } = await params
     const validId = validateUUID(maintenanceId)
-    if (!validId) {
-      return NextResponse.json({ error: 'Invalid record ID' }, { status: 400 })
-    }
+    if (!validId) return errorResponse('Invalid record ID', 400)
 
-    // Check org membership and editor role (respect active org cookie)
-    const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
-    const membership = await getUserOrg(supabase, user.id, activeOrgId)
-    if (!membership) {
-      return NextResponse.json({ error: 'No organization found' }, { status: 403 })
-    }
     if (!(await canEdit(supabase, user.id, activeOrgId))) {
-      return NextResponse.json({ error: 'Viewers cannot edit maintenance records' }, { status: 403 })
+      return errorResponse('Viewers cannot edit maintenance records', 403)
     }
 
-    // Verify record belongs to user's org
     const { data: existing, error: fetchError } = await supabase
       .from('maintenance_records')
       .select('id, receipt_urls, cars!inner(org_id)')
@@ -51,13 +24,10 @@ export async function PATCH(
       .eq('cars.org_id', membership.org_id)
       .single()
 
-    if (fetchError || !existing) {
-      return NextResponse.json({ error: 'Maintenance record not found' }, { status: 404 })
-    }
+    if (fetchError || !existing) return errorResponse('Maintenance record not found', 404)
 
     const body = await request.json()
 
-    // Build update object with only provided fields
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: Record<string, any> = {}
 
@@ -80,7 +50,7 @@ export async function PATCH(
 
     if (body.receipt_urls !== undefined) {
       if (!Array.isArray(body.receipt_urls) || body.receipt_urls.length > 5) {
-        return NextResponse.json({ error: 'receipt_urls must be an array with max 5 entries' }, { status: 400 })
+        return errorResponse('receipt_urls must be an array with max 5 entries', 400)
       }
       updateData.receipt_urls = body.receipt_urls.filter(
         (url: unknown) => typeof url === 'string' && url.length < 500
@@ -88,7 +58,7 @@ export async function PATCH(
     }
 
     if (Object.keys(updateData).length === 0) {
-      return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
+      return errorResponse('No valid fields to update', 400)
     }
 
     const { data: updated, error: updateError } = await supabase
@@ -100,7 +70,7 @@ export async function PATCH(
 
     if (updateError) {
       console.error('Error updating maintenance record:', updateError)
-      return NextResponse.json({ error: 'Failed to update maintenance record' }, { status: 500 })
+      return errorResponse('Failed to update maintenance record', 500)
     }
 
     // Clean up removed receipt photos from storage
@@ -114,62 +84,29 @@ export async function PATCH(
     }
 
     return NextResponse.json({ maintenanceRecord: updated })
-  } catch (error) {
-    console.error('API error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  }, { rateLimitConfig: RATE_LIMITS.WRITE })
 }
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    const supabase = await createRouteHandlerClient(request)
-    if (!supabase) {
-      return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
-    }
-
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Only allow org owners to delete maintenance records
-    const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
+  return withOrg(request, async ({ supabase, user, activeOrgId, membership }) => {
     if (!(await isOrgOwner(supabase, user.id, activeOrgId))) {
-      return NextResponse.json({
-        error: 'Only org owners can delete maintenance records',
-        isReadOnly: true
-      }, { status: 403 })
+      return NextResponse.json({ error: 'Only org owners can delete maintenance records', isReadOnly: true }, { status: 403 })
     }
 
     const { id: maintenanceId } = await params
 
-    // Get user's org membership
-    const membership = await getUserOrg(supabase, user.id, activeOrgId)
-    if (!membership) {
-      return NextResponse.json({ error: 'No organization found' }, { status: 403 })
-    }
-
-    // Verify the maintenance record belongs to the user's org and get receipt_urls
     const { data: maintenance, error: fetchError } = await supabase
       .from('maintenance_records')
-      .select(`
-        id,
-        receipt_urls,
-        cars!inner(org_id)
-      `)
+      .select('id, receipt_urls, cars!inner(org_id)')
       .eq('id', maintenanceId)
       .eq('cars.org_id', membership.org_id)
       .single()
 
-    if (fetchError || !maintenance) {
-      return NextResponse.json({ error: 'Maintenance record not found' }, { status: 404 })
-    }
+    if (fetchError || !maintenance) return errorResponse('Maintenance record not found', 404)
 
-    // Delete the maintenance record
     const { error: deleteError } = await supabase
       .from('maintenance_records')
       .delete()
@@ -177,7 +114,7 @@ export async function DELETE(
 
     if (deleteError) {
       console.error('Error deleting maintenance record:', deleteError)
-      return NextResponse.json({ error: 'Failed to delete maintenance record' }, { status: 500 })
+      return errorResponse('Failed to delete maintenance record', 500)
     }
 
     // Clean up storage files (non-blocking)
@@ -189,8 +126,5 @@ export async function DELETE(
     }
 
     return NextResponse.json({ message: 'Maintenance record deleted successfully' })
-  } catch (error) {
-    console.error('API error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  }, { rateLimitConfig: RATE_LIMITS.WRITE })
 }

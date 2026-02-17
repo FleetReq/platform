@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient, getOwnerUserId, isOwner } from '@/lib/supabase'
+import { createServerSupabaseClient } from '@/lib/supabase'
+import { OWNER_USER_ID } from '@/lib/constants'
 import { getUserOrg } from '@/lib/org'
 
 export async function GET(request: NextRequest) {
@@ -41,7 +42,7 @@ export async function GET(request: NextRequest) {
 
       // Fallback for unauthenticated or no-org users: show owner's data for demo
       if (!orgFilter) {
-        orgFilter = { column: 'user_id', value: getOwnerUserId() }
+        orgFilter = { column: 'user_id', value: OWNER_USER_ID }
       }
 
       // Get cars

@@ -1,5 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js'
-import { isAdmin } from '@/lib/supabase-client'
+import { isAdmin } from '@/lib/constants'
 
 export type OrgRole = 'owner' | 'editor' | 'viewer'
 

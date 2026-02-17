@@ -517,6 +517,19 @@ body {
     0 2px 4px -2px rgba(0, 0, 0, 0.4);
 }
 
+/* Reusable form input classes */
+@layer components {
+  .input-field {
+    @apply w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white;
+  }
+  .input-compact {
+    @apply px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white text-gray-900 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500;
+  }
+  .input-label {
+    @apply block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium;
+  }
+}
+
 /* Hide scrollbar for mobile horizontal scroll */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
