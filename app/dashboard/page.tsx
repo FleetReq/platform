@@ -1950,6 +1950,7 @@ export default function MileageTracker() {
   const [fillUps, setFillUps] = useState<FillUp[]>([])
   const [maintenanceRecords, setMaintenanceRecords] = useState<MaintenanceRecord[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadProgress, setLoadProgress] = useState(0) // 0-100 real progress tracking
   const [userIsOwner, setUserIsOwner] = useState(false)
   const [userOrgRole, setUserOrgRole] = useState<'owner' | 'editor' | 'viewer'>('owner')
   const [userOrgName, setUserOrgName] = useState<string | null>(null)
@@ -1985,20 +1986,25 @@ export default function MileageTracker() {
       return
     }
 
-    // User is logging in, reset loading states to show spinner
+    // User is logging in, reset loading states
     setLoading(true)
+    setLoadProgress(10)
     setDataLoaded(false)
     setUser(newUser)
     setUserIsOwner(isOwner(newUser.id))
 
     try {
-      // Load subscription plan, max vehicles, and org role
-      const plan = await getUserSubscriptionPlan(newUser.id)
+      // Load subscription plan + max vehicles
+      setLoadProgress(25)
+      const [plan, maxVeh] = await Promise.all([
+        getUserSubscriptionPlan(newUser.id),
+        getUserMaxVehicles(newUser.id),
+      ])
       setUserSubscriptionPlan(plan)
-      const maxVehicles = await getUserMaxVehicles(newUser.id)
-      setMaxVehicles(maxVehicles)
+      setMaxVehicles(maxVeh)
 
       // Fetch org role and name
+      setLoadProgress(45)
       try {
         const orgRes = await fetch('/api/org')
         if (orgRes.ok) {
@@ -2010,25 +2016,23 @@ export default function MileageTracker() {
         // Org not found is OK for legacy users
       }
 
-      // Load data for the user
+      // Load all dashboard data
+      setLoadProgress(65)
       await loadData()
+      setLoadProgress(100)
     } catch (error) {
       console.error('Error during auth initialization:', error)
+      setLoadProgress(100)
     }
 
     // After data is loaded, mark loading as complete
     setLoading(false)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Mark data as loaded only after loading completes
-  // Add minimum delay to ensure smooth transition and no flash
+  // Mark data as loaded once loading completes
   useEffect(() => {
     if (!loading) {
-      // Wait at least 300ms to show spinner as intentional loading state, not a flash
-      const timer = setTimeout(() => {
-        setDataLoaded(true)
-      }, 300)
-      return () => clearTimeout(timer)
+      setDataLoaded(true)
     }
   }, [loading])
 
@@ -2236,9 +2240,28 @@ export default function MileageTracker() {
   // Proxy redirects unauthenticated users to /login, so if we're here, user is expected
   if (!user || loading || !dataLoaded) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-4"></div>
-        <div className="text-gray-700 dark:text-gray-300 text-lg">Loading your vehicles...</div>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        {/* Slim top progress bar — tied to real loading stages */}
+        <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-gray-200 dark:bg-gray-800">
+          <div
+            className="h-full bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 rounded-r-full transition-all duration-300 ease-out"
+            style={{ width: `${loadProgress}%` }}
+          />
+        </div>
+        {/* Skeleton layout hint */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid lg:grid-cols-3 gap-6 animate-pulse">
+            <div className="space-y-6">
+              <div className="h-40 bg-gray-200 dark:bg-gray-800 rounded-2xl" />
+              <div className="h-56 bg-gray-200 dark:bg-gray-800 rounded-2xl" />
+              <div className="h-48 bg-gray-200 dark:bg-gray-800 rounded-2xl" />
+            </div>
+            <div className="lg:col-span-2 space-y-6">
+              <div className="h-12 bg-gray-200 dark:bg-gray-800 rounded-xl" />
+              <div className="h-80 bg-gray-200 dark:bg-gray-800 rounded-2xl" />
+            </div>
+          </div>
+        </div>
       </div>
     )
   }

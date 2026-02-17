@@ -350,6 +350,7 @@ body {
   background-size: 200% 100%;
 }
 
+
 .animate-bounce-gentle {
   animation: bounce-gentle 2s ease-in-out infinite;
 }
