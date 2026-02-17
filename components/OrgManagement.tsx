@@ -225,7 +225,7 @@ export default function OrgManagement() {
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{org.name || 'Unnamed Organization'}</span>
+            <span className="text-sm font-medium text-gray-900 dark:text-white">{org.name || 'Unnamed Organization'}</span>
             {isOwnerRole && (
               <button
                 onClick={() => setEditingName(true)}
@@ -253,21 +253,21 @@ export default function OrgManagement() {
       <div className="space-y-2">
         <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Members</h4>
         {members.map((member) => (
-          <div key={member.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+          <div key={member.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-gray-50 dark:bg-gray-700/60">
             <div className="flex items-center gap-3 min-w-0">
               {member.avatar_url ? (
                 <img src={member.avatar_url} alt="" className="w-8 h-8 rounded-full" />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-medium text-gray-500">
+                <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-200">
                   {(member.email || '?')[0].toUpperCase()}
                 </div>
               )}
               <div className="min-w-0">
-                <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
                   {member.full_name || member.email || member.invited_email}
                 </div>
                 {member.full_name && member.email && (
-                  <div className="text-xs text-gray-500 truncate">{member.email}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{member.email}</div>
                 )}
                 {!member.user_id && (
                   <div className="text-xs text-amber-600 dark:text-amber-400">Pending invite</div>
