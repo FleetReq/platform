@@ -104,20 +104,48 @@ CREATE TRIGGER update_user_profiles_updated_at
 ```sql
 DECLARE
   new_org_id uuid;
+  user_name text;
+  first_name text;
+  last_part text;
+  org_display text;
 BEGIN
-  -- Create user profile
-  INSERT INTO public.user_profiles (id)
-  VALUES (NEW.id)
-  ON CONFLICT (id) DO NOTHING;
+  -- Extract display name from metadata, fallback to email prefix
+  user_name := COALESCE(
+    NEW.raw_user_meta_data->>'full_name',
+    NEW.raw_user_meta_data->>'name',
+    split_part(NEW.email, '@', 1)
+  );
 
-  -- Create a default organization for this user
-  INSERT INTO public.organizations (name, subscription_plan, max_vehicles, max_members)
-  VALUES ('My Organization', 'free', 1, 1)
+  -- Build org display name: "First L.'s Organization"
+  first_name := split_part(trim(user_name), ' ', 1);
+  IF first_name IS NULL OR first_name = '' THEN
+    org_display := 'My Organization';
+  ELSE
+    last_part := split_part(trim(user_name), ' ',
+      array_length(string_to_array(trim(user_name), ' '), 1));
+    IF last_part IS NOT NULL AND last_part <> '' AND last_part <> first_name THEN
+      org_display := first_name || ' ' || upper(left(last_part, 1)) || '.''s Organization';
+    ELSE
+      org_display := first_name || '''s Organization';
+    END IF;
+  END IF;
+
+  -- Create user profile with name and email
+  INSERT INTO public.user_profiles (id, email, full_name, subscription_plan, max_vehicles, max_invited_users)
+  VALUES (NEW.id, NEW.email, user_name, 'free', 1, 0)
+  ON CONFLICT (id) DO UPDATE SET
+    email = COALESCE(user_profiles.email, EXCLUDED.email),
+    full_name = COALESCE(user_profiles.full_name, EXCLUDED.full_name),
+    subscription_plan = COALESCE(user_profiles.subscription_plan, 'free');
+
+  -- Create organization for new user
+  INSERT INTO public.organizations (id, name, subscription_plan, max_vehicles, max_members)
+  VALUES (gen_random_uuid(), org_display, 'free', 1, 1)
   RETURNING id INTO new_org_id;
 
-  -- Make the user the owner of the new org
-  INSERT INTO public.org_members (org_id, user_id, role)
-  VALUES (new_org_id, NEW.id, 'owner');
+  -- Create org membership (owner)
+  INSERT INTO public.org_members (org_id, user_id, role, accepted_at)
+  VALUES (new_org_id, NEW.id, 'owner', now());
 
   RETURN NEW;
 END;
@@ -126,9 +154,11 @@ END;
 **Behavior**:
 - Executes AFTER a new user is inserted into `auth.users`
 - Creates three records:
-  1. `user_profiles` - basic profile (id only, fields populated later)
-  2. `organizations` - default free-tier org
+  1. `user_profiles` - profile with email, full_name, and free tier defaults
+  2. `organizations` - free-tier org with smart name ("First L.'s Organization")
   3. `org_members` - user as owner of the new org
+- Org name format: "John S.'s Organization" (first name + last initial), "Alice's Organization" (single name), "My Organization" (no name)
+- Also populates `user_profiles.email` and `full_name` from auth metadata (COALESCE preserves existing values on conflict)
 - Every user always has exactly one org (single query path everywhere)
 - **Important**: This runs automatically - DO NOT manually create these records on signup
 
