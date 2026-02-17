@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
     }
 
     // For accepted members, fetch their email/name from user_profiles
+    // Use the current user's auth data as fallback (user_profiles.email may be NULL)
     const enrichedMembers = await Promise.all(
       (members || []).map(async (member) => {
         if (member.user_id) {
@@ -42,11 +43,21 @@ export async function GET(request: NextRequest) {
             .eq('id', member.user_id)
             .single()
 
+          // For the current user, fall back to auth email/name if profile fields are empty
+          const isCurrentUser = member.user_id === user.id
+          const email = profile?.email
+            || member.invited_email
+            || (isCurrentUser ? user.email : null)
+          const fullName = profile?.full_name
+            || (isCurrentUser ? (user.user_metadata?.full_name || null) : null)
+          const avatarUrl = profile?.avatar_url
+            || (isCurrentUser ? (user.user_metadata?.avatar_url || null) : null)
+
           return {
             ...member,
-            email: profile?.email || member.invited_email,
-            full_name: profile?.full_name || null,
-            avatar_url: profile?.avatar_url || null,
+            email,
+            full_name: fullName,
+            avatar_url: avatarUrl,
           }
         }
         // Pending invite (no user_id yet)
