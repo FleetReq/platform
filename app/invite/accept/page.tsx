@@ -50,13 +50,20 @@ function AcceptInviteContent() {
         const data = await res.json()
 
         if (!res.ok) {
+          // 404 = already accepted — treat as success and redirect
+          if (res.status === 404) {
+            router.push('/dashboard')
+            return
+          }
           setStatus('error')
           setMessage(data.error || 'Failed to accept invitation.')
           return
         }
 
+        // Auto-redirect to dashboard after a brief success flash
         setStatus('success')
         setMessage('You have successfully joined the organization!')
+        setTimeout(() => router.push('/dashboard'), 1500)
       } catch (err) {
         console.error('Accept invite error:', err)
         setStatus('error')
