@@ -52,7 +52,7 @@ function AcceptInviteContent() {
         if (!res.ok) {
           // 404 = already accepted — treat as success and redirect
           if (res.status === 404) {
-            router.push('/dashboard')
+            window.location.href = '/dashboard'
             return
           }
           setStatus('error')
@@ -60,10 +60,10 @@ function AcceptInviteContent() {
           return
         }
 
-        // Auto-redirect to dashboard after a brief success flash
+        // Full reload so the nav re-fetches orgs and shows the new switcher
         setStatus('success')
         setMessage('You have successfully joined the organization!')
-        setTimeout(() => router.push('/dashboard'), 1500)
+        setTimeout(() => { window.location.href = '/dashboard' }, 1500)
       } catch (err) {
         console.error('Accept invite error:', err)
         setStatus('error')
