@@ -14,7 +14,6 @@ import AddCarForm from '@/components/forms/AddCarForm'
 import AddFillUpForm from '@/components/forms/AddFillUpForm'
 import AddTripForm from '@/components/forms/AddTripForm'
 import AddMaintenanceForm from '@/components/forms/AddMaintenanceForm'
-import OrgSwitcher from '@/components/OrgSwitcher'
 import type { User } from '@supabase/supabase-js'
 import {
   Chart as ChartJS,
@@ -2117,28 +2116,6 @@ export default function MileageTracker() {
   }, [])
 
 
-  // Handle org switch: reload all data and org info for the new active org
-  const handleOrgSwitch = useCallback(async () => {
-    if (!user) return
-    // Reset selected car (old car belongs to previous org)
-    setSelectedCarId(null)
-    // Re-fetch org role/name/plan for the newly active org
-    const plan = await getUserSubscriptionPlan(user.id)
-    setUserSubscriptionPlan(plan)
-    const maxVeh = await getUserMaxVehicles(user.id)
-    setMaxVehicles(maxVeh)
-    try {
-      const orgRes = await fetch('/api/org')
-      if (orgRes.ok) {
-        const orgData = await orgRes.json()
-        setUserOrgRole(orgData.role || 'owner')
-        setUserOrgName(orgData.org?.name || null)
-      }
-    } catch { /* ignore */ }
-    // Reload all dashboard data
-    await loadData()
-  }, [user, loadData])
-
   // Prepare chart data based on selected view
   const chartData = useMemo(() => {
     if (!fillUps.length) return null
@@ -2281,8 +2258,6 @@ export default function MileageTracker() {
           {/* Left Column - Vehicle Info, Performance, and Maintenance */}
           {/* On mobile: only show on Overview tab (other tabs show content directly without scrolling past) */}
           <div className={`lg:col-span-1 space-y-6 ${activeTab === 'overview' ? '' : 'hidden lg:block'}`}>
-            {/* Org Switcher (only visible for multi-org users) */}
-            <OrgSwitcher onSwitch={handleOrgSwitch} />
             {/* Vehicle Selector */}
             <div className="card-professional p-4">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Selected Vehicle</h3>
