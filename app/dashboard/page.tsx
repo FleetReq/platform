@@ -2105,16 +2105,25 @@ export default function MileageTracker() {
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Fetch with an 8-second abort timeout so hung Vercel functions don't block indefinitely
+  const fetchWithTimeout = (url: string, options: RequestInit = {}) => {
+    const controller = new AbortController()
+    const id = setTimeout(() => controller.abort(), 8000)
+    return fetch(url, { ...options, signal: controller.signal })
+      .finally(() => clearTimeout(id))
+      .catch(() => new Response(null, { status: 408 }))
+  }
+
   const loadData = useCallback(async () => {
     try {
       if (!supabase) return
 
       // Fetch ALL data first before setting any state
       const [carsResponse, statsResponse, fillUpsResponse, maintenanceResponse] = await Promise.all([
-        fetch('/api/cars', { credentials: 'include' }),
-        fetch('/api/stats'),
-        fetch('/api/fill-ups?limit=50', { credentials: 'include' }),
-        fetch('/api/maintenance?limit=50', { credentials: 'include' })
+        fetchWithTimeout('/api/cars', { credentials: 'include' }),
+        fetchWithTimeout('/api/stats'),
+        fetchWithTimeout('/api/fill-ups?limit=50', { credentials: 'include' }),
+        fetchWithTimeout('/api/maintenance?limit=50', { credentials: 'include' })
       ])
 
       // Extract data
