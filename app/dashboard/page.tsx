@@ -1956,6 +1956,8 @@ export default function MileageTracker() {
   const [userOrgName, setUserOrgName] = useState<string | null>(null)
   const [userSubscriptionPlan, setUserSubscriptionPlan] = useState<'free' | 'personal' | 'business'>('free')
   const [maxVehicles, setMaxVehicles] = useState<number>(1)
+  const [allOrgs, setAllOrgs] = useState<{org_id: string, org_name: string, role: string, subscription_plan: string}[]>([])
+  const [leavingOrgId, setLeavingOrgId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'overview' | 'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'add-trip' | 'records' | 'settings'>('overview')
   const [chartView, setChartView] = useState<'weekly' | 'monthly' | 'yearly'>('monthly')
   const [selectedCarId, setSelectedCarId] = useState<string | null>(null)
@@ -1976,6 +1978,15 @@ export default function MileageTracker() {
       setSelectedCarId(cars[0].id)
     }
   }, [cars, selectedCarId])
+
+  // Fetch all orgs when settings tab is opened (for Leave Organization section)
+  useEffect(() => {
+    if (activeTab !== 'settings') return
+    fetch('/api/org?all=true')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.orgs) setAllOrgs(data.orgs) })
+      .catch(() => {})
+  }, [activeTab])
 
   const handleAuthChange = useCallback(async (newUser: User | null) => {
     console.log('Auth state changed:', newUser ? `${newUser.email} (${newUser.id})` : 'null')
@@ -2023,13 +2034,13 @@ export default function MileageTracker() {
 
       // Now load all data — org is guaranteed to exist (or user is admin)
       await loadData()
-      setLoadProgress(100)
     } catch (error) {
       console.error('Error during auth initialization:', error)
-      setLoadProgress(100)
     }
 
-    // After data is loaded, mark loading as complete
+    // Animate bar to 100% then unmount the loading screen after the CSS transition
+    setLoadProgress(100)
+    await new Promise(resolve => setTimeout(resolve, 350))
     setLoading(false)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -2737,6 +2748,50 @@ export default function MileageTracker() {
                     <UserSettings cars={cars} onCarDeleted={() => loadData()} initialSubscriptionPlan={userSubscriptionPlan} />
                   </div>
                   <OrgManagement />
+                  {/* Leave Organization — shown only for non-owner memberships */}
+                  {allOrgs.filter(o => o.role !== 'owner').length > 0 && (
+                    <div className="card-professional p-6">
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Other Organizations</h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                        Organizations you&apos;ve joined via invitation. You can leave at any time — the owner can reinvite you.
+                      </p>
+                      <div className="space-y-3">
+                        {allOrgs.filter(o => o.role !== 'owner').map(org => (
+                          <div key={org.org_id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                            <div>
+                              <p className="text-sm font-medium text-gray-900 dark:text-white">{org.org_name}</p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{org.role} · {org.subscription_plan}</p>
+                            </div>
+                            <button
+                              disabled={leavingOrgId === org.org_id}
+                              onClick={async () => {
+                                if (!confirm(`Leave "${org.org_name}"? You can be reinvited by the owner.`)) return
+                                setLeavingOrgId(org.org_id)
+                                try {
+                                  const res = await fetch('/api/org/leave', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ org_id: org.org_id }),
+                                  })
+                                  if (res.ok) {
+                                    window.location.reload()
+                                  } else {
+                                    const data = await res.json()
+                                    alert(data.error || 'Failed to leave organization')
+                                  }
+                                } finally {
+                                  setLeavingOrgId(null)
+                                }
+                              }}
+                              className="px-3 py-1.5 text-sm text-red-600 dark:text-red-400 border border-red-300 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
+                            >
+                              {leavingOrgId === org.org_id ? 'Leaving...' : 'Leave'}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

@@ -10,7 +10,7 @@ function AcceptInviteContent() {
   const router = useRouter()
   const inviteId = searchParams.get('id')
 
-  const [status, setStatus] = useState<'loading' | 'accepting' | 'success' | 'error' | 'login-required'>('loading')
+  const [status, setStatus] = useState<'loading' | 'accepting' | 'declining' | 'success' | 'declined' | 'error' | 'login-required'>('loading')
   const [message, setMessage] = useState('')
 
   useEffect(() => {
@@ -28,8 +28,6 @@ function AcceptInviteContent() {
           return
         }
 
-        // getSession() reads from cookies locally — no network call, no timeout risk.
-        // Security validation happens server-side in /api/org/accept-invite via withAuth.
         const { data: { session } } = await supabase.auth.getSession()
         const user = session?.user ?? null
 
@@ -39,7 +37,6 @@ function AcceptInviteContent() {
           return
         }
 
-        // User is authenticated — accept the invite
         setStatus('accepting')
         const res = await fetch('/api/org/accept-invite', {
           method: 'POST',
@@ -50,7 +47,6 @@ function AcceptInviteContent() {
         const data = await res.json()
 
         if (!res.ok) {
-          // 404 = already accepted — treat as success and redirect
           if (res.status === 404) {
             window.location.href = '/dashboard'
             return
@@ -60,7 +56,6 @@ function AcceptInviteContent() {
           return
         }
 
-        // Full reload so the nav re-fetches orgs and shows the new switcher
         setStatus('success')
         setMessage('You have successfully joined the organization!')
         setTimeout(() => { window.location.href = '/dashboard' }, 1500)
@@ -74,9 +69,35 @@ function AcceptInviteContent() {
     checkAuthAndAccept()
   }, [inviteId])
 
+  async function handleDecline() {
+    try {
+      if (!supabase || !inviteId) return
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) { setStatus('login-required'); return }
+
+      setStatus('declining')
+      const res = await fetch('/api/org/accept-invite', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ invite_id: inviteId }),
+      })
+      if (res.ok || res.status === 404) {
+        setStatus('declined')
+        setMessage('Invitation declined. The organization owner can resend it at any time.')
+      } else {
+        const data = await res.json()
+        setStatus('error')
+        setMessage(data.error || 'Failed to decline invitation.')
+      }
+    } catch {
+      setStatus('error')
+      setMessage('An unexpected error occurred.')
+    }
+  }
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg max-w-md w-full p-8 text-center">
-      {status === 'loading' && (
+      {(status === 'loading') && (
         <>
           <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-600 dark:text-gray-300">Checking invitation...</p>
@@ -87,6 +108,13 @@ function AcceptInviteContent() {
         <>
           <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-600 dark:text-gray-300">Accepting invitation...</p>
+        </>
+      )}
+
+      {status === 'declining' && (
+        <>
+          <div className="w-12 h-12 border-4 border-gray-400 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600 dark:text-gray-300">Declining invitation...</p>
         </>
       )}
 
@@ -105,6 +133,24 @@ function AcceptInviteContent() {
           >
             Go to Dashboard
           </button>
+        </>
+      )}
+
+      {status === 'declined' && (
+        <>
+          <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Invitation Declined</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">{message}</p>
+          <Link
+            href="/dashboard"
+            className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors text-center"
+          >
+            Go to Dashboard
+          </Link>
         </>
       )}
 
@@ -135,13 +181,31 @@ function AcceptInviteContent() {
           </div>
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Sign In Required</h2>
           <p className="text-gray-600 dark:text-gray-300 mb-6">{message}</p>
-          <Link
-            href={`/login?redirect=${encodeURIComponent(`/invite/accept?id=${inviteId}`)}`}
-            className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors text-center"
-          >
-            Sign In to Accept
-          </Link>
+          <div className="space-y-3">
+            <Link
+              href={`/login?redirect=${encodeURIComponent(`/invite/accept?id=${inviteId}`)}`}
+              className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors text-center"
+            >
+              Sign In to Accept
+            </Link>
+            <button
+              onClick={handleDecline}
+              className="block w-full bg-transparent border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 font-medium py-3 px-6 rounded-lg transition-colors text-center"
+            >
+              Decline Invitation
+            </button>
+          </div>
         </>
+      )}
+
+      {/* Decline button shown when viewing the invite (accepting state shows it too) */}
+      {status === 'accepting' && (
+        <button
+          onClick={handleDecline}
+          className="mt-4 text-sm text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 underline"
+        >
+          Decline instead
+        </button>
       )}
     </div>
   )

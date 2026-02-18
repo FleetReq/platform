@@ -70,3 +70,48 @@ export async function POST(request: NextRequest) {
     return response
   }, { rateLimitConfig: RATE_LIMITS.WRITE })
 }
+
+// DELETE /api/org/accept-invite — Decline a pending invitation
+export async function DELETE(request: NextRequest) {
+  return withAuth(request, async ({ user }) => {
+    const body = await request.json()
+    const { invite_id } = body
+
+    if (!invite_id) return errorResponse('invite_id is required', 400)
+
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    if (!url || !serviceKey) return errorResponse('Server configuration error', 503)
+
+    const adminClient = createClient(url, serviceKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    })
+
+    // Find the pending invite and verify email ownership before deleting
+    const { data: invite } = await adminClient
+      .from('org_members')
+      .select('id, invited_email')
+      .eq('id', invite_id)
+      .is('user_id', null)
+      .single()
+
+    if (!invite) return errorResponse('Invitation not found or already accepted', 404)
+
+    if (invite.invited_email?.toLowerCase() !== user.email?.toLowerCase()) {
+      return errorResponse('This invitation was sent to a different email address', 403)
+    }
+
+    const { error } = await adminClient
+      .from('org_members')
+      .delete()
+      .eq('id', invite_id)
+      .is('user_id', null)
+
+    if (error) {
+      console.error('Error declining invite:', error)
+      return errorResponse('Failed to decline invitation', 500)
+    }
+
+    return NextResponse.json({ message: 'Invitation declined' })
+  }, { rateLimitConfig: RATE_LIMITS.WRITE })
+}
