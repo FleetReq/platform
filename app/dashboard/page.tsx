@@ -2040,6 +2040,7 @@ export default function MileageTracker() {
   // Initialize auth state and clean up URL parameters
   useEffect(() => {
     let isMounted = true
+    let loadCompleted = false
 
     const initializeAuth = async () => {
       // Clean up URL parameters from auth callbacks
@@ -2059,6 +2060,7 @@ export default function MileageTracker() {
           const { data: { session } } = await supabase.auth.getSession()
           if (isMounted) {
             await handleAuthChange(session?.user ?? null)
+            loadCompleted = true
           }
         } catch (error) {
           console.error('Error getting session:', error)
@@ -2069,9 +2071,9 @@ export default function MileageTracker() {
       }
     }
 
-    // Safety timeout: if loading takes >25s, force-resolve to prevent infinite spinner
+    // Safety timeout: only fires if handleAuthChange never completed (network failure, etc.)
     const safetyTimer = setTimeout(() => {
-      if (isMounted) {
+      if (isMounted && !loadCompleted) {
         console.warn('Dashboard loading safety timeout reached')
         setLoading(false)
       }

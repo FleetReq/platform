@@ -10,7 +10,7 @@ const geistSans = Geist({
   subsets: ["latin"],
   display: 'swap',
   weight: ['400', '500', '600', '700'],
-  preload: true,
+  preload: false,
   adjustFontFallback: true,
 });
 
