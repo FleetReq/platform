@@ -88,8 +88,12 @@ export function Navigation() {
     if (supabase) {
       supabase.auth.signOut().catch(console.error);
     }
-    // Hard navigation clears all client-side state regardless of signOut result
-    window.location.href = '/';
+    // Force a full reload — href='/' is a no-op when already on the home page
+    if (window.location.pathname === '/') {
+      window.location.reload()
+    } else {
+      window.location.href = '/'
+    }
   };
 
   // Helper function to check if current page matches navigation item
