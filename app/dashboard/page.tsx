@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner, getUserSubscriptionPlan, getUserMaxVehicles, hasFeatureAccess } from '@/lib/supabase-client'
+import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner, isAdmin, getUserSubscriptionPlan, getUserMaxVehicles, hasFeatureAccess } from '@/lib/supabase-client'
 import { MAINTENANCE_INTERVALS, getMaintenanceStatus, getLatestMaintenanceRecord } from '@/lib/maintenance'
 import { MAINTENANCE_TYPES, MAINTENANCE_TYPE_FILTER_OPTIONS, getStatusColor, getStatusTextColor, getIrsRate, type MaintenanceStatus } from '@/lib/constants'
 import BackgroundAnimation from '../components/BackgroundAnimation'
@@ -1995,39 +1995,31 @@ export default function MileageTracker() {
     setUserIsOwner(isOwner(newUser.id))
 
     try {
-      // Fetch org details first (triggers self-healing if membership is missing)
-      // This is the authoritative source for subscription plan and max vehicles
+      // Run org fetch and data load in parallel — don't let one block the other
       setLoadProgress(25)
-      try {
-        const orgRes = await fetch('/api/org')
-        if (orgRes.ok) {
-          const orgData = await orgRes.json()
-          setUserOrgRole(orgData.role || 'owner')
-          setUserOrgName(orgData.org?.name || null)
-          if (orgData.org?.subscription_plan) {
-            setUserSubscriptionPlan(orgData.org.subscription_plan)
-          }
-          if (orgData.org?.max_vehicles) {
-            setMaxVehicles(orgData.org.max_vehicles)
-          }
+      const [orgRes] = await Promise.all([
+        fetch('/api/org').catch(() => null),
+        loadData(),
+      ])
+      setLoadProgress(80)
+
+      // Apply org data (plan, role, name) from server response
+      if (orgRes?.ok) {
+        const orgData = await orgRes.json()
+        setUserOrgRole(orgData.role || 'owner')
+        setUserOrgName(orgData.org?.name || null)
+        if (orgData.org?.subscription_plan) {
+          setUserSubscriptionPlan(orgData.org.subscription_plan)
         }
-      } catch {
-        // Org not found — fall back to client-side queries
+        if (orgData.org?.max_vehicles) {
+          setMaxVehicles(orgData.org.max_vehicles)
+        }
+      } else if (isAdmin(newUser.id)) {
+        // Admin fallback — no org needed
+        setUserSubscriptionPlan('business')
+        setMaxVehicles(999)
       }
 
-      // Client-side fallback (for admin bypass or if /api/org didn't set values)
-      setLoadProgress(45)
-      const [plan, maxVeh] = await Promise.all([
-        getUserSubscriptionPlan(newUser.id),
-        getUserMaxVehicles(newUser.id),
-      ])
-      // Only use client-side values if server didn't provide them
-      setUserSubscriptionPlan(prev => prev === 'free' ? plan : prev)
-      setMaxVehicles(prev => prev === 1 ? maxVeh : prev)
-
-      // Load all dashboard data
-      setLoadProgress(65)
-      await loadData()
       setLoadProgress(100)
     } catch (error) {
       console.error('Error during auth initialization:', error)
