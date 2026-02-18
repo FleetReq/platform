@@ -165,7 +165,7 @@ export function Navigation() {
   const navigationItems = user ? authenticatedNavigationItems : baseNavigationItems;
 
   return (
-    <nav className="bg-white/98 dark:bg-gray-900/98 backdrop-blur-2xl border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50 shadow-sm dark:shadow-none">
+    <nav className="bg-white/98 dark:bg-gray-900/98 backdrop-blur-2xl border-b border-gray-200 dark:border-gray-800 sticky top-0 z-[9999] shadow-sm dark:shadow-none">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative flex items-center justify-between h-20 gap-4">
           {/* Left: Logo + Badge + Org Switcher */}
