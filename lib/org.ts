@@ -229,9 +229,12 @@ export async function verifyCarAccess(
 }
 
 /**
- * Self-healing: create an org + membership for a user who has none.
- * Uses service role client to bypass RLS (no INSERT policy on organizations for authenticated users).
- * Handles admin users (business plan) vs normal users (free plan).
+ * Self-healing: reconnect a user to their existing org, or create a new one.
+ * Uses service role client to bypass RLS.
+ *
+ * Priority:
+ * 1. Find an existing org that already has this user's cars (reconnect)
+ * 2. If no existing org found, create a new one
  */
 export async function ensureUserHasOrg(userId: string): Promise<OrgMembership | null> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -245,19 +248,53 @@ export async function ensureUserHasOrg(userId: string): Promise<OrgMembership | 
     auth: { autoRefreshToken: false, persistSession: false },
   })
 
-  // Get user profile for org name generation
+  // --- Priority 1: Reconnect to existing org that has this user's cars ---
+  const { data: existingCar } = await adminClient
+    .from('cars')
+    .select('org_id')
+    .eq('user_id', userId)
+    .limit(1)
+    .single()
+
+  if (existingCar?.org_id) {
+    // Found an existing org with the user's data — just add membership
+    const { error: memberError } = await adminClient
+      .from('org_members')
+      .insert({
+        org_id: existingCar.org_id,
+        user_id: userId,
+        role: 'owner',
+        accepted_at: new Date().toISOString(),
+      })
+
+    if (!memberError) {
+      console.log(`ensureUserHasOrg: reconnected user ${userId} to existing org ${existingCar.org_id}`)
+      return { org_id: existingCar.org_id, role: 'owner' }
+    }
+    // If insert failed (e.g. duplicate), try to read existing membership
+    const { data: existing } = await adminClient
+      .from('org_members')
+      .select('org_id, role')
+      .eq('user_id', userId)
+      .eq('org_id', existingCar.org_id)
+      .single()
+    if (existing) {
+      return { org_id: existing.org_id, role: existing.role as OrgRole }
+    }
+  }
+
+  // --- Priority 2: Create a new org ---
   const { data: profile } = await adminClient
     .from('user_profiles')
     .select('full_name, email')
     .eq('id', userId)
     .single()
 
-  // Generate org name: "First L.'s Organization" or fallback to email
   let orgName = 'My Organization'
   if (profile?.full_name) {
     const parts = profile.full_name.trim().split(/\s+/)
     if (parts.length >= 2) {
-      orgName = `${parts[0]} ${parts[parts.length - 1][0]}.\'s Organization`
+      orgName = `${parts[0]} ${parts[parts.length - 1][0]}.'s Organization`
     } else {
       orgName = `${parts[0]}'s Organization`
     }
@@ -266,13 +303,11 @@ export async function ensureUserHasOrg(userId: string): Promise<OrgMembership | 
     orgName = `${local}'s Organization`
   }
 
-  // Admin gets business tier; everyone else gets free
   const admin = isAdmin(userId)
   const plan = admin ? 'business' : 'free'
   const maxVehicles = admin ? 999 : 1
   const maxMembers = admin ? 6 : 1
 
-  // Create the organization
   const { data: org, error: orgError } = await adminClient
     .from('organizations')
     .insert({
@@ -289,7 +324,6 @@ export async function ensureUserHasOrg(userId: string): Promise<OrgMembership | 
     return null
   }
 
-  // Create the membership
   const { error: memberError } = await adminClient
     .from('org_members')
     .insert({
@@ -301,11 +335,10 @@ export async function ensureUserHasOrg(userId: string): Promise<OrgMembership | 
 
   if (memberError) {
     console.error('ensureUserHasOrg: failed to create membership', memberError)
-    // Clean up the orphaned org
     await adminClient.from('organizations').delete().eq('id', org.id)
     return null
   }
 
-  console.log(`ensureUserHasOrg: created org ${org.id} for user ${userId} (${plan})`)
+  console.log(`ensureUserHasOrg: created new org ${org.id} for user ${userId} (${plan})`)
   return { org_id: org.id, role: 'owner' }
 }
