@@ -40,9 +40,11 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
       console.log('AuthComponent: Initial session loaded, calling onAuthChange with:', session?.user?.email || 'null')
       setUser(session?.user ?? null)
       setLoading(false)
-      onAuthChange(session?.user ?? null)
-      // Check for pending invites on initial load too (not just SIGNED_IN event)
-      checkPendingInvites(session?.user ?? null)
+      // Check invites first — if redirecting to /invite/accept, skip dashboard navigation
+      const redirecting = await checkPendingInvites(session?.user ?? null)
+      if (!redirecting) {
+        onAuthChange(session?.user ?? null)
+      }
     }
 
     getSession()
@@ -56,13 +58,16 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
         setUser(session?.user ?? null)
         setLoading(false)
 
-        // Call onAuthChange for all events including initial session
-        onAuthChange(session?.user ?? null)
-
         if (event === 'SIGNED_IN') {
           setError(null)
-          // Check for pending invitations that match this user's email
-          checkPendingInvites(session?.user || null)
+          // Check invites first — if redirecting to /invite/accept, skip dashboard navigation
+          const redirecting = await checkPendingInvites(session?.user || null)
+          if (!redirecting) {
+            onAuthChange(session?.user ?? null)
+          }
+        } else {
+          // Call onAuthChange for all other events (SIGNED_OUT, TOKEN_REFRESHED, etc.)
+          onAuthChange(session?.user ?? null)
         }
 
         if (event === 'SIGNED_OUT') {
@@ -77,8 +82,9 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
     return () => subscription.unsubscribe()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const checkPendingInvites = async (signedInUser: User | null) => {
-    if (!signedInUser?.email || !supabase) return
+  // Returns true if a pending invite was found and redirect was initiated
+  const checkPendingInvites = async (signedInUser: User | null): Promise<boolean> => {
+    if (!signedInUser?.email || !supabase) return false
 
     try {
       // Check if this user's email has any pending org invitations
@@ -90,12 +96,14 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
         .limit(1)
 
       if (pendingInvites && pendingInvites.length > 0) {
-        // Redirect to accept the first pending invite
+        // Redirect to accept the first pending invite — skip normal dashboard navigation
         window.location.href = `/invite/accept?id=${pendingInvites[0].id}`
+        return true
       }
     } catch (error) {
       console.error('Error checking pending invites:', error)
     }
+    return false
   }
 
   const signInWithEmail = async (e: React.FormEvent) => {
