@@ -21,23 +21,25 @@ function AcceptInviteContent() {
     }
 
     async function checkAuthAndAccept() {
-      if (!supabase) {
-        setStatus('error')
-        setMessage('Configuration error. Please try again later.')
-        return
-      }
-
-      const { data: { session } } = await supabase.auth.getSession()
-
-      if (!session?.user) {
-        setStatus('login-required')
-        setMessage('Please sign in or create an account to accept this invitation.')
-        return
-      }
-
-      // User is authenticated — accept the invite
-      setStatus('accepting')
       try {
+        if (!supabase) {
+          setStatus('error')
+          setMessage('Configuration error. Please try again later.')
+          return
+        }
+
+        // getUser() makes a network call but is more reliable than getSession()
+        // for SSR/cookie-based auth where getSession() can silently fail
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+
+        if (userError || !user) {
+          setStatus('login-required')
+          setMessage('Please sign in or create an account to accept this invitation.')
+          return
+        }
+
+        // User is authenticated — accept the invite
+        setStatus('accepting')
         const res = await fetch('/api/org/accept-invite', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -54,7 +56,8 @@ function AcceptInviteContent() {
 
         setStatus('success')
         setMessage('You have successfully joined the organization!')
-      } catch {
+      } catch (err) {
+        console.error('Accept invite error:', err)
         setStatus('error')
         setMessage('An unexpected error occurred. Please try again.')
       }
