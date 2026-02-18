@@ -83,14 +83,12 @@ export function Navigation() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleSignOut = async () => {
-    if (!supabase) return;
-    try {
-      await supabase.auth.signOut();
-    } catch (error) {
-      console.error('Sign out error:', error);
+  const handleSignOut = () => {
+    // Fire signOut without awaiting — don't let a slow network block navigation
+    if (supabase) {
+      supabase.auth.signOut().catch(console.error);
     }
-    // Hard navigation to clear all client-side state
+    // Hard navigation clears all client-side state regardless of signOut result
     window.location.href = '/';
   };
 
