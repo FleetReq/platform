@@ -1998,7 +1998,10 @@ export default function MileageTracker() {
       // This prevents a race condition where all 5 API routes call ensureUserHasOrg
       // simultaneously, each creating a separate orphan org for the user.
       setLoadProgress(prev => Math.max(prev, 25))
-      const orgRes = await fetch('/api/org').catch(() => null)
+      const orgController = new AbortController()
+      const orgTimeout = setTimeout(() => orgController.abort(), 8000)
+      const orgRes = await fetch('/api/org', { signal: orgController.signal }).catch(() => null)
+      clearTimeout(orgTimeout)
       setLoadProgress(prev => Math.max(prev, 50))
 
       // Apply org data (plan, role, name) from server response
@@ -2092,7 +2095,7 @@ export default function MileageTracker() {
         console.warn('Dashboard loading safety timeout reached')
         setLoading(false)
       }
-    }, 25000)
+    }, 10000)
 
     initializeAuth()
 
@@ -2237,8 +2240,8 @@ export default function MileageTracker() {
   if (!user || loading || !dataLoaded) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        {/* Slim top progress bar — tied to real loading stages */}
-        <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-gray-200 dark:bg-gray-800">
+        {/* Slim top progress bar — above the nav (z-[9999]) */}
+        <div className="fixed top-0 left-0 right-0 z-[10000] h-1 bg-gray-200 dark:bg-gray-800">
           <div
             className="h-full bg-gradient-to-r from-blue-500 via-blue-600 to-purple-600 rounded-r-full transition-all duration-300 ease-out"
             style={{ width: `${loadProgress}%` }}
