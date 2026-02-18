@@ -2540,14 +2540,14 @@ export default function MileageTracker() {
                         </div>
                       )}
                       {shouldHighlight && (
-                        <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 z-[100] pointer-events-none whitespace-nowrap">
+                        <div className="absolute top-full mt-3 left-1/2 -translate-x-1/2 z-[100] pointer-events-none whitespace-nowrap">
                           <div className="relative inline-block bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-2xl px-6 py-4 shadow-2xl animate-bounce-gentle">
-                            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[12px] border-r-[12px] border-t-[12px] border-transparent border-t-purple-500"></div>
+                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[12px] border-r-[12px] border-b-[12px] border-transparent border-b-blue-500"></div>
                             <div className="flex items-center gap-3">
                               <span className="text-3xl">👋</span>
                               <div>
                                 <p className="font-semibold text-lg">Welcome to FleetReq!</p>
-                                <p className="text-sm text-blue-50">Get started by clicking &quot;Add Car&quot; below!</p>
+                                <p className="text-sm text-blue-50">Get started by clicking &quot;Add Car&quot; above!</p>
                               </div>
                             </div>
                           </div>
