@@ -2470,7 +2470,7 @@ export default function MileageTracker() {
           {/* Right Column - Navigation Tabs + Charts/Forms */}
           <div className="lg:col-span-2 space-y-6 relative pb-24 sm:pb-0">
               {/* Navigation Tabs - hidden on mobile (bottom tab bar used instead) */}
-              <div className="relative hidden sm:flex gap-1 glass-morphism rounded-xl p-1 shadow-elegant">
+              <div className="relative z-50 hidden sm:flex gap-1 glass-morphism rounded-xl p-1 shadow-elegant">
                 {[
                   { id: 'dashboard', label: 'Graph', adminOnly: false, requiresEdit: false },
                   { id: 'add-car', label: 'Add Car', adminOnly: false, requiresEdit: true },
