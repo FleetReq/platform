@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { SupabaseClient, User } from '@supabase/supabase-js'
 import { createRouteHandlerClient } from '@/lib/supabase'
 import { rateLimit, RATE_LIMITS, getRateLimitHeaders, RateLimitConfig } from '@/lib/rate-limit'
-import { getUserOrg, OrgMembership } from '@/lib/org'
+import { getUserOrg, ensureUserHasOrg, OrgMembership } from '@/lib/org'
 import { isAdmin } from '@/lib/constants'
 
 // ---------------------------------------------------------------------------
@@ -115,7 +115,11 @@ export async function withOrg(
 
     const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
 
-    const membership = await getUserOrg(supabase, user.id, activeOrgId)
+    let membership = await getUserOrg(supabase, user.id, activeOrgId)
+    if (!membership) {
+      // Self-healing: create org + membership for users who slipped through the trigger
+      membership = await ensureUserHasOrg(user.id)
+    }
     if (!membership) {
       if (options?.emptyOnUnauth) {
         return NextResponse.json({ [options.emptyOnUnauth]: [] })

@@ -1,4 +1,4 @@
-import { SupabaseClient } from '@supabase/supabase-js'
+import { SupabaseClient, createClient } from '@supabase/supabase-js'
 import { isAdmin } from '@/lib/constants'
 
 export type OrgRole = 'owner' | 'editor' | 'viewer'
@@ -226,4 +226,86 @@ export async function verifyCarAccess(
     isOwner: membership.role === 'owner',
     orgId: membership.org_id,
   }
+}
+
+/**
+ * Self-healing: create an org + membership for a user who has none.
+ * Uses service role client to bypass RLS (no INSERT policy on organizations for authenticated users).
+ * Handles admin users (business plan) vs normal users (free plan).
+ */
+export async function ensureUserHasOrg(userId: string): Promise<OrgMembership | null> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !serviceKey) {
+    console.error('ensureUserHasOrg: missing SUPABASE_SERVICE_ROLE_KEY')
+    return null
+  }
+
+  const adminClient = createClient(url, serviceKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  })
+
+  // Get user profile for org name generation
+  const { data: profile } = await adminClient
+    .from('user_profiles')
+    .select('full_name, email')
+    .eq('id', userId)
+    .single()
+
+  // Generate org name: "First L.'s Organization" or fallback to email
+  let orgName = 'My Organization'
+  if (profile?.full_name) {
+    const parts = profile.full_name.trim().split(/\s+/)
+    if (parts.length >= 2) {
+      orgName = `${parts[0]} ${parts[parts.length - 1][0]}.\'s Organization`
+    } else {
+      orgName = `${parts[0]}'s Organization`
+    }
+  } else if (profile?.email) {
+    const local = profile.email.split('@')[0]
+    orgName = `${local}'s Organization`
+  }
+
+  // Admin gets business tier; everyone else gets free
+  const admin = isAdmin(userId)
+  const plan = admin ? 'business' : 'free'
+  const maxVehicles = admin ? 999 : 1
+  const maxMembers = admin ? 6 : 1
+
+  // Create the organization
+  const { data: org, error: orgError } = await adminClient
+    .from('organizations')
+    .insert({
+      name: orgName,
+      subscription_plan: plan,
+      max_vehicles: maxVehicles,
+      max_members: maxMembers,
+    })
+    .select('id')
+    .single()
+
+  if (orgError || !org) {
+    console.error('ensureUserHasOrg: failed to create org', orgError)
+    return null
+  }
+
+  // Create the membership
+  const { error: memberError } = await adminClient
+    .from('org_members')
+    .insert({
+      org_id: org.id,
+      user_id: userId,
+      role: 'owner',
+      accepted_at: new Date().toISOString(),
+    })
+
+  if (memberError) {
+    console.error('ensureUserHasOrg: failed to create membership', memberError)
+    // Clean up the orphaned org
+    await adminClient.from('organizations').delete().eq('id', org.id)
+    return null
+  }
+
+  console.log(`ensureUserHasOrg: created org ${org.id} for user ${userId} (${plan})`)
+  return { org_id: org.id, role: 'owner' }
 }
