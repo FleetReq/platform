@@ -2469,23 +2469,6 @@ export default function MileageTracker() {
 
           {/* Right Column - Navigation Tabs + Charts/Forms */}
           <div className="lg:col-span-2 space-y-6 relative pb-24 sm:pb-0">
-              {/* First-Time User Tutorial Speech Bubble - Positioned over content */}
-              {dataLoaded && cars.length === 0 && activeTab !== 'add-car' && (
-                <div className="fixed top-[140px] left-1/2 sm:left-[calc(50%+120px)] transform -translate-x-1/2 z-[100] pointer-events-none hidden sm:block">
-                  <div className="relative inline-block bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-2xl px-6 py-4 shadow-2xl animate-bounce-gentle">
-                    {/* Downward-pointing arrow toward Add Car tab below */}
-                    <div className="absolute -bottom-3 left-12 w-0 h-0 border-l-[12px] border-r-[12px] border-t-[12px] border-transparent border-t-blue-500"></div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-3xl">👋</span>
-                      <div>
-                        <p className="font-semibold text-lg">Welcome to FleetReq!</p>
-                        <p className="text-sm text-blue-50">Get started by clicking &quot;Add Car&quot; below!</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {/* Navigation Tabs - hidden on mobile (bottom tab bar used instead) */}
               <div className="relative hidden sm:flex gap-1 glass-morphism rounded-xl p-1 shadow-elegant">
                 {[
@@ -2554,6 +2537,20 @@ export default function MileageTracker() {
                         <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
                           {tooltipMessage}
                           <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+                        </div>
+                      )}
+                      {shouldHighlight && (
+                        <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 z-[100] pointer-events-none whitespace-nowrap">
+                          <div className="relative inline-block bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-2xl px-6 py-4 shadow-2xl animate-bounce-gentle">
+                            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[12px] border-r-[12px] border-t-[12px] border-transparent border-t-purple-500"></div>
+                            <div className="flex items-center gap-3">
+                              <span className="text-3xl">👋</span>
+                              <div>
+                                <p className="font-semibold text-lg">Welcome to FleetReq!</p>
+                                <p className="text-sm text-blue-50">Get started by clicking &quot;Add Car&quot; below!</p>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       )}
                     </button>
