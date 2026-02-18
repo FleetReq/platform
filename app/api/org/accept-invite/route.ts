@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 import { RATE_LIMITS } from '@/lib/rate-limit'
 import { withAuth, errorResponse } from '@/lib/api-middleware'
 
@@ -10,8 +11,20 @@ export async function POST(request: NextRequest) {
 
     if (!invite_id) return errorResponse('invite_id is required', 400)
 
-    // Find the pending invite matching this user's email
-    const { data: invite, error: inviteError } = await supabase
+    // Use service role to bypass RLS for both SELECT and UPDATE.
+    // Security is enforced below: user is authenticated + email must match.
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    if (!url || !serviceKey) {
+      console.error('accept-invite: missing SUPABASE_SERVICE_ROLE_KEY')
+      return errorResponse('Server configuration error', 503)
+    }
+    const adminClient = createClient(url, serviceKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    })
+
+    // Find the pending invite
+    const { data: invite, error: inviteError } = await adminClient
       .from('org_members')
       .select('id, org_id, role, invited_email')
       .eq('id', invite_id)
@@ -22,17 +35,19 @@ export async function POST(request: NextRequest) {
       return errorResponse('Invitation not found or already accepted', 404)
     }
 
+    // Verify the invite belongs to this authenticated user
     if (invite.invited_email?.toLowerCase() !== user.email?.toLowerCase()) {
       return errorResponse('This invitation was sent to a different email address', 403)
     }
 
-    const { data: accepted, error: acceptError } = await supabase
+    const { data: accepted, error: acceptError } = await adminClient
       .from('org_members')
       .update({
         user_id: user.id,
         accepted_at: new Date().toISOString(),
       })
       .eq('id', invite_id)
+      .is('user_id', null)
       .select()
       .single()
 
