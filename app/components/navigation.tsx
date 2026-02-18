@@ -183,7 +183,62 @@ export function Navigation() {
 
           {/* Center: Desktop Navigation - Absolutely centered */}
           <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2">
-            <div className="flex items-center space-x-1 bg-gray-100 dark:bg-gray-800/50 rounded-full px-2 py-2 backdrop-blur-sm border border-gray-200 dark:border-gray-700/50">
+            <div className="flex items-center bg-gray-100 dark:bg-gray-800/50 rounded-full px-2 py-2 backdrop-blur-sm border border-gray-200 dark:border-gray-700/50">
+              {/* Org Switcher — only when authenticated with 2+ orgs, sits left of Home */}
+              {user && orgs.length > 1 && (
+                <div ref={orgMenuRef} className="relative flex items-center">
+                  <button
+                    onClick={() => setOrgMenuOpen(!orgMenuOpen)}
+                    className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/70 dark:hover:bg-gray-700/70 rounded-full transition-all duration-200 whitespace-nowrap"
+                  >
+                    <div className="w-5 h-5 rounded-md bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                      {(orgs.find(o => o.org_id === activeOrgId) || orgs[0])?.org_name?.charAt(0)?.toUpperCase() || '?'}
+                    </div>
+                    <span className="truncate max-w-[100px]">
+                      {(orgs.find(o => o.org_id === activeOrgId) || orgs[0])?.org_name || 'Switch Org'}
+                    </span>
+                    <svg className={`w-3 h-3 flex-shrink-0 transition-transform ${orgMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {/* Divider */}
+                  <div className="w-px h-4 bg-gray-300 dark:bg-gray-600 mx-1" />
+
+                  {orgMenuOpen && (
+                    <div className="absolute left-0 top-full mt-2 w-64 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg overflow-hidden z-50">
+                      {orgs.map((org) => {
+                        const isActive = org.org_id === (activeOrgId || orgs[0]?.org_id);
+                        return (
+                          <button
+                            key={org.org_id}
+                            onClick={() => handleOrgSwitch(org.org_id)}
+                            className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-gray-700/60 transition-colors ${isActive ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
+                          >
+                            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                              {org.org_name?.charAt(0)?.toUpperCase() || '?'}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{org.org_name}</div>
+                              <div className="flex items-center gap-1.5">
+                                <span className={`inline-block px-1.5 text-[10px] font-medium rounded ${planColors[org.subscription_plan]}`}>
+                                  {planLabels[org.subscription_plan]}
+                                </span>
+                                <span className="text-[10px] text-gray-400 dark:text-gray-500 capitalize">{org.role}</span>
+                              </div>
+                            </div>
+                            {isActive && (
+                              <svg className="w-4 h-4 text-blue-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {navigationItems.map((item) => (
                 <Link
                   key={item.name}
@@ -200,77 +255,8 @@ export function Navigation() {
             </div>
           </div>
 
-          {/* Right: Welcome, Sign Out/Sign In, Theme Toggle */}
+          {/* Right: Theme Toggle + Sign Out/Sign In */}
           <div className="flex items-center flex-shrink-0 space-x-2 z-10">
-            {/* Welcome message - shown when logged in */}
-            {user && (
-              <div className="hidden md:flex items-center px-3 py-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                <span className="text-sm text-gray-900 dark:text-white font-medium">
-                  Welcome, {(() => {
-                    const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
-                    const parts = fullName.split(' ');
-                    if (parts.length > 1) {
-                      return `${parts[0]} ${parts[parts.length - 1].charAt(0)}.`;
-                    }
-                    return fullName;
-                  })()}!
-                </span>
-              </div>
-            )}
-
-            {/* Org Switcher — only when authenticated with 2+ orgs */}
-            {user && orgs.length > 1 && (
-              <div ref={orgMenuRef} className="relative hidden md:block">
-                <button
-                  onClick={() => setOrgMenuOpen(!orgMenuOpen)}
-                  className="flex items-center gap-1.5 px-2.5 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors duration-200"
-                >
-                  <div className="w-5 h-5 rounded-md bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
-                    {(orgs.find(o => o.org_id === activeOrgId) || orgs[0])?.org_name?.charAt(0)?.toUpperCase() || '?'}
-                  </div>
-                  <span className="truncate max-w-[110px]">
-                    {(orgs.find(o => o.org_id === activeOrgId) || orgs[0])?.org_name || 'Switch Org'}
-                  </span>
-                  <svg className={`w-3.5 h-3.5 flex-shrink-0 transition-transform ${orgMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-
-                {orgMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-64 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg overflow-hidden z-50">
-                    {orgs.map((org) => {
-                      const isActive = org.org_id === (activeOrgId || orgs[0]?.org_id);
-                      return (
-                        <button
-                          key={org.org_id}
-                          onClick={() => handleOrgSwitch(org.org_id)}
-                          className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-gray-50 dark:hover:bg-gray-700/60 transition-colors ${isActive ? 'bg-blue-50 dark:bg-blue-900/20' : ''}`}
-                        >
-                          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                            {org.org_name?.charAt(0)?.toUpperCase() || '?'}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{org.org_name}</div>
-                            <div className="flex items-center gap-1.5">
-                              <span className={`inline-block px-1.5 text-[10px] font-medium rounded ${planColors[org.subscription_plan]}`}>
-                                {planLabels[org.subscription_plan]}
-                              </span>
-                              <span className="text-[10px] text-gray-400 dark:text-gray-500 capitalize">{org.role}</span>
-                            </div>
-                          </div>
-                          {isActive && (
-                            <svg className="w-4 h-4 text-blue-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
-
             <ThemeToggle />
 
             {/* Sign In button - shown when logged out */}
