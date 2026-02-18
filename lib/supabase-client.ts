@@ -188,13 +188,13 @@ export const hasFeatureAccess = (userId: string, plan: 'free' | 'personal' | 'bu
 
 export const getUpgradeMessage = (feature: string): string => {
   const messages = {
-    maintenance_tracking: "Upgrade to Personal ($4/month) to unlock maintenance scheduling and tracking",
-    mobile_app: "Upgrade to Personal ($4/month) for mobile app access and detailed notifications",
+    maintenance_tracking: "Upgrade to Family ($4/month) to unlock maintenance scheduling and tracking",
+    mobile_app: "Upgrade to Family ($4/month) for mobile app access and detailed notifications",
     unlimited_history: "All plans include unlimited data history",
     team_collaboration: "Upgrade to Business ($12/vehicle/month) to invite team members and collaborate",
     tax_mileage_tracking: "Upgrade to Business ($12/vehicle/month) for IRS-compliant business mileage tracking",
     professional_reporting: "Upgrade to Business ($12/vehicle/month) for professional reports and tax compliance",
-    receipt_upload: "Upgrade to Personal ($4/month) to upload receipt photos"
+    receipt_upload: "Upgrade to Family ($4/month) to upload receipt photos"
   }
 
   return messages[feature as keyof typeof messages] || "Upgrade to unlock this feature"

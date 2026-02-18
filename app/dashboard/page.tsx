@@ -238,10 +238,10 @@ function MaintenanceStatusGrid({
             {/* Centered upgrade button */}
             <div className="absolute inset-0 flex items-center justify-center">
               <Link
-                href="/pricing#personal"
+                href="/pricing#family"
                 className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-2 rounded-lg font-medium shadow-lg transition-colors"
               >
-                Upgrade to Personal - $4/mo
+                Upgrade to Family - $4/mo
               </Link>
             </div>
           </div>
@@ -1398,6 +1398,7 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free' }: 
   const isGoogleLinked = currentUser?.app_metadata?.providers?.includes('google')
 
   const getPlanDisplayName = (plan: string) => {
+    if (plan === 'personal') return 'Family'
     return plan.charAt(0).toUpperCase() + plan.slice(1)
   }
 
@@ -1602,7 +1603,7 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free' }: 
                         : 'border-gray-300 dark:border-gray-600 hover:border-blue-300'
                     }`}
                   >
-                    <div className="font-semibold text-gray-900 dark:text-white">Personal Tier - $4/month</div>
+                    <div className="font-semibold text-gray-900 dark:text-white">Family Tier - $4/month</div>
                     <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Up to 3 vehicles, full maintenance tracking</div>
                   </button>
                 )}
@@ -1994,27 +1995,35 @@ export default function MileageTracker() {
     setUserIsOwner(isOwner(newUser.id))
 
     try {
-      // Load subscription plan + max vehicles
+      // Fetch org details first (triggers self-healing if membership is missing)
+      // This is the authoritative source for subscription plan and max vehicles
       setLoadProgress(25)
-      const [plan, maxVeh] = await Promise.all([
-        getUserSubscriptionPlan(newUser.id),
-        getUserMaxVehicles(newUser.id),
-      ])
-      setUserSubscriptionPlan(plan)
-      setMaxVehicles(maxVeh)
-
-      // Fetch org role and name
-      setLoadProgress(45)
       try {
         const orgRes = await fetch('/api/org')
         if (orgRes.ok) {
           const orgData = await orgRes.json()
           setUserOrgRole(orgData.role || 'owner')
           setUserOrgName(orgData.org?.name || null)
+          if (orgData.org?.subscription_plan) {
+            setUserSubscriptionPlan(orgData.org.subscription_plan)
+          }
+          if (orgData.org?.max_vehicles) {
+            setMaxVehicles(orgData.org.max_vehicles)
+          }
         }
       } catch {
-        // Org not found is OK for legacy users
+        // Org not found — fall back to client-side queries
       }
+
+      // Client-side fallback (for admin bypass or if /api/org didn't set values)
+      setLoadProgress(45)
+      const [plan, maxVeh] = await Promise.all([
+        getUserSubscriptionPlan(newUser.id),
+        getUserMaxVehicles(newUser.id),
+      ])
+      // Only use client-side values if server didn't provide them
+      setUserSubscriptionPlan(prev => prev === 'free' ? plan : prev)
+      setMaxVehicles(prev => prev === 1 ? maxVeh : prev)
 
       // Load all dashboard data
       setLoadProgress(65)
@@ -2383,7 +2392,7 @@ export default function MileageTracker() {
                       )}
                     </div>
 
-                    {/* Show metrics for Personal/Business, locked overlay for Free */}
+                    {/* Show metrics for Family/Business, locked overlay for Free */}
                     {userSubscriptionPlan !== 'free' ? (
                       <div className="space-y-2">
                         <div className="grid grid-cols-3 gap-2">
@@ -2432,10 +2441,10 @@ export default function MileageTracker() {
                         </div>
                         <div className="absolute inset-0 flex items-center justify-center">
                           <Link
-                            href="/pricing#personal"
+                            href="/pricing#family"
                             className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-2 rounded-lg font-medium shadow-lg transition-colors"
                           >
-                            Upgrade to Personal - $4/mo
+                            Upgrade to Family - $4/mo
                           </Link>
                         </div>
                       </div>

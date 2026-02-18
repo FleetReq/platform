@@ -159,7 +159,7 @@ export default function RootLayout({
                     '@type': 'UnitPriceSpecification',
                     price: '4',
                     priceCurrency: 'USD',
-                    name: 'Personal'
+                    name: 'Family'
                   },
                   {
                     '@type': 'UnitPriceSpecification',

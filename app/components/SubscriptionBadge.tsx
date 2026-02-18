@@ -19,7 +19,7 @@ export function SubscriptionBadge({ tier, subscriptionStartDate, className = '' 
       case 'personal':
         return {
           container: 'bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500 text-white animate-gradient-shift',
-          label: 'Personal'
+          label: 'Family'
         };
       case 'business':
         return {
