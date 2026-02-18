@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { NextRequest } from 'next/server'
 
@@ -66,6 +67,21 @@ export const createServerSupabaseClient = async () => {
       },
     },
   })
+}
+
+// Service role client for bypassing RLS (use only in API routes after verifying user access)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _adminClient: SupabaseClient<any, any, any> | null = null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function createAdminClient(): SupabaseClient<any, any, any> | null {
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!supabaseUrl || !serviceKey) return null
+  if (!_adminClient) {
+    _adminClient = createClient(supabaseUrl, serviceKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    })
+  }
+  return _adminClient
 }
 
 // Re-export auth helpers from centralized constants
