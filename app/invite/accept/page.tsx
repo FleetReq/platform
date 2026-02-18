@@ -28,13 +28,10 @@ function AcceptInviteContent() {
           return
         }
 
-        // Race getUser() against a timeout — if no auth cookies exist the network
-        // call can hang indefinitely waiting for Supabase auth to respond
-        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000))
-        const user = await Promise.race([
-          supabase.auth.getUser().then(r => r.data.user ?? null).catch(() => null),
-          timeoutPromise,
-        ])
+        // getSession() reads from cookies locally — no network call, no timeout risk.
+        // Security validation happens server-side in /api/org/accept-invite via withAuth.
+        const { data: { session } } = await supabase.auth.getSession()
+        const user = session?.user ?? null
 
         if (!user) {
           setStatus('login-required')

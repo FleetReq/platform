@@ -1995,13 +1995,12 @@ export default function MileageTracker() {
     setUserIsOwner(isOwner(newUser.id))
 
     try {
-      // Run org fetch and data load in parallel — don't let one block the other
+      // Fetch org first so ensureUserHasOrg runs once before loadData's 4 parallel calls.
+      // This prevents a race condition where all 5 API routes call ensureUserHasOrg
+      // simultaneously, each creating a separate orphan org for the user.
       setLoadProgress(25)
-      const [orgRes] = await Promise.all([
-        fetch('/api/org').catch(() => null),
-        loadData(),
-      ])
-      setLoadProgress(80)
+      const orgRes = await fetch('/api/org').catch(() => null)
+      setLoadProgress(50)
 
       // Apply org data (plan, role, name) from server response
       if (orgRes?.ok) {
@@ -2020,6 +2019,8 @@ export default function MileageTracker() {
         setMaxVehicles(999)
       }
 
+      // Now load all data — org is guaranteed to exist (or user is admin)
+      await loadData()
       setLoadProgress(100)
     } catch (error) {
       console.error('Error during auth initialization:', error)
