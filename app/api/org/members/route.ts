@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 import { RATE_LIMITS } from '@/lib/rate-limit'
 import { sanitizeString } from '@/lib/validation'
 import { withOrg, errorResponse } from '@/lib/api-middleware'
@@ -28,12 +29,37 @@ export async function GET(request: NextRequest) {
     // Merge using a Map for O(1) lookups
     const profileMap = new Map((profiles || []).map(p => [p.id, p]))
 
+    // Query 3: For members whose user_profiles.email is null, look up auth.users via admin client
+    const missingEmailIds = userIds.filter(id => {
+      const p = profileMap.get(id)
+      return !p?.email && id !== user.id
+    })
+    const authEmailMap = new Map<string, string>()
+    if (missingEmailIds.length > 0) {
+      const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+      if (url && serviceKey) {
+        const adminClient = createClient(url, serviceKey, {
+          auth: { autoRefreshToken: false, persistSession: false },
+        })
+        const { data: authUsers } = await adminClient.auth.admin.listUsers()
+        if (authUsers) {
+          for (const u of authUsers.users) {
+            if (missingEmailIds.includes(u.id) && u.email) {
+              authEmailMap.set(u.id, u.email)
+            }
+          }
+        }
+      }
+    }
+
     // Enrich with profile data + fallbacks for current user
     const enrichedMembers = (members || []).map((member) => {
       const profile = member.user_id ? profileMap.get(member.user_id) : null
       const isCurrentUser = member.user_id === user.id
 
       const email = profile?.email
+        || (member.user_id ? authEmailMap.get(member.user_id) : null)
         || member.invited_email
         || (isCurrentUser ? user.email : null)
       const fullName = profile?.full_name
