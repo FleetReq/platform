@@ -114,7 +114,7 @@ CREATE POLICY "org_members_can_view_members" ON org_members
 -- Allow users to see their own pending invites (matched by email)
 CREATE POLICY "users_can_view_own_invites" ON org_members
   FOR SELECT USING (
-    invited_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+    invited_email = auth.email()
     AND user_id IS NULL
   );
 
@@ -127,7 +127,7 @@ CREATE POLICY "org_owners_can_update_members" ON org_members
 -- Allow invited users to accept their own invite
 CREATE POLICY "users_can_accept_own_invite" ON org_members
   FOR UPDATE USING (
-    invited_email = (SELECT email FROM auth.users WHERE id = auth.uid())
+    invited_email = auth.email()
     AND user_id IS NULL
   );
 
