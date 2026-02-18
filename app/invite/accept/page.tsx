@@ -28,11 +28,15 @@ function AcceptInviteContent() {
           return
         }
 
-        // getUser() makes a network call but is more reliable than getSession()
-        // for SSR/cookie-based auth where getSession() can silently fail
-        const { data: { user }, error: userError } = await supabase.auth.getUser()
+        // Race getUser() against a timeout — if no auth cookies exist the network
+        // call can hang indefinitely waiting for Supabase auth to respond
+        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000))
+        const user = await Promise.race([
+          supabase.auth.getUser().then(r => r.data.user ?? null).catch(() => null),
+          timeoutPromise,
+        ])
 
-        if (userError || !user) {
+        if (!user) {
           setStatus('login-required')
           setMessage('Please sign in or create an account to accept this invitation.')
           return
