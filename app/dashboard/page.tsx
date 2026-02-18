@@ -2069,13 +2069,13 @@ export default function MileageTracker() {
       }
     }
 
-    // Safety timeout: if loading takes >15s, force-resolve to prevent infinite spinner
+    // Safety timeout: if loading takes >25s, force-resolve to prevent infinite spinner
     const safetyTimer = setTimeout(() => {
       if (isMounted) {
         console.warn('Dashboard loading safety timeout reached')
         setLoading(false)
       }
-    }, 15000)
+    }, 25000)
 
     initializeAuth()
 
