@@ -1950,7 +1950,7 @@ export default function MileageTracker() {
   const [fillUps, setFillUps] = useState<FillUp[]>([])
   const [maintenanceRecords, setMaintenanceRecords] = useState<MaintenanceRecord[]>([])
   const [loading, setLoading] = useState(true)
-  const [loadProgress, setLoadProgress] = useState(0) // 0-100 real progress tracking
+  const [loadProgress, setLoadProgress] = useState(5) // start visible, fake progress fills the rest
   const [userIsOwner, setUserIsOwner] = useState(false)
   const [userOrgRole, setUserOrgRole] = useState<'owner' | 'editor' | 'viewer'>('owner')
   const [userOrgName, setUserOrgName] = useState<string | null>(null)
@@ -1997,9 +1997,9 @@ export default function MileageTracker() {
       // Fetch org first so ensureUserHasOrg runs once before loadData's 4 parallel calls.
       // This prevents a race condition where all 5 API routes call ensureUserHasOrg
       // simultaneously, each creating a separate orphan org for the user.
-      setLoadProgress(25)
+      setLoadProgress(prev => Math.max(prev, 25))
       const orgRes = await fetch('/api/org').catch(() => null)
-      setLoadProgress(50)
+      setLoadProgress(prev => Math.max(prev, 50))
 
       // Apply org data (plan, role, name) from server response
       if (orgRes?.ok) {
@@ -2035,6 +2035,21 @@ export default function MileageTracker() {
     if (!loading) {
       setDataLoaded(true)
     }
+  }, [loading])
+
+  // Fake progress: slowly creep the bar forward while waiting for cold starts.
+  // Caps at 85 so real milestones (25, 50, 100) always feel like jumps forward.
+  useEffect(() => {
+    if (!loading) return
+    const id = setInterval(() => {
+      setLoadProgress(prev => {
+        if (prev >= 85) return prev
+        // Move faster when lower, slower as it approaches the cap
+        const step = Math.max((85 - prev) * 0.04, 0.4)
+        return Math.min(prev + step, 85)
+      })
+    }, 150)
+    return () => clearInterval(id)
   }, [loading])
 
   // Initialize auth state and clean up URL parameters
