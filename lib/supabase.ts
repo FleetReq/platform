@@ -1,5 +1,4 @@
 import { createServerClient } from '@supabase/ssr'
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { NextRequest } from 'next/server'
 
@@ -7,22 +6,23 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
 // Server-side Supabase client for Route Handlers (needs request object)
+// Uses getAll/setAll interface required by @supabase/ssr v0.7+
 export const createRouteHandlerClient = async (request: NextRequest) => {
   if (!supabaseUrl || !supabaseAnonKey) return null
 
   return createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
-      get(name: string) {
-        return request.cookies.get(name)?.value
+      getAll() {
+        return request.cookies.getAll()
       },
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      set(_name: string, _value: string, _options: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
-        // Can't set cookies in route handlers response directly
-        // This will be handled by the response headers
-      },
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      remove(_name: string, _options: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
-        // Can't remove cookies in route handlers response directly
+      setAll(cookiesToSet) {
+        try {
+          cookiesToSet.forEach(({ name, value }) => {
+            request.cookies.set(name, value)
+          })
+        } catch {
+          // setAll may be called from Server Component — safe to ignore
+        }
       },
     },
   })
@@ -36,52 +36,20 @@ export const createServerSupabaseClient = async () => {
 
   return createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
-      get(name: string) {
-        return cookieStore.get(name)?.value
+      getAll() {
+        return cookieStore.getAll()
       },
-      set(name: string, value: string, options: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+      setAll(cookiesToSet) {
         try {
-          cookieStore.set(name, value, {
-            ...options,
-            sameSite: 'lax',
-            secure: true,
-            httpOnly: false,
-            path: '/'
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options)
           })
         } catch {
-          // Handle cookie setting errors
-        }
-      },
-      remove(name: string, options: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
-        try {
-          cookieStore.set(name, '', {
-            ...options,
-            maxAge: 0,
-            sameSite: 'lax',
-            secure: true,
-            path: '/'
-          })
-        } catch {
-          // Handle cookie removal errors
+          // setAll may be called from Server Component — safe to ignore
         }
       },
     },
   })
-}
-
-// Service role client for bypassing RLS (use only in API routes after verifying user access)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let _adminClient: SupabaseClient<any, any, any> | null = null
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createAdminClient(): SupabaseClient<any, any, any> | null {
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!supabaseUrl || !serviceKey) return null
-  if (!_adminClient) {
-    _adminClient = createClient(supabaseUrl, serviceKey, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    })
-  }
-  return _adminClient
 }
 
 // Re-export auth helpers from centralized constants

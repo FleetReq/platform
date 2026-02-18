@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { RATE_LIMITS } from '@/lib/rate-limit'
 import { withOrg, errorResponse } from '@/lib/api-middleware'
 import { isOrgOwner } from '@/lib/org'
-import { createAdminClient } from '@/lib/supabase'
 
 // PATCH /api/org/members/[id] — Change a member's role (owner only)
 export async function PATCH(
@@ -14,9 +13,6 @@ export async function PATCH(
       return errorResponse('Only org owners can change roles', 403)
     }
 
-    const adminClient = createAdminClient()
-    if (!adminClient) return errorResponse('Service configuration error', 503)
-
     const { id: memberId } = await params
     const body = await request.json()
     const { role } = body
@@ -25,7 +21,7 @@ export async function PATCH(
       return errorResponse('Role must be "editor" or "viewer"', 400)
     }
 
-    const { data: targetMember } = await adminClient
+    const { data: targetMember } = await supabase
       .from('org_members')
       .select('user_id')
       .eq('id', memberId)
@@ -37,7 +33,7 @@ export async function PATCH(
       return errorResponse('Cannot change your own role', 400)
     }
 
-    const { data: updated, error } = await adminClient
+    const { data: updated, error } = await supabase
       .from('org_members')
       .update({ role })
       .eq('id', memberId)
