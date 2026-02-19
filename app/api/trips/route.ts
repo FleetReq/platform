@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase'
 import { getUserOrg, verifyCarAccess } from '@/lib/org'
+import { sanitizeString } from '@/lib/validation'
 
 export const dynamic = 'force-dynamic'
 
@@ -145,12 +146,12 @@ export async function POST(request: NextRequest) {
         user_id: user.id,
         car_id,
         date,
-        start_location,
-        end_location,
+        start_location: sanitizeString(start_location, { maxLength: 200 }),
+        end_location: sanitizeString(end_location, { maxLength: 200 }),
         purpose,
-        business_purpose: purpose === 'business' ? business_purpose : null,
+        business_purpose: purpose === 'business' ? sanitizeString(business_purpose, { maxLength: 500 }) : null,
         miles,
-        notes
+        notes: sanitizeString(notes, { maxLength: 1000 }),
       })
       .select()
       .single()

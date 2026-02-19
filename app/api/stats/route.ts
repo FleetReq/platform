@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase'
-import { OWNER_USER_ID } from '@/lib/constants'
+import { createRouteHandlerClient } from '@/lib/supabase'
 import { getUserOrg } from '@/lib/org'
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient()
+    const supabase = await createRouteHandlerClient(request)
     if (!supabase) {
       return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
     }
@@ -27,22 +26,23 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({ stats })
     } else {
-      // User-specific stats - check authentication
+      // User-specific stats - require authentication
       const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-      // Determine which user's data to show
-      const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
-      let orgFilter: { column: string; value: string } | null = null
-      if (user && authError === null) {
-        const membership = await getUserOrg(supabase, user.id, activeOrgId)
-        if (membership) {
-          orgFilter = { column: 'org_id', value: membership.org_id }
-        }
+      if (authError || !user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }
 
-      // Fallback for unauthenticated or no-org users: show owner's data for demo
+      const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
+      const membership = await getUserOrg(supabase, user.id, activeOrgId)
+
+      let orgFilter: { column: string; value: string } | null = null
+      if (membership) {
+        orgFilter = { column: 'org_id', value: membership.org_id }
+      }
+
       if (!orgFilter) {
-        orgFilter = { column: 'user_id', value: OWNER_USER_ID }
+        return NextResponse.json({ error: 'No organization found' }, { status: 403 })
       }
 
       // Get cars

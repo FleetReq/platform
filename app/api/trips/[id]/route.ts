@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase'
 import { getUserOrg, isOrgOwner, canEdit } from '@/lib/org'
+import { sanitizeString } from '@/lib/validation'
 
 export const dynamic = 'force-dynamic'
 
@@ -113,8 +114,8 @@ export async function PATCH(
     }
 
     if (date !== undefined) updateData.date = date
-    if (start_location !== undefined) updateData.start_location = start_location
-    if (end_location !== undefined) updateData.end_location = end_location
+    if (start_location !== undefined) updateData.start_location = sanitizeString(start_location, { maxLength: 200 })
+    if (end_location !== undefined) updateData.end_location = sanitizeString(end_location, { maxLength: 200 })
     if (miles !== undefined) {
       // Validate miles
       if (typeof miles !== 'number' || miles <= 0) {
@@ -125,7 +126,7 @@ export async function PATCH(
       }
       updateData.miles = miles
     }
-    if (notes !== undefined) updateData.notes = notes
+    if (notes !== undefined) updateData.notes = sanitizeString(notes, { maxLength: 1000 })
 
     // Handle purpose and business_purpose together
     if (purpose !== undefined) {
@@ -148,10 +149,10 @@ export async function PATCH(
       }
 
       // Set business_purpose
-      updateData.business_purpose = purpose === 'business' ? business_purpose : null
+      updateData.business_purpose = purpose === 'business' ? sanitizeString(business_purpose, { maxLength: 500 }) : null
     } else if (business_purpose !== undefined) {
       // If only business_purpose is provided, update it
-      updateData.business_purpose = business_purpose
+      updateData.business_purpose = sanitizeString(business_purpose, { maxLength: 500 })
     }
 
     // Update the trip (RLS ensures org-scoped access)

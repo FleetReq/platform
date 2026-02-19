@@ -33,8 +33,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid tier' }, { status: 400 })
     }
 
-    // Get user's org
-    const membership = await getUserOrg(supabase, user.id)
+    // Get user's org (respect active org cookie for multi-org users)
+    const activeOrgId = request.cookies.get('fleetreq-active-org')?.value ?? null
+    const membership = await getUserOrg(supabase, user.id, activeOrgId)
     if (!membership) {
       return NextResponse.json({ error: 'No organization found' }, { status: 404 })
     }

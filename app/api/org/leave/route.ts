@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { RATE_LIMITS } from '@/lib/rate-limit'
 import { withAuth, errorResponse } from '@/lib/api-middleware'
 import { getUserOrgs } from '@/lib/org'
+import { validateUUID } from '@/lib/validation'
 
 // POST /api/org/leave — Leave an organization (cannot leave your only/owner org)
 export async function POST(request: NextRequest) {
@@ -10,12 +11,14 @@ export async function POST(request: NextRequest) {
     const { org_id } = body
 
     if (!org_id) return errorResponse('org_id is required', 400)
+    const validatedOrgId = validateUUID(org_id)
+    if (!validatedOrgId) return errorResponse('Invalid org_id format', 400)
 
     // Get the membership row to leave
     const { data: membership } = await supabase
       .from('org_members')
       .select('id, role')
-      .eq('org_id', org_id)
+      .eq('org_id', validatedOrgId)
       .eq('user_id', user.id)
       .not('accepted_at', 'is', null)
       .single()
@@ -45,7 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Return the next org to switch to (first remaining org that isn't the one left)
-    const remaining = allOrgs.filter(o => o.org_id !== org_id)
+    const remaining = allOrgs.filter(o => o.org_id !== validatedOrgId)
     const nextOrgId = remaining[0]?.org_id ?? null
 
     const response = NextResponse.json({ message: 'Left organization successfully', next_org_id: nextOrgId })

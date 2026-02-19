@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createRouteHandlerClient } from '@/lib/supabase'
 import { getUserOrg, getOrgDetails } from '@/lib/org'
+import { sanitizeString } from '@/lib/validation'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-10-29.clover',
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     // Get cancellation reason from request body
     const body = await request.json()
-    const { reason } = body
+    const reason = sanitizeString(body.reason, { maxLength: 500 })
 
     // Get user's org and subscription info (respect active org cookie)
     const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null

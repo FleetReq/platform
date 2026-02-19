@@ -3,6 +3,7 @@ import { createRouteHandlerClient } from '@/lib/supabase'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import { getUserOrg, getOrgDetails, getOrgSubscriptionPlan } from '@/lib/org'
+import { validateUUID } from '@/lib/validation'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-10-29.clover',
@@ -96,10 +97,14 @@ export async function POST(request: NextRequest) {
 
       // Validate and delete selected vehicles
       for (const vehicleId of vehiclesToDelete) {
+        const validatedVehicleId = validateUUID(vehicleId)
+        if (!validatedVehicleId) {
+          return NextResponse.json({ error: `Invalid vehicle ID format: ${vehicleId}` }, { status: 400 })
+        }
         const { error: deleteError } = await supabase
           .from('cars')
           .delete()
-          .eq('id', vehicleId)
+          .eq('id', validatedVehicleId)
           .eq('org_id', membership.org_id)
 
         if (deleteError) {
