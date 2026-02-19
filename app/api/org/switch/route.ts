@@ -13,12 +13,13 @@ export async function POST(request: NextRequest) {
     const validatedOrgId = validateUUID(org_id)
     if (!validatedOrgId) return errorResponse('Invalid org_id format', 400)
 
-    // Verify the user has a membership in the target org
+    // Verify the user has an accepted membership in the target org
     const { data: membership, error: membershipError } = await supabase
       .from('org_members')
       .select('org_id, role')
       .eq('user_id', user.id)
       .eq('org_id', validatedOrgId)
+      .not('accepted_at', 'is', null)
       .limit(1)
       .single()
 

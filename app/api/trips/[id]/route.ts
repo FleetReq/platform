@@ -27,15 +27,31 @@ export async function DELETE(
 
     // Only org owners can delete trips
     const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
+    const membership = await getUserOrg(supabase, user.id, activeOrgId)
+    if (!membership) {
+      return NextResponse.json({ error: 'No organization found' }, { status: 403 })
+    }
     if (!(await isOrgOwner(supabase, user.id, activeOrgId))) {
       return NextResponse.json({ error: 'Only org owners can delete trips' }, { status: 403 })
     }
 
-    // Delete the trip (RLS ensures org-scoped access)
+    // Verify the trip belongs to the user's org via the car join
+    const { data: trip, error: fetchError } = await supabase
+      .from('trips')
+      .select('id, car_id, cars!inner(org_id)')
+      .eq('id', tripId)
+      .eq('cars.org_id', membership.org_id)
+      .single()
+
+    if (fetchError || !trip) {
+      return NextResponse.json({ error: 'Trip not found' }, { status: 404 })
+    }
+
     const { error } = await supabase
       .from('trips')
       .delete()
       .eq('id', tripId)
+      .eq('car_id', (trip as any).car_id) // eslint-disable-line @typescript-eslint/no-explicit-any
 
     if (error) {
       console.error('Error deleting trip:', error)

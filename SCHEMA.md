@@ -1,19 +1,22 @@
 # FleetReq Database Schema
 
 > **CRITICAL**: Always verify column names against this schema before writing to the database.
-> Last Updated: 2026-02-19
+> Last Updated: 2026-02-19 (added trips, maintenance_notifications_sent, public_stats)
 
 ---
 
 ## Table of Contents
 1. [auth.users](#authusers) (Supabase managed)
 2. [user_profiles](#user_profiles)
-3. [organizations](#organizations) (NEW)
-4. [org_members](#org_members) (NEW)
+3. [organizations](#organizations)
+4. [org_members](#org_members)
 5. [cars](#cars)
 6. [fill_ups](#fill_ups)
 7. [maintenance_records](#maintenance_records)
-8. [heartbeat](#heartbeat) (system table)
+8. [trips](#trips)
+9. [maintenance_notifications_sent](#maintenance_notifications_sent) (system table)
+10. [public_stats](#public_stats) (view)
+11. [heartbeat](#heartbeat) (system table)
 
 ---
 
@@ -397,6 +400,99 @@ CREATE TABLE public.maintenance_records (
 - `oil_type` - Only relevant for oil_change type
 - `source_record_id` - Links auto-created records to their source
 - `receipt_urls` - Array of Supabase Storage paths for receipt photos (max 5). Personal+ only.
+
+---
+
+## trips
+
+**Vehicle trip/mileage log for IRS tax tracking**
+
+```sql
+CREATE TABLE public.trips (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  car_id uuid NOT NULL,
+  date date NOT NULL DEFAULT CURRENT_DATE,
+  start_location text NULL,
+  end_location text NOT NULL,
+  purpose text NOT NULL,
+  business_purpose text NULL,
+  miles numeric NOT NULL,
+  notes text NULL,
+  created_at timestamp with time zone NULL DEFAULT now(),
+  updated_at timestamp with time zone NULL DEFAULT now(),
+
+  CONSTRAINT trips_pkey PRIMARY KEY (id),
+  CONSTRAINT trips_car_id_fkey FOREIGN KEY (car_id) REFERENCES cars (id) ON DELETE CASCADE,
+  CONSTRAINT trips_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users (id) ON DELETE CASCADE,
+  CONSTRAINT trips_purpose_check CHECK (purpose IN ('business', 'personal')),
+  CONSTRAINT trips_miles_check CHECK (miles > 0)
+)
+```
+
+**RLS Policies (org-based via cars join):**
+- Org members can view trips for cars in their org
+- Editors/owners can create/update trips
+- Owners only can delete trips
+
+**Key Columns:**
+- `user_id` - Creator (audit trail, not access control)
+- `car_id` - FK to cars table (org access controlled through cars.org_id)
+- `purpose` - 'business' | 'personal'
+- `business_purpose` - Required when purpose='business' (IRS compliance)
+- `miles` - Distance for this trip (used for tax deduction calculation)
+
+---
+
+## maintenance_notifications_sent
+
+**System table tracking which maintenance notifications have been sent**
+
+```sql
+CREATE TABLE public.maintenance_notifications_sent (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  car_id uuid NOT NULL,
+  maintenance_type text NOT NULL,
+  status_notified text NOT NULL,
+  notified_at timestamp with time zone NOT NULL DEFAULT now(),
+
+  CONSTRAINT maintenance_notifications_sent_pkey PRIMARY KEY (id),
+  CONSTRAINT maintenance_notifications_sent_unique
+    UNIQUE (user_id, car_id, maintenance_type, status_notified)
+)
+```
+
+**Indexes:**
+- UNIQUE on `(user_id, car_id, maintenance_type, status_notified)` — prevents duplicate notifications
+
+**RLS Policies:**
+- Service role only — managed exclusively by the maintenance notifications cron job
+
+**Key Columns:**
+- `user_id` - The user who received the notification
+- `car_id` - The vehicle the notification was about
+- `maintenance_type` - Type of maintenance (matches maintenance_records.type)
+- `status_notified` - The status when notified ('overdue' | 'warning')
+- `notified_at` - When the notification was sent (used for frequency throttling)
+
+---
+
+## public_stats
+
+**View exposing aggregate platform statistics (no auth required)**
+
+```sql
+-- This is a view (or materialized view) — exact definition managed in Supabase
+-- Columns used by app/api/stats/route.ts:
+SELECT * FROM public_stats
+```
+
+**RLS Policies:**
+- Public read access (no authentication required) — used for marketing/landing page stats
+
+**Columns (as used in code):**
+- Aggregate counts/metrics visible on the landing page (total users, vehicles, fill-ups, etc.)
 
 ---
 

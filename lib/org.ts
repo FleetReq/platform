@@ -73,6 +73,7 @@ export async function getUserOrg(
       .select('org_id, role')
       .eq('user_id', userId)
       .eq('org_id', activeOrgId)
+      .not('accepted_at', 'is', null)
       .limit(1)
       .single()
 
@@ -87,6 +88,7 @@ export async function getUserOrg(
     .from('org_members')
     .select('org_id, role')
     .eq('user_id', userId)
+    .not('accepted_at', 'is', null)
     .limit(1)
     .single()
 

@@ -89,6 +89,7 @@ export async function DELETE(
       .from('cars')
       .delete()
       .eq('id', carId)
+      .eq('org_id', membership.org_id)
 
     if (deleteError) {
       console.error('Error deleting car:', deleteError)

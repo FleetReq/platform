@@ -100,7 +100,7 @@ export async function DELETE(
 
     const { data: maintenance, error: fetchError } = await supabase
       .from('maintenance_records')
-      .select('id, receipt_urls, cars!inner(org_id)')
+      .select('id, car_id, receipt_urls, cars!inner(org_id)')
       .eq('id', maintenanceId)
       .eq('cars.org_id', membership.org_id)
       .single()
@@ -111,6 +111,7 @@ export async function DELETE(
       .from('maintenance_records')
       .delete()
       .eq('id', maintenanceId)
+      .eq('car_id', (maintenance as any).car_id) // eslint-disable-line @typescript-eslint/no-explicit-any
 
     if (deleteError) {
       console.error('Error deleting maintenance record:', deleteError)

@@ -100,7 +100,7 @@ export async function DELETE(
 
     const { data: fillUp, error: fetchError } = await supabase
       .from('fill_ups')
-      .select('id, receipt_urls, cars!inner(org_id)')
+      .select('id, car_id, receipt_urls, cars!inner(org_id)')
       .eq('id', fillUpId)
       .eq('cars.org_id', membership.org_id)
       .single()
@@ -111,6 +111,7 @@ export async function DELETE(
       .from('fill_ups')
       .delete()
       .eq('id', fillUpId)
+      .eq('car_id', (fillUp as any).car_id) // eslint-disable-line @typescript-eslint/no-explicit-any
 
     if (deleteError) {
       console.error('Error deleting fill-up:', deleteError)

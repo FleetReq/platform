@@ -52,8 +52,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Viewers cannot import fill-ups' }, { status: 403 })
     }
 
-    // Validate and prepare fill-up records for bulk insert
-    const fillUpRecords = []
+    // Validate all fill-up records first
+    const validated: { date: string; gallons: number; odometer_reading: number; price_per_gallon: number }[] = []
     for (let i = 0; i < fill_ups.length; i++) {
       const fillUp = fill_ups[i]
       const validatedDate = validateDate(fillUp.date)
@@ -68,18 +68,48 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      fillUpRecords.push({
-        car_id: validatedCarId,
+      validated.push({
         date: validatedDate,
-        odometer_reading: validatedOdometer,
         gallons: validatedGallons,
+        odometer_reading: validatedOdometer,
         price_per_gallon: validatedPricePerGallon,
-        total_cost: parseFloat((validatedGallons * validatedPricePerGallon).toFixed(2)),
-        gas_station: 'Costco',
-        location: 'Aloha, Oregon - Jenkins Rd',
       })
     }
 
+    // Sort by odometer_reading ascending to compute miles_driven
+    const sorted = [...validated].sort((a, b) => a.odometer_reading - b.odometer_reading)
+
+    // Fetch the most recent existing fill-up with odometer < the minimum in this batch
+    const minOdometer = sorted[0].odometer_reading
+    const { data: prevFillUp } = await supabase
+      .from('fill_ups')
+      .select('odometer_reading')
+      .eq('car_id', validatedCarId)
+      .lt('odometer_reading', minOdometer)
+      .order('odometer_reading', { ascending: false })
+      .limit(1)
+      .single()
+
+    let prevOdometer: number | null = prevFillUp?.odometer_reading ?? null
+
+    // Build records with computed miles_driven
+    const fillUpRecords = sorted.map(fillUp => {
+      const milesDrivern = prevOdometer !== null
+        ? fillUp.odometer_reading - prevOdometer
+        : null
+      prevOdometer = fillUp.odometer_reading
+
+      return {
+        car_id: validatedCarId,
+        date: fillUp.date,
+        odometer_reading: fillUp.odometer_reading,
+        gallons: fillUp.gallons,
+        price_per_gallon: fillUp.price_per_gallon,
+        total_cost: parseFloat((fillUp.gallons * fillUp.price_per_gallon).toFixed(2)),
+        miles_driven: milesDrivern !== null && milesDrivern > 0 ? milesDrivern : null,
+        created_by_user_id: user.id,
+      }
+    })
 
     // Bulk insert all fill-ups
     const { data: insertedFillUps, error: insertError } = await supabase
