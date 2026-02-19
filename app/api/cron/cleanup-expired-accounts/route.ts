@@ -127,12 +127,21 @@ export async function POST(request: NextRequest) {
           throw new Error(`Failed to delete organization: ${orgError.message}`)
         }
 
-        // Delete user profiles and auth users for all members
+        // Delete auth accounts only for members who have no other org memberships.
+        // A user who belongs to multiple orgs should keep their account — they just
+        // lose membership in this org (already deleted above).
         for (const userId of memberUserIds) {
-          await supabase.from('user_profiles').delete().eq('id', userId)
-          const { error: authError } = await supabase.auth.admin.deleteUser(userId)
-          if (authError) {
-            console.error(`Failed to delete auth user ${userId}:`, authError)
+          const { count } = await supabase
+            .from('org_members')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', userId)
+          if ((count ?? 0) === 0) {
+            // No remaining org memberships — safe to delete the auth account
+            await supabase.from('user_profiles').delete().eq('id', userId)
+            const { error: authError } = await supabase.auth.admin.deleteUser(userId)
+            if (authError) {
+              console.error(`Failed to delete auth user ${userId}:`, authError)
+            }
           }
         }
 

@@ -1873,69 +1873,77 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free' }: 
         </div>
       )}
 
-      {/* Subscription Management */}
-      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Subscription Management</h3>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-            <div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Current Plan</div>
-              <div className={`text-xl font-bold ${getPlanColor(subscriptionPlan)}`}>
-                {getPlanDisplayName(subscriptionPlan)}
+      {/* Subscription Management — owner of this org only */}
+      {userOrgRole === 'owner' && (
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Subscription Management</h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+              <div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Current Plan</div>
+                <div className={`text-xl font-bold ${getPlanColor(subscriptionPlan)}`}>
+                  {getPlanDisplayName(subscriptionPlan)}
+                </div>
               </div>
+              {subscriptionPlan !== 'free' && subscriptionEndDate && (
+                <div className="text-right">
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    Renews on
+                  </div>
+                  <div className="text-sm font-medium text-gray-900 dark:text-white">
+                    {new Date(subscriptionEndDate).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
-            {subscriptionPlan !== 'free' && subscriptionEndDate && (
-              <div className="text-right">
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Renews on
-                </div>
-                <div className="text-sm font-medium text-gray-900 dark:text-white">
-                  {new Date(subscriptionEndDate).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </div>
+
+            {subscriptionPlan !== 'free' && (
+              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                <button
+                  onClick={() => setShowDowngradeModal(true)}
+                  className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  Downgrade Subscription
+                </button>
+              </div>
+            )}
+
+            {subscriptionPlan === 'free' && (
+              <div className="text-center py-4">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                  Upgrade to unlock more vehicles, full maintenance tracking, and professional features
+                </p>
+                <a
+                  href="/pricing"
+                  className="inline-block px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  View Pricing Plans
+                </a>
               </div>
             )}
           </div>
-
-          {subscriptionPlan !== 'free' && (
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex gap-3">
-                {userOrgRole === 'owner' && (
-                  <button
-                    onClick={() => setShowDowngradeModal(true)}
-                    className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg text-sm font-medium transition-colors"
-                  >
-                    Downgrade Subscription
-                  </button>
-                )}
-                <button
-                  onClick={() => setShowCancelModal(true)}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
-                >
-                  Delete Account
-                </button>
-              </div>
-            </div>
-          )}
-
-          {subscriptionPlan === 'free' && (
-            <div className="text-center py-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                Upgrade to unlock more vehicles, full maintenance tracking, and professional features
-              </p>
-              <a
-                href="/pricing"
-                className="inline-block px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-              >
-                View Pricing Plans
-              </a>
-            </div>
-          )}
         </div>
-      </div>
+      )}
+
+      {/* Delete Account — always visible, clearly scoped to the user's own account */}
+      {userOrgRole === 'owner' && (
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Delete My Account</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            Permanently delete your account and all data for this organization. This cannot be undone.
+          </p>
+          <button
+            onClick={() => setShowCancelModal(true)}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            Delete Account
+          </button>
+        </div>
+      )}
     </div>
   )
 }

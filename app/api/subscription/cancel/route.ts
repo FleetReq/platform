@@ -34,6 +34,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No organization found' }, { status: 404 })
     }
 
+    // Only the org owner can schedule account deletion
+    if (membership.role !== 'owner') {
+      return NextResponse.json({ error: 'Only the organization owner can delete the account' }, { status: 403 })
+    }
+
     const org = await getOrgDetails(supabase, membership.org_id)
     if (!org) {
       return NextResponse.json({ error: 'Organization not found' }, { status: 404 })
