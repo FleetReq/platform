@@ -3,6 +3,37 @@ import { createClient } from '@supabase/supabase-js'
 import { RATE_LIMITS } from '@/lib/rate-limit'
 import { withAuth, errorResponse } from '@/lib/api-middleware'
 
+// GET /api/org/accept-invite?id= — Preview invite details without accepting
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url)
+  const invite_id = searchParams.get('id')
+  if (!invite_id) return errorResponse('id is required', 400)
+
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !serviceKey) return errorResponse('Server configuration error', 503)
+
+  const adminClient = createClient(url, serviceKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  })
+
+  const { data: invite } = await adminClient
+    .from('org_members')
+    .select('id, role, invited_email, organizations(name)')
+    .eq('id', invite_id)
+    .is('user_id', null)
+    .single()
+
+  if (!invite) return errorResponse('Invitation not found or already accepted', 404)
+
+  const org = invite.organizations as { name: string } | null
+  return NextResponse.json({
+    org_name: org?.name || 'Unknown Organization',
+    role: invite.role,
+    invited_email: invite.invited_email,
+  })
+}
+
 // POST /api/org/accept-invite — Accept a pending invitation (non-destructive: keeps existing memberships)
 export async function POST(request: NextRequest) {
   return withAuth(request, async ({ supabase, user }) => {
