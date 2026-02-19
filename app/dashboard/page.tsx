@@ -2086,56 +2086,58 @@ export default function MileageTracker() {
     let isMounted = true
     let loadCompleted = false
 
-    const initializeAuth = async () => {
-      // Clean up URL parameters from auth callbacks
-      const searchParams = new URLSearchParams(window.location.search)
-      const errorParam = searchParams.get('error')
-      const authSuccess = searchParams.get('auth')
-
-      if (errorParam === 'auth_callback_error' || authSuccess === 'success') {
-        const newUrl = new URL(window.location.href)
-        newUrl.searchParams.delete('error')
-        newUrl.searchParams.delete('auth')
-        window.history.replaceState({}, '', newUrl.pathname + newUrl.search)
-      }
-
-      if (supabase) {
-        try {
-          const { data: { session } } = await supabase.auth.getSession()
-          if (isMounted) {
-            await handleAuthChange(session?.user ?? null)
-            loadCompleted = true
-          }
-        } catch (error) {
-          console.error('Error getting session:', error)
-          if (isMounted) router.replace('/login')
-        }
-      } else {
-        router.replace('/login')
-      }
+    // Clean up URL parameters from auth callbacks
+    const searchParams = new URLSearchParams(window.location.search)
+    const errorParam = searchParams.get('error')
+    const authSuccess = searchParams.get('auth')
+    if (errorParam === 'auth_callback_error' || authSuccess === 'success') {
+      const newUrl = new URL(window.location.href)
+      newUrl.searchParams.delete('error')
+      newUrl.searchParams.delete('auth')
+      window.history.replaceState({}, '', newUrl.pathname + newUrl.search)
     }
 
-    // Safety timeout: fires if handleAuthChange never completed (cold start, network failure, etc.)
-    // If the user was never set (getSession hung or returned null without navigating away),
-    // redirect to login instead of leaving the skeleton up forever.
+    if (!supabase) {
+      router.replace('/login')
+      return
+    }
+
+    // Safety timeout: fires if INITIAL_SESSION never arrived (shouldn't happen, but belt-and-suspenders).
     const safetyTimer = setTimeout(() => {
       if (isMounted && !loadCompleted) {
         console.warn('Dashboard loading safety timeout reached')
         if (userInitializedRef.current) {
-          // Auth completed but data load is slow — show dashboard with whatever loaded
           setLoading(false)
         } else {
-          // Auth itself never completed — redirect to login
           router.replace('/login')
         }
       }
     }, 10000)
 
-    initializeAuth()
+    // Use onAuthStateChange + INITIAL_SESSION instead of getSession().
+    // INITIAL_SESSION fires immediately from the local cookie cache — no network
+    // call required. getSession() can hang 10+ seconds when the access token is
+    // expired and the Supabase refresh endpoint is slow, causing the safety timer
+    // to incorrectly redirect an authenticated user to the login page.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!isMounted || loadCompleted) return
+        if (event === 'INITIAL_SESSION') {
+          try {
+            await handleAuthChange(session?.user ?? null)
+            loadCompleted = true
+          } catch (error) {
+            console.error('Error during auth initialization:', error)
+            if (isMounted) router.replace('/login')
+          }
+        }
+      }
+    )
 
     return () => {
       isMounted = false
       clearTimeout(safetyTimer)
+      subscription.unsubscribe()
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
