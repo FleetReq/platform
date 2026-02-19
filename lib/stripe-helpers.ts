@@ -41,11 +41,12 @@ export async function updateStripeSubscriptionQuantity(
       }
     )
 
-    // Get user's org and Stripe customer ID
+    // Get user's org and Stripe customer ID (accepted memberships only)
     const { data: membership } = await supabase
       .from('org_members')
       .select('org_id')
       .eq('user_id', userId)
+      .not('accepted_at', 'is', null)
       .limit(1)
       .single()
 
@@ -156,6 +157,7 @@ export async function getStripeVehicleCount(userId: string): Promise<number> {
       .from('org_members')
       .select('org_id')
       .eq('user_id', userId)
+      .not('accepted_at', 'is', null)
       .limit(1)
       .single()
 

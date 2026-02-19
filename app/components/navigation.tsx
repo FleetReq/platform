@@ -58,17 +58,6 @@ export function Navigation() {
         const tier = await getUserSubscriptionPlan(currentUser.id);
         setSubscriptionTier(tier);
 
-        // Fetch subscription start date from user_profiles
-        const { data: profile } = await supabase
-          .from('user_profiles')
-          .select('subscription_start_date')
-          .eq('id', currentUser.id)
-          .maybeSingle();
-
-        if (profile?.subscription_start_date) {
-          setSubscriptionStartDate(profile.subscription_start_date);
-        }
-
         // Fetch orgs for switcher
         try {
           const res = await fetch('/api/org?all=true');
@@ -91,19 +80,6 @@ export function Navigation() {
       if (session?.user) {
         const tier = await getUserSubscriptionPlan(session.user.id);
         setSubscriptionTier(tier);
-
-        // Fetch subscription start date
-        if (supabase) {
-          const { data: profile } = await supabase
-            .from('user_profiles')
-            .select('subscription_start_date')
-            .eq('id', session.user.id)
-            .maybeSingle();
-
-          if (profile?.subscription_start_date) {
-            setSubscriptionStartDate(profile.subscription_start_date);
-          }
-        }
 
         // Re-fetch orgs on every sign-in so the switcher is up-to-date
         // (fetchUserData only runs on mount, so it misses sign-ins that happen

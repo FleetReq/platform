@@ -91,6 +91,23 @@ export async function PATCH(
       return NextResponse.json({ error: 'Viewers cannot edit trips' }, { status: 403 })
     }
 
+    // Get membership and verify the trip belongs to the user's org
+    const membership = await getUserOrg(supabase, user.id, activeOrgId)
+    if (!membership) {
+      return NextResponse.json({ error: 'No organization found' }, { status: 403 })
+    }
+
+    const { data: existingTrip } = await supabase
+      .from('trips')
+      .select('id, cars!inner(org_id)')
+      .eq('id', tripId)
+      .eq('cars.org_id', membership.org_id)
+      .single()
+
+    if (!existingTrip) {
+      return NextResponse.json({ error: 'Trip not found' }, { status: 404 })
+    }
+
     const body = await request.json()
 
     const {
@@ -109,10 +126,6 @@ export async function PATCH(
 
     if (car_id !== undefined) {
       // Verify the car belongs to the user's org
-      const membership = await getUserOrg(supabase, user.id, activeOrgId)
-      if (!membership) {
-        return NextResponse.json({ error: 'No organization found' }, { status: 403 })
-      }
       const { data: car, error: carError } = await supabase
         .from('cars')
         .select('id')
