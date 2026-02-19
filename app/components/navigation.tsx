@@ -206,8 +206,8 @@ export function Navigation() {
             </Link>
             {user && <SubscriptionBadge tier={subscriptionTier} subscriptionStartDate={subscriptionStartDate} />}
 
-            {/* Org Switcher — only when authenticated with 2+ orgs */}
-            {user && orgs.length > 1 && (
+            {/* Org Switcher — only when authenticated with 2+ orgs and not signing out */}
+            {user && orgs.length > 1 && !signingOut && (
               <div ref={orgMenuRef} className="relative">
                 <button
                   onClick={() => setOrgMenuOpen(!orgMenuOpen)}
@@ -369,7 +369,7 @@ export function Navigation() {
             </div>
 
             {/* Mobile org switcher */}
-            {user && orgs.length > 1 && (
+            {user && orgs.length > 1 && !signingOut && (
               <div className="pb-4 border-b border-gray-100 dark:border-gray-800 mb-4">
                 <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 px-1">Switch Organization</p>
                 <div className="space-y-1">
