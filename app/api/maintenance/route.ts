@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { RATE_LIMITS } from '@/lib/rate-limit'
 import { sanitizeString, validateInteger, validateFloat, validateUUID, validateDate, validateMaintenanceType } from '@/lib/validation'
 import { withOrg, errorResponse } from '@/lib/api-middleware'
-import { verifyCarAccess } from '@/lib/org'
+import { verifyCarAccess, getOrgSubscriptionPlan } from '@/lib/org'
 
 export async function GET(request: NextRequest) {
   return withOrg(request, async ({ supabase, membership }) => {
@@ -66,6 +66,17 @@ export async function POST(request: NextRequest) {
     const carAccess = await verifyCarAccess(supabase, user.id, car_id, activeOrgId)
     if (!carAccess.hasAccess) return errorResponse('Car not found', 404)
     if (!carAccess.canEdit) return errorResponse('Viewers cannot add maintenance records', 403)
+
+    const userPlan = await getOrgSubscriptionPlan(supabase, user.id, activeOrgId)
+
+    if (userPlan === 'free') {
+      if (next_service_date || next_service_mileage) {
+        return errorResponse('Next service scheduling requires Family plan or higher', 403)
+      }
+      if (receipt_urls && receipt_urls.length > 0) {
+        return errorResponse('Receipt uploads require Family plan or higher', 403)
+      }
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const insertData: Record<string, any> = {

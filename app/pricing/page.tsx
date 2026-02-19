@@ -82,7 +82,7 @@ const allFeatures = [
   { name: "MPG Analysis", free: true, personal: true, business: true },
   { name: "Basic Analytics", free: true, personal: true, business: true },
   { name: "Data History", free: true, personal: true, business: true },
-  { name: "Maintenance Tracking", free: false, personal: true, business: true },
+  { name: "Maintenance Tracking", free: true, personal: true, business: true },
   { name: "Maintenance Alerts", free: false, personal: true, business: true },
   { name: "Mobile App Access", free: false, personal: true, business: true },
   { name: "Export Capabilities", free: false, personal: true, business: true },

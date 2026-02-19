@@ -185,7 +185,7 @@ export const hasFeatureAccess = (userId: string, plan: 'free' | 'personal' | 'bu
   if (_isAdmin(userId)) return true
 
   const features = {
-    free: ['fuel_tracking', 'basic_analytics', 'unlimited_history'],
+    free: ['fuel_tracking', 'basic_analytics', 'unlimited_history', 'maintenance_tracking'],
     personal: ['fuel_tracking', 'basic_analytics', 'maintenance_tracking', 'mobile_app', 'unlimited_history', 'receipt_upload'],
     business: ['fuel_tracking', 'basic_analytics', 'maintenance_tracking', 'mobile_app', 'unlimited_history', 'receipt_upload', 'team_collaboration', 'tax_mileage_tracking', 'professional_reporting', 'advanced_mobile_features']
   }

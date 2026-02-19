@@ -2479,15 +2479,15 @@ export default function DashboardClient({
                         <path d="M9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4zm2.5 2.1h-15V5h15v14.1zm0-16.1h-15c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
                       </svg>
                       <h4 className="text-xs font-semibold text-gray-900 dark:text-white">Tax Tracking 2025</h4>
-                      {userSubscriptionPlan === 'free' && (
+                      {userSubscriptionPlan !== 'business' && (
                         <span className="ml-auto text-[10px] px-2 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded">
                           🔒 LOCKED
                         </span>
                       )}
                     </div>
 
-                    {/* Show metrics for Family/Business, locked overlay for Free */}
-                    {userSubscriptionPlan !== 'free' ? (
+                    {/* Show metrics for Business only, locked overlay for Free/Family */}
+                    {userSubscriptionPlan === 'business' ? (
                       <div className="space-y-2">
                         <div className="grid grid-cols-3 gap-2">
                           <div className="text-center p-2 bg-gray-200 dark:bg-gray-700/20 border border-gray-400 dark:border-gray-600/30 rounded min-w-0">
@@ -2833,7 +2833,7 @@ export default function DashboardClient({
                   <div className="card-professional p-6">
                     <UserSettings cars={cars} onCarDeleted={() => loadData()} initialSubscriptionPlan={userSubscriptionPlan} orgRole={userOrgRole} />
                   </div>
-                  <OrgManagement />
+                  {userSubscriptionPlan !== 'free' && <OrgManagement />}
                   {/* Leave Organization — shown only for non-owner memberships */}
                   {allOrgs.filter(o => o.role !== 'owner').length > 0 && (
                     <div className="card-professional p-6">

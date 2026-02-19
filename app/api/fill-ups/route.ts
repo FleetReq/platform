@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { RATE_LIMITS } from '@/lib/rate-limit'
 import { sanitizeString, validateInteger, validateFloat, validateUUID, validateDate, validateFuelType } from '@/lib/validation'
 import { withOrg, errorResponse } from '@/lib/api-middleware'
-import { verifyCarAccess } from '@/lib/org'
+import { verifyCarAccess, getOrgSubscriptionPlan } from '@/lib/org'
 
 export async function GET(request: NextRequest) {
   return withOrg(request, async ({ supabase, membership }) => {
@@ -69,6 +69,11 @@ export async function POST(request: NextRequest) {
     }
     if (!carAccess.canEdit) {
       return errorResponse('Viewers cannot add fill-ups', 403)
+    }
+
+    const userPlan = await getOrgSubscriptionPlan(supabase, user.id, activeOrgId)
+    if (userPlan === 'free' && receipt_urls && receipt_urls.length > 0) {
+      return errorResponse('Receipt uploads require Family plan or higher', 403)
     }
 
     const total_cost = price_per_gallon && gallons ?

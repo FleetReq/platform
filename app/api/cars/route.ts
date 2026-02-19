@@ -46,6 +46,16 @@ export async function POST(request: NextRequest) {
       return errorResponse('Make, model, and year are required', 400)
     }
 
+    // Enforce vehicle limit for the org
+    const [{ count: currentCount }, { data: orgData }] = await Promise.all([
+      supabase.from('cars').select('*', { count: 'exact', head: true }).eq('org_id', membership.org_id),
+      supabase.from('organizations').select('max_vehicles').eq('id', membership.org_id).single()
+    ])
+    const maxVehicles = orgData?.max_vehicles ?? 1
+    if ((currentCount ?? 0) >= maxVehicles) {
+      return errorResponse(`Your plan allows up to ${maxVehicles} vehicle${maxVehicles === 1 ? '' : 's'}. Upgrade to add more.`, 403)
+    }
+
     const { data: car, error } = await supabase
       .from('cars')
       .insert({

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase'
-import { getUserOrg } from '@/lib/org'
+import { getUserOrg, getOrgSubscriptionPlan } from '@/lib/org'
 
 export async function GET(request: NextRequest) {
   try {
@@ -44,6 +44,8 @@ export async function GET(request: NextRequest) {
       if (!orgFilter) {
         return NextResponse.json({ error: 'No organization found' }, { status: 403 })
       }
+
+      const userPlan = await getOrgSubscriptionPlan(supabase, user.id, activeOrgId)
 
       // Get cars
       const { data: cars, error: carsError } = await supabase
@@ -194,9 +196,9 @@ export async function GET(request: NextRequest) {
         // New metrics for Budget Focus panel
         total_miles: Math.round(totalMiles),
         cost_per_mile: Math.round(costPerMile * 100) / 100,
-        // Business miles for tax tracking
-        business_miles: Math.round(businessMiles),
-        business_percentage: Math.round(businessPercentage * 10) / 10, // Round to 1 decimal (e.g., 45.3%)
+        // Business miles for tax tracking (Business plan only)
+        business_miles: userPlan === 'business' ? Math.round(businessMiles) : 0,
+        business_percentage: userPlan === 'business' ? Math.round(businessPercentage * 10) / 10 : 0,
         // YTD (Year-to-Date) metrics
         ytd_fuel_cost: Math.round(ytdFuelCost * 100) / 100,
         ytd_maintenance_cost: Math.round(ytdMaintenanceCost * 100) / 100,

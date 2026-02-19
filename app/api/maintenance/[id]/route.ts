@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { RATE_LIMITS } from '@/lib/rate-limit'
 import { sanitizeString, validateInteger, validateFloat, validateUUID, validateDate, validateMaintenanceType } from '@/lib/validation'
 import { withOrg, errorResponse } from '@/lib/api-middleware'
-import { canEdit, isOrgOwner } from '@/lib/org'
+import { canEdit, isOrgOwner, getOrgSubscriptionPlan } from '@/lib/org'
 
 export async function PATCH(
   request: NextRequest,
@@ -27,6 +27,17 @@ export async function PATCH(
     if (fetchError || !existing) return errorResponse('Maintenance record not found', 404)
 
     const body = await request.json()
+
+    const userPlan = await getOrgSubscriptionPlan(supabase, user.id, activeOrgId)
+
+    if (userPlan === 'free') {
+      if (body.next_service_date !== undefined || body.next_service_mileage !== undefined) {
+        return errorResponse('Next service scheduling requires Family plan or higher', 403)
+      }
+      if (body.receipt_urls !== undefined) {
+        return errorResponse('Receipt uploads require Family plan or higher', 403)
+      }
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: Record<string, any> = {}
