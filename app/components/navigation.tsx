@@ -158,6 +158,16 @@ export function Navigation() {
     window.location.href = '/'
   };
 
+  // Listen for org name changes dispatched by OrgManagement after a successful save
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { id, name } = (e as CustomEvent<{ id: string; name: string }>).detail
+      setOrgs(prev => prev.map(o => o.org_id === id ? { ...o, org_name: name } : o))
+    }
+    window.addEventListener('fleetreq:org-updated', handler)
+    return () => window.removeEventListener('fleetreq:org-updated', handler)
+  }, [])
+
   // Close org menu on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -169,20 +179,14 @@ export function Navigation() {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const handleOrgSwitch = async (orgId: string) => {
+  const handleOrgSwitch = (orgId: string) => {
     if (orgId === activeOrgId) { setOrgMenuOpen(false); return; }
-    try {
-      const res = await fetch('/api/org/switch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ org_id: orgId }),
-      });
-      if (res.ok) {
-        document.cookie = `fleetreq-active-org=${orgId}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
-        window.location.reload();
-      }
-    } catch { /* ignore */ }
-    setOrgMenuOpen(false);
+    setOrgMenuOpen(false)
+    // Set cookie immediately client-side — the dropdown only shows orgs the user
+    // already belongs to (validated when the list was fetched), so no API round-
+    // trip is needed. The reload sends the new cookie with every server request.
+    document.cookie = `fleetreq-active-org=${orgId}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`
+    window.location.reload()
   };
 
   // Helper function to check if current page matches navigation item

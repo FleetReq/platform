@@ -147,8 +147,12 @@ export default function OrgManagement() {
 
       if (res.ok) {
         setEditingName(false)
+        setOrg(prev => prev ? { ...prev, name: orgName.trim() } : prev)
         setMessage({ type: 'success', text: 'Organization name updated' })
-        loadOrg()
+        // Notify the nav to update the org name in the switcher without a reload
+        window.dispatchEvent(new CustomEvent('fleetreq:org-updated', {
+          detail: { id: org?.id, name: orgName.trim() }
+        }))
       } else {
         const data = await res.json()
         setMessage({ type: 'error', text: data.error || 'Failed to update name' })
