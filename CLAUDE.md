@@ -239,7 +239,7 @@ Prefixes: ✨ FEATURE · 🐛 FIX · ♻️ REFACTOR · 🎨 DESIGN · 📝 DOCS
 | **Vehicles** | 1 | 3 | Unlimited (4+ recommended) |
 | **Members** | 1 | 3 | 6 |
 | **Fuel tracking** | Full | Full | Full |
-| **Maintenance** | View-only (🟢/🔴) | Full + 🟡 warnings | Full + custom intervals |
+| **Maintenance** | Full (🟢/🔴, log records) | + 🟡 warnings + email alerts | + custom intervals |
 | **Custom schedules** | ❌ | Next service date/mileage | Custom intervals |
 | **Data export** | ❌ | CSV + PDF | CSV + PDF + JSON |
 | **Receipt storage** | ❌ | 50MB | Unlimited |
