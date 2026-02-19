@@ -132,10 +132,15 @@ export function Navigation() {
   const handleSignOut = async () => {
     if (signingOut) return
     setSigningOut(true)
-    // Await signOut so cookies are cleared before the page reloads.
-    // Without this, the page reloads with the stale session still in cookies.
     if (supabase) {
-      await supabase.auth.signOut().catch(console.error)
+      // Race signOut against a 3s timeout. The local session cookies are cleared
+      // synchronously inside signOut(), so navigating after the timeout is safe —
+      // the server-side token invalidation may still be in-flight, but the user's
+      // local session is gone and they can't use the old token from the browser.
+      await Promise.race([
+        supabase.auth.signOut().catch(console.error),
+        new Promise(resolve => setTimeout(resolve, 3000)),
+      ])
     }
     window.location.href = '/'
   };
