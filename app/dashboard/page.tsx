@@ -1944,6 +1944,9 @@ export default function MileageTracker() {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
   const [user, setUser] = useState<User | null>(null)
+  // Tracks whether handleAuthChange ran and set a valid user — used by the safety
+  // timer to decide between showing an empty dashboard vs redirecting to login.
+  const userInitializedRef = useRef(false)
   const [cars, setCars] = useState<Car[]>([])
   const [dataLoaded, setDataLoaded] = useState(false) // Track if initial data load is complete
   const [stats, setStats] = useState<UserStats | null>(null)
@@ -2002,6 +2005,7 @@ export default function MileageTracker() {
     setLoadProgress(10)
     setDataLoaded(false)
     setUser(newUser)
+    userInitializedRef.current = true
     setUserIsOwner(isOwner(newUser.id))
 
     try {
@@ -2100,11 +2104,19 @@ export default function MileageTracker() {
       }
     }
 
-    // Safety timeout: only fires if handleAuthChange never completed (network failure, etc.)
+    // Safety timeout: fires if handleAuthChange never completed (cold start, network failure, etc.)
+    // If the user was never set (getSession hung or returned null without navigating away),
+    // redirect to login instead of leaving the skeleton up forever.
     const safetyTimer = setTimeout(() => {
       if (isMounted && !loadCompleted) {
         console.warn('Dashboard loading safety timeout reached')
-        setLoading(false)
+        if (userInitializedRef.current) {
+          // Auth completed but data load is slow — show dashboard with whatever loaded
+          setLoading(false)
+        } else {
+          // Auth itself never completed — redirect to login
+          router.replace('/login')
+        }
       }
     }, 10000)
 
