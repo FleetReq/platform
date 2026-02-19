@@ -113,17 +113,17 @@ export function Navigation() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleSignOut = () => {
-    // Fire signOut without awaiting — don't let a slow network block navigation
+  const [signingOut, setSigningOut] = useState(false)
+
+  const handleSignOut = async () => {
+    if (signingOut) return
+    setSigningOut(true)
+    // Await signOut so cookies are cleared before the page reloads.
+    // Without this, the page reloads with the stale session still in cookies.
     if (supabase) {
-      supabase.auth.signOut().catch(console.error);
+      await supabase.auth.signOut().catch(console.error)
     }
-    // Force a full reload — href='/' is a no-op when already on the home page
-    if (window.location.pathname === '/') {
-      window.location.reload()
-    } else {
-      window.location.href = '/'
-    }
+    window.location.href = '/'
   };
 
   // Close org menu on outside click
@@ -288,12 +288,13 @@ export function Navigation() {
             {user && (
               <button
                 onClick={handleSignOut}
-                className="hidden md:inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors duration-200"
+                disabled={signingOut}
+                className="hidden md:inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors duration-200 disabled:opacity-50"
               >
                 <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
-                Sign Out
+                {signingOut ? 'Signing out...' : 'Sign Out'}
               </button>
             )}
 
@@ -345,11 +346,9 @@ export function Navigation() {
             <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
               {user ? (
                 <button
-                  onClick={() => {
-                    handleSignOut();
-                    setIsOpen(false);
-                  }}
-                  className="w-full inline-flex items-center justify-center px-6 py-3 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white text-base font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300"
+                  onClick={() => { handleSignOut(); setIsOpen(false); }}
+                  disabled={signingOut}
+                  className="w-full inline-flex items-center justify-center px-6 py-3 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white text-base font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300 disabled:opacity-50"
                 >
                   <svg className="mr-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
