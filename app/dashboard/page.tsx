@@ -117,8 +117,9 @@ function MaintenanceStatusGrid({
   const selectedCar = cars.find(car => car.id === selectedCarId)
   const carMaintenanceRecords = maintenanceRecords.filter(record => record.car_id === selectedCarId)
 
-  // Check if user has access to maintenance tracking
-  const hasMaintenanceAccess = userId ? hasFeatureAccess(userId, subscriptionPlan, 'maintenance_tracking') : false
+  // All tiers can view maintenance status (🟢/🔴). Adding/editing records is
+  // gated on the add-maintenance form, not here.
+  const hasMaintenanceAccess = true
 
   const [showUntracked, setShowUntracked] = useState(false)
 
