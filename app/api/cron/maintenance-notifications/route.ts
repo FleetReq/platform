@@ -35,6 +35,8 @@ interface UserDigest {
   alerts: AlertItem[]
 }
 
+type NotificationFrequency = 'daily' | 'weekly' | 'monthly'
+
 // ---------------------------------------------------------------------------
 // Auth check
 // ---------------------------------------------------------------------------
@@ -46,7 +48,22 @@ function isAuthorized(request: NextRequest): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// Core logic — compute digests with transition-based dedup
+// Frequency helpers
+// ---------------------------------------------------------------------------
+
+const FREQUENCY_DAYS: Record<NotificationFrequency, number> = {
+  daily: 1,
+  weekly: 7,
+  monthly: 30,
+}
+
+function isReadyToResend(notifiedAt: string, frequency: NotificationFrequency): boolean {
+  const daysSince = (Date.now() - new Date(notifiedAt).getTime()) / (1000 * 60 * 60 * 24)
+  return daysSince >= FREQUENCY_DAYS[frequency]
+}
+
+// ---------------------------------------------------------------------------
+// Core logic — compute digests with transition-based dedup + repeating overdue
 // ---------------------------------------------------------------------------
 
 async function computeDigests(): Promise<{ digests: UserDigest[]; skipped: number; errors: string[] }> {
@@ -54,10 +71,10 @@ async function computeDigests(): Promise<{ digests: UserDigest[]; skipped: numbe
   const errors: string[] = []
   let skipped = 0
 
-  // 1. Fetch users who have notifications enabled
+  // 1. Fetch users who have notifications enabled (+ notification prefs)
   const { data: profiles, error: profilesError } = await supabase
     .from('user_profiles')
-    .select('id, email, subscription_plan')
+    .select('id, email, notification_frequency, notification_warning_enabled')
     .eq('email_notifications_enabled', true)
 
   if (profilesError) {
@@ -84,13 +101,17 @@ async function computeDigests(): Promise<{ digests: UserDigest[]; skipped: numbe
       email = authUser.user.email
     }
 
+    const notificationFrequency: NotificationFrequency =
+      (profile.notification_frequency as NotificationFrequency) || 'weekly'
+    const notificationWarningEnabled: boolean = profile.notification_warning_enabled ?? true
+
     // 2. Get user's org and then cars
     const { data: membershipData } = await supabase
       .from('org_members')
       .select('org_id')
       .eq('user_id', profile.id)
       .limit(1)
-      .single()
+      .maybeSingle()
 
     if (!membershipData) {
       skipped++
@@ -101,7 +122,7 @@ async function computeDigests(): Promise<{ digests: UserDigest[]; skipped: numbe
       .from('organizations')
       .select('subscription_plan')
       .eq('id', membershipData.org_id)
-      .single()
+      .maybeSingle()
 
     // Use org subscription plan
     const plan = (orgData?.subscription_plan || 'free') as 'free' | 'personal' | 'business'
@@ -131,21 +152,26 @@ async function computeDigests(): Promise<{ digests: UserDigest[]; skipped: numbe
 
     const maintenanceRecords = records || []
 
-    // 4. Get already-sent notifications for this user
+    // 4. Get already-sent notifications for this user (include notified_at for frequency checks)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: sentNotifications } = await (supabase as any)
       .from('maintenance_notifications_sent')
-      .select('car_id, maintenance_type, status_notified')
+      .select('car_id, maintenance_type, status_notified, notified_at')
       .eq('user_id', profile.id)
 
-    const alreadySent = new Set(
+    // Map: "carId:type:status" -> { notified_at }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sentMap = new Map<string, { notified_at: string }>(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (sentNotifications || []).map((n: any) => `${n.car_id}:${n.maintenance_type}:${n.status_notified}`)
+      (sentNotifications || []).map((n: any) => [
+        `${n.car_id}:${n.maintenance_type}:${n.status_notified}`,
+        { notified_at: n.notified_at },
+      ])
     )
 
-    // 5. Compute statuses, only include NEW transitions
-    //    Also clean up tracking for items that returned to "good"/"unknown"
-    //    so future transitions trigger fresh alerts.
+    // 5. Compute statuses and build alerts
+    //    - Free:  one-time overdue only (never warning, never repeating)
+    //    - Paid:  warning (once per transition, if warning enabled) + overdue (repeating based on frequency)
     const alerts: AlertItem[] = []
     const trackingToDelete: { carId: string; typeKey: string }[] = []
 
@@ -161,22 +187,31 @@ async function computeDigests(): Promise<{ digests: UserDigest[]; skipped: numbe
           : 'unknown' as MaintenanceStatus
         const detail = latest ? getMaintenanceDetail(typeKey, latest, mileage, plan) : ''
 
-        const hasWarningTracking = alreadySent.has(`${car.id}:${typeKey}:warning`)
-        const hasOverdueTracking = alreadySent.has(`${car.id}:${typeKey}:overdue`)
+        const overdueKey = `${car.id}:${typeKey}:overdue`
+        const warningKey = `${car.id}:${typeKey}:warning`
+        const existingOverdue = sentMap.get(overdueKey)
+        const existingWarning = sentMap.get(warningKey)
 
         if (status === 'good' || status === 'unknown') {
-          // Item was serviced or record deleted — clear tracking
-          if (hasWarningTracking || hasOverdueTracking) {
+          // Item was serviced — clear tracking so future transitions send fresh alerts
+          if (existingOverdue || existingWarning) {
             trackingToDelete.push({ carId: car.id, typeKey })
           }
         } else if (status === 'overdue') {
-          if (!alreadySent.has(`${car.id}:${typeKey}:overdue`)) {
+          if (!existingOverdue) {
+            // First time hitting overdue — always alert
+            alerts.push({ carId: car.id, carLabel, maintenanceType: typeKey, label: MAINTENANCE_TYPE_LABELS[typeKey] || typeKey, detail, status })
+          } else if (plan !== 'free' && isReadyToResend(existingOverdue.notified_at, notificationFrequency)) {
+            // Paid user: re-send overdue reminder based on their frequency setting
             alerts.push({ carId: car.id, carLabel, maintenanceType: typeKey, label: MAINTENANCE_TYPE_LABELS[typeKey] || typeKey, detail, status })
           }
-        } else if (status === 'warning' && plan !== 'free') {
-          if (!alreadySent.has(`${car.id}:${typeKey}:warning`)) {
+          // Free users with existing overdue: skip (one-time only)
+        } else if (status === 'warning' && plan !== 'free' && notificationWarningEnabled) {
+          if (!existingWarning) {
+            // First time hitting warning — alert (paid users with warnings enabled only)
             alerts.push({ carId: car.id, carLabel, maintenanceType: typeKey, label: MAINTENANCE_TYPE_LABELS[typeKey] || typeKey, detail, status })
           }
+          // Warning emails are one-time per transition (no repeating)
         }
       }
     }
@@ -268,7 +303,7 @@ function buildEmailHtml(digest: UserDigest): string {
     ? `<tr><td style="padding:16px;background:#eff6ff;border-radius:0 0 8px 8px;">
         <p style="margin:0;font-size:13px;color:#1e40af;">
           <strong>Get early warnings</strong> before items become overdue.
-          <a href="https://fleetreq.vercel.app/pricing" style="color:#2563eb;text-decoration:underline;">Upgrade to Personal →</a>
+          <a href="https://fleetreq.vercel.app/pricing" style="color:#2563eb;text-decoration:underline;">Upgrade to Family →</a>
         </p>
       </td></tr>`
     : ''
@@ -347,7 +382,7 @@ async function sendEmail(to: string, subject: string, html: string, unsubscribeU
 }
 
 // ---------------------------------------------------------------------------
-// Record sent notifications so we don't re-send for the same transition
+// Record sent notifications (upsert updates notified_at for repeating alerts)
 // ---------------------------------------------------------------------------
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -414,7 +449,7 @@ export async function GET(request: NextRequest) {
 }
 
 // ---------------------------------------------------------------------------
-// POST — Send emails for NEW status transitions only
+// POST — Send emails
 // ---------------------------------------------------------------------------
 
 export async function POST(request: NextRequest) {
@@ -446,7 +481,7 @@ export async function POST(request: NextRequest) {
     if (result.success) {
       sent++
 
-      // Record which alerts were sent so they won't trigger again
+      // Record which alerts were sent (upsert updates notified_at for repeating overdue)
       const recordErrors = await recordSentAlerts(supabase, digest.userId, digest.alerts)
       errors.push(...recordErrors)
 

@@ -1162,7 +1162,10 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
 
   // Notification preferences
   const [emailNotificationsEnabled, setEmailNotificationsEnabled] = useState(true)
+  const [notificationFrequency, setNotificationFrequency] = useState<'daily' | 'weekly' | 'monthly'>('weekly')
+  const [notificationWarningEnabled, setNotificationWarningEnabled] = useState(true)
   const [isTogglingNotifications, setIsTogglingNotifications] = useState(false)
+  const [isSavingNotificationSettings, setIsSavingNotificationSettings] = useState(false)
 
   // Downgrade modal state
   const [showDowngradeModal, setShowDowngradeModal] = useState(false)
@@ -1195,12 +1198,14 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
         // Get notification preferences from user_profiles
         const { data: profile } = await supabase
           .from('user_profiles')
-          .select('email_notifications_enabled')
+          .select('email_notifications_enabled, notification_frequency, notification_warning_enabled')
           .eq('id', user.id)
-          .single()
+          .maybeSingle()
 
         if (profile) {
           setEmailNotificationsEnabled(profile.email_notifications_enabled ?? true)
+          setNotificationFrequency((profile.notification_frequency as 'daily' | 'weekly' | 'monthly') || 'weekly')
+          setNotificationWarningEnabled(profile.notification_warning_enabled ?? true)
         }
       }
     }
@@ -1446,43 +1451,130 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
       {/* Notifications */}
       <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Notifications</h3>
-        <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-          <div>
-            <div className="font-medium text-gray-900 dark:text-white">Weekly maintenance reminders</div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              Get email alerts when maintenance items are overdue{subscriptionPlan !== 'free' ? ' or approaching due' : ''}
+        <div className="space-y-3">
+          {/* Master on/off toggle — all users */}
+          <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+            <div>
+              <div className="font-medium text-gray-900 dark:text-white">Maintenance reminders</div>
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                Email alerts when maintenance items are overdue{subscriptionPlan !== 'free' ? ' or approaching due' : ''}
+              </div>
             </div>
-          </div>
-          <button
-            onClick={async () => {
-              if (!supabase || !currentUser) return
-              setIsTogglingNotifications(true)
-              const newValue = !emailNotificationsEnabled
-              const { error } = await supabase
-                .from('user_profiles')
-                .update({ email_notifications_enabled: newValue })
-                .eq('id', currentUser.id)
-              if (!error) {
-                setEmailNotificationsEnabled(newValue)
-                setMessage({ type: 'success', text: newValue ? 'Email notifications enabled' : 'Email notifications disabled' })
-              } else {
-                setMessage({ type: 'error', text: 'Failed to update notification preference' })
-              }
-              setIsTogglingNotifications(false)
-            }}
-            disabled={isTogglingNotifications}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 ${
-              emailNotificationsEnabled ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
-            }`}
-            role="switch"
-            aria-checked={emailNotificationsEnabled}
-          >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                emailNotificationsEnabled ? 'translate-x-6' : 'translate-x-1'
+            <button
+              onClick={async () => {
+                if (!supabase || !currentUser) return
+                setIsTogglingNotifications(true)
+                const newValue = !emailNotificationsEnabled
+                const { error } = await supabase
+                  .from('user_profiles')
+                  .update({ email_notifications_enabled: newValue })
+                  .eq('id', currentUser.id)
+                if (!error) {
+                  setEmailNotificationsEnabled(newValue)
+                  setMessage({ type: 'success', text: newValue ? 'Email notifications enabled' : 'Email notifications disabled' })
+                } else {
+                  setMessage({ type: 'error', text: 'Failed to update notification preference' })
+                }
+                setIsTogglingNotifications(false)
+              }}
+              disabled={isTogglingNotifications}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 ${
+                emailNotificationsEnabled ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
               }`}
-            />
-          </button>
+              role="switch"
+              aria-checked={emailNotificationsEnabled}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  emailNotificationsEnabled ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Advanced notification settings — Family/Business only */}
+          {subscriptionPlan !== 'free' && emailNotificationsEnabled && (
+            <div className="p-4 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 space-y-4">
+              <div className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
+                Family+ Settings
+              </div>
+
+              {/* Reminder frequency */}
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="font-medium text-gray-900 dark:text-white text-sm">Overdue reminder frequency</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    How often to re-send alerts for still-overdue items
+                  </div>
+                </div>
+                <select
+                  value={notificationFrequency}
+                  onChange={async (e) => {
+                    if (!supabase || !currentUser) return
+                    const newFreq = e.target.value as 'daily' | 'weekly' | 'monthly'
+                    setNotificationFrequency(newFreq)
+                    setIsSavingNotificationSettings(true)
+                    const { error } = await supabase
+                      .from('user_profiles')
+                      .update({ notification_frequency: newFreq })
+                      .eq('id', currentUser.id)
+                    if (!error) {
+                      setMessage({ type: 'success', text: 'Reminder frequency updated' })
+                    } else {
+                      setMessage({ type: 'error', text: 'Failed to update frequency' })
+                    }
+                    setIsSavingNotificationSettings(false)
+                  }}
+                  disabled={isSavingNotificationSettings}
+                  className="text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 disabled:opacity-50"
+                >
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
+
+              {/* Warning emails toggle */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-medium text-gray-900 dark:text-white text-sm">Upcoming due warnings</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    🟡 Alert when maintenance is approaching due (before it&apos;s overdue)
+                  </div>
+                </div>
+                <button
+                  onClick={async () => {
+                    if (!supabase || !currentUser) return
+                    setIsSavingNotificationSettings(true)
+                    const newValue = !notificationWarningEnabled
+                    const { error } = await supabase
+                      .from('user_profiles')
+                      .update({ notification_warning_enabled: newValue })
+                      .eq('id', currentUser.id)
+                    if (!error) {
+                      setNotificationWarningEnabled(newValue)
+                      setMessage({ type: 'success', text: newValue ? 'Warning emails enabled' : 'Warning emails disabled' })
+                    } else {
+                      setMessage({ type: 'error', text: 'Failed to update warning preference' })
+                    }
+                    setIsSavingNotificationSettings(false)
+                  }}
+                  disabled={isSavingNotificationSettings}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 flex-shrink-0 ${
+                    notificationWarningEnabled ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
+                  }`}
+                  role="switch"
+                  aria-checked={notificationWarningEnabled}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      notificationWarningEnabled ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

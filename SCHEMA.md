@@ -43,6 +43,8 @@ CREATE TABLE public.user_profiles (
   github_id text NULL,
   is_admin boolean NULL DEFAULT false,
   email_notifications_enabled boolean NOT NULL DEFAULT true,
+  notification_frequency text NOT NULL DEFAULT 'weekly',
+  notification_warning_enabled boolean NOT NULL DEFAULT true,
   last_notification_sent_at timestamp with time zone NULL,
   created_at timestamp with time zone NULL DEFAULT now(),
   updated_at timestamp with time zone NULL DEFAULT now(),
@@ -61,8 +63,10 @@ CREATE TABLE public.user_profiles (
 **Key Columns:**
 - `id` - Links to auth.users.id (one-to-one)
 - `is_admin` - Bypass all limits, show purple badge
-- `email_notifications_enabled` - Whether user receives weekly maintenance reminder emails (default true)
-- `last_notification_sent_at` - Timestamp of last notification email sent (dedup guard, min 6.5 day gap)
+- `email_notifications_enabled` - Whether user receives maintenance reminder emails (default true)
+- `notification_frequency` - How often to re-send overdue alerts for paid users: 'daily' | 'weekly' | 'monthly' (default 'weekly'). Free = one-time only.
+- `notification_warning_enabled` - Whether to send warning (approaching due) emails. Family/Business only (default true).
+- `last_notification_sent_at` - Timestamp of last notification email sent
 
 > **Note:** Subscription/billing fields have moved to the `organizations` table.
 
