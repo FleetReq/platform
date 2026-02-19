@@ -132,15 +132,21 @@ export function Navigation() {
   const handleSignOut = async () => {
     if (signingOut) return
     setSigningOut(true)
+    // Optimistically clear UI state immediately — don't wait for the network call.
+    // This makes the nav look signed-out the instant the button is clicked.
+    setUser(null)
+    setOrgs([])
+    setActiveOrgId(null)
+    setSubscriptionTier('free')
+    setSubscriptionStartDate(null)
+    // Fire signOut in the background with a 3s timeout, then force-clear auth
+    // cookies in case the network call timed out before Supabase cleared them.
     if (supabase) {
       await Promise.race([
         supabase.auth.signOut().catch(console.error),
         new Promise(resolve => setTimeout(resolve, 3000)),
       ])
     }
-    // Force-clear Supabase auth cookies after the race. signOut() only removes
-    // them after the server responds — if the network call timed out the cookies
-    // are still set and the user would appear still logged-in on the next page.
     try {
       document.cookie.split(';').forEach(c => {
         const name = c.split('=')[0].trim()
@@ -206,8 +212,8 @@ export function Navigation() {
             </Link>
             {user && <SubscriptionBadge tier={subscriptionTier} subscriptionStartDate={subscriptionStartDate} />}
 
-            {/* Org Switcher — only when authenticated with 2+ orgs and not signing out */}
-            {user && orgs.length > 1 && !signingOut && (
+            {/* Org Switcher — only when authenticated with 2+ orgs */}
+            {user && orgs.length > 1 && (
               <div ref={orgMenuRef} className="relative">
                 <button
                   onClick={() => setOrgMenuOpen(!orgMenuOpen)}
@@ -369,7 +375,7 @@ export function Navigation() {
             </div>
 
             {/* Mobile org switcher */}
-            {user && orgs.length > 1 && !signingOut && (
+            {user && orgs.length > 1 && (
               <div className="pb-4 border-b border-gray-100 dark:border-gray-800 mb-4">
                 <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 px-1">Switch Organization</p>
                 <div className="space-y-1">
