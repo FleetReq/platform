@@ -82,8 +82,16 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
     return () => subscription.unsubscribe()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Returns true if a pending invite was found and redirect was initiated
+  // Returns true if a pending invite was found and redirect was initiated.
+  // Races against a 3-second timeout so a hung Supabase query never blocks the
+  // sign-in redirect — if it times out we treat it as "no pending invites".
   const checkPendingInvites = async (signedInUser: User | null): Promise<boolean> => {
+    const check = checkPendingInvitesInner(signedInUser)
+    const timeout = new Promise<boolean>(resolve => setTimeout(() => resolve(false), 3000))
+    return Promise.race([check, timeout])
+  }
+
+  const checkPendingInvitesInner = async (signedInUser: User | null): Promise<boolean> => {
     if (!signedInUser?.email || !supabase) return false
 
     try {
