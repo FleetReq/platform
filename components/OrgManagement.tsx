@@ -175,9 +175,6 @@ export default function OrgManagement() {
 
   if (!org) return null
 
-  // Hide for free tier (single user)
-  if (org.subscription_plan === 'free') return null
-
   const isOwnerRole = role === 'owner'
   const memberCount = members.length
   const canInvite = isOwnerRole && memberCount < org.max_members
