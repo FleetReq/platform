@@ -182,7 +182,7 @@ export function Navigation() {
 
             {/* Org Switcher — only when authenticated with 2+ orgs */}
             {user && orgs.length > 1 && (
-              <div ref={orgMenuRef} className="relative hidden md:block">
+              <div ref={orgMenuRef} className="relative">
                 <button
                   onClick={() => setOrgMenuOpen(!orgMenuOpen)}
                   className="flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors duration-200"
@@ -341,6 +341,43 @@ export function Navigation() {
                 </Link>
               ))}
             </div>
+
+            {/* Mobile org switcher */}
+            {user && orgs.length > 1 && (
+              <div className="pb-4 border-b border-gray-100 dark:border-gray-800 mb-4">
+                <p className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 px-1">Switch Organization</p>
+                <div className="space-y-1">
+                  {orgs.map((org) => {
+                    const isActive = org.org_id === (activeOrgId || orgs[0]?.org_id);
+                    return (
+                      <button
+                        key={org.org_id}
+                        onClick={() => { handleOrgSwitch(org.org_id); setIsOpen(false); }}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-left transition-colors ${isActive ? 'bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                          {org.org_name?.charAt(0)?.toUpperCase() || '?'}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{org.org_name}</div>
+                          <div className="flex items-center gap-1.5">
+                            <span className={`inline-block px-1.5 text-[10px] font-medium rounded ${planColors[org.subscription_plan]}`}>
+                              {planLabels[org.subscription_plan]}
+                            </span>
+                            <span className="text-[10px] text-gray-400 dark:text-gray-500 capitalize">{org.role}</span>
+                          </div>
+                        </div>
+                        {isActive && (
+                          <svg className="w-4 h-4 text-blue-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Mobile CTA / Sign Out / Sign In */}
             <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
