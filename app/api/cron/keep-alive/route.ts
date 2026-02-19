@@ -14,10 +14,9 @@ export async function GET(request: NextRequest) {
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     const databaseUrl = process.env.DATABASE_URL
 
-    if (!supabaseUrl || !supabaseServiceKey || !supabaseAnonKey) {
+    if (!supabaseUrl || !supabaseServiceKey) {
       console.error('Missing Supabase credentials for keep-alive')
       return NextResponse.json({
         error: 'Server configuration error'
@@ -27,8 +26,7 @@ export async function GET(request: NextRequest) {
 
     const operationResults = {
       directDb: { success: false, operations: 0, error: null as string | null },
-      serviceRole: { success: false, operations: 0, error: null as string | null },
-      anonKey: { success: false, operations: 0, error: null as string | null }
+      serviceRole: { success: false, operations: 0, error: null as string | null }
     }
 
     // ============================================================================
@@ -140,71 +138,32 @@ export async function GET(request: NextRequest) {
     }
 
     // ============================================================================
-    // APPROACH 3: Anon Key Client (Authenticated User Simulation)
-    // ============================================================================
-    // Theory: Supabase may only count authenticated user activity, not service_role
-
-    try {
-      const supabaseAnon = createClient(supabaseUrl, supabaseAnonKey)
-
-      // 1. INSERT heartbeat (triggers RLS = simulates real user)
-      const { error: insertError } = await supabaseAnon
-        .from('heartbeat')
-        .insert({
-          source: 'github-actions-anon-key',
-          metadata: {
-            timestamp: new Date().toISOString(),
-            method: 'supabase-client-anon',
-            version: '3.0'
-          }
-        })
-
-      if (!insertError) operationResults.anonKey.operations++
-
-      // 2. READ operations (simulates user browsing)
-      const readOps = await Promise.allSettled([
-        supabaseAnon.from('heartbeat').select('id').limit(5),
-        supabaseAnon.from('user_profiles').select('id').limit(1),
-        supabaseAnon.from('cars').select('id').limit(1)
-      ])
-
-      operationResults.anonKey.operations += readOps.filter(r => r.status === 'fulfilled').length
-      operationResults.anonKey.success = true
-      console.log('[Keep-Alive] Anon key client: SUCCESS')
-    } catch (error) {
-      operationResults.anonKey.error = String(error)
-      console.error('[Keep-Alive] Anon key client failed:', error)
-    }
-
-    // ============================================================================
     // Summary & Response
     // ============================================================================
 
     const totalOperations =
       operationResults.directDb.operations +
-      operationResults.serviceRole.operations +
-      operationResults.anonKey.operations
+      operationResults.serviceRole.operations
 
     const successfulApproaches = [
       operationResults.directDb.success,
-      operationResults.serviceRole.success,
-      operationResults.anonKey.success
+      operationResults.serviceRole.success
     ].filter(Boolean).length
 
-    console.log(`[Keep-Alive] COMPLETE - ${successfulApproaches}/3 approaches successful, ${totalOperations} total operations`)
+    console.log(`[Keep-Alive] COMPLETE - ${successfulApproaches}/2 approaches successful, ${totalOperations} total operations`)
 
     return NextResponse.json({
       success: successfulApproaches > 0,
       timestamp: new Date().toISOString(),
-      message: `Enhanced keep-alive: ${successfulApproaches}/3 approaches successful`,
+      message: `Enhanced keep-alive: ${successfulApproaches}/2 approaches successful`,
       summary: {
         totalOperations,
         successfulApproaches,
-        approachesAttempted: 3
+        approachesAttempted: 2
       },
       details: operationResults,
       nextPing: 'Expected in 4 hours',
-      version: '3.0-enhanced'
+      version: '3.1'
     })
   } catch (error) {
     console.error('Keep-alive cron failed:', error)

@@ -21,7 +21,7 @@ These PostgreSQL functions are executed automatically by triggers on specific da
 | Function Name | Purpose | Tables Using It |
 |--------------|---------|-----------------|
 | `handle_new_user()` | Auto-creates user profile + org + membership on signup | `auth.users` (AFTER INSERT) |
-| `update_updated_at_column()` | Auto-updates `updated_at` timestamp | `cars`, `fill_ups`, `maintenance_records`, `profiles`, `user_profiles`, `organizations` |
+| `update_updated_at_column()` | Auto-updates `updated_at` timestamp | `cars`, `fill_ups`, `maintenance_records`, `user_profiles`, `organizations` |
 | `calculate_mpg()` | Auto-calculates MPG from miles_driven and gallons | `fill_ups` |
 | `auto_create_tire_rotation()` | Auto-creates tire_rotation when tire_change is inserted | `maintenance_records` (AFTER INSERT) |
 | `user_org_ids()` | Returns org IDs where user is any member | RLS helper |
@@ -74,10 +74,10 @@ CREATE TRIGGER auto_tire_rotation_on_tire_change
   EXECUTE FUNCTION auto_create_tire_rotation();
 ```
 
-### profiles
+### organizations
 ```sql
-CREATE TRIGGER update_profiles_updated_at
-  BEFORE UPDATE ON profiles
+CREATE TRIGGER update_organizations_updated_at
+  BEFORE UPDATE ON organizations
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 ```
@@ -105,9 +105,6 @@ CREATE TRIGGER update_user_profiles_updated_at
 DECLARE
   new_org_id uuid;
   user_name text;
-  first_name text;
-  last_part text;
-  org_display text;
 BEGIN
   -- Extract display name from metadata, fallback to email prefix
   user_name := COALESCE(
@@ -116,34 +113,17 @@ BEGIN
     split_part(NEW.email, '@', 1)
   );
 
-  -- Build org display name: "First L.'s Organization"
-  first_name := split_part(trim(user_name), ' ', 1);
-  IF first_name IS NULL OR first_name = '' THEN
-    org_display := 'My Organization';
-  ELSE
-    last_part := split_part(trim(user_name), ' ',
-      array_length(string_to_array(trim(user_name), ' '), 1));
-    IF last_part IS NOT NULL AND last_part <> '' AND last_part <> first_name THEN
-      org_display := first_name || ' ' || upper(left(last_part, 1)) || '.''s Organization';
-    ELSE
-      org_display := first_name || '''s Organization';
-    END IF;
-  END IF;
-
-  -- Create user profile with name and email
-  INSERT INTO public.user_profiles (id, email, full_name, subscription_plan, max_vehicles, max_invited_users)
-  VALUES (NEW.id, NEW.email, user_name, 'free', 1, 0)
-  ON CONFLICT (id) DO UPDATE SET
-    email = COALESCE(user_profiles.email, EXCLUDED.email),
-    full_name = COALESCE(user_profiles.full_name, EXCLUDED.full_name),
-    subscription_plan = COALESCE(user_profiles.subscription_plan, 'free');
+  -- Create user profile (id only — other fields set later via PATCH /api/profile)
+  INSERT INTO public.user_profiles (id)
+  VALUES (NEW.id)
+  ON CONFLICT (id) DO NOTHING;
 
   -- Create organization for new user
   INSERT INTO public.organizations (id, name, subscription_plan, max_vehicles, max_members)
-  VALUES (gen_random_uuid(), org_display, 'free', 1, 1)
+  VALUES (gen_random_uuid(), user_name || '''s Organization', 'free', 1, 1)
   RETURNING id INTO new_org_id;
 
-  -- Create org membership (owner)
+  -- Create org membership (owner, immediately accepted)
   INSERT INTO public.org_members (org_id, user_id, role, accepted_at)
   VALUES (new_org_id, NEW.id, 'owner', now());
 
@@ -154,13 +134,12 @@ END;
 **Behavior**:
 - Executes AFTER a new user is inserted into `auth.users`
 - Creates three records:
-  1. `user_profiles` - profile with email, full_name, and free tier defaults
-  2. `organizations` - free-tier org with smart name ("First L.'s Organization")
-  3. `org_members` - user as owner of the new org
-- Org name format: "John S.'s Organization" (first name + last initial), "Alice's Organization" (single name), "My Organization" (no name)
-- Also populates `user_profiles.email` and `full_name` from auth metadata (COALESCE preserves existing values on conflict)
-- Every user always has exactly one org (single query path everywhere)
-- **Important**: This runs automatically - DO NOT manually create these records on signup
+  1. `user_profiles` - minimal profile (id only); email/full_name populated later
+  2. `organizations` - free-tier org named `"<display_name>'s Organization"`
+  3. `org_members` - user as owner of the new org, `accepted_at = now()`
+- Org name format: uses raw display name from auth metadata (e.g. "Alice's Organization")
+- Every user always has exactly one initial org
+- **Important**: This runs automatically — DO NOT manually create these records on signup
 
 **Impact on Code**:
 - ✅ User profiles, orgs, and memberships are created automatically
@@ -186,7 +165,7 @@ END;
 **Behavior**:
 - Executes BEFORE any UPDATE operation
 - Sets `updated_at` to current timestamp
-- Applies to: `cars`, `fill_ups`, `maintenance_records`, `profiles`, `user_profiles`
+- Applies to: `cars`, `fill_ups`, `maintenance_records`, `user_profiles`, `organizations`
 
 **Impact on Code**:
 - ✅ `updated_at` is managed automatically
@@ -368,5 +347,5 @@ When adding/modifying database functions:
 
 ---
 
-*Last Updated: 2026-02-16*
+*Last Updated: 2026-02-19*
 *Functions documented: 7 (handle_new_user, update_updated_at_column, calculate_mpg, auto_create_tire_rotation, user_org_ids, user_editor_org_ids, user_owner_org_ids)*

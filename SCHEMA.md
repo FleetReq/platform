@@ -1,7 +1,7 @@
 # FleetReq Database Schema
 
 > **CRITICAL**: Always verify column names against this schema before writing to the database.
-> Last Updated: 2026-02-16
+> Last Updated: 2026-02-19
 
 ---
 
@@ -56,8 +56,8 @@ CREATE TABLE public.user_profiles (
 ```
 
 **RLS Policies:**
-- `user_profiles_select_policy` - Users can only view their own profile
-- `user_profiles_insert_policy` - Users can create their own profile
+- `user_profiles_select_policy` - Users can only view their own profile (`auth.uid() = id`)
+- `user_profiles_insert_policy` - Users can only insert their own profile (`auth.uid() = id`). The `handle_new_user()` trigger (SECURITY DEFINER) bypasses RLS and creates profiles automatically on signup.
 - `user_profiles_update_policy` - Users can only update their own profile
 
 **Key Columns:**
@@ -95,7 +95,11 @@ CREATE TABLE public.organizations (
   created_at timestamp with time zone NULL DEFAULT now(),
   updated_at timestamp with time zone NULL DEFAULT now(),
 
+  subscription_start_date timestamp without time zone NULL,
+  current_tier_start_date timestamp without time zone NULL,
+
   CONSTRAINT organizations_pkey PRIMARY KEY (id),
+  CONSTRAINT organizations_slug_key UNIQUE (slug),
   CONSTRAINT organizations_subscription_plan_check CHECK (
     subscription_plan = ANY (ARRAY['free'::text, 'personal'::text, 'business'::text])
   ),
@@ -107,26 +111,32 @@ CREATE TABLE public.organizations (
 
 **Indexes:**
 - `idx_organizations_stripe_customer_id` on `stripe_customer_id`
+- `organizations_slug_key` UNIQUE on `slug`
 
 **RLS Policies:**
 - `org_members_can_view_org` - Org members can SELECT their org
 - `org_owners_can_update_org` - Only owners can UPDATE their org
+- No INSERT policy — new orgs are created only by the `handle_new_user()` trigger (SECURITY DEFINER) or service role. Authenticated users cannot INSERT directly.
+- No DELETE policy — orgs are never user-deleted; cascade deletes handle cleanup via service role / scheduled GDPR deletion.
 
 **RLS Helper Functions:**
 ```sql
--- Returns org IDs where user is any member
+-- Returns org IDs where user is any member (accepted invites only)
 CREATE FUNCTION user_org_ids() RETURNS SETOF uuid AS $$
-  SELECT org_id FROM org_members WHERE user_id = auth.uid()
+  SELECT org_id FROM org_members
+  WHERE user_id = auth.uid() AND accepted_at IS NOT NULL
 $$ LANGUAGE sql SECURITY DEFINER STABLE;
 
--- Returns org IDs where user is editor or owner
+-- Returns org IDs where user is editor or owner (accepted invites only)
 CREATE FUNCTION user_editor_org_ids() RETURNS SETOF uuid AS $$
-  SELECT org_id FROM org_members WHERE user_id = auth.uid() AND role IN ('owner', 'editor')
+  SELECT org_id FROM org_members
+  WHERE user_id = auth.uid() AND role IN ('owner', 'editor') AND accepted_at IS NOT NULL
 $$ LANGUAGE sql SECURITY DEFINER STABLE;
 
--- Returns org IDs where user is owner
+-- Returns org IDs where user is owner (accepted invites only)
 CREATE FUNCTION user_owner_org_ids() RETURNS SETOF uuid AS $$
-  SELECT org_id FROM org_members WHERE user_id = auth.uid() AND role = 'owner'
+  SELECT org_id FROM org_members
+  WHERE user_id = auth.uid() AND role = 'owner' AND accepted_at IS NOT NULL
 $$ LANGUAGE sql SECURITY DEFINER STABLE;
 ```
 
@@ -175,6 +185,7 @@ CREATE TABLE public.org_members (
 - `idx_org_members_org_user` - UNIQUE on `(org_id, user_id)` WHERE `user_id IS NOT NULL`
 - `idx_org_members_org_email` - UNIQUE on `(org_id, invited_email)` WHERE `invited_email IS NOT NULL`
 - `idx_org_members_user_id` on `user_id`
+- `idx_org_members_invited_email` on `invited_email` WHERE `invited_email IS NOT NULL`
 
 **RLS Policies:**
 - `org_members_can_view_members` - Members can view members of their own org
@@ -232,10 +243,10 @@ CREATE TABLE public.cars (
 - `update_cars_updated_at` - Auto-updates `updated_at` timestamp
 
 **RLS Policies (org-based):**
-- `cars_select` - Org members can view cars in their org
-- `cars_insert` - Editors/owners can create cars
-- `cars_update` - Editors/owners can update cars
-- `cars_delete` - Owners only can delete cars
+- `org_members_select_cars` - Org members can view cars in their org
+- `org_editors_insert_cars` - Editors/owners can create cars
+- `org_editors_update_cars` - Editors/owners can update cars
+- `org_owners_delete_cars` - Owners only can delete cars
 
 **Key Columns:**
 - `user_id` - User who created the vehicle (creator, not access control)
@@ -291,10 +302,10 @@ CREATE TABLE public.fill_ups (
 - `calculate_fill_up_mpg` - Auto-calculates `mpg` field on INSERT/UPDATE
 
 **RLS Policies (org-based):**
-- `fill_ups_select` - Org members can view fill-ups for cars in their org
-- `fill_ups_insert` - Editors/owners can create fill-ups
-- `fill_ups_update` - Editors/owners can update fill-ups
-- `fill_ups_delete` - Owners only can delete fill-ups
+- `org_members_select_fill_ups` - Org members can view fill-ups for cars in their org
+- `org_editors_insert_fill_ups` - Editors/owners can create fill-ups
+- `org_editors_update_fill_ups` - Editors/owners can update fill-ups
+- `org_owners_delete_fill_ups` - Owners only can delete fill-ups
 
 **Key Columns:**
 - `car_id` - Links to cars table
@@ -374,10 +385,10 @@ CREATE TABLE public.maintenance_records (
 - `auto_tire_rotation_on_tire_change` - Auto-creates a `tire_rotation` record when a `tire_change` is inserted
 
 **RLS Policies (org-based):**
-- `maintenance_records_select` - Org members can view records for cars in their org
-- `maintenance_records_insert` - Editors/owners can create records
-- `maintenance_records_update` - Editors/owners can update records
-- `maintenance_records_delete` - Owners only can delete records
+- `org_members_select_maintenance` - Org members can view records for cars in their org
+- `org_editors_insert_maintenance` - Editors/owners can create records
+- `org_editors_update_maintenance` - Editors/owners can update records
+- `org_owners_delete_maintenance` - Owners only can delete records
 
 **Key Columns:**
 - `car_id` - Links to cars table
@@ -404,9 +415,12 @@ CREATE TABLE public.heartbeat (
 
 **Purpose:** Prevents Supabase free-tier auto-pause by tracking database activity
 
+**RLS Policies:**
+- `Service role can manage heartbeat` (TO service_role) - Only service_role can INSERT/SELECT/UPDATE/DELETE. Authenticated and anon roles have no access by design.
+
 **Managed By:**
 - `.github/workflows/keep-alive.yml` - GitHub Actions cron (every 4 hours)
-- `app/api/cron/keep-alive/route.ts` - API endpoint
+- `app/api/cron/keep-alive/route.ts` - API endpoint (uses service role + direct DB connection)
 
 ---
 
