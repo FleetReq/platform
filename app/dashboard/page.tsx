@@ -1903,12 +1903,14 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free' }: 
           {subscriptionPlan !== 'free' && (
             <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
               <div className="flex gap-3">
-                <button
-                  onClick={() => setShowDowngradeModal(true)}
-                  className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg text-sm font-medium transition-colors"
-                >
-                  Downgrade Subscription
-                </button>
+                {userOrgRole === 'owner' && (
+                  <button
+                    onClick={() => setShowDowngradeModal(true)}
+                    className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg text-sm font-medium transition-colors"
+                  >
+                    Downgrade Subscription
+                  </button>
+                )}
                 <button
                   onClick={() => setShowCancelModal(true)}
                   className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
