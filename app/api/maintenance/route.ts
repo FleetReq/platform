@@ -78,19 +78,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const insertData: Record<string, any> = {
-      car_id, date, type, cost, mileage, service_provider, location,
-      next_service_date, next_service_mileage, notes,
-      created_by_user_id: user.id
-    }
-
-    if (oil_type) insertData.oil_type = oil_type
-    if (receipt_urls && receipt_urls.length > 0) insertData.receipt_urls = receipt_urls
-
     const { data: maintenanceRecord, error } = await supabase
       .from('maintenance_records')
-      .insert(insertData)
+      .insert({
+        car_id, date, type, cost, mileage, service_provider, location,
+        next_service_date, next_service_mileage, notes,
+        created_by_user_id: user.id,
+        ...(oil_type ? { oil_type } : {}),
+        ...(receipt_urls && receipt_urls.length > 0 ? { receipt_urls } : {}),
+      })
       .select(`*, cars(*)`)
       .single()
 

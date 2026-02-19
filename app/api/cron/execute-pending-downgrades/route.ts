@@ -1,13 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { PLAN_LIMITS } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
-
-const TIER_LIMITS = {
-  free: 1,
-  personal: 3,
-  business: 999
-}
 
 // POST /api/cron/execute-pending-downgrades - Execute downgrades that have reached their effective date
 export async function POST(request: NextRequest) {
@@ -71,8 +66,8 @@ export async function POST(request: NextRequest) {
         const orgId = org.id
         const targetTier = org.pending_downgrade_tier as 'free' | 'personal'
         const currentTier = org.subscription_plan
-        const targetLimit = TIER_LIMITS[targetTier]
-        const targetMaxMembers = targetTier === 'free' ? 1 : targetTier === 'personal' ? 3 : 6
+        const targetLimit = PLAN_LIMITS[targetTier].maxVehicles
+        const targetMaxMembers = PLAN_LIMITS[targetTier].maxMembers
 
         // Check vehicle count for org
         const { count: vehicleCount } = await supabase

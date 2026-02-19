@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner, isAdmin, getUserSubscriptionPlan, getUserMaxVehicles, hasFeatureAccess } from '@/lib/supabase-client'
 import { MAINTENANCE_INTERVALS, getMaintenanceStatus, getLatestMaintenanceRecord } from '@/lib/maintenance'
-import { MAINTENANCE_TYPES, MAINTENANCE_TYPE_FILTER_OPTIONS, getStatusColor, getStatusTextColor, getIrsRate, OWNER_USER_ID, type MaintenanceStatus } from '@/lib/constants'
+import { MAINTENANCE_TYPES, MAINTENANCE_TYPE_FILTER_OPTIONS, getStatusColor, getStatusTextColor, getIrsRate, OWNER_USER_ID, PLAN_LIMITS, type MaintenanceStatus } from '@/lib/constants'
 import BackgroundAnimation from '../components/BackgroundAnimation'
 import { useTheme } from '../theme-provider'
 import RecordDetailModal from '../../components/RecordDetailModal'
@@ -1093,7 +1093,8 @@ function CarDetailEditor({ carId, cars, onUpdate }: { carId: string, cars: Car[]
         const data = await response.json()
         setErrorMessage(data.error || 'Failed to update vehicle')
       }
-    } catch {
+    } catch (err) {
+      console.error('[Dashboard] Vehicle update failed:', err)
       setErrorMessage('Failed to update vehicle')
     } finally {
       setLoading(false)
@@ -1234,8 +1235,8 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
             setSubscriptionPlan(orgData.org?.subscription_plan as 'free' | 'personal' | 'business' || 'free')
             setSubscriptionEndDate(orgData.org?.subscription_end_date || null)
           }
-        } catch {
-          // Fallback handled by defaults
+        } catch (err) {
+          console.error('[Dashboard] Failed to fetch org subscription info:', err)
         }
 
         // Get notification preferences from user_profiles
@@ -1382,8 +1383,8 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
           setSubscriptionPlan(orgData.org?.subscription_plan as 'free' | 'personal' | 'business' || 'free')
           setSubscriptionEndDate(orgData.org?.subscription_end_date || null)
         }
-      } catch {
-        // Fallback handled by defaults
+      } catch (err) {
+        console.error('[Dashboard] Failed to refresh org after cancellation:', err)
       }
     } catch (error) {
       setMessage({
@@ -1821,7 +1822,7 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
             </h3>
 
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              You have {cars?.length || 0} vehicles but the {downgradeTargetTier} tier allows {downgradeTargetTier === 'free' ? 1 : 3}.
+              You have {cars?.length || 0} vehicles but the {downgradeTargetTier} tier allows {downgradeTargetTier ? PLAN_LIMITS[downgradeTargetTier].maxVehicles : 1}.
               Please select {vehiclesNeededToDelete} vehicle{vehiclesNeededToDelete > 1 ? 's' : ''} to remove:
             </p>
 
@@ -2200,7 +2201,7 @@ export default function DashboardClient({
   // Fetch stats on mount (stats aren't pre-loaded by the server component)
   useEffect(() => {
     loadData()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- intentional: mount-only, loadData changes on every render
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- intentional: mount-only, loadData is stable via useCallback but eslint cannot verify this
 
   // Fetch with an 8-second abort timeout so hung Vercel functions don't block indefinitely
   const fetchWithTimeout = (url: string, options: RequestInit = {}) => {

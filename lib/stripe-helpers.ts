@@ -1,5 +1,6 @@
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
+import { BUSINESS_PRICE_PER_VEHICLE_USD } from '@/lib/constants'
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('STRIPE_SECRET_KEY env var is required')
@@ -89,7 +90,7 @@ export async function updateStripeSubscriptionQuantity(
     // Calculate proration amount
     const quantityDifference = newVehicleCount - currentQuantity
     const isAddition = quantityDifference > 0
-    const pricePerVehicle = 12 // $12/vehicle/month
+    const pricePerVehicle = BUSINESS_PRICE_PER_VEHICLE_USD
 
     // Calculate days remaining in current period
     // Note: As of Stripe API 2025-03-31, period fields moved from subscription to subscription item level

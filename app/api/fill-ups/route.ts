@@ -93,19 +93,15 @@ export async function POST(request: NextRequest) {
       ? odometer_reading - previousFillUp.odometer_reading
       : null
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const insertData: Record<string, any> = {
-      car_id, date, odometer_reading, gallons, price_per_gallon,
-      total_cost, miles_driven, gas_station, location, notes,
-      created_by_user_id: user.id
-    }
-
-    if (fuel_type) insertData.fuel_type = fuel_type
-    if (receipt_urls && receipt_urls.length > 0) insertData.receipt_urls = receipt_urls
-
     const { data: fillUp, error } = await supabase
       .from('fill_ups')
-      .insert(insertData)
+      .insert({
+        car_id, date, odometer_reading, gallons, price_per_gallon,
+        total_cost, miles_driven, gas_station, location, notes,
+        created_by_user_id: user.id,
+        ...(fuel_type ? { fuel_type } : {}),
+        ...(receipt_urls && receipt_urls.length > 0 ? { receipt_urls } : {}),
+      })
       .select(`*, cars(*)`)
       .single()
 

@@ -19,7 +19,6 @@ export default function Search({ className = '' }: SearchProps) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
   const [isOpen, setIsOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -84,19 +83,12 @@ export default function Search({ className = '' }: SearchProps) {
       return
     }
 
-    setIsLoading(true)
-    
-    // Simple search implementation
-    const filtered = searchData.filter(item => 
+    const filtered = searchData.filter(item =>
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.content.toLowerCase().includes(searchQuery.toLowerCase())
     ).slice(0, 8) // Limit to 8 results
 
-    // Simulate slight delay for real-world feel
-    setTimeout(() => {
-      setResults(filtered)
-      setIsLoading(false)
-    }, 150)
+    setResults(filtered)
   }
 
   const handleResultClick = () => {
@@ -143,12 +135,7 @@ export default function Search({ className = '' }: SearchProps) {
       {/* Search Results Dropdown */}
       {isOpen && (query.length >= 2 || results.length > 0) && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-96 overflow-y-auto z-50">
-          {isLoading ? (
-            <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-              <div className="animate-spin w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
-              <span className="ml-2">Searching...</span>
-            </div>
-          ) : results.length > 0 ? (
+          {results.length > 0 ? (
             <div className="py-2">
               {results.map((result) => (
                 <Link

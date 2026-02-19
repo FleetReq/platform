@@ -4,16 +4,11 @@ import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import { getUserOrg, getOrgDetails, getOrgSubscriptionPlan } from '@/lib/org'
 import { validateUUID } from '@/lib/validation'
+import { PLAN_LIMITS } from '@/lib/constants'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-10-29.clover',
 })
-
-const TIER_LIMITS = {
-  free: 1,
-  personal: 3,
-  business: 999
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -78,7 +73,7 @@ export async function POST(request: NextRequest) {
       .select('*', { count: 'exact', head: true })
       .eq('org_id', membership.org_id)
 
-    const targetLimit = TIER_LIMITS[targetTier]
+    const targetLimit = PLAN_LIMITS[targetTier].maxVehicles
     const currentVehicles = vehicleCount || 0
 
     // If exceeding limit, ensure vehicles to delete are provided
@@ -160,7 +155,10 @@ export async function POST(request: NextRequest) {
         }
       } catch (stripeError) {
         console.error('Stripe error during downgrade:', stripeError)
-        // Continue with downgrade even if Stripe fails
+        return NextResponse.json(
+          { error: 'Failed to cancel subscription with payment provider. Please try again.' },
+          { status: 503 }
+        )
       }
     }
 

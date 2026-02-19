@@ -167,8 +167,8 @@ export async function POST(request: NextRequest) {
           .from('organizations')
           .update({
             subscription_plan: 'free',
-            max_vehicles: 1,
-            max_members: 1,
+            max_vehicles: PLAN_LIMITS.free.maxVehicles,
+            max_members: PLAN_LIMITS.free.maxMembers,
           })
           .eq('id', org.id)
 

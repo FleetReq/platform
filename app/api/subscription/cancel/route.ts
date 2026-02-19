@@ -70,14 +70,18 @@ export async function POST(request: NextRequest) {
             cancel_at_period_end: true,
           })
 
-          // Set subscription end date to the current period end
-          // @ts-expect-error - Stripe types might not match runtime
-          const periodEnd = subscription.current_period_end as number
+          // As of Stripe API 2025-03-31, period fields moved to the subscription item level
+          const subscriptionItem = subscription.items.data[0]
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const periodEnd = (subscriptionItem as any).current_period_end as number
           subscriptionEndDate = new Date(periodEnd * 1000).toISOString()
         }
       } catch (stripeError) {
         console.error('Stripe cancellation error:', stripeError)
-        // Continue even if Stripe fails - we'll update our database
+        return NextResponse.json(
+          { error: 'Failed to cancel subscription with payment provider. Please try again.' },
+          { status: 503 }
+        )
       }
     }
 

@@ -35,6 +35,13 @@ export const PLAN_LIMITS: Record<SubscriptionPlan, { maxVehicles: number; maxMem
 }
 
 // ---------------------------------------------------------------------------
+// Pricing
+// ---------------------------------------------------------------------------
+
+/** Business tier price per vehicle per month, in USD. Used for proration calculations. */
+export const BUSINESS_PRICE_PER_VEHICLE_USD = 12
+
+// ---------------------------------------------------------------------------
 // IRS Mileage Rates
 // ---------------------------------------------------------------------------
 

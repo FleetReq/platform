@@ -89,7 +89,8 @@ export default function OrgManagement() {
       setMessage({ type: 'success', text: `Invitation sent to ${inviteEmail}` })
       setInviteEmail('')
       loadOrg()
-    } catch {
+    } catch (err) {
+      console.error('[OrgManagement] handleInvite failed:', err)
       setMessage({ type: 'error', text: 'Failed to send invitation' })
     } finally {
       setInviting(false)
@@ -112,7 +113,8 @@ export default function OrgManagement() {
         const data = await res.json()
         setMessage({ type: 'error', text: data.error || 'Failed to remove member' })
       }
-    } catch {
+    } catch (err) {
+      console.error('[OrgManagement] handleRemoveMember failed:', err)
       setMessage({ type: 'error', text: 'Failed to remove member' })
     }
   }
@@ -132,7 +134,8 @@ export default function OrgManagement() {
         const data = await res.json()
         setMessage({ type: 'error', text: data.error || 'Failed to update role' })
       }
-    } catch {
+    } catch (err) {
+      console.error('[OrgManagement] handleChangeRole failed:', err)
       setMessage({ type: 'error', text: 'Failed to update role' })
     }
   }
@@ -159,7 +162,8 @@ export default function OrgManagement() {
         const data = await res.json()
         setMessage({ type: 'error', text: data.error || 'Failed to update name' })
       }
-    } catch {
+    } catch (err) {
+      console.error('[OrgManagement] handleSaveName failed:', err)
       setMessage({ type: 'error', text: 'Failed to update name' })
     }
   }
