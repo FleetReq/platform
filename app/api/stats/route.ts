@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase'
 import { getUserOrg, getOrgSubscriptionPlan } from '@/lib/org'
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,6 +14,13 @@ export async function GET(request: NextRequest) {
     const isPublic = searchParams.get('public') === 'true'
 
     if (isPublic) {
+      // Rate limit unauthenticated public stats requests by IP
+      const clientIp = request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? 'unknown'
+      const anonRateLimit = rateLimit(`stats-public:${clientIp}`, RATE_LIMITS.ANONYMOUS)
+      if (!anonRateLimit.success) {
+        return NextResponse.json({ error: 'Rate limit exceeded. Please try again later.' }, { status: 429 })
+      }
+
       // Public stats - no authentication required
       const { data: stats, error } = await supabase
         .from('public_stats')
@@ -31,6 +39,11 @@ export async function GET(request: NextRequest) {
 
       if (authError || !user) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+
+      const rateLimitResult = rateLimit(user.id, RATE_LIMITS.READ)
+      if (!rateLimitResult.success) {
+        return NextResponse.json({ error: 'Rate limit exceeded. Please try again later.' }, { status: 429 })
       }
 
       const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null

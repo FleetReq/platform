@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase'
 import { verifyCarAccess } from '@/lib/org'
 import { validateUUID, validateFloat, validateDate } from '@/lib/validation'
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 interface BulkFillUpData {
   miles: number
@@ -24,6 +25,11 @@ export async function POST(request: NextRequest) {
     if (authError || !user) {
       console.error('Auth error:', authError)
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const rateLimitResult = rateLimit(user.id, RATE_LIMITS.WRITE)
+    if (!rateLimitResult.success) {
+      return NextResponse.json({ error: 'Rate limit exceeded. Please try again later.' }, { status: 429 })
     }
 
     const body = await request.json()
@@ -121,8 +127,10 @@ export async function POST(request: NextRequest) {
       console.error('Error bulk inserting fill-ups:', insertError)
       return NextResponse.json({
         error: 'Failed to insert fill-ups',
-        details: insertError.message,
-        code: insertError.code
+        ...(process.env.NODE_ENV !== 'production' && {
+          details: insertError.message,
+          code: insertError.code,
+        }),
       }, { status: 500 })
     }
 

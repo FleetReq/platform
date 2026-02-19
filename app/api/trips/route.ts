@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@/lib/supabase'
 import { getUserOrg, verifyCarAccess } from '@/lib/org'
-import { sanitizeString } from '@/lib/validation'
+import { sanitizeString, validateUUID, validateDate, validateFloat } from '@/lib/validation'
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,6 +18,11 @@ export async function GET(request: NextRequest) {
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const rateLimitResult = rateLimit(user.id, RATE_LIMITS.READ)
+    if (!rateLimitResult.success) {
+      return NextResponse.json({ error: 'Rate limit exceeded. Please try again later.' }, { status: 429 })
     }
 
     // Get user's org membership (respect active org cookie)
@@ -82,6 +88,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const rateLimitResult = rateLimit(user.id, RATE_LIMITS.WRITE)
+    if (!rateLimitResult.success) {
+      return NextResponse.json({ error: 'Rate limit exceeded. Please try again later.' }, { status: 429 })
+    }
+
     const body = await request.json()
     const {
       car_id,
@@ -94,10 +105,20 @@ export async function POST(request: NextRequest) {
       notes
     } = body
 
-    // Validation
-    if (!car_id || !date || !end_location || !purpose || !miles) {
+    // Validate required fields
+    const validatedCarId = validateUUID(car_id)
+    if (!validatedCarId) {
+      return NextResponse.json({ error: 'Invalid or missing car_id' }, { status: 400 })
+    }
+
+    const validatedDate = validateDate(date)
+    if (!validatedDate) {
+      return NextResponse.json({ error: 'Invalid or missing date (expected YYYY-MM-DD)' }, { status: 400 })
+    }
+
+    if (!end_location || !purpose) {
       return NextResponse.json(
-        { error: 'Missing required fields: car_id, date, end_location, purpose, miles' },
+        { error: 'Missing required fields: end_location, purpose' },
         { status: 400 }
       )
     }
@@ -119,16 +140,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate miles
-    if (typeof miles !== 'number' || miles <= 0) {
+    const validatedMiles = validateFloat(miles, { min: 0.1, max: 10000 })
+    if (validatedMiles === null) {
       return NextResponse.json(
-        { error: 'Miles must be a positive number' },
+        { error: 'Miles must be a positive number (max 10,000)' },
         { status: 400 }
       )
     }
 
     // Verify user has edit access to this car through their org
     const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
-    const carAccess = await verifyCarAccess(supabase, user.id, car_id, activeOrgId)
+    const carAccess = await verifyCarAccess(supabase, user.id, validatedCarId, activeOrgId)
     if (!carAccess.hasAccess) {
       return NextResponse.json(
         { error: 'Car not found or does not belong to your organization' },
@@ -144,13 +166,13 @@ export async function POST(request: NextRequest) {
       .from('trips')
       .insert({
         user_id: user.id,
-        car_id,
-        date,
+        car_id: validatedCarId,
+        date: validatedDate,
         start_location: sanitizeString(start_location, { maxLength: 200 }),
         end_location: sanitizeString(end_location, { maxLength: 200 }),
         purpose,
         business_purpose: purpose === 'business' ? sanitizeString(business_purpose, { maxLength: 500 }) : null,
-        miles,
+        miles: validatedMiles,
         notes: sanitizeString(notes, { maxLength: 1000 }),
       })
       .select()

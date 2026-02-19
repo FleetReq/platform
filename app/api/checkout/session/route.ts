@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createRouteHandlerClient } from '@/lib/supabase'
 import { getUserOrg, getOrgDetails } from '@/lib/org'
+import { validateInteger } from '@/lib/validation'
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 if (!process.env.STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY env var is required')
 
@@ -23,6 +25,12 @@ export async function POST(request: NextRequest) {
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Rate limit checkout attempts (expensive Stripe API calls)
+    const rateLimitResult = rateLimit(user.id, RATE_LIMITS.EXPENSIVE)
+    if (!rateLimitResult.success) {
+      return NextResponse.json({ error: 'Rate limit exceeded. Please try again later.' }, { status: 429 })
     }
 
     const body = await request.json()
@@ -92,7 +100,7 @@ export async function POST(request: NextRequest) {
             }
       )
     } else if (tier === 'business') {
-      const quantity = vehicleCount || 4 // Default to 4 vehicles if not specified
+      const quantity = validateInteger(vehicleCount, { min: 1, max: 999 }) ?? 4
       const priceId = process.env.STRIPE_BUSINESS_PRICE_ID
       lineItems.push(
         priceId
@@ -123,7 +131,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         user_id: user.id,
         tier,
-        vehicle_count: tier === 'business' ? (vehicleCount || 4).toString() : '3',
+        vehicle_count: tier === 'business' ? (validateInteger(vehicleCount, { min: 1, max: 999 }) ?? 4).toString() : '3',
       },
       allow_promotion_codes: true, // Allow discount codes
       billing_address_collection: 'required',

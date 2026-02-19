@@ -1,13 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { RATE_LIMITS } from '@/lib/rate-limit'
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 import { withAuth, errorResponse } from '@/lib/api-middleware'
+import { validateUUID } from '@/lib/validation'
 
 // GET /api/org/accept-invite?id= — Preview invite details without accepting
 export async function GET(request: NextRequest) {
+  // Rate limit unauthenticated requests by IP
+  const clientIp = request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? 'unknown'
+  const rateLimitResult = rateLimit(`invite-preview:${clientIp}`, RATE_LIMITS.ANONYMOUS)
+  if (!rateLimitResult.success) return errorResponse('Rate limit exceeded. Please try again later.', 429)
+
   const { searchParams } = new URL(request.url)
   const invite_id = searchParams.get('id')
   if (!invite_id) return errorResponse('id is required', 400)
+
+  const validatedId = validateUUID(invite_id)
+  if (!validatedId) return errorResponse('Invalid invitation ID', 400)
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -19,8 +28,8 @@ export async function GET(request: NextRequest) {
 
   const { data: invite } = await adminClient
     .from('org_members')
-    .select('id, role, invited_email, organizations(name)')
-    .eq('id', invite_id)
+    .select('id, role, organizations(name)')
+    .eq('id', validatedId)
     .is('user_id', null)
     .single()
 
@@ -33,7 +42,7 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     org_name: orgName || 'Unknown Organization',
     role: invite.role,
-    invited_email: invite.invited_email,
+    // invited_email intentionally omitted — don't expose PII to unauthenticated callers
   })
 }
 

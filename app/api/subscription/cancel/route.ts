@@ -3,6 +3,7 @@ import Stripe from 'stripe'
 import { createRouteHandlerClient } from '@/lib/supabase'
 import { getUserOrg, getOrgDetails } from '@/lib/org'
 import { sanitizeString } from '@/lib/validation'
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-10-29.clover',
@@ -22,6 +23,11 @@ export async function POST(request: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const rateLimitResult = rateLimit(user.id, RATE_LIMITS.EXPENSIVE)
+    if (!rateLimitResult.success) {
+      return NextResponse.json({ error: 'Rate limit exceeded. Please try again later.' }, { status: 429 })
     }
 
     // Get cancellation reason from request body
