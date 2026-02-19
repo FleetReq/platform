@@ -64,7 +64,7 @@ export interface MaintenanceRecord {
   id: string
   car_id: string
   date: string
-  type: 'oil_change' | 'tire_rotation' | 'tire_change' | 'brake_pads' | 'rotors' | 'air_filter' | 'transmission_service' | 'coolant_flush' | 'wipers' | 'registration'
+  type: 'oil_change' | 'tire_rotation' | 'tire_change' | 'brake_pads' | 'rotors' | 'air_filter' | 'transmission_service' | 'coolant_flush' | 'brake_fluid_flush' | 'spark_plugs' | 'battery' | 'cabin_air_filter' | 'serpentine_belt' | 'differential_fluid' | 'wipers' | 'registration'
   oil_type?: string
   description?: string
   cost?: number

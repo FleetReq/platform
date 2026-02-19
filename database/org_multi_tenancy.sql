@@ -170,10 +170,9 @@ BEGIN
   );
 
   -- Create user profile (existing behavior)
-  INSERT INTO public.user_profiles (id, subscription_plan, max_vehicles, max_invited_users)
-  VALUES (NEW.id, 'free', 1, 0)
-  ON CONFLICT (id) DO UPDATE
-  SET subscription_plan = COALESCE(user_profiles.subscription_plan, 'free');
+  INSERT INTO public.user_profiles (id)
+  VALUES (NEW.id)
+  ON CONFLICT (id) DO NOTHING;
 
   -- Create organization for new user
   INSERT INTO public.organizations (id, name, subscription_plan, max_vehicles, max_members)

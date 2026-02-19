@@ -44,12 +44,11 @@ BEGIN
   END IF;
 
   -- Create user profile with name and email
-  INSERT INTO public.user_profiles (id, email, full_name, subscription_plan, max_vehicles, max_invited_users)
-  VALUES (NEW.id, NEW.email, user_name, 'free', 1, 0)
+  INSERT INTO public.user_profiles (id, email, full_name)
+  VALUES (NEW.id, NEW.email, user_name)
   ON CONFLICT (id) DO UPDATE SET
     email = COALESCE(user_profiles.email, EXCLUDED.email),
-    full_name = COALESCE(user_profiles.full_name, EXCLUDED.full_name),
-    subscription_plan = COALESCE(user_profiles.subscription_plan, 'free');
+    full_name = COALESCE(user_profiles.full_name, EXCLUDED.full_name);
 
   -- Create organization for new user
   INSERT INTO public.organizations (id, name, subscription_plan, max_vehicles, max_members)
