@@ -133,15 +133,22 @@ export function Navigation() {
     if (signingOut) return
     setSigningOut(true)
     if (supabase) {
-      // Race signOut against a 3s timeout. The local session cookies are cleared
-      // synchronously inside signOut(), so navigating after the timeout is safe —
-      // the server-side token invalidation may still be in-flight, but the user's
-      // local session is gone and they can't use the old token from the browser.
       await Promise.race([
         supabase.auth.signOut().catch(console.error),
         new Promise(resolve => setTimeout(resolve, 3000)),
       ])
     }
+    // Force-clear Supabase auth cookies after the race. signOut() only removes
+    // them after the server responds — if the network call timed out the cookies
+    // are still set and the user would appear still logged-in on the next page.
+    try {
+      document.cookie.split(';').forEach(c => {
+        const name = c.split('=')[0].trim()
+        if (name.startsWith('sb-')) {
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; samesite=lax`
+        }
+      })
+    } catch { /* ignore */ }
     window.location.href = '/'
   };
 
