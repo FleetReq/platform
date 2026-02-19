@@ -32,6 +32,7 @@ export default function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan =
     notes: ''
   })
   const [loading, setLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
   const [recentServiceProviders, setRecentServiceProviders] = useState<string[]>([])
   const [recentLocations, setRecentLocations] = useState<string[]>([])
 
@@ -130,11 +131,11 @@ export default function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan =
         onSuccess()
       } else {
         const error = await response.json()
-        alert(error.error || 'Failed to add maintenance record')
+        setErrorMessage(error.error || 'Failed to add maintenance record')
       }
     } catch (error) {
       console.error('Error adding maintenance record:', error)
-      alert('Failed to add maintenance record')
+      setErrorMessage('Failed to add maintenance record')
     } finally {
       setLoading(false)
     }
@@ -317,6 +318,9 @@ export default function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan =
           />
         )}
 
+        {errorMessage && (
+          <p role="alert" className="text-red-600 dark:text-red-400 text-sm">{errorMessage}</p>
+        )}
         <button
           type="submit"
           disabled={loading || receiptUpload.isUploading}

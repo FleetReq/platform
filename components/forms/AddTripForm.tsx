@@ -20,10 +20,12 @@ export default function AddTripForm({ cars, onSuccess }: AddTripFormProps) {
     notes: ''
   })
   const [loading, setLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setErrorMessage('')
 
     try {
       const response = await fetch('/api/trips', {
@@ -36,7 +38,6 @@ export default function AddTripForm({ cars, onSuccess }: AddTripFormProps) {
       })
 
       if (response.ok) {
-        alert('Trip added successfully!')
         // Reset form
         setFormData({
           car_id: cars[0]?.id || '',
@@ -51,11 +52,11 @@ export default function AddTripForm({ cars, onSuccess }: AddTripFormProps) {
         onSuccess()
       } else {
         const error = await response.json()
-        alert(error.error || 'Failed to add trip')
+        setErrorMessage(error.error || 'Failed to add trip')
       }
     } catch (error) {
       console.error('Error adding trip:', error)
-      alert('Failed to add trip')
+      setErrorMessage('Failed to add trip')
     } finally {
       setLoading(false)
     }
@@ -170,6 +171,9 @@ export default function AddTripForm({ cars, onSuccess }: AddTripFormProps) {
           />
         </div>
 
+        {errorMessage && (
+          <p role="alert" className="text-red-600 dark:text-red-400 text-sm">{errorMessage}</p>
+        )}
         <button
           type="submit"
           disabled={loading}

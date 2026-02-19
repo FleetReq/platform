@@ -278,6 +278,7 @@ function RecordsManager({
   const [currentPage, setCurrentPage] = useState(1)
   const [jumpToPage, setJumpToPage] = useState('')
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'fillup' | 'maintenance', id: string, description: string } | null>(null)
+  const [deleteError, setDeleteError] = useState('')
   const [selectedRecord, setSelectedRecord] = useState<{ type: 'fillup' | 'maintenance', record: FillUp | MaintenanceRecord, car: Car } | null>(null)
   const recordsPerPage = 20
 
@@ -449,6 +450,7 @@ function RecordsManager({
   }
 
   const handleDelete = async (type: 'fillup' | 'maintenance', id: string) => {
+    setDeleteError('')
     try {
       const endpoint = type === 'fillup' ? '/api/fill-ups' : '/api/maintenance'
       const response = await fetch(`${endpoint}/${id}`, {
@@ -459,11 +461,11 @@ function RecordsManager({
         setDeleteConfirm(null)
         onRecordDeleted() // Call the callback to refresh data
       } else {
-        alert('Failed to delete record')
+        setDeleteError('Failed to delete record')
       }
     } catch (error) {
       console.error('Error deleting record:', error)
-      alert('Failed to delete record')
+      setDeleteError('Failed to delete record')
     }
   }
 
@@ -496,7 +498,9 @@ function RecordsManager({
           {/* Search and Sort */}
           <div className="flex gap-4">
             <div className="flex-1">
+              <label htmlFor="records-search" className="sr-only">Search records</label>
               <input
+                id="records-search"
                 type="text"
                 placeholder="Search by service type, description, notes, location..."
                 value={searchTerm}
@@ -716,8 +720,8 @@ function RecordsManager({
                           id: record.id,
                           description: record.description
                         }); }}
-                        className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors duration-200"
-                        title="Delete record"
+                        aria-label="Delete record"
+                        className="p-2.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -732,7 +736,19 @@ function RecordsManager({
 
           {paginatedRecords.length === 0 && (
             <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-              No records found matching your criteria
+              {searchTerm || recordType !== 'all' || maintenanceType !== 'all' || selectedCarId !== 'all' ? (
+                <div>
+                  <p className="mb-3">No records match your current filters.</p>
+                  <button
+                    onClick={() => { setSearchTerm(''); setRecordType('all'); setMaintenanceType('all'); setSelectedCarId('all'); }}
+                    className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                  >
+                    Clear filters
+                  </button>
+                </div>
+              ) : (
+                <p>No records yet. Add a fill-up or maintenance record to get started.</p>
+              )}
             </div>
           )}
         </div>
@@ -823,18 +839,30 @@ function RecordsManager({
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md mx-4 shadow-xl">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Confirm Delete</h3>
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onKeyDown={(e) => e.key === 'Escape' && setDeleteConfirm(null)}
+          tabIndex={-1}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-modal-title"
+            className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md mx-4 shadow-xl"
+          >
+            <h3 id="delete-modal-title" className="text-lg font-bold text-gray-900 dark:text-white mb-4">Confirm Delete</h3>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               Are you sure you want to delete this record?
             </p>
             <p className="text-sm font-medium text-gray-900 dark:text-white mb-6">
               {deleteConfirm.description}
             </p>
+            {deleteError && (
+              <p role="alert" className="text-red-600 dark:text-red-400 text-sm mb-4">{deleteError}</p>
+            )}
             <div className="flex space-x-3">
               <button
-                onClick={() => setDeleteConfirm(null)}
+                onClick={() => { setDeleteConfirm(null); setDeleteError(''); }}
                 className="flex-1 px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200"
               >
                 Cancel
@@ -859,6 +887,7 @@ function CurrentMileageEditor({ carId, cars, onUpdate }: { carId: string, cars: 
   const [mileage, setMileage] = useState('')
   const [loading, setLoading] = useState(false)
   const [showWarning, setShowWarning] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
   const selectedCar = cars.find(car => car.id === carId)
   const currentMileage = selectedCar?.current_mileage || 0
@@ -894,12 +923,13 @@ function CurrentMileageEditor({ carId, cars, onUpdate }: { carId: string, cars: 
         onUpdate()
         setEditing(false)
         setShowWarning(false)
+        setErrorMessage('')
       } else {
-        alert('Failed to update mileage')
+        setErrorMessage('Failed to update mileage')
       }
     } catch (error) {
       console.error('Error updating mileage:', error)
-      alert('Failed to update mileage')
+      setErrorMessage('Failed to update mileage')
     } finally {
       setLoading(false)
     }
@@ -959,29 +989,36 @@ function CurrentMileageEditor({ carId, cars, onUpdate }: { carId: string, cars: 
 
   if (editing) {
     return (
-      <div className="flex items-center space-x-2">
-        <input
-          type="number"
-          value={mileage}
-          onChange={(e) => setMileage(e.target.value)}
-          className="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-          placeholder="Miles"
-          disabled={loading}
-        />
-        <button
-          onClick={() => handleSave()}
-          disabled={loading}
-          className="px-2 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded transition-colors disabled:opacity-50"
-        >
-          ✓
-        </button>
-        <button
-          onClick={handleCancel}
-          disabled={loading}
-          className="px-2 py-1 text-xs bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors disabled:opacity-50"
-        >
-          ✕
-        </button>
+      <div className="space-y-1">
+        <div className="flex items-center space-x-2">
+          <input
+            type="number"
+            value={mileage}
+            onChange={(e) => setMileage(e.target.value)}
+            className="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            placeholder="Miles"
+            disabled={loading}
+          />
+          <button
+            onClick={() => handleSave()}
+            disabled={loading}
+            aria-label="Save mileage"
+            className="px-2 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded transition-colors disabled:opacity-50"
+          >
+            ✓
+          </button>
+          <button
+            onClick={handleCancel}
+            disabled={loading}
+            aria-label="Cancel editing"
+            className="px-2 py-1 text-xs bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors disabled:opacity-50"
+          >
+            ✕
+          </button>
+        </div>
+        {errorMessage && (
+          <p role="alert" className="text-red-600 dark:text-red-400 text-xs">{errorMessage}</p>
+        )}
       </div>
     )
   }
@@ -1005,6 +1042,7 @@ function CurrentMileageEditor({ carId, cars, onUpdate }: { carId: string, cars: 
 function CarDetailEditor({ carId, cars, onUpdate }: { carId: string, cars: Car[], onUpdate: () => void }) {
   const [editing, setEditing] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
   const selectedCar = cars.find(car => car.id === carId)
 
   const [form, setForm] = useState({
@@ -1028,9 +1066,10 @@ function CarDetailEditor({ carId, cars, onUpdate }: { carId: string, cars: Car[]
 
   const handleSave = async () => {
     if (!form.make.trim() || !form.model.trim() || !form.year.trim()) {
-      alert('Make, model, and year are required')
+      setErrorMessage('Make, model, and year are required')
       return
     }
+    setErrorMessage('')
     setLoading(true)
     try {
       const response = await fetch('/api/cars', {
@@ -1049,12 +1088,13 @@ function CarDetailEditor({ carId, cars, onUpdate }: { carId: string, cars: Car[]
       if (response.ok) {
         onUpdate()
         setEditing(false)
+        setErrorMessage('')
       } else {
         const data = await response.json()
-        alert(data.error || 'Failed to update vehicle')
+        setErrorMessage(data.error || 'Failed to update vehicle')
       }
     } catch {
-      alert('Failed to update vehicle')
+      setErrorMessage('Failed to update vehicle')
     } finally {
       setLoading(false)
     }
@@ -1107,6 +1147,9 @@ function CarDetailEditor({ carId, cars, onUpdate }: { carId: string, cars: Car[]
               className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500" />
           </div>
         </div>
+        {errorMessage && (
+          <p role="alert" className="text-red-600 dark:text-red-400 text-xs">{errorMessage}</p>
+        )}
         <div className="flex space-x-2">
           <button onClick={handleSave} disabled={loading}
             className="flex-1 px-2 py-1.5 text-xs bg-green-600 hover:bg-green-700 text-white rounded transition-colors disabled:opacity-50">
@@ -1580,8 +1623,17 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
 
       {/* Cancellation Confirmation Modal */}
       {showCancelModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          onKeyDown={(e) => e.key === 'Escape' && setShowCancelModal(false)}
+          tabIndex={-1}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cancel-modal-title"
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6"
+          >
             <div className="flex items-start gap-4 mb-4">
               <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center flex-shrink-0">
                 <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1589,7 +1641,7 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
                 </svg>
               </div>
               <div className="flex-1">
-                <h3 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-3">
+                <h3 id="cancel-modal-title" className="text-2xl font-bold text-red-600 dark:text-red-400 mb-3">
                   ⚠️ DELETE ACCOUNT?
                 </h3>
                 <div className="space-y-3 text-sm text-gray-700 dark:text-gray-300">
@@ -1628,7 +1680,7 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
                 value={cancellationReason}
                 onChange={(e) => setCancellationReason(e.target.value)}
                 rows={2}
-                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 resize-none text-sm"
+                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 resize-none text-sm"
                 placeholder="Help us improve..."
               />
             </div>
@@ -1674,9 +1726,18 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
 
       {/* Downgrade Modal */}
       {showDowngradeModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          onKeyDown={(e) => e.key === 'Escape' && setShowDowngradeModal(false)}
+          tabIndex={-1}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="downgrade-modal-title"
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-6"
+          >
+            <h3 id="downgrade-modal-title" className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
               Downgrade Subscription
             </h3>
 
@@ -1744,9 +1805,18 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
 
       {/* Vehicle Selection Modal */}
       {showVehicleSelectionModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full p-6">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          onKeyDown={(e) => e.key === 'Escape' && setShowVehicleSelectionModal(false)}
+          tabIndex={-1}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="vehicle-select-modal-title"
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full p-6"
+          >
+            <h3 id="vehicle-select-modal-title" className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
               Select Vehicles to Remove
             </h3>
 
@@ -1870,7 +1940,7 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
               type="password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               placeholder="Enter current password"
               required
             />
@@ -1884,7 +1954,7 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               placeholder="Enter new password"
               required
               minLength={6}
@@ -1899,7 +1969,7 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               placeholder="Confirm new password"
               required
               minLength={6}
@@ -2083,6 +2153,9 @@ export default function DashboardClient({
   const [maxVehicles, setMaxVehicles] = useState<number>(initialMaxVehicles)
   const [allOrgs, setAllOrgs] = useState<{org_id: string, org_name: string, role: string, subscription_plan: string}[]>([])
   const [leavingOrgId, setLeavingOrgId] = useState<string | null>(null)
+  const [leaveOrgError, setLeaveOrgError] = useState<string>('')
+  const [pendingLeaveOrgId, setPendingLeaveOrgId] = useState<string | null>(null)
+  const [loadError, setLoadError] = useState(false)
   const [activeTab, setActiveTab] = useState<'overview' | 'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'add-trip' | 'records' | 'settings'>('overview')
   const [chartView, setChartView] = useState<'weekly' | 'monthly' | 'yearly'>('monthly')
   const [selectedCarId, setSelectedCarId] = useState<string | null>(null)
@@ -2163,6 +2236,7 @@ export default function DashboardClient({
       setMaintenanceRecords(maintenanceData)
     } catch (error) {
       console.error('Error loading data:', error)
+      setLoadError(true)
     }
   }, [])
 
@@ -2295,6 +2369,13 @@ export default function DashboardClient({
       <BackgroundAnimation />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        {loadError && (
+          <div role="alert" className="mb-6 px-4 py-3 bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-lg text-sm text-red-700 dark:text-red-300 flex items-center justify-between">
+            <span>Failed to load your data. Please refresh the page.</span>
+            <button onClick={() => window.location.reload()} className="ml-4 text-sm underline font-medium">Refresh</button>
+          </div>
+        )}
 
         {/* Professional 3-column layout */}
         <div className="grid lg:grid-cols-3 gap-6">
@@ -2761,37 +2842,60 @@ export default function DashboardClient({
                         Organizations you&apos;ve joined via invitation. You can leave at any time — the owner can reinvite you.
                       </p>
                       <div className="space-y-3">
+                        {leaveOrgError && (
+                          <p role="alert" className="text-sm text-red-600 dark:text-red-400">{leaveOrgError}</p>
+                        )}
                         {allOrgs.filter(o => o.role !== 'owner').map(org => (
                           <div key={org.org_id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                             <div>
                               <p className="text-sm font-medium text-gray-900 dark:text-white">{org.org_name}</p>
                               <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{org.role} · {org.subscription_plan}</p>
                             </div>
-                            <button
-                              disabled={leavingOrgId === org.org_id}
-                              onClick={async () => {
-                                if (!confirm(`Leave "${org.org_name}"? You can be reinvited by the owner.`)) return
-                                setLeavingOrgId(org.org_id)
-                                try {
-                                  const res = await fetch('/api/org/leave', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ org_id: org.org_id }),
-                                  })
-                                  if (res.ok) {
-                                    window.location.reload()
-                                  } else {
-                                    const data = await res.json()
-                                    alert(data.error || 'Failed to leave organization')
-                                  }
-                                } finally {
-                                  setLeavingOrgId(null)
-                                }
-                              }}
-                              className="px-3 py-1.5 text-sm text-red-600 dark:text-red-400 border border-red-300 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
-                            >
-                              {leavingOrgId === org.org_id ? 'Leaving...' : 'Leave'}
-                            </button>
+                            {pendingLeaveOrgId === org.org_id ? (
+                              <div className="flex items-center gap-2 text-sm">
+                                <span className="text-gray-600 dark:text-gray-400">Leave?</span>
+                                <button
+                                  disabled={leavingOrgId === org.org_id}
+                                  onClick={async () => {
+                                    setPendingLeaveOrgId(null)
+                                    setLeaveOrgError('')
+                                    setLeavingOrgId(org.org_id)
+                                    try {
+                                      const res = await fetch('/api/org/leave', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ org_id: org.org_id }),
+                                      })
+                                      if (res.ok) {
+                                        window.location.reload()
+                                      } else {
+                                        const data = await res.json()
+                                        setLeaveOrgError(data.error || 'Failed to leave organization')
+                                      }
+                                    } finally {
+                                      setLeavingOrgId(null)
+                                    }
+                                  }}
+                                  className="text-red-600 dark:text-red-400 font-medium hover:underline disabled:opacity-50"
+                                >
+                                  {leavingOrgId === org.org_id ? 'Leaving...' : 'Yes, leave'}
+                                </button>
+                                <button
+                                  onClick={() => setPendingLeaveOrgId(null)}
+                                  className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                disabled={leavingOrgId === org.org_id}
+                                onClick={() => setPendingLeaveOrgId(org.org_id)}
+                                className="px-3 py-1.5 text-sm text-red-600 dark:text-red-400 border border-red-300 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
+                              >
+                                Leave
+                              </button>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -2919,6 +3023,9 @@ function MobileBottomTabBar({
           <div className="relative flex-1 flex justify-center" ref={addMenuRef}>
             <button
               onClick={() => setAddMenuOpen(!addMenuOpen)}
+              aria-expanded={addMenuOpen}
+              aria-haspopup="menu"
+              aria-label="Add new record"
               className="flex flex-col items-center justify-center py-1"
             >
               <div className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${

@@ -165,15 +165,23 @@ export default function RecordDetailModal({
   const adjustedRemaining = totalPhotoSlots - usedSlots
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      onClick={onClose}
+      onKeyDown={(e) => e.key === 'Escape' && onClose()}
+      tabIndex={-1}
+    >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="record-modal-title"
         className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+            <h3 id="record-modal-title" className="text-lg font-bold text-gray-900 dark:text-white">
               {recordType === 'fillup' ? 'Fill-up Details' : 'Maintenance Details'}
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">{carLabel}</p>
@@ -189,7 +197,8 @@ export default function RecordDetailModal({
             )}
             <button
               onClick={onClose}
-              className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              aria-label="Close"
+              className="p-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

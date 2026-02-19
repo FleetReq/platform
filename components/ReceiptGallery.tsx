@@ -92,7 +92,8 @@ export default function ReceiptGallery({ receiptUrls, onRemove, editable = false
                 <button
                   type="button"
                   onClick={() => onRemove(path)}
-                  className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                  aria-label={`Remove photo ${i + 1}`}
+                  className="absolute -top-1 -right-1 w-7 h-7 bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity z-10"
                 >
                   <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
@@ -112,6 +113,9 @@ export default function ReceiptGallery({ receiptUrls, onRemove, editable = false
       {/* Lightbox */}
       {lightboxIndex !== null && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Receipt photo ${lightboxIndex + 1} of ${receiptUrls.length}`}
           className="fixed inset-0 bg-black/90 flex items-center justify-center z-[60]"
           onClick={() => setLightboxIndex(null)}
         >
@@ -119,7 +123,8 @@ export default function ReceiptGallery({ receiptUrls, onRemove, editable = false
             {/* Close */}
             <button
               onClick={() => setLightboxIndex(null)}
-              className="absolute -top-10 right-0 text-white hover:text-gray-300 transition-colors"
+              aria-label="Close lightbox"
+              className="absolute -top-10 right-0 text-white hover:text-gray-300 transition-colors p-2"
             >
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -144,7 +149,8 @@ export default function ReceiptGallery({ receiptUrls, onRemove, editable = false
             {lightboxIndex > 0 && (
               <button
                 onClick={() => setLightboxIndex(lightboxIndex - 1)}
-                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
+                aria-label="Previous photo"
+                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -156,7 +162,8 @@ export default function ReceiptGallery({ receiptUrls, onRemove, editable = false
             {lightboxIndex < receiptUrls.length - 1 && (
               <button
                 onClick={() => setLightboxIndex(lightboxIndex + 1)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
+                aria-label="Next photo"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

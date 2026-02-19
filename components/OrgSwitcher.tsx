@@ -36,6 +36,7 @@ export default function OrgSwitcher({ onSwitch }: OrgSwitcherProps) {
   const [activeOrgId, setActiveOrgId] = useState<string | null>(null)
   const [isOpen, setIsOpen] = useState(false)
   const [switching, setSwitching] = useState(false)
+  const [switchError, setSwitchError] = useState('')
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   const loadOrgs = useCallback(async () => {
@@ -78,6 +79,7 @@ export default function OrgSwitcher({ onSwitch }: OrgSwitcherProps) {
     }
 
     setSwitching(true)
+    setSwitchError('')
     try {
       const res = await fetch('/api/org/switch', {
         method: 'POST',
@@ -91,9 +93,12 @@ export default function OrgSwitcher({ onSwitch }: OrgSwitcherProps) {
         setActiveOrgId(orgId)
         setIsOpen(false)
         onSwitch()
+      } else {
+        setSwitchError('Failed to switch organization. Please try again.')
       }
     } catch (err) {
       console.error('Failed to switch org:', err)
+      setSwitchError('Failed to switch organization. Please try again.')
     } finally {
       setSwitching(false)
     }
@@ -101,6 +106,9 @@ export default function OrgSwitcher({ onSwitch }: OrgSwitcherProps) {
 
   return (
     <div ref={dropdownRef} className="relative mb-4">
+      {switchError && (
+        <p role="alert" className="text-xs text-red-600 dark:text-red-400 mb-1">{switchError}</p>
+      )}
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={switching}

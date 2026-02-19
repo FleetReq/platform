@@ -29,6 +29,7 @@ export default function AddFillUpForm({ cars, onSuccess, subscriptionPlan = 'fre
     consecutive_fillup: true
   })
   const [loading, setLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
   const [recentGasStations, setRecentGasStations] = useState<string[]>([])
   const [recentLocations, setRecentLocations] = useState<string[]>([])
 
@@ -130,11 +131,11 @@ export default function AddFillUpForm({ cars, onSuccess, subscriptionPlan = 'fre
         onSuccess()
       } else {
         const error = await response.json()
-        alert(error.error || 'Failed to add fill-up')
+        setErrorMessage(error.error || 'Failed to add fill-up')
       }
     } catch (error) {
       console.error('Error adding fill-up:', error)
-      alert('Failed to add fill-up')
+      setErrorMessage('Failed to add fill-up')
     } finally {
       setLoading(false)
     }
@@ -304,6 +305,9 @@ export default function AddFillUpForm({ cars, onSuccess, subscriptionPlan = 'fre
           />
         )}
 
+        {errorMessage && (
+          <p role="alert" className="text-red-600 dark:text-red-400 text-sm">{errorMessage}</p>
+        )}
         <button
           type="submit"
           disabled={loading || receiptUpload.isUploading}

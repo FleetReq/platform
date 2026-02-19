@@ -13,10 +13,12 @@ export default function AddCarForm({ onSuccess }: { onSuccess: () => void }) {
     current_mileage: ''
   })
   const [loading, setLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setErrorMessage('')
 
     try {
       const response = await fetch('/api/cars', {
@@ -31,11 +33,11 @@ export default function AddCarForm({ onSuccess }: { onSuccess: () => void }) {
         onSuccess()
       } else {
         const error = await response.json()
-        alert(error.error || 'Failed to add car')
+        setErrorMessage(error.error || 'Failed to add car')
       }
     } catch (error) {
       console.error('Error adding car:', error)
-      alert('Failed to add car')
+      setErrorMessage('Failed to add car')
     } finally {
       setLoading(false)
     }
@@ -129,6 +131,9 @@ export default function AddCarForm({ onSuccess }: { onSuccess: () => void }) {
           </div>
         </div>
 
+        {errorMessage && (
+          <p role="alert" className="text-red-600 dark:text-red-400 text-sm">{errorMessage}</p>
+        )}
         <button
           type="submit"
           disabled={loading}

@@ -99,6 +99,7 @@ export default function PricingPage() {
   const [currentPlan, setCurrentPlan] = useState<'free' | 'personal' | 'business' | null>(null)
   const [showVehicleModal, setShowVehicleModal] = useState(false)
   const [vehicleCount, setVehicleCount] = useState(4)
+  const [checkoutError, setCheckoutError] = useState('')
   const router = useRouter()
 
   // Fetch user's current subscription plan
@@ -189,11 +190,12 @@ export default function PricingPage() {
 
     setLoading(tier)
 
+    setCheckoutError('')
     try {
       // Check if user is logged in
       if (!supabase) {
         console.error('Supabase client not configured')
-        alert('Configuration error. Please check environment variables.')
+        setCheckoutError('Configuration error. Please check environment variables.')
         setLoading(null)
         return
       }
@@ -230,7 +232,7 @@ export default function PricingPage() {
       }
     } catch (error) {
       console.error('Checkout error:', error)
-      alert('Failed to start checkout. Please try again.')
+      setCheckoutError('Failed to start checkout. Please try again.')
       setLoading(null)
     }
   }
@@ -238,11 +240,12 @@ export default function PricingPage() {
   const handleBusinessCheckout = async () => {
     setShowVehicleModal(false)
     setLoading('business')
+    setCheckoutError('')
 
     try {
       if (!supabase) {
         console.error('Supabase client not configured')
-        alert('Configuration error. Please check environment variables.')
+        setCheckoutError('Configuration error. Please check environment variables.')
         setLoading(null)
         return
       }
@@ -278,7 +281,7 @@ export default function PricingPage() {
       }
     } catch (error) {
       console.error('Checkout error:', error)
-      alert('Failed to start checkout. Please try again.')
+      setCheckoutError('Failed to start checkout. Please try again.')
       setLoading(null)
     }
   }
@@ -286,6 +289,11 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
+        {checkoutError && (
+          <div role="alert" className="mb-6 px-4 py-3 bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-700 rounded-lg text-sm text-red-700 dark:text-red-300 text-center">
+            {checkoutError}
+          </div>
+        )}
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
@@ -595,7 +603,7 @@ export default function PricingPage() {
                     max="999"
                     value={vehicleCount}
                     onChange={(e) => setVehicleCount(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="flex-1 px-4 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-center text-2xl font-bold text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
+                    className="flex-1 px-4 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-center text-2xl font-bold text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500"
                   />
                   <button
                     onClick={() => setVehicleCount(Math.min(999, vehicleCount + 1))}

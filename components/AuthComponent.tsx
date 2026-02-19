@@ -324,7 +324,7 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               placeholder="Your full name"
               required
             />
@@ -340,7 +340,7 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+            className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
             placeholder="your@email.com"
             required
           />
@@ -356,7 +356,7 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+              className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               placeholder="Your password"
               required
               minLength={6}

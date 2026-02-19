@@ -26,12 +26,14 @@ export default function OrgManagement() {
   const [role, setRole] = useState<'owner' | 'editor' | 'viewer'>('viewer')
   const [members, setMembers] = useState<OrgMember[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteRole, setInviteRole] = useState<'editor' | 'viewer'>('editor')
   const [inviting, setInviting] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [editingName, setEditingName] = useState(false)
   const [orgName, setOrgName] = useState('')
+  const [pendingRemoveMemberId, setPendingRemoveMemberId] = useState<string | null>(null)
 
   const loadOrg = useCallback(async () => {
     try {
@@ -53,6 +55,7 @@ export default function OrgManagement() {
       }
     } catch (error) {
       console.error('Error loading org:', error)
+      setLoadError(true)
     } finally {
       setLoading(false)
     }
@@ -94,8 +97,7 @@ export default function OrgManagement() {
   }
 
   const handleRemoveMember = async (memberId: string) => {
-    if (!confirm('Remove this member from the organization?')) return
-
+    setPendingRemoveMemberId(null)
     try {
       const res = await fetch('/api/org/members', {
         method: 'DELETE',
@@ -173,7 +175,16 @@ export default function OrgManagement() {
     )
   }
 
-  if (!org) return null
+  if (!org) {
+    if (loadError) {
+      return (
+        <div className="card-professional p-6">
+          <p className="text-sm text-red-600 dark:text-red-400">Failed to load team settings. Please refresh the page.</p>
+        </div>
+      )
+    }
+    return null
+  }
 
   const isOwnerRole = role === 'owner'
   const memberCount = members.length
@@ -284,20 +295,38 @@ export default function OrgManagement() {
                   <select
                     value={member.role}
                     onChange={(e) => handleChangeRole(member.id, e.target.value as 'editor' | 'viewer')}
+                    aria-label={`Change role for ${member.full_name || member.email || member.invited_email || 'member'}`}
                     className="text-xs border border-gray-300 dark:border-gray-600 rounded px-1 py-0.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
                   >
                     <option value="editor">Editor</option>
                     <option value="viewer">Viewer</option>
                   </select>
-                  <button
-                    onClick={() => handleRemoveMember(member.id)}
-                    className="text-red-500 hover:text-red-700 text-xs p-1"
-                    title="Remove member"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
+                  {pendingRemoveMemberId === member.id ? (
+                    <div className="flex items-center gap-1 text-xs">
+                      <button
+                        onClick={() => handleRemoveMember(member.id)}
+                        className="text-red-600 font-medium hover:text-red-800 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                      >
+                        Remove
+                      </button>
+                      <button
+                        onClick={() => setPendingRemoveMemberId(null)}
+                        className="text-gray-500 hover:text-gray-700 min-h-[44px] px-1"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setPendingRemoveMemberId(member.id)}
+                      aria-label="Remove member"
+                      className="text-red-500 hover:text-red-700 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -310,7 +339,9 @@ export default function OrgManagement() {
         <form onSubmit={handleInvite} className="space-y-3">
           <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Invite Member</h4>
           <div className="flex gap-2">
+            <label htmlFor="invite-email" className="sr-only">Invite by email address</label>
             <input
+              id="invite-email"
               type="email"
               value={inviteEmail}
               onChange={(e) => setInviteEmail(e.target.value)}
@@ -321,6 +352,7 @@ export default function OrgManagement() {
             <select
               value={inviteRole}
               onChange={(e) => setInviteRole(e.target.value as 'editor' | 'viewer')}
+              aria-label="Invite role"
               className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
             >
               <option value="editor">Editor</option>
