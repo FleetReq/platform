@@ -1142,7 +1142,8 @@ function CarDetailEditor({ carId, cars, onUpdate }: { carId: string, cars: Car[]
 }
 
 // User Settings Component
-function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free' }: { cars?: Car[], onCarDeleted?: () => void, initialSubscriptionPlan?: 'free' | 'personal' | 'business' }) {
+function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', orgRole = 'owner' }: { cars?: Car[], onCarDeleted?: () => void, initialSubscriptionPlan?: 'free' | 'personal' | 'business', orgRole?: 'owner' | 'editor' | 'viewer' }) {
+  const userOrgRole = orgRole
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [isChangingPassword, setIsChangingPassword] = useState(false)
   const [currentPassword, setCurrentPassword] = useState('')
@@ -2767,7 +2768,7 @@ export default function MileageTracker() {
               {activeTab === 'settings' && (
                 <div className="space-y-6">
                   <div className="card-professional p-6">
-                    <UserSettings cars={cars} onCarDeleted={() => loadData()} initialSubscriptionPlan={userSubscriptionPlan} />
+                    <UserSettings cars={cars} onCarDeleted={() => loadData()} initialSubscriptionPlan={userSubscriptionPlan} orgRole={userOrgRole} />
                   </div>
                   <OrgManagement />
                   {/* Leave Organization — shown only for non-owner memberships */}
