@@ -127,10 +127,7 @@ export default function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan =
           notes: ''
         })
         receiptUpload.reset()
-        // Small delay to ensure API completes before refresh
-        setTimeout(() => {
-          onSuccess()
-        }, 100)
+        onSuccess()
       } else {
         const error = await response.json()
         alert(error.error || 'Failed to add maintenance record')

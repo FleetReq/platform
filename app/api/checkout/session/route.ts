@@ -3,7 +3,9 @@ import Stripe from 'stripe'
 import { createRouteHandlerClient } from '@/lib/supabase'
 import { getUserOrg, getOrgDetails } from '@/lib/org'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+if (!process.env.STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY env var is required')
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-10-29.clover',
 })
 
@@ -65,44 +67,48 @@ export async function POST(request: NextRequest) {
         .eq('id', membership.org_id)
     }
 
-    // Create line items based on tier
+    // Create line items based on tier.
+    // Use pre-created Stripe Price IDs (set env vars STRIPE_PERSONAL_PRICE_ID / STRIPE_BUSINESS_PRICE_ID
+    // after creating products in the Stripe dashboard). Falls back to inline price_data for local dev.
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = []
 
     if (tier === 'personal') {
-      // Personal tier: $4/month flat rate
-      // TODO: Replace with actual Stripe Price ID after creating products in dashboard
-      lineItems.push({
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: 'FleetReq Personal',
-            description: 'Up to 3 vehicles, full maintenance tracking, unlimited history',
-          },
-          recurring: {
-            interval: 'month',
-          },
-          unit_amount: 400, // $4.00 in cents
-        },
-        quantity: 1,
-      })
+      const priceId = process.env.STRIPE_PERSONAL_PRICE_ID
+      lineItems.push(
+        priceId
+          ? { price: priceId, quantity: 1 }
+          : {
+              price_data: {
+                currency: 'usd',
+                product_data: {
+                  name: 'FleetReq Personal',
+                  description: 'Up to 3 vehicles, full maintenance tracking, unlimited history',
+                },
+                recurring: { interval: 'month' },
+                unit_amount: 400, // $4.00 in cents
+              },
+              quantity: 1,
+            }
+      )
     } else if (tier === 'business') {
-      // Business tier: $12/vehicle/month
       const quantity = vehicleCount || 4 // Default to 4 vehicles if not specified
-
-      lineItems.push({
-        price_data: {
-          currency: 'usd',
-          product_data: {
-            name: 'FleetReq Business',
-            description: 'Per vehicle pricing, unlimited vehicles, team collaboration, tax reports',
-          },
-          recurring: {
-            interval: 'month',
-          },
-          unit_amount: 1200, // $12.00 in cents
-        },
-        quantity,
-      })
+      const priceId = process.env.STRIPE_BUSINESS_PRICE_ID
+      lineItems.push(
+        priceId
+          ? { price: priceId, quantity }
+          : {
+              price_data: {
+                currency: 'usd',
+                product_data: {
+                  name: 'FleetReq Business',
+                  description: 'Per vehicle pricing, unlimited vehicles, team collaboration, tax reports',
+                },
+                recurring: { interval: 'month' },
+                unit_amount: 1200, // $12.00 in cents
+              },
+              quantity,
+            }
+      )
     }
 
     // Create checkout session

@@ -13,12 +13,8 @@ export default function OAuthRedirectHandler() {
     const authCode = searchParams.get('code')
     const hash = window.location.hash
 
-    console.log('OAuthRedirectHandler: pathname:', window.location.pathname, 'code:', authCode ? 'present' : 'none')
-
     // Handle OAuth popup that redirects to homepage due to Supabase Site URL override
     if (authCode && window.opener && supabase) {
-      console.log('OAuthRedirectHandler: Popup detected on homepage - closing immediately')
-
       // Close popup immediately to prevent flash
       try {
         window.close()
@@ -45,15 +41,13 @@ export default function OAuthRedirectHandler() {
               error: error.message
             })
           } else if (data.session) {
-            console.log('Session established successfully in popup')
-
             // Sync session with server in background
             fetch('/api/sync-session', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ session: data.session }),
               credentials: 'include'
-            }).catch(console.error)
+            }).catch((err) => console.error('[OAuthRedirectHandler] Session sync failed:', err))
 
             // Notify parent window of success
             authChannel.postMessage({
@@ -77,72 +71,8 @@ export default function OAuthRedirectHandler() {
         }
       }
 
-      // Execute auth processing in background
-      processPopupAuth()
-      return
-    }
-
-    // Handle regular redirects if this is clearly a fallback scenario
-    if (false && authCode && supabase) {
-      console.log('OAuthRedirectHandler: Processing auth code immediately...')
-
-      // Process auth code IMMEDIATELY without any delays
-      const processAuthImmediate = async () => {
-        if (!supabase) {
-          console.error('Supabase client not available')
-          router.replace('/dashboard')
-          return
-        }
-
-        try {
-          const { data, error } = await supabase.auth.exchangeCodeForSession(authCode!)
-
-          if (error) {
-            console.error('Session exchange failed:', error)
-            router.replace('/dashboard')
-            return
-          }
-
-          if (data.session) {
-            console.log('Session established, going to mileage...')
-
-            // Don't wait for server sync - do it in background
-            fetch('/api/sync-session', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ session: data.session }),
-              credentials: 'include'
-            }).catch(console.error)
-
-            // Immediate redirect to mileage
-            router.replace('/dashboard?auth=success')
-          } else {
-            router.replace('/dashboard')
-          }
-        } catch (error) {
-          console.error('Auth processing failed:', error)
-          router.replace('/dashboard')
-        }
-      }
-
-      // Execute immediately
-      processAuthImmediate()
-      return
-    }
-
-    // Handle legacy implicit flow - tokens in hash
-    if (false && hash.includes('access_token=') &&
-        hash.includes('provider_token=') &&
-        hash.includes('expires_at=')) {
-
-      console.log('OAuthRedirectHandler: Detected OAuth tokens, redirecting to mileage page...')
-
-      // This is a fresh OAuth redirect from GitHub -> Supabase -> here
-      // Redirect to mileage page with auth=success parameter and preserve tokens in hash
-      router.replace('/dashboard?auth=success' + hash)
-
-      // Clear the hash from homepage after redirect to prevent future redirects
-      window.history.replaceState(null, '', window.location.pathname)
+      // Execute auth processing in background; surface any unexpected rejection
+      processPopupAuth().catch((err) => console.error('[OAuthRedirectHandler] Unhandled popup auth error:', err))
     }
   }, [router])
 

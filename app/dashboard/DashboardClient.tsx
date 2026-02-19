@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner, isAdmin, getUserSubscriptionPlan, getUserMaxVehicles, hasFeatureAccess } from '@/lib/supabase-client'
 import { MAINTENANCE_INTERVALS, getMaintenanceStatus, getLatestMaintenanceRecord } from '@/lib/maintenance'
-import { MAINTENANCE_TYPES, MAINTENANCE_TYPE_FILTER_OPTIONS, getStatusColor, getStatusTextColor, getIrsRate, type MaintenanceStatus } from '@/lib/constants'
+import { MAINTENANCE_TYPES, MAINTENANCE_TYPE_FILTER_OPTIONS, getStatusColor, getStatusTextColor, getIrsRate, OWNER_USER_ID, type MaintenanceStatus } from '@/lib/constants'
 import BackgroundAnimation from '../components/BackgroundAnimation'
 import { useTheme } from '../theme-provider'
 import RecordDetailModal from '../../components/RecordDetailModal'
@@ -421,7 +421,7 @@ function RecordsManager({
 
     return Array.from(userIds).map(userId => {
       // For now, we'll just show the user ID. In a real app, you'd fetch user profiles
-      return { id: userId, name: userId === 'b73a07b2-ed72-41b1-943f-e119afc9eddb' ? 'Owner (Bruce)' : `User ${userId?.slice(0, 8) || 'Unknown'}...` }
+      return { id: userId, name: userId === OWNER_USER_ID ? 'Owner' : `User ${userId?.slice(0, 8) || 'Unknown'}...` }
     })
   }, [cars, fillUps, maintenanceRecords])
 
@@ -2110,7 +2110,7 @@ export default function DashboardClient({
     fetch('/api/org?all=true')
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data?.orgs) setAllOrgs(data.orgs) })
-      .catch(() => {})
+      .catch((err) => console.error('[Settings] Failed to load organizations:', err))
   }, [activeTab])
 
   // Listen for sign-out and fetch initial stats on mount
@@ -2122,12 +2122,12 @@ export default function DashboardClient({
       if (event === 'TOKEN_REFRESHED' && session?.user) setUser(session.user)
     })
     return () => subscription.unsubscribe()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- intentional: mount-only, deps would cause infinite loop
 
   // Fetch stats on mount (stats aren't pre-loaded by the server component)
   useEffect(() => {
     loadData()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- intentional: mount-only, loadData changes on every render
 
   // Fetch with an 8-second abort timeout so hung Vercel functions don't block indefinitely
   const fetchWithTimeout = (url: string, options: RequestInit = {}) => {

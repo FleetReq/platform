@@ -127,10 +127,7 @@ export default function AddFillUpForm({ cars, onSuccess, subscriptionPlan = 'fre
           consecutive_fillup: true
         })
         receiptUpload.reset()
-        // Small delay to ensure API completes before refresh
-        setTimeout(() => {
-          onSuccess()
-        }, 100)
+        onSuccess()
       } else {
         const error = await response.json()
         alert(error.error || 'Failed to add fill-up')

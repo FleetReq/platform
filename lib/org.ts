@@ -1,5 +1,5 @@
 import { SupabaseClient, createClient } from '@supabase/supabase-js'
-import { isAdmin } from '@/lib/constants'
+import { isAdmin, PLAN_LIMITS } from '@/lib/constants'
 
 export type OrgRole = 'owner' | 'editor' | 'viewer'
 
@@ -268,7 +268,7 @@ export async function ensureUserHasOrg(userId: string): Promise<OrgMembership | 
       })
 
     if (!memberError) {
-      console.log(`ensureUserHasOrg: reconnected user ${userId} to existing org ${existingCar.org_id}`)
+      console.error(`ensureUserHasOrg: reconnected user ${userId} to existing org ${existingCar.org_id} (missing membership record)`)
       return { org_id: existingCar.org_id, role: 'owner' }
     }
     // If insert failed (e.g. duplicate), try to read existing membership
@@ -305,8 +305,7 @@ export async function ensureUserHasOrg(userId: string): Promise<OrgMembership | 
 
   const admin = isAdmin(userId)
   const plan = admin ? 'business' : 'free'
-  const maxVehicles = admin ? 999 : 1
-  const maxMembers = admin ? 6 : 1
+  const { maxVehicles, maxMembers } = PLAN_LIMITS[plan]
 
   const { data: org, error: orgError } = await adminClient
     .from('organizations')
@@ -339,6 +338,5 @@ export async function ensureUserHasOrg(userId: string): Promise<OrgMembership | 
     return null
   }
 
-  console.log(`ensureUserHasOrg: created new org ${org.id} for user ${userId} (${plan})`)
   return { org_id: org.id, role: 'owner' }
 }

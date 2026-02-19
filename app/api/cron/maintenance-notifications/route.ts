@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import {
   MAINTENANCE_INTERVALS,
@@ -385,17 +385,17 @@ async function sendEmail(to: string, subject: string, html: string, unsubscribeU
 // Record sent notifications (upsert updates notified_at for repeating alerts)
 // ---------------------------------------------------------------------------
 
+// maintenance_notifications_sent is not in the generated Supabase types yet.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function recordSentAlerts(
-  supabase: any,
+  supabase: SupabaseClient<any>,
   userId: string,
   alerts: AlertItem[]
 ): Promise<string[]> {
   const errors: string[] = []
 
   for (const alert of alerts) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from('maintenance_notifications_sent')
       .upsert(
         {

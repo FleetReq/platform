@@ -104,9 +104,16 @@ export const isAdmin = _isAdmin
 // Consolidated org value lookup (eliminates duplicated query pattern)
 // ---------------------------------------------------------------------------
 
+/** Columns queried from the organizations table via getOrgValue. */
+interface OrgRow {
+  subscription_plan: string
+  max_vehicles: number
+  max_members: number
+}
+
 async function getOrgValue<T>(
   userId: string,
-  field: string,
+  field: keyof OrgRow,
   defaultValue: T
 ): Promise<T> {
   if (!supabase) return defaultValue
@@ -130,7 +137,7 @@ async function getOrgValue<T>(
         .eq('id', membership.org_id)
         .maybeSingle()
 
-      const record = org as Record<string, unknown> | null
+      const record = org as OrgRow | null
       if (record && record[field] !== undefined) {
         return record[field] as T
       }
@@ -159,7 +166,7 @@ async function getOrgValue<T>(
     return defaultValue
   }
 
-  return ((org as unknown as Record<string, unknown>)[field] as T) ?? defaultValue
+  return ((org as OrgRow)[field] as T) ?? defaultValue
 }
 
 // Subscription plan checking functions — query through org_members -> organizations

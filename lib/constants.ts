@@ -27,6 +27,13 @@ export type SubscriptionPlan = 'free' | 'personal' | 'business'
 
 export type OrgRole = 'owner' | 'editor' | 'viewer'
 
+/** Single source of truth for per-plan vehicle and member limits. */
+export const PLAN_LIMITS: Record<SubscriptionPlan, { maxVehicles: number; maxMembers: number }> = {
+  free:     { maxVehicles: 1,   maxMembers: 1 },
+  personal: { maxVehicles: 3,   maxMembers: 3 },
+  business: { maxVehicles: 999, maxMembers: 6 },
+}
+
 // ---------------------------------------------------------------------------
 // IRS Mileage Rates
 // ---------------------------------------------------------------------------

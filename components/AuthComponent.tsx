@@ -37,7 +37,6 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
       }
 
       const { data: { session } } = await supabase.auth.getSession()
-      console.log('AuthComponent: Initial session loaded, calling onAuthChange with:', session?.user?.email || 'null')
       setUser(session?.user ?? null)
       setLoading(false)
       // Check invites first — if redirecting to /invite/accept, skip dashboard navigation
@@ -54,7 +53,6 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth event:', event)
         setUser(session?.user ?? null)
         setLoading(false)
 
@@ -80,7 +78,7 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
     )
 
     return () => subscription.unsubscribe()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- intentional: mount-only, deps would cause infinite loop
 
   // Returns true if a pending invite was found and redirect was initiated.
   // Races against a 3-second timeout so a hung Supabase query never blocks the
@@ -188,8 +186,6 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
       // Use redirect-based OAuth flow (more reliable than popup)
       const redirectUrl = `${window.location.origin}/auth/callback`
 
-      console.log('OAuth redirect URL:', redirectUrl)
-
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -245,7 +241,6 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
         console.error('Sign out error:', error)
         setError('Failed to sign out')
       } else {
-        console.log('Successfully signed out')
         // Force refresh to ensure clean state
         window.location.reload()
       }

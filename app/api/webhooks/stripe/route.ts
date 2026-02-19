@@ -1,17 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
+import { PLAN_LIMITS, type SubscriptionPlan } from '@/lib/constants'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+if (!process.env.STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY env var is required')
+if (!process.env.STRIPE_WEBHOOK_SECRET) throw new Error('STRIPE_WEBHOOK_SECRET env var is required')
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL) throw new Error('NEXT_PUBLIC_SUPABASE_URL env var is required')
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) throw new Error('SUPABASE_SERVICE_ROLE_KEY env var is required')
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-10-29.clover',
 })
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
 
 // Use service role client to bypass RLS when updating subscriptions
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
 export const dynamic = 'force-dynamic'
@@ -64,8 +70,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Determine max vehicles and members based on tier
-        const maxVehicles = tier === 'business' ? 999 : tier === 'personal' ? 3 : 1
-        const maxMembers = tier === 'business' ? 6 : tier === 'personal' ? 3 : 1
+        const { maxVehicles, maxMembers } = PLAN_LIMITS[tier as SubscriptionPlan] ?? PLAN_LIMITS.free
 
         // Update organization's subscription
         const { error } = await supabase
@@ -120,9 +125,8 @@ export async function POST(request: NextRequest) {
 
         // Check subscription status
         const isActive = subscription.status === 'active' || subscription.status === 'trialing'
-        const activeTier = isActive ? tier : 'free'
-        const maxVehicles = activeTier === 'business' ? 999 : activeTier === 'personal' ? 3 : 1
-        const maxMembers = activeTier === 'business' ? 6 : activeTier === 'personal' ? 3 : 1
+        const activeTier: SubscriptionPlan = isActive ? tier : 'free'
+        const { maxVehicles, maxMembers } = PLAN_LIMITS[activeTier]
 
         // Update organization
         const { error } = await supabase

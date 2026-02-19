@@ -96,7 +96,7 @@ export default function RecordDetailModal({
       setRemovedReceiptUrls([])
       receiptUpload.reset()
     }
-  }, [mode]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [mode]) // eslint-disable-line react-hooks/exhaustive-deps -- intentional: only re-run when mode changes, other deps are stable refs
 
   const handleRemoveExistingPhoto = (path: string) => {
     setCurrentReceiptUrls((prev) => prev.filter((p) => p !== path))

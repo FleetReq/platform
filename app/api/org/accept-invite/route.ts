@@ -26,9 +26,12 @@ export async function GET(request: NextRequest) {
 
   if (!invite) return errorResponse('Invitation not found or already accepted', 404)
 
-  const org = invite.organizations as unknown as { name: string } | null
+  // Supabase types FK joins as arrays in generated types, but at runtime this is a single object.
+  // We handle both shapes defensively.
+  const orgData = invite.organizations as unknown as { name: string } | { name: string }[] | null
+  const orgName = Array.isArray(orgData) ? orgData[0]?.name : orgData?.name
   return NextResponse.json({
-    org_name: org?.name || 'Unknown Organization',
+    org_name: orgName || 'Unknown Organization',
     role: invite.role,
     invited_email: invite.invited_email,
   })

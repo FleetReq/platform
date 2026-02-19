@@ -93,7 +93,7 @@ function AcceptInviteContent() {
 
       setStatus('success')
       setMessage(`You have successfully joined ${inviteDetails?.org_name || 'the organization'}!`)
-      setTimeout(() => { window.location.href = '/dashboard' }, 1500)
+      setTimeout(() => { router.push('/dashboard') }, 1500)
     } catch (err) {
       console.error('Accept invite error:', err)
       setStatus('error')
