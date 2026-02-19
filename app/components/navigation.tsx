@@ -104,9 +104,23 @@ export function Navigation() {
             setSubscriptionStartDate(profile.subscription_start_date);
           }
         }
+
+        // Re-fetch orgs on every sign-in so the switcher is up-to-date
+        // (fetchUserData only runs on mount, so it misses sign-ins that happen
+        // after the initial load, e.g. after sign out → sign back in)
+        try {
+          const res = await fetch('/api/org?all=true');
+          if (res.ok) {
+            const data = await res.json();
+            setOrgs(data.orgs || []);
+            setActiveOrgId(data.active_org_id);
+          }
+        } catch { /* ignore */ }
       } else {
         setSubscriptionTier('free');
         setSubscriptionStartDate(null);
+        setOrgs([]);
+        setActiveOrgId(null);
       }
     });
 
