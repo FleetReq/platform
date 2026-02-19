@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 
   if (!invite) return errorResponse('Invitation not found or already accepted', 404)
 
-  const org = invite.organizations as { name: string } | null
+  const org = invite.organizations as unknown as { name: string } | null
   return NextResponse.json({
     org_name: org?.name || 'Unknown Organization',
     role: invite.role,
