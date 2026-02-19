@@ -2207,22 +2207,61 @@ export default function MileageTracker() {
       }
     }, 10000)
 
-    // Use onAuthStateChange + INITIAL_SESSION instead of getSession().
-    // INITIAL_SESSION fires immediately from the local cookie cache — no network
-    // call required. getSession() can hang 10+ seconds when the access token is
-    // expired and the Supabase refresh endpoint is slow, causing the safety timer
-    // to incorrectly redirect an authenticated user to the login page.
+    // Auth initialization strategy:
+    // 1. INITIAL_SESSION fires instantly from the local cookie cache (no network).
+    //    - If session is present: fast path, load dashboard data immediately.
+    //    - If session is null: DON'T redirect yet — this is a known race condition
+    //      where the Supabase client hasn't finished reading cookies after a reload.
+    //      Instead, server-validate with getUser() before deciding to redirect.
+    // 2. SIGNED_IN covers cases where INITIAL_SESSION was null but auth resolved.
+    // 3. SIGNED_OUT is the only reliable signal to redirect to login.
+    // 4. handleAuthChange errors (org fetch failures etc.) show a degraded state
+    //    but never redirect — the user IS authenticated, it's a data fetch issue.
+    const runAuthChange = async (user: User) => {
+      if (!isMounted || loadCompleted) return
+      loadCompleted = true
+      try {
+        await handleAuthChange(user)
+      } catch (error) {
+        console.error('Error loading dashboard data:', error)
+        if (isMounted) setLoading(false)
+      }
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (!isMounted || loadCompleted) return
+
+        if (event === 'SIGNED_OUT') {
+          router.replace('/login')
+          return
+        }
+
         if (event === 'INITIAL_SESSION') {
-          try {
-            await handleAuthChange(session?.user ?? null)
-            loadCompleted = true
-          } catch (error) {
-            console.error('Error during auth initialization:', error)
-            if (isMounted) router.replace('/login')
+          if (session?.user) {
+            // Fast path: session is in cache, proceed immediately
+            await runAuthChange(session.user)
+          } else {
+            // Null session on INITIAL_SESSION is often a race condition (reload/org-switch).
+            // Server-validate before redirecting to avoid false logouts.
+            // Use setTimeout to avoid calling auth inside the auth event handler.
+            setTimeout(async () => {
+              if (!isMounted || loadCompleted) return
+              const { data: { user } } = await supabase!.auth.getUser()
+              if (!isMounted || loadCompleted) return
+              if (user) {
+                await runAuthChange(user)
+              } else {
+                router.replace('/login')
+              }
+            }, 0)
           }
+          return
+        }
+
+        // SIGNED_IN fires after token refresh or OAuth redirect — covers late sessions
+        if (event === 'SIGNED_IN' && session?.user) {
+          await runAuthChange(session.user)
         }
       }
     )
