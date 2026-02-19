@@ -63,7 +63,7 @@ export function Navigation() {
           .from('user_profiles')
           .select('subscription_start_date')
           .eq('id', currentUser.id)
-          .single();
+          .maybeSingle();
 
         if (profile?.subscription_start_date) {
           setSubscriptionStartDate(profile.subscription_start_date);
@@ -98,7 +98,7 @@ export function Navigation() {
             .from('user_profiles')
             .select('subscription_start_date')
             .eq('id', session.user.id)
-            .single();
+            .maybeSingle();
 
           if (profile?.subscription_start_date) {
             setSubscriptionStartDate(profile.subscription_start_date);

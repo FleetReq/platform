@@ -121,14 +121,14 @@ async function getOrgValue<T>(
       .eq('user_id', userId)
       .eq('org_id', activeOrgId)
       .limit(1)
-      .single()
+      .maybeSingle()
 
     if (membership) {
       const { data: org } = await supabase
         .from('organizations')
         .select(field)
         .eq('id', membership.org_id)
-        .single()
+        .maybeSingle()
 
       const record = org as Record<string, unknown> | null
       if (record && record[field] !== undefined) {
@@ -143,7 +143,7 @@ async function getOrgValue<T>(
     .select('org_id')
     .eq('user_id', userId)
     .limit(1)
-    .single()
+    .maybeSingle()
 
   if (membershipError || !membership) {
     return defaultValue
@@ -153,7 +153,7 @@ async function getOrgValue<T>(
     .from('organizations')
     .select(field)
     .eq('id', membership.org_id)
-    .single()
+    .maybeSingle()
 
   if (orgError || !org) {
     return defaultValue
