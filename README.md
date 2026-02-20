@@ -109,9 +109,6 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 # Supabase Service Role (REQUIRED for cron jobs)
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
-# Direct DB Connection (for keep-alive)
-DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT_REF].supabase.co:5432/postgres
-
 # Google Analytics (Optional)
 NEXT_PUBLIC_GA_ID=G-YOUR-GA-ID-HERE
 ```
@@ -217,7 +214,6 @@ fleetreq-platform/
 
 | Workflow | Schedule | Endpoint | Purpose |
 |----------|----------|----------|---------|
-| **Keep-Alive** | Every 4 hours | `/api/cron/keep-alive` | INSERT/DELETE/SELECT on heartbeat table to prevent Supabase free-tier auto-pause |
 | **Cleanup Expired Accounts** | Daily 00:00 UTC | `/api/cron/cleanup-expired-accounts` | GDPR-compliant deletion of accounts past scheduled deletion date |
 | **Execute Pending Downgrades** | Daily | `/api/cron/execute-pending-downgrades` | Processes subscription downgrades when effective date is reached |
 
@@ -227,7 +223,6 @@ fleetreq-platform/
 
 ### **Row Level Security (RLS)**
 - All user tables enforce `auth.uid() = user_id` on every query
-- System tables (heartbeat) restricted to service_role only
 - Admin bypass is application-level only, not database-level
 
 ### **Authentication**
@@ -328,7 +323,6 @@ Supabase Dashboard → Authentication → URL Configuration:
 - [x] Automatic plan downgrades
 - [x] IRS business trip logging with dynamic yearly rates
 - [x] GDPR-compliant account deletion
-- [x] Supabase keep-alive system (prevents auto-pause)
 - [x] Security headers, rate limiting, input validation
 - [x] FleetReq branding and favicon
 - [x] Light/dark mode

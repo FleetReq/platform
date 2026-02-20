@@ -16,8 +16,6 @@
 8. [trips](#trips)
 9. [maintenance_notifications_sent](#maintenance_notifications_sent) (system table)
 10. [public_stats](#public_stats) (view)
-11. [heartbeat](#heartbeat) (system table)
-
 ---
 
 ## auth.users
@@ -494,29 +492,6 @@ SELECT * FROM public_stats
 **Columns (as used in code):**
 - Aggregate counts/metrics visible on the landing page (total users, vehicles, fill-ups, etc.)
 
----
-
-## heartbeat
-
-**System table for Supabase keep-alive**
-
-```sql
-CREATE TABLE public.heartbeat (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  pinged_at timestamptz NOT NULL DEFAULT NOW(),
-  source text NOT NULL DEFAULT 'cron',
-  metadata jsonb
-)
-```
-
-**Purpose:** Prevents Supabase free-tier auto-pause by tracking database activity
-
-**RLS Policies:**
-- `Service role can manage heartbeat` (TO service_role) - Only service_role can INSERT/SELECT/UPDATE/DELETE. Authenticated and anon roles have no access by design.
-
-**Managed By:**
-- `.github/workflows/keep-alive.yml` - GitHub Actions cron (every 4 hours)
-- `app/api/cron/keep-alive/route.ts` - API endpoint (uses service role + direct DB connection)
 
 ---
 

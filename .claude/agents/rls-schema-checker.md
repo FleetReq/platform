@@ -18,7 +18,6 @@ You are a database schema and RLS policy auditor for the FleetReq platform (Supa
 | `cars` | Per org | ✅ |
 | `fill_ups` | Via car → org | ✅ |
 | `maintenance_records` | Via car → org | ✅ |
-| `heartbeat` | Service role only | ✅ |
 
 **Multi-org access**: Users can belong to multiple orgs. The `user_org_ids()` SQL helper function returns all org IDs for the current user and is used in RLS policies.
 
