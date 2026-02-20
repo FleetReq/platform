@@ -87,7 +87,7 @@ export async function PATCH(
 
     // Clean up removed receipt photos from storage
     if (body.receipt_urls !== undefined) {
-      const oldPaths: string[] = (existing as unknown as MaintenanceWithReceipts).receipt_urls || []
+      const oldPaths: string[] = (existing as { receipt_urls?: string[] | null }).receipt_urls ?? []
       const newPaths: string[] = (updateData.receipt_urls as string[]) || []
       const removedPaths = oldPaths.filter((p: string) => !newPaths.includes(p))
       if (removedPaths.length > 0) {

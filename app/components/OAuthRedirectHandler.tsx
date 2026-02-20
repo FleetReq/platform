@@ -1,12 +1,9 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase-client'
 
 export default function OAuthRedirectHandler() {
-  const router = useRouter()
-
   useEffect(() => {
     // Handle OAuth codes that end up on home page (due to Site URL override)
     const searchParams = new URLSearchParams(window.location.search)
@@ -74,7 +71,7 @@ export default function OAuthRedirectHandler() {
       // Execute auth processing in background; surface any unexpected rejection
       processPopupAuth().catch((err) => console.error('[OAuthRedirectHandler] Unhandled popup auth error:', err))
     }
-  }, [router])
+  }, [])
 
   return null // This component doesn't render anything
 }

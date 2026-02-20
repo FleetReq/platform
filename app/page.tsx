@@ -1,13 +1,15 @@
 import Link from "next/link";
 import OAuthRedirectHandler from './components/OAuthRedirectHandler';
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://fleetreq.vercel.app'
+
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
   "name": "FleetReq",
   "applicationCategory": "BusinessApplication",
   "description": "Professional vehicle fleet management and maintenance tracking for small businesses and contractors. Stop using spreadsheets - get 15-minute setup with maintenance alerts, tax compliance, and team collaboration.",
-  "url": "https://fleetreq.vercel.app",
+  "url": siteUrl,
   "operatingSystem": "Web Browser",
   "offers": {
     "@type": "Offer",

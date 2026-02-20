@@ -42,6 +42,15 @@ ChartJS.register(
 const CURRENT_YEAR = new Date().getFullYear()
 const CURRENT_IRS_RATE = getIrsRate(CURRENT_YEAR)
 
+// Fetch with an 8-second abort timeout so hung Vercel functions don't block indefinitely
+function fetchWithTimeout(url: string, options: RequestInit = {}): Promise<Response> {
+  const controller = new AbortController()
+  const id = setTimeout(() => controller.abort(), 8000)
+  return fetch(url, { ...options, signal: controller.signal })
+    .finally(() => clearTimeout(id))
+    .catch(() => new Response(null, { status: 408 }))
+}
+
 interface UserStats {
   total_cars: number
   total_fill_ups: number
@@ -453,7 +462,7 @@ function RecordsManager({
     setDeleteError('')
     try {
       const endpoint = type === 'fillup' ? '/api/fill-ups' : '/api/maintenance'
-      const response = await fetch(`${endpoint}/${id}`, {
+      const response = await fetchWithTimeout(`${endpoint}/${id}`, {
         method: 'DELETE'
       })
 
@@ -908,7 +917,7 @@ function CurrentMileageEditor({ carId, cars, onUpdate }: { carId: string, cars: 
 
     setLoading(true)
     try {
-      const response = await fetch('/api/cars', {
+      const response = await fetchWithTimeout('/api/cars', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1071,7 +1080,7 @@ function CarDetailEditor({ carId, cars, onUpdate }: { carId: string, cars: Car[]
     setErrorMessage('')
     setLoading(true)
     try {
-      const response = await fetch('/api/cars', {
+      const response = await fetchWithTimeout('/api/cars', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1228,7 +1237,7 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
       if (user) {
         // Get org subscription info
         try {
-          const orgRes = await fetch('/api/org')
+          const orgRes = await fetchWithTimeout('/api/org')
           if (orgRes.ok) {
             const orgData = await orgRes.json()
             setSubscriptionPlan(orgData.org?.subscription_plan as 'free' | 'personal' | 'business' || 'free')
@@ -1326,7 +1335,7 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
 
     setDeletingCarId(carId)
     try {
-      const response = await fetch(`/api/cars/${carId}`, {
+      const response = await fetchWithTimeout(`/api/cars/${carId}`, {
         method: 'DELETE'
       })
 
@@ -1352,7 +1361,7 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
 
     setIsCancelling(true)
     try {
-      const response = await fetch('/api/subscription/cancel', {
+      const response = await fetchWithTimeout('/api/subscription/cancel', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -1376,7 +1385,7 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
 
       // Refresh subscription info from org
       try {
-        const orgRes = await fetch('/api/org')
+        const orgRes = await fetchWithTimeout('/api/org')
         if (orgRes.ok) {
           const orgData = await orgRes.json()
           setSubscriptionPlan(orgData.org?.subscription_plan as 'free' | 'personal' | 'business' || 'free')
@@ -1400,7 +1409,7 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
 
     setIsDowngrading(true)
     try {
-      const response = await fetch('/api/subscription/downgrade', {
+      const response = await fetchWithTimeout('/api/subscription/downgrade', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2182,7 +2191,7 @@ export default function DashboardClient({
     if (activeTab !== 'settings') return
     const loadOrgs = async () => {
       try {
-        const r = await fetch('/api/org?all=true')
+        const r = await fetchWithTimeout('/api/org?all=true')
         if (r.ok) {
           const data = await r.json()
           if (data?.orgs) setAllOrgs(data.orgs)
@@ -2209,15 +2218,6 @@ export default function DashboardClient({
   useEffect(() => {
     loadData()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps -- intentional: mount-only, loadData is stable via useCallback but eslint cannot verify this
-
-  // Fetch with an 8-second abort timeout so hung Vercel functions don't block indefinitely
-  const fetchWithTimeout = (url: string, options: RequestInit = {}) => {
-    const controller = new AbortController()
-    const id = setTimeout(() => controller.abort(), 8000)
-    return fetch(url, { ...options, signal: controller.signal })
-      .finally(() => clearTimeout(id))
-      .catch(() => new Response(null, { status: 408 }))
-  }
 
   const loadData = useCallback(async (showSkeleton = false) => {
     if (showSkeleton) setLoading(true)
@@ -2878,7 +2878,7 @@ export default function DashboardClient({
                                     setLeaveOrgError('')
                                     setLeavingOrgId(org.org_id)
                                     try {
-                                      const res = await fetch('/api/org/leave', {
+                                      const res = await fetchWithTimeout('/api/org/leave', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify({ org_id: org.org_id }),

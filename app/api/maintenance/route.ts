@@ -66,6 +66,7 @@ export async function POST(request: NextRequest) {
     const carAccess = await verifyCarAccess(supabase, user.id, car_id, activeOrgId)
     if (!carAccess.hasAccess) return errorResponse('Car not found', 404)
     if (!carAccess.canEdit) return errorResponse('Viewers cannot add maintenance records', 403)
+    if (!carAccess.orgId) return errorResponse('Organization not found', 500)
 
     const userPlan = await getOrgSubscriptionPlan(supabase, user.id, activeOrgId)
 
@@ -101,15 +102,16 @@ export async function POST(request: NextRequest) {
         .from('cars')
         .select('current_mileage')
         .eq('id', car_id)
-        .eq('org_id', carAccess.orgId!)
+        .eq('org_id', carAccess.orgId)
         .single()
 
       if (!currentCar?.current_mileage || currentCar.current_mileage < mileage) {
-        await supabase
+        const { error: mileageError } = await supabase
           .from('cars')
           .update({ current_mileage: mileage })
           .eq('id', car_id)
-          .eq('org_id', carAccess.orgId!)
+          .eq('org_id', carAccess.orgId)
+        if (mileageError) console.error('Failed to update car mileage:', mileageError)
       }
     }
 

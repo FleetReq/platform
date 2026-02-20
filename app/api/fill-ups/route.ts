@@ -70,6 +70,9 @@ export async function POST(request: NextRequest) {
     if (!carAccess.canEdit) {
       return errorResponse('Viewers cannot add fill-ups', 403)
     }
+    if (!carAccess.orgId) {
+      return errorResponse('Organization not found', 500)
+    }
 
     const userPlan = await getOrgSubscriptionPlan(supabase, user.id, activeOrgId)
     if (userPlan === 'free' && receipt_urls && receipt_urls.length > 0) {
@@ -119,11 +122,12 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (!currentCar?.current_mileage || currentCar.current_mileage < odometer_reading) {
-      await supabase
+      const { error: mileageError } = await supabase
         .from('cars')
         .update({ current_mileage: odometer_reading })
         .eq('id', car_id)
-        .eq('org_id', carAccess.orgId!)
+        .eq('org_id', carAccess.orgId)
+      if (mileageError) console.error('Failed to update car mileage:', mileageError)
     }
 
     return NextResponse.json({ fillUp }, { status: 201 })

@@ -21,7 +21,7 @@ function AcceptInviteContent() {
       return
     }
 
-    async function loadInvite() {
+    async function loadInvite(id: string) {
       try {
         if (!supabase) {
           setStatus('error')
@@ -30,7 +30,7 @@ function AcceptInviteContent() {
         }
 
         // Fetch invite details first (no auth required)
-        const detailsRes = await fetch(`/api/org/accept-invite?id=${encodeURIComponent(inviteId!)}`)
+        const detailsRes = await fetch(`/api/org/accept-invite?id=${encodeURIComponent(id)}`)
         if (!detailsRes.ok) {
           if (detailsRes.status === 404) {
             setStatus('error')
@@ -62,7 +62,7 @@ function AcceptInviteContent() {
       }
     }
 
-    loadInvite()
+    loadInvite(inviteId)
   }, [inviteId])
 
   async function handleAccept() {
