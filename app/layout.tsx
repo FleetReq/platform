@@ -82,6 +82,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <meta name="theme-color" content="#2563eb" />
         <meta name="color-scheme" content="light dark" />
+        {/* SAFE: hardcoded inline script — no user-controlled values */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -124,7 +125,7 @@ export default function RootLayout({
                   Fleet Management & Mileage Tracking for Contractors
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-500">
-                  © 2025 FleetReq. All rights reserved.
+                  © {new Date().getFullYear()} FleetReq. All rights reserved.
                 </p>
               </div>
             </div>
@@ -132,7 +133,7 @@ export default function RootLayout({
         </ThemeProvider>
         <Analytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
 
-        {/* Structured Data */}
+        {/* Structured Data — SAFE: static object only, never include user-controlled values here */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

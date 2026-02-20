@@ -96,6 +96,7 @@ Update CLAUDE.md immediately after completing work or making strategic decisions
 - Professional reporting (CSV/PDF export)
 - Excel import wizard
 - Custom autocomplete (replace `<datalist>` for iOS)
+- **Remember last-used vehicle** — Add `default_car_id` column to `user_profiles`, PATCH it on car selection, use it as initial `selectedCarId` in `DashboardClient.tsx` (currently always defaults to `cars[0]`)
 
 ### 🔮 Medium-term (3-6 months)
 - Native mobile apps (after PWA proves PMF)

@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
             }
 
             vehiclesDeleted = vehicles.length
-            console.log(`Deleted ${vehiclesDeleted} excess vehicles for org ${orgId}`)
+            console.info(`Deleted ${vehiclesDeleted} excess vehicles for org ${orgId}`)
           }
         }
 
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
           vehicles_deleted: vehiclesDeleted,
         })
 
-        console.log(`Executed downgrade: ${org.name} (${currentTier} → ${targetTier})`)
+        console.info(`Executed downgrade: ${org.name} (${currentTier} → ${targetTier})`)
       } catch (downgradeError) {
         const errorMessage = downgradeError instanceof Error ? downgradeError.message : String(downgradeError)
         errors.push({

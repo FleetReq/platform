@@ -270,7 +270,7 @@ export async function ensureUserHasOrg(userId: string): Promise<OrgMembership | 
       })
 
     if (!memberError) {
-      console.error(`ensureUserHasOrg: reconnected user ${userId} to existing org ${existingCar.org_id} (missing membership record)`)
+      console.warn(`ensureUserHasOrg: reconnected user ${userId} to existing org ${existingCar.org_id} (missing membership record)`)
       return { org_id: existingCar.org_id, role: 'owner' }
     }
     // If insert failed (e.g. duplicate), try to read existing membership

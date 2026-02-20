@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { getUserOrg, getOrgDetails, ensureUserHasOrg } from '@/lib/org'
-import { isAdmin } from '@/lib/constants'
+import { isAdmin, PLAN_LIMITS } from '@/lib/constants'
 import DashboardClient from './DashboardClient'
 
 export default async function DashboardPage() {
@@ -24,11 +24,11 @@ export default async function DashboardPage() {
   // Get full org details (plan, max_vehicles, name) — getUserOrg only returns role
   let orgName: string | null = null
   let subscriptionPlan: 'free' | 'personal' | 'business' = 'free'
-  let maxVehicles = 1
+  let maxVehicles = PLAN_LIMITS.free.maxVehicles
 
   if (isAdmin(user.id)) {
     subscriptionPlan = 'business'
-    maxVehicles = 999
+    maxVehicles = PLAN_LIMITS.business.maxVehicles
   } else if (orgId) {
     const orgDetails = await getOrgDetails(supabase, orgId)
     if (orgDetails) {

@@ -34,13 +34,18 @@ export async function POST(request: NextRequest) {
 
     const response = NextResponse.json({ success: true })
 
-    const cookieName = `sb-${url.split('//')[1]?.split('.')[0]}-auth-token`
+    // Derive cookie name using URL parsing (robust against Supabase URL format changes).
+    // httpOnly must remain false: @supabase/ssr's createBrowserClient reads this cookie
+    // via document.cookie to restore sessions on page load and refresh tokens client-side.
+    // Making it httpOnly would break the browser auth client.
+    const projectRef = new URL(url).hostname.split('.')[0]
+    const cookieName = `sb-${projectRef}-auth-token`
     response.cookies.set(cookieName, JSON.stringify(session), {
       path: '/',
       maxAge: session.expires_in || 3600,
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
-      httpOnly: false
+      httpOnly: false,
     })
 
     return response

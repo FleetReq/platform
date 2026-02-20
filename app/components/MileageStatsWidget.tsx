@@ -63,17 +63,17 @@ export default function MileageStatsWidget() {
             </svg>
           </div>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Vehicle Analytics Platform
+            Fleet Analytics
           </h3>
         </div>
         <p className="text-gray-600 dark:text-gray-300 mb-4">
-          A full-stack application for tracking vehicle fuel efficiency and maintenance records.
+          Track your fleet performance. Sign up to get started.
         </p>
         <Link
           href="/dashboard"
           className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors duration-200"
         >
-          View Project
+          Get Started
           <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
           </svg>
@@ -160,7 +160,7 @@ export default function MileageStatsWidget() {
           <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
           </svg>
-          Full-stack SRE Portfolio • Next.js + Supabase
+          FleetReq • Fleet Management Platform
         </div>
       </div>
     </div>

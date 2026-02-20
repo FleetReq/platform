@@ -26,7 +26,10 @@ export const dynamic = 'force-dynamic'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.text()
-    const signature = request.headers.get('stripe-signature')!
+    const signature = request.headers.get('stripe-signature')
+    if (!signature) {
+      return NextResponse.json({ error: 'Missing stripe-signature header' }, { status: 400 })
+    }
 
     let event: Stripe.Event
 
@@ -190,9 +193,37 @@ export async function POST(request: NextRequest) {
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice
-        console.info(`[Stripe Webhook] Payment failed for invoice ${invoice.id}`)
-        // Stripe will retry payment automatically
-        // Could send email notification here
+        console.info(`[Stripe Webhook] Payment failed for invoice ${invoice.id} (attempt ${invoice.attempt_count})`)
+
+        // Stripe retries automatically. On final failure, next_payment_attempt is null.
+        // At that point Stripe will also emit customer.subscription.deleted, but we
+        // trigger the downgrade here as a safety net in case that event is missed.
+        if (!invoice.next_payment_attempt && invoice.subscription) {
+          const { data: org } = await supabase
+            .from('organizations')
+            .select('id')
+            .eq('stripe_customer_id', invoice.customer as string)
+            .single()
+
+          if (org) {
+            const { error } = await supabase
+              .from('organizations')
+              .update({
+                subscription_plan: 'free',
+                max_vehicles: PLAN_LIMITS.free.maxVehicles,
+                max_members: PLAN_LIMITS.free.maxMembers,
+              })
+              .eq('id', org.id)
+
+            if (error) {
+              console.error('Error downgrading org after final payment failure:', error)
+            } else {
+              console.info(`[Stripe Webhook] Downgraded org ${org.id} to free after exhausted payment retries`)
+            }
+          } else {
+            console.error('[Stripe Webhook] No org found for customer on final payment failure:', invoice.customer)
+          }
+        }
         break
       }
 

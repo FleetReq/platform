@@ -107,9 +107,9 @@ export default function PricingPage() {
     async function fetchUserPlan() {
       if (!supabase) return
 
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session?.user) {
-        const plan = await getUserSubscriptionPlan(session.user.id)
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const plan = await getUserSubscriptionPlan(user.id)
         setCurrentPlan(plan)
       }
     }
@@ -200,9 +200,9 @@ export default function PricingPage() {
         return
       }
 
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { user: checkoutUser } } = await supabase.auth.getUser()
 
-      if (!session) {
+      if (!checkoutUser) {
         router.push('/login')
         setLoading(null)
         return
@@ -250,9 +250,9 @@ export default function PricingPage() {
         return
       }
 
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { user: businessUser } } = await supabase.auth.getUser()
 
-      if (!session) {
+      if (!businessUser) {
         router.push('/login')
         setLoading(null)
         return

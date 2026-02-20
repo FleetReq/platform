@@ -44,9 +44,8 @@ function AcceptInviteContent() {
         const details = await detailsRes.json()
         setInviteDetails(details)
 
-        // Check if user is logged in
-        const { data: { session } } = await supabase.auth.getSession()
-        const user = session?.user ?? null
+        // Check if user is logged in (getUser re-validates with server, unlike getSession)
+        const { data: { user } } = await supabase.auth.getUser()
 
         if (!user) {
           setStatus('login-required')
@@ -69,8 +68,8 @@ function AcceptInviteContent() {
   async function handleAccept() {
     try {
       if (!supabase || !inviteId) return
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.user) { setStatus('login-required'); return }
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+      if (!authUser) { setStatus('login-required'); return }
 
       setStatus('accepting')
       const res = await fetch('/api/org/accept-invite', {
@@ -104,8 +103,8 @@ function AcceptInviteContent() {
   async function handleDecline() {
     try {
       if (!supabase || !inviteId) return
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.user) { setStatus('login-required'); return }
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+      if (!authUser) { setStatus('login-required'); return }
 
       setStatus('declining')
       const res = await fetch('/api/org/accept-invite', {
@@ -121,7 +120,8 @@ function AcceptInviteContent() {
         setStatus('error')
         setMessage(data.error || 'Failed to decline invitation.')
       }
-    } catch {
+    } catch (err) {
+      console.error('Decline invite error:', err)
       setStatus('error')
       setMessage('An unexpected error occurred.')
     }

@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
           members_deleted: memberUserIds.length,
         })
 
-        console.log(`Deleted org: ${org.name} (${orgId}), ${memberUserIds.length} members`)
+        console.info(`Deleted org: ${org.name} (${orgId}), ${memberUserIds.length} members`)
       } catch (deleteError) {
         const errorMessage = deleteError instanceof Error ? deleteError.message : String(deleteError)
         errors.push({

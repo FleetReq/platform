@@ -34,11 +34,17 @@ export async function updateStripeSubscriptionQuantity(
   message?: string
   error?: string
 }> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!supabaseUrl || !serviceKey) {
+    return { success: false, error: 'Server configuration error: missing Supabase credentials' }
+  }
+
   try {
     // Create admin Supabase client
     const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      supabaseUrl,
+      serviceKey,
       {
         auth: {
           autoRefreshToken: false,
@@ -145,10 +151,17 @@ export async function updateStripeSubscriptionQuantity(
  * @returns Current vehicle count from Stripe
  */
 export async function getStripeVehicleCount(userId: string): Promise<number> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!supabaseUrl || !serviceKey) {
+    console.error('getStripeVehicleCount: missing Supabase env vars')
+    return 0
+  }
+
   try {
     const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      supabaseUrl,
+      serviceKey,
       {
         auth: {
           autoRefreshToken: false,

@@ -29,6 +29,13 @@ interface AlertItem {
   status: MaintenanceStatus // only 'warning' or 'overdue'
 }
 
+interface SentNotification {
+  car_id: string
+  maintenance_type: string
+  status_notified: string
+  notified_at: string
+}
+
 interface UserDigest {
   userId: string
   email: string
@@ -160,10 +167,8 @@ async function computeDigests(): Promise<{ digests: UserDigest[]; skipped: numbe
       .eq('user_id', profile.id)
 
     // Map: "carId:type:status" -> { notified_at }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sentMap = new Map<string, { notified_at: string }>(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (sentNotifications || []).map((n: any) => [
+      (sentNotifications as SentNotification[] | null || []).map((n) => [
         `${n.car_id}:${n.maintenance_type}:${n.status_notified}`,
         { notified_at: n.notified_at },
       ])
