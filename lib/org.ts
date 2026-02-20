@@ -146,7 +146,7 @@ export async function getOrgMaxVehicles(
   userId: string,
   activeOrgId?: string | null
 ): Promise<number> {
-  if (isAdmin(userId)) return 999
+  if (isAdmin(userId)) return PLAN_LIMITS.business.maxVehicles
 
   const membership = await getUserOrg(supabase, userId, activeOrgId)
   if (!membership) return 1

@@ -6,7 +6,8 @@ import { getUserOrg, getOrgDetails, getOrgSubscriptionPlan } from '@/lib/org'
 import { validateUUID } from '@/lib/validation'
 import { PLAN_LIMITS } from '@/lib/constants'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+if (!process.env.STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY env var is required')
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-10-29.clover',
 })
 

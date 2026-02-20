@@ -48,6 +48,9 @@ export const PLAN_DISPLAY_NAMES: Record<SubscriptionPlan, string> = {
 /** Business tier price per vehicle per month, in USD. Used for proration calculations. */
 export const BUSINESS_PRICE_PER_VEHICLE_USD = 12
 
+/** Grace period after subscription ends before account data is deleted. */
+export const ACCOUNT_DELETION_GRACE_DAYS = 30
+
 // ---------------------------------------------------------------------------
 // IRS Mileage Rates
 // ---------------------------------------------------------------------------
@@ -78,22 +81,22 @@ export interface MaintenanceTypeInfo {
 export const MAINTENANCE_TYPES: MaintenanceTypeInfo[] = [
   // Engine & Fluids
   { key: 'oil_change', label: 'Oil Change', icon: '\u{1F6E2}\uFE0F' },
-  { key: 'transmission_service', label: 'Transmission', icon: '\u2699\uFE0F' },
-  { key: 'coolant_flush', label: 'Coolant', icon: '\u{1F9CA}' },
+  { key: 'transmission_service', label: 'Transmission Service', icon: '\u2699\uFE0F' },
+  { key: 'coolant_flush', label: 'Coolant Flush', icon: '\u{1F9CA}' },
   { key: 'air_filter', label: 'Air Filter', icon: '\u{1F32C}\uFE0F' },
-  { key: 'cabin_air_filter', label: 'Cabin Filter', icon: '\u{1F33F}' },
+  { key: 'cabin_air_filter', label: 'Cabin Air Filter', icon: '\u{1F33F}' },
   { key: 'spark_plugs', label: 'Spark Plugs', icon: '\u26A1' },
   // Tires & Brakes
   { key: 'tire_rotation', label: 'Tire Rotation', icon: '\u{1F504}' },
   { key: 'tire_change', label: 'Tire Change', icon: '\u{1F6DE}' },
   { key: 'brake_pads', label: 'Brake Pads', icon: '\u{1F6D1}' },
   { key: 'rotors', label: 'Rotors', icon: '\u{1F4BF}' },
-  { key: 'brake_fluid_flush', label: 'Brake Fluid', icon: '\u{1F4A7}' },
+  { key: 'brake_fluid_flush', label: 'Brake Fluid Flush', icon: '\u{1F4A7}' },
   // Electrical & Belts
   { key: 'battery', label: 'Battery', icon: '\u{1F50B}' },
-  { key: 'serpentine_belt', label: 'Serp. Belt', icon: '\u{1F517}' },
+  { key: 'serpentine_belt', label: 'Serpentine Belt', icon: '\u{1F517}' },
   // Drivetrain
-  { key: 'differential_fluid', label: 'Diff Fluid', icon: '\u{1F527}' },
+  { key: 'differential_fluid', label: 'Differential Fluid', icon: '\u{1F527}' },
   // Other
   { key: 'wipers', label: 'Wipers', icon: '\u{1F327}\uFE0F' },
   { key: 'registration', label: 'Registration', icon: '\u{1F4CB}' },

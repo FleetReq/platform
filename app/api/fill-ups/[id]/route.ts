@@ -46,7 +46,7 @@ export async function PATCH(
     if (body.notes !== undefined) updateData.notes = sanitizeString(body.notes, { maxLength: 500 })
 
     if (updateData.price_per_gallon !== undefined && updateData.gallons !== undefined) {
-      updateData.total_cost = parseFloat((updateData.gallons * updateData.price_per_gallon).toFixed(2))
+      updateData.total_cost = parseFloat(((updateData.gallons as number) * (updateData.price_per_gallon as number)).toFixed(2))
     }
 
     if (body.receipt_urls !== undefined) {
@@ -76,8 +76,8 @@ export async function PATCH(
 
     // Clean up removed receipt photos from storage
     if (body.receipt_urls !== undefined) {
-      const oldPaths: string[] = (existing as FillUpWithReceipts).receipt_urls || []
-      const newPaths: string[] = updateData.receipt_urls || []
+      const oldPaths: string[] = (existing as unknown as FillUpWithReceipts).receipt_urls || []
+      const newPaths: string[] = (updateData.receipt_urls as string[]) || []
       const removedPaths = oldPaths.filter((p: string) => !newPaths.includes(p))
       if (removedPaths.length > 0) {
         await supabase.storage.from('receipts').remove(removedPaths)

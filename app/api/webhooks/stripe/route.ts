@@ -198,7 +198,9 @@ export async function POST(request: NextRequest) {
         // Stripe retries automatically. On final failure, next_payment_attempt is null.
         // At that point Stripe will also emit customer.subscription.deleted, but we
         // trigger the downgrade here as a safety net in case that event is missed.
-        if (!invoice.next_payment_attempt && invoice.subscription) {
+        // invoice.subscription was deprecated in Stripe API 2025-10-29; cast for backward compat
+        const invoiceLegacy = invoice as Stripe.Invoice & { subscription?: string | null }
+        if (!invoice.next_payment_attempt && invoiceLegacy.subscription) {
           const { data: org } = await supabase
             .from('organizations')
             .select('id')

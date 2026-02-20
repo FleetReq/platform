@@ -20,8 +20,9 @@ export const createRouteHandlerClient = async (request: NextRequest) => {
           cookiesToSet.forEach(({ name, value }) => {
             request.cookies.set(name, value)
           })
-        } catch {
+        } catch (e) {
           // setAll may be called from Server Component — safe to ignore
+          console.warn('[supabase] Route handler cookie write failed:', e)
         }
       },
     },
@@ -44,8 +45,9 @@ export const createServerSupabaseClient = async () => {
           cookiesToSet.forEach(({ name, value, options }) => {
             cookieStore.set(name, value, options)
           })
-        } catch {
+        } catch (e) {
           // setAll may be called from Server Component — safe to ignore
+          console.warn('[supabase] Server component cookie write failed:', e)
         }
       },
     },

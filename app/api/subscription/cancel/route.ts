@@ -4,8 +4,10 @@ import { createRouteHandlerClient } from '@/lib/supabase'
 import { getUserOrg, getOrgDetails } from '@/lib/org'
 import { sanitizeString } from '@/lib/validation'
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
+import { ACCOUNT_DELETION_GRACE_DAYS } from '@/lib/constants'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+if (!process.env.STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY env var is required')
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-10-29.clover',
 })
 
@@ -93,18 +95,18 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // If no subscription end date, fall back to 30 days from now.
+    // If no subscription end date, fall back to ACCOUNT_DELETION_GRACE_DAYS from now.
     // This can happen if the user has no active Stripe subscription (e.g. grandfathered accounts).
     if (!subscriptionEndDate) {
-      console.error('[cancel] No active Stripe subscription found — using 30-day fallback for subscription end date')
+      console.error('[cancel] No active Stripe subscription found — using grace period fallback for subscription end date')
       const endDate = new Date()
-      endDate.setDate(endDate.getDate() + 30)
+      endDate.setDate(endDate.getDate() + ACCOUNT_DELETION_GRACE_DAYS)
       subscriptionEndDate = endDate.toISOString()
     }
 
-    // Calculate scheduled deletion date (subscription_end + 30 days)
+    // Calculate scheduled deletion date (subscription_end + grace period)
     const scheduledDeletionDate = new Date(subscriptionEndDate)
-    scheduledDeletionDate.setDate(scheduledDeletionDate.getDate() + 30)
+    scheduledDeletionDate.setDate(scheduledDeletionDate.getDate() + ACCOUNT_DELETION_GRACE_DAYS)
 
     // Update organization with cancellation info
     const { error: updateError } = await supabase

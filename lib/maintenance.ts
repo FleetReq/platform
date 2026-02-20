@@ -3,6 +3,7 @@
  * maintenance-notifications cron job. Pure TypeScript — no React or browser deps.
  */
 
+import { MAINTENANCE_TYPES } from '@/lib/constants'
 import type { MaintenanceRecord } from './supabase-client'
 
 // ---------------------------------------------------------------------------
@@ -41,24 +42,11 @@ export const MAINTENANCE_INTERVALS: Record<string, MaintenanceInterval> = {
   registration: { months: 24, yellowThreshold: 0.9, redThreshold: 1.0 },
 }
 
-export const MAINTENANCE_TYPE_LABELS: Record<string, string> = {
-  oil_change: 'Oil Change',
-  tire_rotation: 'Tire Rotation',
-  tire_change: 'Tire Change',
-  brake_pads: 'Brake Pads',
-  rotors: 'Rotors',
-  air_filter: 'Air Filter',
-  transmission_service: 'Transmission Service',
-  coolant_flush: 'Coolant Flush',
-  brake_fluid_flush: 'Brake Fluid Flush',
-  spark_plugs: 'Spark Plugs',
-  battery: 'Battery',
-  cabin_air_filter: 'Cabin Air Filter',
-  serpentine_belt: 'Serpentine Belt',
-  differential_fluid: 'Differential Fluid',
-  wipers: 'Wipers',
-  registration: 'Registration',
-}
+// Derived from MAINTENANCE_TYPES — single source of truth.
+// Adding a new maintenance type only requires updating lib/constants.ts.
+export const MAINTENANCE_TYPE_LABELS: Record<string, string> = Object.fromEntries(
+  MAINTENANCE_TYPES.map(t => [t.key, t.label])
+)
 
 // ---------------------------------------------------------------------------
 // Functions

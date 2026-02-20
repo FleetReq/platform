@@ -1,5 +1,5 @@
 import { createBrowserClient } from '@supabase/ssr'
-import { isAdmin as _isAdmin, isOwner as _isOwner } from '@/lib/constants'
+import { isAdmin as _isAdmin, isOwner as _isOwner, PLAN_LIMITS } from '@/lib/constants'
 
 // Create a new Supabase client for browser use
 // Call this function in each component instead of using a singleton
@@ -177,7 +177,7 @@ export const getUserSubscriptionPlan = async (userId: string): Promise<'free' | 
 }
 
 export const getUserMaxVehicles = async (userId: string): Promise<number> => {
-  if (_isAdmin(userId)) return 999
+  if (_isAdmin(userId)) return PLAN_LIMITS.business.maxVehicles
   return getOrgValue(userId, 'max_vehicles', 1)
 }
 

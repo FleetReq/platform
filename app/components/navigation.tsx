@@ -40,7 +40,6 @@ export function Navigation() {
   const router = useRouter();
   const [user, setUser] = useState<{ id: string; email?: string; user_metadata?: { full_name?: string } } | null>(null);
   const [subscriptionTier, setSubscriptionTier] = useState<'free' | 'personal' | 'business'>('free');
-  const [subscriptionStartDate, setSubscriptionStartDate] = useState<string | null>(null);
   const [orgs, setOrgs] = useState<OrgEntry[]>([]);
   const [activeOrgId, setActiveOrgId] = useState<string | null>(null);
   const [orgMenuOpen, setOrgMenuOpen] = useState(false);
@@ -104,7 +103,6 @@ export function Navigation() {
         }
       } else {
         setSubscriptionTier('free');
-        setSubscriptionStartDate(null);
         setOrgs([]);
         setActiveOrgId(null);
       }
@@ -124,7 +122,6 @@ export function Navigation() {
     setOrgs([])
     setActiveOrgId(null)
     setSubscriptionTier('free')
-    setSubscriptionStartDate(null)
     // Fire signOut in the background with a 3s timeout, then force-clear auth
     // cookies in case the network call timed out before Supabase cleared them.
     if (supabase) {
@@ -202,7 +199,7 @@ export function Navigation() {
                 </div>
               </div>
             </Link>
-            {user && <SubscriptionBadge tier={subscriptionTier} subscriptionStartDate={subscriptionStartDate} />}
+            {user && <SubscriptionBadge tier={subscriptionTier} />}
 
             {/* Org Switcher — only when authenticated with 2+ orgs */}
             {user && orgs.length > 1 && (

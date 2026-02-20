@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner, isAdmin, getUserSubscriptionPlan, getUserMaxVehicles, hasFeatureAccess } from '@/lib/supabase-client'
 import { MAINTENANCE_INTERVALS, getMaintenanceStatus, getLatestMaintenanceRecord } from '@/lib/maintenance'
-import { MAINTENANCE_TYPES, MAINTENANCE_TYPE_FILTER_OPTIONS, getStatusColor, getStatusTextColor, getIrsRate, OWNER_USER_ID, PLAN_LIMITS, type MaintenanceStatus } from '@/lib/constants'
+import { MAINTENANCE_TYPES, MAINTENANCE_TYPE_FILTER_OPTIONS, getStatusColor, getStatusTextColor, getIrsRate, OWNER_USER_ID, PLAN_LIMITS, ACCOUNT_DELETION_GRACE_DAYS, type MaintenanceStatus } from '@/lib/constants'
 import BackgroundAnimation from '../components/BackgroundAnimation'
 import { useTheme } from '../theme-provider'
 import RecordDetailModal from '../../components/RecordDetailModal'
@@ -1368,7 +1368,7 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
       const data = await response.json()
       setMessage({
         type: 'success',
-        text: `Account deletion scheduled. Your account will remain active until ${new Date(data.subscription_end_date).toLocaleDateString()}. All data will be permanently deleted 30 days after that date.`
+        text: `Account deletion scheduled. Your account will remain active until ${new Date(data.subscription_end_date).toLocaleDateString()}. All data will be permanently deleted ${ACCOUNT_DELETION_GRACE_DAYS} days after that date.`
       })
       setShowCancelModal(false)
       setCancellationReason('')
@@ -1655,7 +1655,7 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
                     </span>.
                   </p>
                   <p className="font-semibold text-red-600 dark:text-red-400">
-                    30 days after that date, ALL of your data will be permanently deleted:
+                    {ACCOUNT_DELETION_GRACE_DAYS} days after that date, ALL of your data will be permanently deleted:
                   </p>
                   <ul className="list-disc list-inside space-y-1 pl-2">
                     <li>All vehicles and their information</li>
@@ -2219,7 +2219,8 @@ export default function DashboardClient({
       .catch(() => new Response(null, { status: 408 }))
   }
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (showSkeleton = false) => {
+    if (showSkeleton) setLoading(true)
     try {
       if (!supabase) return
 
@@ -2230,6 +2231,12 @@ export default function DashboardClient({
         fetchWithTimeout('/api/fill-ups?limit=50', { credentials: 'include' }),
         fetchWithTimeout('/api/maintenance?limit=50', { credentials: 'include' })
       ])
+
+      // 401 means the session expired — redirect to login rather than showing empty data
+      if (carsResponse.status === 401 || fillUpsResponse.status === 401 || maintenanceResponse.status === 401) {
+        router.replace('/login')
+        return
+      }
 
       // Extract data
       const carsData = carsResponse.ok ? (await carsResponse.json()).cars || [] : []
@@ -2245,6 +2252,8 @@ export default function DashboardClient({
     } catch (error) {
       console.error('Error loading data:', error)
       setLoadError(true)
+    } finally {
+      setLoading(false)
     }
   }, [])
 
@@ -2790,7 +2799,7 @@ export default function DashboardClient({
                       </Link>
                     </div>
                   ) : (
-                    <AddCarForm onSuccess={() => { loadData(); setActiveTab('dashboard'); }} />
+                    <AddCarForm onSuccess={() => { loadData(true); setActiveTab('dashboard'); }} />
                   )}
                 </div>
               )}
@@ -2798,14 +2807,14 @@ export default function DashboardClient({
               {/* Add Fill-up Form */}
               {activeTab === 'add-fillup' && cars.length > 0 && (
                 <div className="card-professional p-6">
-                  <AddFillUpForm cars={cars} onSuccess={() => { loadData(); setActiveTab('dashboard'); }} subscriptionPlan={userSubscriptionPlan} userId={user?.id || ''} />
+                  <AddFillUpForm cars={cars} onSuccess={() => { loadData(true); setActiveTab('dashboard'); }} subscriptionPlan={userSubscriptionPlan} userId={user?.id || ''} />
                 </div>
               )}
 
               {/* Trip Tab - Add Trip Form */}
               {activeTab === 'add-trip' && cars.length > 0 && (
                 <div className="card-professional p-6">
-                  <AddTripForm cars={cars} onSuccess={() => { loadData(); setActiveTab('dashboard'); }} />
+                  <AddTripForm cars={cars} onSuccess={() => { loadData(true); setActiveTab('dashboard'); }} />
                 </div>
               )}
 
@@ -2814,7 +2823,7 @@ export default function DashboardClient({
                 <div className="card-professional p-6">
                   <AddMaintenanceForm
                     cars={cars}
-                    onSuccess={() => { loadData(); setActiveTab('dashboard'); }}
+                    onSuccess={() => { loadData(true); setActiveTab('dashboard'); }}
                     subscriptionPlan={userSubscriptionPlan}
                     userId={user?.id || ''}
                   />
@@ -2828,7 +2837,7 @@ export default function DashboardClient({
                     cars={cars}
                     fillUps={fillUps}
                     maintenanceRecords={maintenanceRecords}
-                    onRecordDeleted={() => loadData()}
+                    onRecordDeleted={() => loadData(true)}
                     userId={user?.id || ''}
                     subscriptionPlan={userSubscriptionPlan}
                   />
@@ -2839,7 +2848,7 @@ export default function DashboardClient({
               {activeTab === 'settings' && (
                 <div className="space-y-6">
                   <div className="card-professional p-6">
-                    <UserSettings cars={cars} onCarDeleted={() => loadData()} initialSubscriptionPlan={userSubscriptionPlan} orgRole={userOrgRole} />
+                    <UserSettings cars={cars} onCarDeleted={() => loadData(true)} initialSubscriptionPlan={userSubscriptionPlan} orgRole={userOrgRole} />
                   </div>
                   {userSubscriptionPlan !== 'free' && <OrgManagement />}
                   {/* Leave Organization — shown only for non-owner memberships */}

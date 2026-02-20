@@ -49,7 +49,7 @@ export function SubscriptionBadge({ tier, subscriptionStartDate, className = '' 
 
   const { container, label } = getBadgeStyles();
   const months = getMonthsSinceStart();
-  const showMonths = tier !== 'free' && months >= 0;
+  const showMonths = tier !== 'free' && !!subscriptionStartDate && months >= 0;
 
   // Don't show badge for free tier
   if (tier === 'free') return null;

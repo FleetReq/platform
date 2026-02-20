@@ -5,6 +5,8 @@ import { ThemeProvider } from "./theme-provider";
 import { Navigation } from "./components/navigation";
 import Analytics from "./components/Analytics";
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://fleetreq.vercel.app'
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -15,7 +17,7 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://fleetreq.vercel.app'),
+  metadataBase: new URL(siteUrl),
   title: {
     default: "FleetReq - Fleet Management & Mileage Tracking",
     template: "%s | FleetReq"
@@ -35,7 +37,7 @@ export const metadata: Metadata = {
     "fleet tracking",
     "maintenance tracking"
   ],
-  authors: [{ name: "FleetReq", url: "https://fleetreq.vercel.app" }],
+  authors: [{ name: "FleetReq", url: siteUrl }],
   creator: "FleetReq",
   publisher: "FleetReq",
   formatDetection: {
@@ -46,7 +48,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://fleetreq.vercel.app",
+    url: siteUrl,
     title: "FleetReq - Fleet Management & Mileage Tracking",
     description: "Professional fleet management and mileage tracking for contractors. Track fuel efficiency, maintenance schedules, and IRS-compliant tax deductions.",
     siteName: "FleetReq",
@@ -143,7 +145,7 @@ export default function RootLayout({
               name: 'FleetReq',
               applicationCategory: 'BusinessApplication',
               description: 'Professional fleet management and mileage tracking for contractors. Track fuel efficiency, maintenance schedules, and IRS-compliant tax deductions.',
-              url: 'https://fleetreq.vercel.app',
+              url: siteUrl,
               offers: {
                 '@type': 'AggregateOffer',
                 priceCurrency: 'USD',
