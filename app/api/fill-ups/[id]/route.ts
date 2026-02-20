@@ -4,6 +4,8 @@ import { sanitizeString, validateInteger, validateFloat, validateUUID, validateD
 import { withOrg, errorResponse } from '@/lib/api-middleware'
 import { canEdit, isOrgOwner } from '@/lib/org'
 
+type FillUpWithReceipts = { id: string; car_id: string; receipt_urls: string[] }
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -29,8 +31,7 @@ export async function PATCH(
 
     const body = await request.json()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const updateData: Record<string, any> = {}
+    const updateData: Record<string, unknown> = {}
 
     if (body.date !== undefined) {
       const date = validateDate(body.date, { allowFuture: false })
@@ -75,7 +76,7 @@ export async function PATCH(
 
     // Clean up removed receipt photos from storage
     if (body.receipt_urls !== undefined) {
-      const oldPaths: string[] = (existing as any).receipt_urls || [] // eslint-disable-line @typescript-eslint/no-explicit-any
+      const oldPaths: string[] = (existing as FillUpWithReceipts).receipt_urls || []
       const newPaths: string[] = updateData.receipt_urls || []
       const removedPaths = oldPaths.filter((p: string) => !newPaths.includes(p))
       if (removedPaths.length > 0) {
@@ -111,7 +112,7 @@ export async function DELETE(
       .from('fill_ups')
       .delete()
       .eq('id', fillUpId)
-      .eq('car_id', (fillUp as any).car_id) // eslint-disable-line @typescript-eslint/no-explicit-any
+      .eq('car_id', (fillUp as FillUpWithReceipts).car_id)
 
     if (deleteError) {
       console.error('Error deleting fill-up:', deleteError)
@@ -119,7 +120,7 @@ export async function DELETE(
     }
 
     // Clean up storage files (non-blocking)
-    const receiptUrls: string[] = (fillUp as any).receipt_urls || [] // eslint-disable-line @typescript-eslint/no-explicit-any
+    const receiptUrls: string[] = (fillUp as FillUpWithReceipts).receipt_urls || []
     if (receiptUrls.length > 0) {
       supabase.storage.from('receipts').remove(receiptUrls).catch((err: unknown) => {
         console.error('Error cleaning up receipt storage:', err)

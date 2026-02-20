@@ -544,10 +544,7 @@ function RecordsManager({
                     setUserSearchTerm('')
                     setShowUserDropdown(true)
                   }}
-                  onBlur={() => {
-                    // Delay hiding to allow clicking on options
-                    setTimeout(() => setShowUserDropdown(false), 150)
-                  }}
+                  onBlur={() => setShowUserDropdown(false)}
                   className="w-full px-4 py-2 h-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white pr-10"
                   placeholder="Type to search users..."
                 />
@@ -561,6 +558,7 @@ function RecordsManager({
                   <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                     <div
                       className="px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-200 dark:border-gray-600"
+                      onMouseDown={(e) => e.preventDefault()}
                       onClick={() => handleUserSelect('all')}
                     >
                       <span className="text-sm text-gray-900 dark:text-white">All Users</span>
@@ -569,6 +567,7 @@ function RecordsManager({
                       <div
                         key={user.id}
                         className="px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                        onMouseDown={(e) => e.preventDefault()}
                         onClick={() => handleUserSelect(user.id)}
                       >
                         <span className="text-sm text-gray-900 dark:text-white">{user.name}</span>
@@ -2181,10 +2180,18 @@ export default function DashboardClient({
   // Fetch all orgs when settings tab is opened (for Leave Organization section)
   useEffect(() => {
     if (activeTab !== 'settings') return
-    fetch('/api/org?all=true')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data?.orgs) setAllOrgs(data.orgs) })
-      .catch((err) => console.error('[Settings] Failed to load organizations:', err))
+    const loadOrgs = async () => {
+      try {
+        const r = await fetch('/api/org?all=true')
+        if (r.ok) {
+          const data = await r.json()
+          if (data?.orgs) setAllOrgs(data.orgs)
+        }
+      } catch (err) {
+        console.error('[Settings] Failed to load organizations:', err)
+      }
+    }
+    loadOrgs()
   }, [activeTab])
 
   // Listen for sign-out and fetch initial stats on mount

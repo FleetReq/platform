@@ -4,6 +4,8 @@ import { getUserOrg, isOrgOwner, canEdit } from '@/lib/org'
 import { sanitizeString, validateUUID, validateDate, validateFloat } from '@/lib/validation'
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
+type TripRow = { id: string; car_id: string }
+
 export const dynamic = 'force-dynamic'
 
 // DELETE /api/trips/[id] - Delete a specific trip
@@ -57,7 +59,7 @@ export async function DELETE(
       .from('trips')
       .delete()
       .eq('id', tripId)
-      .eq('car_id', (trip as any).car_id) // eslint-disable-line @typescript-eslint/no-explicit-any
+      .eq('car_id', (trip as TripRow).car_id)
 
     if (error) {
       console.error('Error deleting trip:', error)

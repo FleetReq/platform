@@ -45,7 +45,8 @@ export async function POST(request: NextRequest) {
 
     return response
 
-  } catch {
+  } catch (error) {
+    console.error('[sync-session] Unexpected error:', error)
     return NextResponse.json({ error: 'Session sync failed' }, { status: 500 })
   }
 }

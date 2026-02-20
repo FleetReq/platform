@@ -53,7 +53,7 @@ export default function RecordDetailModal({
   const canUploadReceipts = hasFeatureAccess(userId, subscriptionPlan, 'receipt_upload')
 
   // Existing receipt URLs on the record
-  const existingReceiptUrls: string[] = (record as any).receipt_urls || [] // eslint-disable-line @typescript-eslint/no-explicit-any
+  const existingReceiptUrls: string[] = (record as { receipt_urls?: string[] }).receipt_urls || []
   const [currentReceiptUrls, setCurrentReceiptUrls] = useState<string[]>(existingReceiptUrls)
   const [removedReceiptUrls, setRemovedReceiptUrls] = useState<string[]>([])
 

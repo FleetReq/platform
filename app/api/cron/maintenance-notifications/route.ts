@@ -8,6 +8,7 @@ import {
   getLatestMaintenanceRecord,
   type MaintenanceStatus,
 } from '@/lib/maintenance'
+import { PLAN_DISPLAY_NAMES } from '@/lib/constants'
 import { buildUnsubscribeUrl } from '@/app/api/notifications/unsubscribe/route'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
@@ -153,8 +154,7 @@ async function computeDigests(): Promise<{ digests: UserDigest[]; skipped: numbe
     const maintenanceRecords = records || []
 
     // 4. Get already-sent notifications for this user (include notified_at for frequency checks)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: sentNotifications } = await (supabase as any)
+    const { data: sentNotifications } = await supabase
       .from('maintenance_notifications_sent')
       .select('car_id, maintenance_type, status_notified, notified_at')
       .eq('user_id', profile.id)
@@ -218,13 +218,15 @@ async function computeDigests(): Promise<{ digests: UserDigest[]; skipped: numbe
 
     // Clean up stale tracking entries (items that returned to good/unknown)
     for (const { carId, typeKey } of trackingToDelete) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase as any)
+      const { error: delError } = await supabase
         .from('maintenance_notifications_sent')
         .delete()
         .eq('user_id', profile.id)
         .eq('car_id', carId)
         .eq('maintenance_type', typeKey)
+      if (delError) {
+        errors.push(`Failed to clear tracking for ${profile.id}/${carId}/${typeKey}: ${delError.message}`)
+      }
     }
 
     if (alerts.length === 0) {
@@ -255,7 +257,8 @@ function buildEmailSubject(alerts: AlertItem[]): string {
 function buildEmailHtml(digest: UserDigest): string {
   const { alerts, userId, subscriptionPlan } = digest
   const unsubscribeUrl = buildUnsubscribeUrl(userId)
-  const dashboardUrl = 'https://fleetreq.vercel.app/dashboard'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://fleetreq.vercel.app'
+  const dashboardUrl = `${siteUrl}/dashboard`
 
   const overdueAlerts = alerts.filter(a => a.status === 'overdue')
   const warningAlerts = alerts.filter(a => a.status === 'warning')
@@ -303,7 +306,7 @@ function buildEmailHtml(digest: UserDigest): string {
     ? `<tr><td style="padding:16px;background:#eff6ff;border-radius:0 0 8px 8px;">
         <p style="margin:0;font-size:13px;color:#1e40af;">
           <strong>Get early warnings</strong> before items become overdue.
-          <a href="https://fleetreq.vercel.app/pricing" style="color:#2563eb;text-decoration:underline;">Upgrade to Family →</a>
+          <a href="${siteUrl}/pricing" style="color:#2563eb;text-decoration:underline;">Upgrade to ${PLAN_DISPLAY_NAMES.personal} →</a>
         </p>
       </td></tr>`
     : ''
@@ -385,8 +388,8 @@ async function sendEmail(to: string, subject: string, html: string, unsubscribeU
 // Record sent notifications (upsert updates notified_at for repeating alerts)
 // ---------------------------------------------------------------------------
 
-// maintenance_notifications_sent is not in the generated Supabase types yet.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// maintenance_notifications_sent is not in the generated Supabase types.
+// SupabaseClient<any> allows querying tables outside the type schema.
 async function recordSentAlerts(
   supabase: SupabaseClient<any>,
   userId: string,
@@ -500,7 +503,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  console.log(`[Maintenance Notifications] Sent: ${sent}, Failed: ${failed}, Skipped: ${skipped}`)
+  console.info(`[Maintenance Notifications] Sent: ${sent}, Failed: ${failed}, Skipped: ${skipped}`)
 
   return NextResponse.json({
     mode: 'send',

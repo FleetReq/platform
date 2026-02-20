@@ -84,12 +84,14 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
   // Races against a 3-second timeout so a hung Supabase query never blocks the
   // sign-in redirect — if it times out we treat it as "no pending invites".
   const checkPendingInvites = async (signedInUser: User | null): Promise<boolean> => {
-    const check = checkPendingInvitesInner(signedInUser)
-    const timeout = new Promise<boolean>(resolve => setTimeout(() => resolve(false), 3000))
-    return Promise.race([check, timeout])
+    let cancelled = false
+    const timeout = new Promise<boolean>(resolve =>
+      setTimeout(() => { cancelled = true; resolve(false) }, 3000)
+    )
+    return Promise.race([checkPendingInvitesInner(signedInUser, () => cancelled), timeout])
   }
 
-  const checkPendingInvitesInner = async (signedInUser: User | null): Promise<boolean> => {
+  const checkPendingInvitesInner = async (signedInUser: User | null, isCancelled: () => boolean): Promise<boolean> => {
     if (!signedInUser?.email || !supabase) return false
 
     try {
@@ -101,7 +103,7 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
         .is('user_id', null)
         .limit(1)
 
-      if (pendingInvites && pendingInvites.length > 0) {
+      if (pendingInvites && pendingInvites.length > 0 && !isCancelled()) {
         // Redirect to accept the first pending invite — skip normal dashboard navigation
         window.location.href = `/invite/accept?id=${pendingInvites[0].id}`
         return true
@@ -216,9 +218,7 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.hostname === 'localhost'
-          ? 'http://localhost:3000/login?reset=true'
-          : 'https://fleetreq.vercel.app/login?reset=true',
+        redirectTo: `${window.location.origin}/login?reset=true`,
       })
 
       if (error) throw error

@@ -87,7 +87,7 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  var theme = localStorage.getItem('resume-theme') || 'system';
+                  var theme = localStorage.getItem('fleetreq-theme') || 'system';
                   var systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
                   var currentTheme = theme === 'system' ? systemTheme : theme;
                   document.documentElement.classList.remove('light', 'dark');
@@ -104,7 +104,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} antialiased bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-white min-h-screen`}
       >
-        <ThemeProvider defaultTheme="system" storageKey="resume-theme">
+        <ThemeProvider defaultTheme="system" storageKey="fleetreq-theme">
           <Navigation />
           <main className="min-h-screen">
             {children}

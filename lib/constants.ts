@@ -7,9 +7,9 @@
 // Auth & Access Control
 // ---------------------------------------------------------------------------
 
-export const ADMIN_USER_IDS = ['b73a07b2-ed72-41b1-943f-e119afc9eddb'] as const
-
 export const OWNER_USER_ID = 'b73a07b2-ed72-41b1-943f-e119afc9eddb'
+
+export const ADMIN_USER_IDS = [OWNER_USER_ID] as const
 
 export function isAdmin(userId: string): boolean {
   return (ADMIN_USER_IDS as readonly string[]).includes(userId)
@@ -32,6 +32,13 @@ export const PLAN_LIMITS: Record<SubscriptionPlan, { maxVehicles: number; maxMem
   free:     { maxVehicles: 1,   maxMembers: 1 },
   personal: { maxVehicles: 3,   maxMembers: 3 },
   business: { maxVehicles: 999, maxMembers: 6 },
+}
+
+/** Display names for each subscription plan (DB value → UI label). */
+export const PLAN_DISPLAY_NAMES: Record<SubscriptionPlan, string> = {
+  free:     'Free',
+  personal: 'Family',
+  business: 'Business',
 }
 
 // ---------------------------------------------------------------------------

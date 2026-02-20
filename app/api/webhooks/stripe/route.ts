@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log(`[Stripe Webhook] Received event: ${event.type}`)
+    console.info(`[Stripe Webhook] Received event: ${event.type}`)
 
     // Handle different event types
     switch (event.type) {
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
         if (error) {
           console.error('Error updating org subscription:', error)
         } else {
-          console.log(`[Stripe Webhook] Updated org ${membership.org_id} to ${tier} tier`)
+          console.info(`[Stripe Webhook] Updated org ${membership.org_id} to ${tier} tier`)
         }
 
         break
@@ -141,7 +141,7 @@ export async function POST(request: NextRequest) {
         if (error) {
           console.error('Error updating subscription:', error)
         } else {
-          console.log(`[Stripe Webhook] Updated subscription for org ${org.id}: ${tier} (${subscription.status})`)
+          console.info(`[Stripe Webhook] Updated subscription for org ${org.id}: ${tier} (${subscription.status})`)
         }
 
         break
@@ -175,7 +175,7 @@ export async function POST(request: NextRequest) {
         if (error) {
           console.error('Error downgrading org:', error)
         } else {
-          console.log(`[Stripe Webhook] Downgraded org ${org.id} to free tier`)
+          console.info(`[Stripe Webhook] Downgraded org ${org.id} to free tier`)
         }
 
         break
@@ -183,21 +183,21 @@ export async function POST(request: NextRequest) {
 
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object as Stripe.Invoice
-        console.log(`[Stripe Webhook] Payment succeeded for invoice ${invoice.id}`)
+        console.info(`[Stripe Webhook] Payment succeeded for invoice ${invoice.id}`)
         // Subscription will be updated by subscription.updated event
         break
       }
 
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice
-        console.log(`[Stripe Webhook] Payment failed for invoice ${invoice.id}`)
+        console.info(`[Stripe Webhook] Payment failed for invoice ${invoice.id}`)
         // Stripe will retry payment automatically
         // Could send email notification here
         break
       }
 
       default:
-        console.log(`[Stripe Webhook] Unhandled event type: ${event.type}`)
+        console.info(`[Stripe Webhook] Unhandled event type: ${event.type}`)
     }
 
     return NextResponse.json({ received: true })

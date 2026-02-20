@@ -9,6 +9,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-10-29.clover',
 })
 
+// As of Stripe API 2025-03-31, period fields moved from subscription to subscription item level
+type SubscriptionItemWithPeriod = Stripe.SubscriptionItem & {
+  current_period_end: number
+}
+
 export const dynamic = 'force-dynamic'
 
 // POST /api/subscription/cancel - Cancel user's subscription
@@ -76,11 +81,8 @@ export async function POST(request: NextRequest) {
             cancel_at_period_end: true,
           })
 
-          // As of Stripe API 2025-03-31, period fields moved to the subscription item level
-          const subscriptionItem = subscription.items.data[0]
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const periodEnd = (subscriptionItem as any).current_period_end as number
-          subscriptionEndDate = new Date(periodEnd * 1000).toISOString()
+          const subscriptionItem = subscription.items.data[0] as SubscriptionItemWithPeriod
+          subscriptionEndDate = new Date(subscriptionItem.current_period_end * 1000).toISOString()
         }
       } catch (stripeError) {
         console.error('Stripe cancellation error:', stripeError)
@@ -91,8 +93,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // If no subscription end date, set it to 30 days from now (fallback)
+    // If no subscription end date, fall back to 30 days from now.
+    // This can happen if the user has no active Stripe subscription (e.g. grandfathered accounts).
     if (!subscriptionEndDate) {
+      console.error('[cancel] No active Stripe subscription found — using 30-day fallback for subscription end date')
       const endDate = new Date()
       endDate.setDate(endDate.getDate() + 30)
       subscriptionEndDate = endDate.toISOString()

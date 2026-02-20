@@ -10,6 +10,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-10-29.clover',
 })
 
+// As of Stripe API 2025-03-31, period fields moved from subscription to subscription item level
+type SubscriptionItemWithPeriod = Stripe.SubscriptionItem & {
+  current_period_end: number
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createRouteHandlerClient(request)
@@ -134,7 +139,7 @@ export async function POST(request: NextRequest) {
       try {
         // Get active subscription
         const subscriptions = await stripe.subscriptions.list({
-          customer: org!.stripe_customer_id!,
+          customer: org.stripe_customer_id,
           status: 'active',
           limit: 1,
         })
@@ -148,10 +153,8 @@ export async function POST(request: NextRequest) {
           })
 
           // Set effective date to end of current period
-          const subscriptionItem = subscription.items.data[0]
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const periodEnd = (subscriptionItem as any).current_period_end as number
-          downgradeEffectiveDate = new Date(periodEnd * 1000)
+          const subscriptionItem = subscription.items.data[0] as SubscriptionItemWithPeriod
+          downgradeEffectiveDate = new Date(subscriptionItem.current_period_end * 1000)
         }
       } catch (stripeError) {
         console.error('Stripe error during downgrade:', stripeError)

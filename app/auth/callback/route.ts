@@ -22,9 +22,10 @@ export async function GET(request: NextRequest) {
               cookiesToSet.forEach(({ name, value, options }) =>
                 cookieStore.set(name, value, options)
               )
-            } catch {
-              // The `setAll` method was called from a Server Component.
-              // This can be ignored if you have middleware refreshing user sessions.
+            } catch (e) {
+              // Cookie writes can fail if headers have already been sent.
+              // Log so we know if this starts happening in practice.
+              console.warn('[auth/callback] Failed to set session cookie:', e)
             }
           },
         },

@@ -61,12 +61,17 @@ export function Navigation() {
         // Fetch orgs for switcher
         try {
           const res = await fetch('/api/org?all=true');
-          if (res.ok) {
+          if (res.status === 401) {
+            setSubscriptionTier('free');
+            setOrgs([]);
+          } else if (res.ok) {
             const data = await res.json();
             setOrgs(data.orgs || []);
             setActiveOrgId(data.active_org_id);
           }
-        } catch { /* ignore */ }
+        } catch (err) {
+          console.error('[nav] Failed to load orgs:', err);
+        }
       }
     };
 
@@ -86,12 +91,17 @@ export function Navigation() {
         // after the initial load, e.g. after sign out → sign back in)
         try {
           const res = await fetch('/api/org?all=true');
-          if (res.ok) {
+          if (res.status === 401) {
+            setSubscriptionTier('free');
+            setOrgs([]);
+          } else if (res.ok) {
             const data = await res.json();
             setOrgs(data.orgs || []);
             setActiveOrgId(data.active_org_id);
           }
-        } catch { /* ignore */ }
+        } catch (err) {
+          console.error('[nav] Failed to load orgs:', err);
+        }
       } else {
         setSubscriptionTier('free');
         setSubscriptionStartDate(null);
@@ -130,7 +140,9 @@ export function Navigation() {
           document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; samesite=lax`
         }
       })
-    } catch { /* ignore */ }
+    } catch (e) {
+      console.warn('[nav] Failed to clear auth cookies:', e);
+    }
     window.location.href = '/'
   };
 

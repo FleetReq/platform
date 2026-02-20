@@ -133,7 +133,11 @@ export async function DELETE(
           }
         } else {
           console.error('Failed to update Stripe subscription:', result.error)
-          // Don't fail the deletion if Stripe update fails - log and continue
+          return NextResponse.json({
+            message: 'Car deleted successfully, but billing could not be updated. Please contact support to ensure your subscription reflects the correct vehicle count.',
+            billingError: true,
+            proration: null
+          })
         }
       }
     }

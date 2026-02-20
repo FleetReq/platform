@@ -2,6 +2,12 @@ import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import { BUSINESS_PRICE_PER_VEHICLE_USD } from '@/lib/constants'
 
+// As of Stripe API 2025-03-31, period fields moved from subscription to subscription item level
+type SubscriptionItemWithPeriod = Stripe.SubscriptionItem & {
+  current_period_start: number
+  current_period_end: number
+}
+
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error('STRIPE_SECRET_KEY env var is required')
 }
@@ -94,12 +100,10 @@ export async function updateStripeSubscriptionQuantity(
     const pricePerVehicle = BUSINESS_PRICE_PER_VEHICLE_USD
 
     // Calculate days remaining in current period
-    // Note: As of Stripe API 2025-03-31, period fields moved from subscription to subscription item level
     const now = Math.floor(Date.now() / 1000) // Current timestamp in seconds
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const periodEnd = (subscriptionItem as any).current_period_end as number
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const periodStart = (subscriptionItem as any).current_period_start as number
+    const itemWithPeriod = subscriptionItem as SubscriptionItemWithPeriod
+    const periodEnd = itemWithPeriod.current_period_end
+    const periodStart = itemWithPeriod.current_period_start
     const totalDays = (periodEnd - periodStart) / 86400 // Convert seconds to days
     const daysRemaining = (periodEnd - now) / 86400
 
