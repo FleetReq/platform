@@ -310,7 +310,7 @@ function buildEmailHtml(digest: UserDigest): string {
     ? `<tr><td style="padding:16px;background:#eff6ff;border-radius:0 0 8px 8px;">
         <p style="margin:0;font-size:13px;color:#1e40af;">
           <strong>Get early warnings</strong> before items become overdue.
-          <a href="${siteUrl}/pricing" style="color:#2563eb;text-decoration:underline;">Upgrade to ${PLAN_DISPLAY_NAMES.personal} →</a>
+          <a href="${SITE_URL}/pricing" style="color:#2563eb;text-decoration:underline;">Upgrade to ${PLAN_DISPLAY_NAMES.personal} →</a>
         </p>
       </td></tr>`
     : ''
