@@ -18,7 +18,7 @@ export default function AddFillUpForm({ cars, onSuccess, subscriptionPlan = 'fre
   const canUploadReceipts = hasFeatureAccess(userId, subscriptionPlan, 'receipt_upload')
   const [formData, setFormData] = useState({
     car_id: cars[0]?.id || '',
-    date: new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }),
+    date: new Date().toLocaleDateString('en-CA'),
     odometer_reading: '',
     gallons: '',
     price_per_gallon: '',
@@ -106,18 +106,24 @@ export default function AddFillUpForm({ cars, onSuccess, subscriptionPlan = 'fre
           const paths = await receiptUpload.uploadAll(userId, 'fill_ups', createdFillUp.id)
           if (paths.length > 0) {
             // Update the record with receipt URLs
-            await fetch(`/api/fill-ups/${createdFillUp.id}`, {
+            const patchRes = await fetch(`/api/fill-ups/${createdFillUp.id}`, {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ receipt_urls: paths })
             })
+            if (!patchRes.ok) {
+              setErrorMessage('Fill-up saved, but receipt attachment failed — please re-open the record and re-attach.')
+              receiptUpload.reset()
+              onSuccess()
+              return
+            }
           }
         }
 
         // Reset form to initial state
         setFormData({
           car_id: cars[0]?.id || '',
-          date: new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }),
+          date: new Date().toLocaleDateString('en-CA'),
           odometer_reading: '',
           gallons: '',
           price_per_gallon: '',

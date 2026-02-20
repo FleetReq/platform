@@ -5,7 +5,7 @@ import { ThemeProvider } from "./theme-provider";
 import { Navigation } from "./components/navigation";
 import Analytics from "./components/Analytics";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://fleetreq.vercel.app'
+import { SITE_URL as siteUrl } from '@/lib/constants'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

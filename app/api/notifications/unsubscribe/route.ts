@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
+import { SITE_URL } from '@/lib/constants'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
@@ -18,8 +19,7 @@ export function generateUnsubscribeToken(userId: string): string {
  */
 export function buildUnsubscribeUrl(userId: string): string {
   const token = generateUnsubscribeToken(userId)
-  const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://fleetreq.vercel.app'
-  return `${base}/api/notifications/unsubscribe?uid=${userId}&token=${token}`
+  return `${SITE_URL}/api/notifications/unsubscribe?uid=${userId}&token=${token}`
 }
 
 function htmlPage(title: string, body: string) {

@@ -20,7 +20,7 @@ export default function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan =
 
   const [formData, setFormData] = useState({
     car_id: cars[0]?.id || '',
-    date: new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }),
+    date: new Date().toLocaleDateString('en-CA'),
     type: 'oil_change',
     oil_type: 'conventional',
     cost: '',
@@ -105,18 +105,24 @@ export default function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan =
         if (pendingPhotos.length > 0 && createdRecord?.id && userId) {
           const paths = await receiptUpload.uploadAll(userId, 'maintenance', createdRecord.id)
           if (paths.length > 0) {
-            await fetch(`/api/maintenance/${createdRecord.id}`, {
+            const patchRes = await fetch(`/api/maintenance/${createdRecord.id}`, {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ receipt_urls: paths })
             })
+            if (!patchRes.ok) {
+              setErrorMessage('Record saved, but receipt attachment failed — please re-open the record and re-attach.')
+              receiptUpload.reset()
+              onSuccess()
+              return
+            }
           }
         }
 
         // Reset form to initial state
         setFormData({
           car_id: cars[0]?.id || '',
-          date: new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }),
+          date: new Date().toLocaleDateString('en-CA'),
           type: 'oil_change',
           oil_type: 'conventional',
           cost: '',

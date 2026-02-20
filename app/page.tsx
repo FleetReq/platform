@@ -1,7 +1,6 @@
 import Link from "next/link";
 import OAuthRedirectHandler from './components/OAuthRedirectHandler';
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://fleetreq.vercel.app'
+import { SITE_URL as siteUrl } from '@/lib/constants'
 
 const structuredData = {
   "@context": "https://schema.org",
@@ -38,6 +37,7 @@ export default function Home() {
       <OAuthRedirectHandler />
 
       {/* Structured Data */}
+      {/* SAFE: structuredData is a server-controlled constant — no user input */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}

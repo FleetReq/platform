@@ -45,11 +45,17 @@ export const PLAN_DISPLAY_NAMES: Record<SubscriptionPlan, string> = {
 // Pricing
 // ---------------------------------------------------------------------------
 
+/** Personal tier price per month, in USD. */
+export const PERSONAL_PRICE_USD = 4
+
 /** Business tier price per vehicle per month, in USD. Used for proration calculations. */
 export const BUSINESS_PRICE_PER_VEHICLE_USD = 12
 
 /** Grace period after subscription ends before account data is deleted. */
 export const ACCOUNT_DELETION_GRACE_DAYS = 30
+
+/** Canonical site URL. Single source of truth — used in emails, sitemaps, and structured data. */
+export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://fleetreq.vercel.app'
 
 // ---------------------------------------------------------------------------
 // IRS Mileage Rates

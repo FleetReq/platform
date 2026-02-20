@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
     // If no subscription end date, fall back to ACCOUNT_DELETION_GRACE_DAYS from now.
     // This can happen if the user has no active Stripe subscription (e.g. grandfathered accounts).
     if (!subscriptionEndDate) {
-      console.error('[cancel] No active Stripe subscription found — using grace period fallback for subscription end date')
+      console.warn('[cancel] No active Stripe subscription found — using grace period fallback for subscription end date')
       const endDate = new Date()
       endDate.setDate(endDate.getDate() + ACCOUNT_DELETION_GRACE_DAYS)
       subscriptionEndDate = endDate.toISOString()

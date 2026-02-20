@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   return withOrg(request, async ({ supabase, membership }) => {
     const { searchParams } = new URL(request.url)
     const carId = searchParams.get('car_id')
-    const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : 50
+    const limit = validateInteger(searchParams.get('limit'), { min: 1, max: 500 }) ?? 50
 
     let query = supabase
       .from('fill_ups')

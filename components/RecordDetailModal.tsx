@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import type { Car, FillUp, MaintenanceRecord } from '@/lib/supabase-client'
 import { hasFeatureAccess } from '@/lib/supabase-client'
 import { MAINTENANCE_TYPE_LABELS } from '@/lib/maintenance'
-import { useReceiptUpload } from '@/lib/use-receipt-upload'
+import { useReceiptUpload, MAX_RECEIPTS } from '@/lib/use-receipt-upload'
 import ReceiptPhotoPicker from './ReceiptPhotoPicker'
 import ReceiptGallery from './ReceiptGallery'
 
@@ -120,15 +120,21 @@ export default function RecordDetailModal({
 
       // Build PATCH body
       const body: Record<string, unknown> = { ...editData, receipt_urls: allReceiptUrls }
-      // Convert numeric strings
+      // Convert numeric strings, guarding against NaN from non-numeric input
       if (recordType === 'fillup') {
-        if (body.odometer_reading) body.odometer_reading = parseInt(body.odometer_reading as string)
-        if (body.gallons) body.gallons = parseFloat(body.gallons as string)
-        if (body.price_per_gallon) body.price_per_gallon = parseFloat(body.price_per_gallon as string)
+        const odo = parseInt(body.odometer_reading as string)
+        if (body.odometer_reading && !isNaN(odo)) body.odometer_reading = odo
+        const gal = parseFloat(body.gallons as string)
+        if (body.gallons && !isNaN(gal)) body.gallons = gal
+        const ppg = parseFloat(body.price_per_gallon as string)
+        if (body.price_per_gallon && !isNaN(ppg)) body.price_per_gallon = ppg
       } else {
-        if (body.cost) body.cost = parseFloat(body.cost as string)
-        if (body.mileage) body.mileage = parseInt(body.mileage as string)
-        if (body.next_service_mileage) body.next_service_mileage = parseInt(body.next_service_mileage as string)
+        const cost = parseFloat(body.cost as string)
+        if (body.cost && !isNaN(cost)) body.cost = cost
+        const mil = parseInt(body.mileage as string)
+        if (body.mileage && !isNaN(mil)) body.mileage = mil
+        const nsm = parseInt(body.next_service_mileage as string)
+        if (body.next_service_mileage && !isNaN(nsm)) body.next_service_mileage = nsm
       }
 
       const endpoint = recordType === 'fillup' ? '/api/fill-ups' : '/api/maintenance'
@@ -159,7 +165,7 @@ export default function RecordDetailModal({
   const carLabel = car.nickname || `${car.year} ${car.make} ${car.model}`
 
   // Adjust remaining slots for the picker to account for existing photos
-  const totalPhotoSlots = 5
+  const totalPhotoSlots = MAX_RECEIPTS
   const usedSlots = currentReceiptUrls.length + receiptUpload.files.length
   const adjustedCanAddMore = usedSlots < totalPhotoSlots
   const adjustedRemaining = totalPhotoSlots - usedSlots

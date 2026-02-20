@@ -1,8 +1,7 @@
 import { MetadataRoute } from 'next'
+import { SITE_URL as baseUrl } from '@/lib/constants'
 
 export const dynamic = 'force-static'
-
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://fleetreq.vercel.app'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date()

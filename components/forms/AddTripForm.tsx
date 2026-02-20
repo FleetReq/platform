@@ -11,7 +11,7 @@ interface AddTripFormProps {
 export default function AddTripForm({ cars, onSuccess }: AddTripFormProps) {
   const [formData, setFormData] = useState({
     car_id: cars[0]?.id || '',
-    date: new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }),
+    date: new Date().toLocaleDateString('en-CA'),
     start_location: '',
     end_location: '',
     purpose: 'business',
@@ -41,7 +41,7 @@ export default function AddTripForm({ cars, onSuccess }: AddTripFormProps) {
         // Reset form
         setFormData({
           car_id: cars[0]?.id || '',
-          date: new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' }),
+          date: new Date().toLocaleDateString('en-CA'),
           start_location: '',
           end_location: '',
           purpose: 'business',

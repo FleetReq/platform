@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner, isAdmin, getUserSubscriptionPlan, getUserMaxVehicles, hasFeatureAccess } from '@/lib/supabase-client'
 import { MAINTENANCE_INTERVALS, getMaintenanceStatus, getLatestMaintenanceRecord } from '@/lib/maintenance'
-import { MAINTENANCE_TYPES, MAINTENANCE_TYPE_FILTER_OPTIONS, getStatusColor, getStatusTextColor, getIrsRate, OWNER_USER_ID, PLAN_LIMITS, ACCOUNT_DELETION_GRACE_DAYS, type MaintenanceStatus } from '@/lib/constants'
+import { MAINTENANCE_TYPES, MAINTENANCE_TYPE_FILTER_OPTIONS, getStatusColor, getStatusTextColor, getIrsRate, OWNER_USER_ID, PLAN_LIMITS, PLAN_DISPLAY_NAMES, getPlanColor, ACCOUNT_DELETION_GRACE_DAYS, type SubscriptionPlan, type MaintenanceStatus } from '@/lib/constants'
 import BackgroundAnimation from '../components/BackgroundAnimation'
 import { useTheme } from '../theme-provider'
 import RecordDetailModal from '../../components/RecordDetailModal'
@@ -48,7 +48,12 @@ function fetchWithTimeout(url: string, options: RequestInit = {}): Promise<Respo
   const id = setTimeout(() => controller.abort(), 8000)
   return fetch(url, { ...options, signal: controller.signal })
     .finally(() => clearTimeout(id))
-    .catch(() => new Response(null, { status: 408 }))
+    .catch((err: unknown) => {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return new Response(null, { status: 408 })
+      }
+      throw err
+    })
 }
 
 interface UserStats {
@@ -1240,7 +1245,9 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
           const orgRes = await fetchWithTimeout('/api/org')
           if (orgRes.ok) {
             const orgData = await orgRes.json()
-            setSubscriptionPlan(orgData.org?.subscription_plan as 'free' | 'personal' | 'business' || 'free')
+            const VALID_PLANS = ['free', 'personal', 'business'] as const
+            const rawPlan = orgData.org?.subscription_plan
+            setSubscriptionPlan(VALID_PLANS.includes(rawPlan) ? rawPlan : 'free')
             setSubscriptionEndDate(orgData.org?.subscription_end_date || null)
           }
         } catch (err) {
@@ -1388,7 +1395,9 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
         const orgRes = await fetchWithTimeout('/api/org')
         if (orgRes.ok) {
           const orgData = await orgRes.json()
-          setSubscriptionPlan(orgData.org?.subscription_plan as 'free' | 'personal' | 'business' || 'free')
+          const VALID_PLANS = ['free', 'personal', 'business'] as const
+          const rawPlan = orgData.org?.subscription_plan
+          setSubscriptionPlan(VALID_PLANS.includes(rawPlan) ? rawPlan : 'free')
           setSubscriptionEndDate(orgData.org?.subscription_end_date || null)
         }
       } catch (err) {
@@ -1454,20 +1463,6 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
   }
 
   const isGoogleLinked = currentUser?.app_metadata?.providers?.includes('google')
-
-  const getPlanDisplayName = (plan: string) => {
-    if (plan === 'personal') return 'Family'
-    return plan.charAt(0).toUpperCase() + plan.slice(1)
-  }
-
-  const getPlanColor = (plan: string) => {
-    switch (plan) {
-      case 'free': return 'text-gray-600 dark:text-gray-400'
-      case 'personal': return 'text-blue-600 dark:text-blue-400'
-      case 'business': return 'text-purple-600 dark:text-purple-400'
-      default: return 'text-gray-600'
-    }
-  }
 
   return (
     <div className="space-y-8">
@@ -2054,8 +2049,8 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
             <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
               <div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">Current Plan</div>
-                <div className={`text-xl font-bold ${getPlanColor(subscriptionPlan)}`}>
-                  {getPlanDisplayName(subscriptionPlan)}
+                <div className={`text-xl font-bold ${getPlanColor(subscriptionPlan as SubscriptionPlan)}`}>
+                  {PLAN_DISPLAY_NAMES[subscriptionPlan as SubscriptionPlan] ?? subscriptionPlan}
                 </div>
               </div>
               {subscriptionPlan !== 'free' && subscriptionEndDate && (
@@ -2217,7 +2212,7 @@ export default function DashboardClient({
   // Fetch stats on mount (stats aren't pre-loaded by the server component)
   useEffect(() => {
     loadData()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- intentional: mount-only, loadData is stable via useCallback but eslint cannot verify this
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- intentional: mount-only; supabase is a module singleton and React state setters are guaranteed stable
 
   const loadData = useCallback(async (showSkeleton = false) => {
     if (showSkeleton) setLoading(true)

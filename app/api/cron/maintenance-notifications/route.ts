@@ -8,7 +8,7 @@ import {
   getLatestMaintenanceRecord,
   type MaintenanceStatus,
 } from '@/lib/maintenance'
-import { PLAN_DISPLAY_NAMES } from '@/lib/constants'
+import { PLAN_DISPLAY_NAMES, SITE_URL } from '@/lib/constants'
 import { buildUnsubscribeUrl } from '@/app/api/notifications/unsubscribe/route'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
@@ -262,8 +262,7 @@ function buildEmailSubject(alerts: AlertItem[]): string {
 function buildEmailHtml(digest: UserDigest): string {
   const { alerts, userId, subscriptionPlan } = digest
   const unsubscribeUrl = buildUnsubscribeUrl(userId)
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://fleetreq.vercel.app'
-  const dashboardUrl = `${siteUrl}/dashboard`
+  const dashboardUrl = `${SITE_URL}/dashboard`
 
   const overdueAlerts = alerts.filter(a => a.status === 'overdue')
   const warningAlerts = alerts.filter(a => a.status === 'warning')

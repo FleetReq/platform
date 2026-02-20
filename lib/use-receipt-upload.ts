@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase-client'
 import { compressImage, validateImageFile } from '@/lib/image-compression'
 
-const MAX_RECEIPTS = 5
+export const MAX_RECEIPTS = 5
 const BUCKET = 'receipts'
 
 export interface ReceiptFile {

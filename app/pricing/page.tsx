@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase, getUserSubscriptionPlan } from '@/lib/supabase-client'
+import { PLAN_LIMITS } from '@/lib/constants'
 
 interface PricingTier {
   name: string
@@ -600,13 +601,13 @@ export default function PricingPage() {
                     id="vehicleCount"
                     type="number"
                     min="1"
-                    max="999"
+                    max={PLAN_LIMITS.business.maxVehicles}
                     value={vehicleCount}
                     onChange={(e) => setVehicleCount(Math.max(1, parseInt(e.target.value) || 1))}
                     className="flex-1 px-4 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-center text-2xl font-bold text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500"
                   />
                   <button
-                    onClick={() => setVehicleCount(Math.min(999, vehicleCount + 1))}
+                    onClick={() => setVehicleCount(Math.min(PLAN_LIMITS.business.maxVehicles, vehicleCount + 1))}
                     className="w-10 h-10 flex items-center justify-center bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg font-bold transition-colors"
                   >
                     +

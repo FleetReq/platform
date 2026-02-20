@@ -4,6 +4,7 @@ import { createRouteHandlerClient } from '@/lib/supabase'
 import { getUserOrg, getOrgDetails } from '@/lib/org'
 import { validateInteger } from '@/lib/validation'
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
+import { PERSONAL_PRICE_USD, BUSINESS_PRICE_PER_VEHICLE_USD, PLAN_LIMITS } from '@/lib/constants'
 
 if (!process.env.STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY env var is required')
 
@@ -94,13 +95,13 @@ export async function POST(request: NextRequest) {
                   description: 'Up to 3 vehicles, full maintenance tracking, unlimited history',
                 },
                 recurring: { interval: 'month' },
-                unit_amount: 400, // $4.00 in cents
+                unit_amount: PERSONAL_PRICE_USD * 100,
               },
               quantity: 1,
             }
       )
     } else if (tier === 'business') {
-      const quantity = validateInteger(vehicleCount, { min: 1, max: 999 }) ?? 4
+      const quantity = validateInteger(vehicleCount, { min: 1, max: PLAN_LIMITS.business.maxVehicles }) ?? 4
       const priceId = process.env.STRIPE_BUSINESS_PRICE_ID
       lineItems.push(
         priceId
@@ -113,7 +114,7 @@ export async function POST(request: NextRequest) {
                   description: 'Per vehicle pricing, unlimited vehicles, team collaboration, tax reports',
                 },
                 recurring: { interval: 'month' },
-                unit_amount: 1200, // $12.00 in cents
+                unit_amount: BUSINESS_PRICE_PER_VEHICLE_USD * 100,
               },
               quantity,
             }
@@ -131,7 +132,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         user_id: user.id,
         tier,
-        vehicle_count: tier === 'business' ? (validateInteger(vehicleCount, { min: 1, max: 999 }) ?? 4).toString() : '3',
+        vehicle_count: tier === 'business' ? (validateInteger(vehicleCount, { min: 1, max: PLAN_LIMITS.business.maxVehicles }) ?? 4).toString() : '3',
       },
       allow_promotion_codes: true, // Allow discount codes
       billing_address_collection: 'required',
