@@ -38,13 +38,21 @@ export default function OAuthRedirectHandler() {
               error: error.message
             })
           } else if (data.session) {
-            // Sync session with server in background
-            fetch('/api/sync-session', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ session: data.session }),
-              credentials: 'include'
-            }).catch((err) => console.error('[OAuthRedirectHandler] Session sync failed:', err))
+            // Sync session with server before notifying parent — the parent
+            // will immediately call API routes, which require the server cookie.
+            try {
+              const syncRes = await fetch('/api/sync-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ session: data.session }),
+                credentials: 'include'
+              })
+              if (!syncRes.ok) {
+                console.error('[OAuthRedirectHandler] Session sync returned', syncRes.status)
+              }
+            } catch (err) {
+              console.error('[OAuthRedirectHandler] Session sync failed:', err)
+            }
 
             // Notify parent window of success
             authChannel.postMessage({

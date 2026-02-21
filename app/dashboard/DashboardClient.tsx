@@ -2190,6 +2190,8 @@ export default function DashboardClient({
         if (r.ok) {
           const data = await r.json()
           if (data?.orgs) setAllOrgs(data.orgs)
+        } else if (r.status !== 401) {
+          console.error('[Settings] Failed to load organizations, status:', r.status)
         }
       } catch (err) {
         console.error('[Settings] Failed to load organizations:', err)

@@ -105,14 +105,23 @@ export async function POST(request: NextRequest) {
         .eq('org_id', carAccess.orgId)
         .single()
 
+      let mileageUpdateFailed = false
       if (!currentCar?.current_mileage || currentCar.current_mileage < mileage) {
         const { error: mileageError } = await supabase
           .from('cars')
           .update({ current_mileage: mileage })
           .eq('id', car_id)
           .eq('org_id', carAccess.orgId)
-        if (mileageError) console.error('Failed to update car mileage:', mileageError)
+        if (mileageError) {
+          console.error('Failed to update car mileage:', mileageError)
+          mileageUpdateFailed = true
+        }
       }
+
+      return NextResponse.json(
+        { maintenanceRecord, ...(mileageUpdateFailed && { mileage_update_failed: true }) },
+        { status: 201 }
+      )
     }
 
     return NextResponse.json({ maintenanceRecord }, { status: 201 })

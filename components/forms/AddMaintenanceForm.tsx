@@ -6,6 +6,7 @@ import { MAINTENANCE_TYPES } from '@/lib/constants'
 import { useReceiptUpload } from '@/lib/use-receipt-upload'
 import ReceiptPhotoPicker from '@/components/ReceiptPhotoPicker'
 import { isFutureDate } from '@/lib/date-utils'
+import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
 
 interface AddMaintenanceFormProps {
   cars: Car[]
@@ -42,7 +43,7 @@ export default function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan =
       if (!formData.car_id) return
 
       try {
-        const response = await fetch(`/api/maintenance?car_id=${formData.car_id}&limit=10`)
+        const response = await fetchWithTimeout(`/api/maintenance?car_id=${formData.car_id}&limit=10`)
         if (response.ok) {
           const { maintenanceRecords } = await response.json()
 
@@ -91,7 +92,7 @@ export default function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan =
     setLoading(true)
 
     try {
-      const response = await fetch('/api/maintenance', {
+      const response = await fetchWithTimeout('/api/maintenance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -105,7 +106,7 @@ export default function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan =
         if (pendingPhotos.length > 0 && createdRecord?.id && userId) {
           const paths = await receiptUpload.uploadAll(userId, 'maintenance', createdRecord.id)
           if (paths.length > 0) {
-            const patchRes = await fetch(`/api/maintenance/${createdRecord.id}`, {
+            const patchRes = await fetchWithTimeout(`/api/maintenance/${createdRecord.id}`, {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ receipt_urls: paths })

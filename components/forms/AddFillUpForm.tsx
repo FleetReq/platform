@@ -5,6 +5,7 @@ import { type Car, type FillUp, hasFeatureAccess } from '@/lib/supabase-client'
 import { useReceiptUpload } from '@/lib/use-receipt-upload'
 import ReceiptPhotoPicker from '@/components/ReceiptPhotoPicker'
 import { isFutureDate } from '@/lib/date-utils'
+import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
 
 interface AddFillUpFormProps {
   cars: Car[]
@@ -39,7 +40,7 @@ export default function AddFillUpForm({ cars, onSuccess, subscriptionPlan = 'fre
       if (!formData.car_id) return
 
       try {
-        const response = await fetch(`/api/fill-ups?car_id=${formData.car_id}&limit=10`)
+        const response = await fetchWithTimeout(`/api/fill-ups?car_id=${formData.car_id}&limit=10`)
         if (response.ok) {
           const { fillUps } = await response.json()
 
@@ -91,7 +92,7 @@ export default function AddFillUpForm({ cars, onSuccess, subscriptionPlan = 'fre
 
     try {
       // First, create the record
-      const response = await fetch('/api/fill-ups', {
+      const response = await fetchWithTimeout('/api/fill-ups', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -106,7 +107,7 @@ export default function AddFillUpForm({ cars, onSuccess, subscriptionPlan = 'fre
           const paths = await receiptUpload.uploadAll(userId, 'fill_ups', createdFillUp.id)
           if (paths.length > 0) {
             // Update the record with receipt URLs
-            const patchRes = await fetch(`/api/fill-ups/${createdFillUp.id}`, {
+            const patchRes = await fetchWithTimeout(`/api/fill-ups/${createdFillUp.id}`, {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ receipt_urls: paths })

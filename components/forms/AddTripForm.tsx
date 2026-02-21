@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { type Car } from '@/lib/supabase-client'
+import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
 
 interface AddTripFormProps {
   cars: Car[]
@@ -28,7 +29,7 @@ export default function AddTripForm({ cars, onSuccess }: AddTripFormProps) {
     setErrorMessage('')
 
     try {
-      const response = await fetch('/api/trips', {
+      const response = await fetchWithTimeout('/api/trips', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

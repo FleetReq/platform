@@ -31,13 +31,21 @@ export default function PopupCloseHandler() {
               error: exchangeError.message
             })
           } else if (data.session) {
-            // Sync session with server in background (don't wait)
-            fetch('/api/sync-session', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ session: data.session }),
-              credentials: 'include'
-            }).catch(console.error)
+            // Sync session with server before notifying parent — the parent
+            // will immediately call API routes, which require the server cookie.
+            try {
+              const syncRes = await fetch('/api/sync-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ session: data.session }),
+                credentials: 'include'
+              })
+              if (!syncRes.ok) {
+                console.error('[popup-close] Session sync returned', syncRes.status)
+              }
+            } catch (err) {
+              console.error('[popup-close] Session sync failed:', err)
+            }
 
             authChannel.postMessage({
               type: 'OAUTH_SUCCESS',

@@ -17,9 +17,9 @@ export async function DELETE(
       return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
     }
 
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-    if (!user) {
+    if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
 
 export default function AddCarForm({ onSuccess }: { onSuccess: () => void }) {
   const [formData, setFormData] = useState({
@@ -21,7 +22,7 @@ export default function AddCarForm({ onSuccess }: { onSuccess: () => void }) {
     setErrorMessage('')
 
     try {
-      const response = await fetch('/api/cars', {
+      const response = await fetchWithTimeout('/api/cars', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -79,7 +80,7 @@ export default function AddCarForm({ onSuccess }: { onSuccess: () => void }) {
               type="number"
               required
               min="1900"
-              max="2030"
+              max={new Date().getFullYear() + 2}
               value={formData.year}
               onChange={(e) => setFormData({ ...formData, year: e.target.value })}
               className="input-field"
