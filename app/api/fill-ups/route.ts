@@ -73,6 +73,7 @@ export async function POST(request: NextRequest) {
     if (!carAccess.orgId) {
       return errorResponse('Organization not found', 500)
     }
+    const orgId = carAccess.orgId
 
     const userPlan = await getOrgSubscriptionPlan(supabase, user.id, activeOrgId)
     if (userPlan === 'free' && receipt_urls && receipt_urls.length > 0) {
@@ -118,7 +119,7 @@ export async function POST(request: NextRequest) {
       .from('cars')
       .select('current_mileage')
       .eq('id', car_id)
-      .eq('org_id', carAccess.orgId!)
+      .eq('org_id', orgId)
       .single()
 
     let mileageUpdateFailed = false
@@ -127,7 +128,7 @@ export async function POST(request: NextRequest) {
         .from('cars')
         .update({ current_mileage: odometer_reading })
         .eq('id', car_id)
-        .eq('org_id', carAccess.orgId)
+        .eq('org_id', orgId)
       if (mileageError) {
         console.error('Failed to update car mileage:', mileageError)
         mileageUpdateFailed = true

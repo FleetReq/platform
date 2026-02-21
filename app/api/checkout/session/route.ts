@@ -4,7 +4,7 @@ import { createRouteHandlerClient } from '@/lib/supabase'
 import { getUserOrg, getOrgDetails } from '@/lib/org'
 import { validateInteger } from '@/lib/validation'
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
-import { PERSONAL_PRICE_USD, BUSINESS_PRICE_PER_VEHICLE_USD, PLAN_LIMITS } from '@/lib/constants'
+import { PERSONAL_PRICE_USD, BUSINESS_PRICE_PER_VEHICLE_USD, PLAN_LIMITS, DEFAULT_BUSINESS_VEHICLE_COUNT } from '@/lib/constants'
 
 if (!process.env.STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY env var is required')
 
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
             }
       )
     } else if (tier === 'business') {
-      const quantity = validateInteger(vehicleCount, { min: 1, max: PLAN_LIMITS.business.maxVehicles }) ?? 4
+      const quantity = validateInteger(vehicleCount, { min: 1, max: PLAN_LIMITS.business.maxVehicles }) ?? DEFAULT_BUSINESS_VEHICLE_COUNT
       const priceId = process.env.STRIPE_BUSINESS_PRICE_ID
       lineItems.push(
         priceId
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         user_id: user.id,
         tier,
-        vehicle_count: tier === 'business' ? (validateInteger(vehicleCount, { min: 1, max: PLAN_LIMITS.business.maxVehicles }) ?? 4).toString() : '3',
+        vehicle_count: tier === 'business' ? (validateInteger(vehicleCount, { min: 1, max: PLAN_LIMITS.business.maxVehicles }) ?? DEFAULT_BUSINESS_VEHICLE_COUNT).toString() : String(PLAN_LIMITS.personal.maxVehicles),
       },
       allow_promotion_codes: true, // Allow discount codes
       billing_address_collection: 'required',

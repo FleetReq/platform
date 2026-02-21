@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
-import { PLAN_LIMITS, type SubscriptionPlan } from '@/lib/constants'
+import { PLAN_LIMITS, PERSONAL_PRICE_USD, BUSINESS_PRICE_PER_VEHICLE_USD, type SubscriptionPlan } from '@/lib/constants'
 
 if (!process.env.STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY env var is required')
 if (!process.env.STRIPE_WEBHOOK_SECRET) throw new Error('STRIPE_WEBHOOK_SECRET env var is required')
@@ -121,8 +121,8 @@ export async function POST(request: NextRequest) {
           const price = subscription.items.data[0]?.price
           if (price) {
             const amount = price.unit_amount || 0
-            if (amount === 400) tier = 'personal' // $4.00
-            else if (amount === 1200) tier = 'business' // $12.00
+            if (amount === PERSONAL_PRICE_USD * 100) tier = 'personal'
+            else if (amount === BUSINESS_PRICE_PER_VEHICLE_USD * 100) tier = 'business'
           }
         }
 

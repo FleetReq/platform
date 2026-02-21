@@ -26,7 +26,7 @@ function LoginContent() {
         {/* Title Section */}
         <div className="text-center mb-12">
           <h1 className="text-5xl lg:text-6xl font-bold text-white mb-4">
-            FleetSync
+            FleetReq
             <span className="block text-blue-400 text-4xl lg:text-5xl mt-2">for Small Business</span>
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">

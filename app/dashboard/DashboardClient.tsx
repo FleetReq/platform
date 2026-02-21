@@ -2224,25 +2224,31 @@ export default function DashboardClient({
     try {
       if (!supabase) return
 
-      // Fetch ALL data first before setting any state
-      const [carsResponse, statsResponse, fillUpsResponse, maintenanceResponse] = await Promise.all([
+      // Fetch ALL data concurrently — allSettled prevents one slow/failing endpoint
+      // from taking down the entire dashboard load
+      const [carsResult, statsResult, fillUpsResult, maintenanceResult] = await Promise.allSettled([
         fetchWithTimeout('/api/cars', { credentials: 'include' }),
         fetchWithTimeout('/api/stats'),
         fetchWithTimeout('/api/fill-ups?limit=50', { credentials: 'include' }),
         fetchWithTimeout('/api/maintenance?limit=50', { credentials: 'include' })
       ])
 
+      const carsResponse = carsResult.status === 'fulfilled' ? carsResult.value : null
+      const statsResponse = statsResult.status === 'fulfilled' ? statsResult.value : null
+      const fillUpsResponse = fillUpsResult.status === 'fulfilled' ? fillUpsResult.value : null
+      const maintenanceResponse = maintenanceResult.status === 'fulfilled' ? maintenanceResult.value : null
+
       // 401 means the session expired — redirect to login rather than showing empty data
-      if (carsResponse.status === 401 || fillUpsResponse.status === 401 || maintenanceResponse.status === 401) {
+      if (carsResponse?.status === 401 || fillUpsResponse?.status === 401 || maintenanceResponse?.status === 401) {
         router.replace('/login')
         return
       }
 
       // Extract data
-      const carsData = carsResponse.ok ? (await carsResponse.json()).cars || [] : []
-      const statsData = statsResponse.ok ? (await statsResponse.json()).stats : null
-      const fillUpsData = fillUpsResponse.ok ? (await fillUpsResponse.json()).fillUps || [] : []
-      const maintenanceData = maintenanceResponse.ok ? (await maintenanceResponse.json()).maintenanceRecords || [] : []
+      const carsData = carsResponse?.ok ? (await carsResponse.json()).cars || [] : []
+      const statsData = statsResponse?.ok ? (await statsResponse.json()).stats : null
+      const fillUpsData = fillUpsResponse?.ok ? (await fillUpsResponse.json()).fillUps || [] : []
+      const maintenanceData = maintenanceResponse?.ok ? (await maintenanceResponse.json()).maintenanceRecords || [] : []
 
       // Set ALL state in one batch - React will batch these updates
       setCars(carsData)

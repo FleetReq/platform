@@ -31,7 +31,7 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
     const getSession = async () => {
       if (!supabase) {
         console.error('AuthComponent: No supabase client - check environment variables')
-        setLoading(false) // ← FIX: Set loading to false even if supabase is null
+        setLoading(false)
         setError('Configuration error: Unable to connect to authentication service. Please contact support.')
         return
       }
@@ -280,7 +280,7 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
   return (
     <div className="max-w-md mx-auto p-6 bg-gray-900 rounded-lg border border-gray-700">
       <h2 className="text-2xl font-bold text-white mb-6 text-center">
-        FleetSync
+        FleetReq
       </h2>
 
       {error && (

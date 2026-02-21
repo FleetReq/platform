@@ -59,6 +59,9 @@ export const PERSONAL_PRICE_USD = 4
 /** Business tier price per vehicle per month, in USD. Used for proration calculations. */
 export const BUSINESS_PRICE_PER_VEHICLE_USD = 12
 
+/** Default vehicle count for new Business subscriptions when no vehicle count is provided. */
+export const DEFAULT_BUSINESS_VEHICLE_COUNT = 4
+
 /** Grace period after subscription ends before account data is deleted. */
 export const ACCOUNT_DELETION_GRACE_DAYS = 30
 

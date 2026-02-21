@@ -10,7 +10,7 @@ export function createClient() {
   )
 }
 
-// Legacy export for backward compatibility (deprecated)
+// Singleton export used by client components throughout the app
 export const supabase = createClient()
 
 // Database types (shared between client and server)

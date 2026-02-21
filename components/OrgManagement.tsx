@@ -47,11 +47,15 @@ export default function OrgManagement() {
         setOrg(data.org)
         setRole(data.role)
         setOrgName(data.org?.name || '')
+      } else {
+        setLoadError(true)
       }
 
       if (membersRes.ok) {
         const data = await membersRes.json()
         setMembers(data.members || [])
+      } else {
+        setLoadError(true)
       }
     } catch (error) {
       console.error('Error loading org:', error)
