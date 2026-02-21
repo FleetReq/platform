@@ -5,6 +5,9 @@
  * and ensure data integrity across the application.
  */
 
+import type { SubscriptionPlan } from './constants'
+export type { SubscriptionPlan }
+
 /**
  * Sanitize string input - remove dangerous characters and limit length
  */
@@ -264,8 +267,6 @@ export function validateFuelType(input: string | null | undefined): FuelType | n
  * Validate subscription plan
  */
 const VALID_SUBSCRIPTION_PLANS = ['free', 'personal', 'business'] as const
-
-export type SubscriptionPlan = typeof VALID_SUBSCRIPTION_PLANS[number]
 
 export function validateSubscriptionPlan(
   input: string | null | undefined

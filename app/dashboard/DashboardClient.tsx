@@ -3,7 +3,9 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner, isAdmin, getUserSubscriptionPlan, getUserMaxVehicles, hasFeatureAccess } from '@/lib/supabase-client'
+import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner } from '@/lib/supabase-client'
+import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
+import { validateSubscriptionPlan } from '@/lib/validation'
 import { MAINTENANCE_INTERVALS, getMaintenanceStatus, getLatestMaintenanceRecord } from '@/lib/maintenance'
 import { MAINTENANCE_TYPES, MAINTENANCE_TYPE_FILTER_OPTIONS, getStatusColor, getStatusTextColor, getIrsRate, OWNER_USER_ID, PLAN_LIMITS, PLAN_DISPLAY_NAMES, getPlanColor, ACCOUNT_DELETION_GRACE_DAYS, type SubscriptionPlan, type MaintenanceStatus } from '@/lib/constants'
 import BackgroundAnimation from '../components/BackgroundAnimation'
@@ -42,19 +44,6 @@ ChartJS.register(
 const CURRENT_YEAR = new Date().getFullYear()
 const CURRENT_IRS_RATE = getIrsRate(CURRENT_YEAR)
 
-// Fetch with an 8-second abort timeout so hung Vercel functions don't block indefinitely
-function fetchWithTimeout(url: string, options: RequestInit = {}): Promise<Response> {
-  const controller = new AbortController()
-  const id = setTimeout(() => controller.abort(), 8000)
-  return fetch(url, { ...options, signal: controller.signal })
-    .finally(() => clearTimeout(id))
-    .catch((err: unknown) => {
-      if (err instanceof Error && err.name === 'AbortError') {
-        return new Response(null, { status: 408 })
-      }
-      throw err
-    })
-}
 
 interface UserStats {
   total_cars: number
@@ -1245,9 +1234,7 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
           const orgRes = await fetchWithTimeout('/api/org')
           if (orgRes.ok) {
             const orgData = await orgRes.json()
-            const VALID_PLANS = ['free', 'personal', 'business'] as const
-            const rawPlan = orgData.org?.subscription_plan
-            setSubscriptionPlan(VALID_PLANS.includes(rawPlan) ? rawPlan : 'free')
+            setSubscriptionPlan(validateSubscriptionPlan(orgData.org?.subscription_plan) ?? 'free')
             setSubscriptionEndDate(orgData.org?.subscription_end_date || null)
           }
         } catch (err) {
@@ -1395,9 +1382,7 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
         const orgRes = await fetchWithTimeout('/api/org')
         if (orgRes.ok) {
           const orgData = await orgRes.json()
-          const VALID_PLANS = ['free', 'personal', 'business'] as const
-          const rawPlan = orgData.org?.subscription_plan
-          setSubscriptionPlan(VALID_PLANS.includes(rawPlan) ? rawPlan : 'free')
+          setSubscriptionPlan(validateSubscriptionPlan(orgData.org?.subscription_plan) ?? 'free')
           setSubscriptionEndDate(orgData.org?.subscription_end_date || null)
         }
       } catch (err) {
@@ -1512,17 +1497,23 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
                 if (!supabase || !currentUser) return
                 setIsTogglingNotifications(true)
                 const newValue = !emailNotificationsEnabled
-                const { error } = await supabase
-                  .from('user_profiles')
-                  .update({ email_notifications_enabled: newValue })
-                  .eq('id', currentUser.id)
-                if (!error) {
-                  setEmailNotificationsEnabled(newValue)
-                  setMessage({ type: 'success', text: newValue ? 'Email notifications enabled' : 'Email notifications disabled' })
-                } else {
+                try {
+                  const { error } = await supabase
+                    .from('user_profiles')
+                    .update({ email_notifications_enabled: newValue })
+                    .eq('id', currentUser.id)
+                  if (!error) {
+                    setEmailNotificationsEnabled(newValue)
+                    setMessage({ type: 'success', text: newValue ? 'Email notifications enabled' : 'Email notifications disabled' })
+                  } else {
+                    setMessage({ type: 'error', text: 'Failed to update notification preference' })
+                  }
+                } catch (err) {
+                  console.error('[Dashboard] Failed to update notification preference:', err)
                   setMessage({ type: 'error', text: 'Failed to update notification preference' })
+                } finally {
+                  setIsTogglingNotifications(false)
                 }
-                setIsTogglingNotifications(false)
               }}
               disabled={isTogglingNotifications}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 ${
@@ -1561,16 +1552,22 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
                     const newFreq = e.target.value as 'daily' | 'weekly' | 'monthly'
                     setNotificationFrequency(newFreq)
                     setIsSavingNotificationSettings(true)
-                    const { error } = await supabase
-                      .from('user_profiles')
-                      .update({ notification_frequency: newFreq })
-                      .eq('id', currentUser.id)
-                    if (!error) {
-                      setMessage({ type: 'success', text: 'Reminder frequency updated' })
-                    } else {
+                    try {
+                      const { error } = await supabase
+                        .from('user_profiles')
+                        .update({ notification_frequency: newFreq })
+                        .eq('id', currentUser.id)
+                      if (!error) {
+                        setMessage({ type: 'success', text: 'Reminder frequency updated' })
+                      } else {
+                        setMessage({ type: 'error', text: 'Failed to update frequency' })
+                      }
+                    } catch (err) {
+                      console.error('[Dashboard] Failed to update notification frequency:', err)
                       setMessage({ type: 'error', text: 'Failed to update frequency' })
+                    } finally {
+                      setIsSavingNotificationSettings(false)
                     }
-                    setIsSavingNotificationSettings(false)
                   }}
                   disabled={isSavingNotificationSettings}
                   className="text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 disabled:opacity-50"
@@ -1594,17 +1591,23 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
                     if (!supabase || !currentUser) return
                     setIsSavingNotificationSettings(true)
                     const newValue = !notificationWarningEnabled
-                    const { error } = await supabase
-                      .from('user_profiles')
-                      .update({ notification_warning_enabled: newValue })
-                      .eq('id', currentUser.id)
-                    if (!error) {
-                      setNotificationWarningEnabled(newValue)
-                      setMessage({ type: 'success', text: newValue ? 'Warning emails enabled' : 'Warning emails disabled' })
-                    } else {
+                    try {
+                      const { error } = await supabase
+                        .from('user_profiles')
+                        .update({ notification_warning_enabled: newValue })
+                        .eq('id', currentUser.id)
+                      if (!error) {
+                        setNotificationWarningEnabled(newValue)
+                        setMessage({ type: 'success', text: newValue ? 'Warning emails enabled' : 'Warning emails disabled' })
+                      } else {
+                        setMessage({ type: 'error', text: 'Failed to update warning preference' })
+                      }
+                    } catch (err) {
+                      console.error('[Dashboard] Failed to update warning preference:', err)
                       setMessage({ type: 'error', text: 'Failed to update warning preference' })
+                    } finally {
+                      setIsSavingNotificationSettings(false)
                     }
-                    setIsSavingNotificationSettings(false)
                   }}
                   disabled={isSavingNotificationSettings}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 flex-shrink-0 ${
@@ -2886,6 +2889,9 @@ export default function DashboardClient({
                                         const data = await res.json()
                                         setLeaveOrgError(data.error || 'Failed to leave organization')
                                       }
+                                    } catch (err) {
+                                      console.error('[Dashboard] Failed to leave organization:', err)
+                                      setLeaveOrgError('Failed to leave organization. Please try again.')
                                     } finally {
                                       setLeavingOrgId(null)
                                     }

@@ -36,13 +36,13 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
         return
       }
 
-      const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user ?? null)
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user ?? null)
       setLoading(false)
       // Check invites first — if redirecting to /invite/accept, skip dashboard navigation
-      const redirecting = await checkPendingInvites(session?.user ?? null)
+      const redirecting = await checkPendingInvites(user ?? null)
       if (!redirecting) {
-        onAuthChange(session?.user ?? null)
+        onAuthChange(user ?? null)
       }
     }
 

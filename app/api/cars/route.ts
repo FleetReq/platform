@@ -47,10 +47,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Enforce vehicle limit for the org
-    const [{ count: currentCount }, { data: orgData }] = await Promise.all([
+    const [{ count: currentCount, error: countErr }, { data: orgData, error: orgErr }] = await Promise.all([
       supabase.from('cars').select('*', { count: 'exact', head: true }).eq('org_id', membership.org_id),
       supabase.from('organizations').select('max_vehicles').eq('id', membership.org_id).single()
     ])
+    if (countErr || orgErr) {
+      console.error('Error checking vehicle limit:', countErr || orgErr)
+      return errorResponse('Failed to check vehicle limit', 500)
+    }
     const maxVehicles = orgData?.max_vehicles ?? 1
     if ((currentCount ?? 0) >= maxVehicles) {
       return errorResponse(`Your plan allows up to ${maxVehicles} vehicle${maxVehicles === 1 ? '' : 's'}. Upgrade to add more.`, 403)

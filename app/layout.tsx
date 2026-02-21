@@ -5,7 +5,7 @@ import { ThemeProvider } from "./theme-provider";
 import { Navigation } from "./components/navigation";
 import Analytics from "./components/Analytics";
 
-import { SITE_URL as siteUrl } from '@/lib/constants'
+import { SITE_URL as siteUrl, PERSONAL_PRICE_USD, BUSINESS_PRICE_PER_VEHICLE_USD } from '@/lib/constants'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -150,7 +150,7 @@ export default function RootLayout({
                 '@type': 'AggregateOffer',
                 priceCurrency: 'USD',
                 lowPrice: '0',
-                highPrice: '12',
+                highPrice: String(BUSINESS_PRICE_PER_VEHICLE_USD),
                 priceSpecification: [
                   {
                     '@type': 'UnitPriceSpecification',
@@ -160,13 +160,13 @@ export default function RootLayout({
                   },
                   {
                     '@type': 'UnitPriceSpecification',
-                    price: '4',
+                    price: String(PERSONAL_PRICE_USD),
                     priceCurrency: 'USD',
                     name: 'Family'
                   },
                   {
                     '@type': 'UnitPriceSpecification',
-                    price: '12',
+                    price: String(BUSINESS_PRICE_PER_VEHICLE_USD),
                     priceCurrency: 'USD',
                     name: 'Business'
                   }
