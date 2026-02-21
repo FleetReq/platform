@@ -2298,7 +2298,7 @@ export default function DashboardClient({
         if (!monthlyData[monthKey]) {
           monthlyData[monthKey] = { mpgs: [], monthYear }
         }
-        monthlyData[monthKey].mpgs.push(f.mpg!)
+        monthlyData[monthKey].mpgs.push(f.mpg ?? 0)
       })
 
       // Sort months and calculate averages
@@ -2321,7 +2321,7 @@ export default function DashboardClient({
         if (!yearlyData[year]) {
           yearlyData[year] = []
         }
-        yearlyData[year].push(f.mpg!)
+        yearlyData[year].push(f.mpg ?? 0)
       })
 
       // Sort years and calculate averages
@@ -2340,7 +2340,7 @@ export default function DashboardClient({
         const date = new Date(f.date)
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
       })
-      data = recentFillUps.map(f => f.mpg!)
+      data = recentFillUps.map(f => f.mpg ?? 0)
     }
 
     return {

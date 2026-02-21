@@ -27,11 +27,19 @@ export type SubscriptionPlan = 'free' | 'personal' | 'business'
 
 export type OrgRole = 'owner' | 'editor' | 'viewer'
 
+/** Sentinel value meaning "no vehicle limit" for display purposes. */
+export const UNLIMITED_VEHICLES = 999
+
 /** Single source of truth for per-plan vehicle and member limits. */
 export const PLAN_LIMITS: Record<SubscriptionPlan, { maxVehicles: number; maxMembers: number }> = {
   free:     { maxVehicles: 1,   maxMembers: 1 },
   personal: { maxVehicles: 3,   maxMembers: 3 },
-  business: { maxVehicles: 999, maxMembers: 6 },
+  business: { maxVehicles: UNLIMITED_VEHICLES, maxMembers: 6 },
+}
+
+/** Returns 'Unlimited' for the sentinel value, otherwise the number as a string. */
+export function formatVehicleLimit(n: number): string {
+  return n >= UNLIMITED_VEHICLES ? 'Unlimited' : String(n)
 }
 
 /** Display names for each subscription plan (DB value → UI label). */

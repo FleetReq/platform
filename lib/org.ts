@@ -139,7 +139,7 @@ export async function getOrgSubscriptionPlan(
 
 /**
  * Get max vehicles allowed for a user's organization.
- * Admins always return 999.
+ * Admins always return UNLIMITED_VEHICLES (999).
  */
 export async function getOrgMaxVehicles(
   supabase: SupabaseClient,

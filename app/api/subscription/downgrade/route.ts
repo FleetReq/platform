@@ -118,9 +118,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Create admin Supabase client for updating user profiles
+    const adminUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    if (!adminUrl || !adminKey) {
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
+    }
     const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      adminUrl,
+      adminKey,
       {
         auth: {
           autoRefreshToken: false,

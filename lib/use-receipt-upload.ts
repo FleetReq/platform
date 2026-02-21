@@ -113,7 +113,8 @@ export function useReceiptUpload() {
   const deleteFromStorage = useCallback(async (storagePaths: string[]) => {
     if (storagePaths.length === 0) return
     const supabase = createClient()
-    await supabase.storage.from(BUCKET).remove(storagePaths)
+    const { error } = await supabase.storage.from(BUCKET).remove(storagePaths)
+    if (error) console.error('[use-receipt-upload] Failed to remove files from storage:', error)
   }, [])
 
   const reset = useCallback(() => {

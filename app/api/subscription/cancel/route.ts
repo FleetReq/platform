@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       try {
         // Get active subscriptions for this customer
         const subscriptions = await stripe.subscriptions.list({
-          customer: org.stripe_customer_id!,
+          customer: org.stripe_customer_id,
           status: 'active',
           limit: 1,
         })
