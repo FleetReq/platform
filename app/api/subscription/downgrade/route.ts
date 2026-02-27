@@ -4,6 +4,7 @@ import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import { getUserOrg, getOrgDetails, getOrgSubscriptionPlan } from '@/lib/org'
 import { validateUUID } from '@/lib/validation'
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 import { PLAN_LIMITS } from '@/lib/constants'
 
 if (!process.env.STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY env var is required')
@@ -21,13 +22,18 @@ export async function POST(request: NextRequest) {
     const supabase = await createRouteHandlerClient(request)
 
     if (!supabase) {
-      return NextResponse.json({ error: 'Database connection failed' }, { status: 500 })
+      return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
     }
 
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-    if (!user) {
+    if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const rateLimitResult = rateLimit(user.id, RATE_LIMITS.EXPENSIVE)
+    if (!rateLimitResult.success) {
+      return NextResponse.json({ error: 'Rate limit exceeded. Please try again later.' }, { status: 429 })
     }
 
     // Parse request body
@@ -165,7 +171,7 @@ export async function POST(request: NextRequest) {
 
           // Set effective date to end of current period
           const subscriptionItem = subscription.items.data[0] as SubscriptionItemWithPeriod
-          const periodEnd = subscriptionItem.current_period_end ?? (subscription as unknown as { current_period_end?: number }).current_period_end
+          const periodEnd = subscriptionItem.current_period_end
           if (!periodEnd) {
             console.error('[downgrade] No current_period_end on subscription item or subscription — falling back to now')
             downgradeEffectiveDate = new Date()

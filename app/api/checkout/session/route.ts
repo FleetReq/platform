@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         user_id: user.id,
         tier,
-        vehicle_count: tier === 'business' ? (validateInteger(vehicleCount, { min: 1, max: PLAN_LIMITS.business.maxVehicles }) ?? DEFAULT_BUSINESS_VEHICLE_COUNT).toString() : String(PLAN_LIMITS.personal.maxVehicles),
+        vehicle_count: tier === 'business' ? quantity.toString() : String(PLAN_LIMITS.personal.maxVehicles),
       },
       allow_promotion_codes: true, // Allow discount codes
       billing_address_collection: 'required',

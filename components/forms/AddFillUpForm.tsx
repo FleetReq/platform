@@ -6,6 +6,7 @@ import { useReceiptUpload } from '@/lib/use-receipt-upload'
 import ReceiptPhotoPicker from '@/components/ReceiptPhotoPicker'
 import { isFutureDate } from '@/lib/date-utils'
 import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
+import { FORM_RECORDS_LIMIT } from '@/lib/constants'
 
 interface AddFillUpFormProps {
   cars: Car[]
@@ -40,7 +41,7 @@ export default function AddFillUpForm({ cars, onSuccess, subscriptionPlan = 'fre
       if (!formData.car_id) return
 
       try {
-        const response = await fetchWithTimeout(`/api/fill-ups?car_id=${formData.car_id}&limit=10`)
+        const response = await fetchWithTimeout(`/api/fill-ups?car_id=${formData.car_id}&limit=${FORM_RECORDS_LIMIT}`)
         if (response.ok) {
           const { fillUps } = await response.json()
 

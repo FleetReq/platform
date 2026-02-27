@@ -65,6 +65,15 @@ export const DEFAULT_BUSINESS_VEHICLE_COUNT = 4
 /** Grace period after subscription ends before account data is deleted. */
 export const ACCOUNT_DELETION_GRACE_DAYS = 30
 
+/** Maximum plausible fuel price per gallon (covers aviation fuel and future diesel). */
+export const PRICE_PER_GALLON_MAX = 100
+
+/** Records fetched per dashboard load (fill-ups and maintenance). */
+export const DASHBOARD_RECORDS_LIMIT = 50
+
+/** Records fetched by form dropdowns for recent activity context. */
+export const FORM_RECORDS_LIMIT = 10
+
 /** Canonical site URL. Single source of truth — used in emails, sitemaps, and structured data. */
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://fleetreq.vercel.app'
 

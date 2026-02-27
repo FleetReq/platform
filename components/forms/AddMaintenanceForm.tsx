@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { type Car, type MaintenanceRecord, hasFeatureAccess } from '@/lib/supabase-client'
-import { MAINTENANCE_TYPES } from '@/lib/constants'
+import { MAINTENANCE_TYPES, FORM_RECORDS_LIMIT } from '@/lib/constants'
 import { useReceiptUpload } from '@/lib/use-receipt-upload'
 import ReceiptPhotoPicker from '@/components/ReceiptPhotoPicker'
 import { isFutureDate } from '@/lib/date-utils'
@@ -43,7 +43,7 @@ export default function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan =
       if (!formData.car_id) return
 
       try {
-        const response = await fetchWithTimeout(`/api/maintenance?car_id=${formData.car_id}&limit=10`)
+        const response = await fetchWithTimeout(`/api/maintenance?car_id=${formData.car_id}&limit=${FORM_RECORDS_LIMIT}`)
         if (response.ok) {
           const { maintenanceRecords } = await response.json()
 

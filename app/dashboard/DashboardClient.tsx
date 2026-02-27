@@ -7,7 +7,7 @@ import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner } from
 import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
 import { validateSubscriptionPlan } from '@/lib/validation'
 import { MAINTENANCE_INTERVALS, getMaintenanceStatus, getLatestMaintenanceRecord } from '@/lib/maintenance'
-import { MAINTENANCE_TYPES, MAINTENANCE_TYPE_FILTER_OPTIONS, getStatusColor, getStatusTextColor, getIrsRate, OWNER_USER_ID, PLAN_LIMITS, PLAN_DISPLAY_NAMES, getPlanColor, ACCOUNT_DELETION_GRACE_DAYS, type SubscriptionPlan, type MaintenanceStatus } from '@/lib/constants'
+import { MAINTENANCE_TYPES, MAINTENANCE_TYPE_FILTER_OPTIONS, getStatusColor, getStatusTextColor, getIrsRate, OWNER_USER_ID, PLAN_LIMITS, PLAN_DISPLAY_NAMES, getPlanColor, ACCOUNT_DELETION_GRACE_DAYS, DASHBOARD_RECORDS_LIMIT, type SubscriptionPlan, type MaintenanceStatus } from '@/lib/constants'
 import BackgroundAnimation from '../components/BackgroundAnimation'
 import { useTheme } from '../theme-provider'
 import RecordDetailModal from '../../components/RecordDetailModal'
@@ -2233,8 +2233,8 @@ export default function DashboardClient({
       const [carsResult, statsResult, fillUpsResult, maintenanceResult] = await Promise.allSettled([
         fetchWithTimeout('/api/cars', { credentials: 'include' }),
         fetchWithTimeout('/api/stats'),
-        fetchWithTimeout('/api/fill-ups?limit=50', { credentials: 'include' }),
-        fetchWithTimeout('/api/maintenance?limit=50', { credentials: 'include' })
+        fetchWithTimeout(`/api/fill-ups?limit=${DASHBOARD_RECORDS_LIMIT}`, { credentials: 'include' }),
+        fetchWithTimeout(`/api/maintenance?limit=${DASHBOARD_RECORDS_LIMIT}`, { credentials: 'include' })
       ])
 
       const carsResponse = carsResult.status === 'fulfilled' ? carsResult.value : null
