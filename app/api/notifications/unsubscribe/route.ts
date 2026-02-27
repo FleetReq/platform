@@ -8,9 +8,13 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 
 /**
  * Generate an HMAC token for a given userId so unsubscribe links can't be forged.
+ * Requires UNSUBSCRIBE_SECRET env var — never falls back to the service role key.
  */
 export function generateUnsubscribeToken(userId: string): string {
-  const secret = process.env.UNSUBSCRIBE_SECRET || supabaseServiceKey
+  const secret = process.env.UNSUBSCRIBE_SECRET
+  if (!secret) {
+    throw new Error('UNSUBSCRIBE_SECRET env var is required')
+  }
   return crypto.createHmac('sha256', secret).update(userId).digest('hex')
 }
 

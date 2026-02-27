@@ -45,6 +45,24 @@ interface UserDigest {
 
 type NotificationFrequency = 'daily' | 'weekly' | 'monthly'
 
+// Local schema type for maintenance_notifications_sent (not in generated Supabase types)
+type NotificationsDb = {
+  public: {
+    Tables: {
+      maintenance_notifications_sent: {
+        Row: { user_id: string; car_id: string; maintenance_type: string; status_notified: string; notified_at: string }
+        Insert: { user_id: string; car_id: string; maintenance_type: string; status_notified: string; notified_at: string }
+        Update: { user_id?: string; car_id?: string; maintenance_type?: string; status_notified?: string; notified_at?: string }
+        Relationships: []
+      }
+    }
+    Views: Record<string, never>
+    Functions: Record<string, never>
+    Enums: Record<string, never>
+    CompositeTypes: Record<string, never>
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Auth check
 // ---------------------------------------------------------------------------
@@ -392,10 +410,8 @@ async function sendEmail(to: string, subject: string, html: string, unsubscribeU
 // Record sent notifications (upsert updates notified_at for repeating alerts)
 // ---------------------------------------------------------------------------
 
-// maintenance_notifications_sent is not in the generated Supabase types.
-// SupabaseClient<any> allows querying tables outside the type schema.
 async function recordSentAlerts(
-  supabase: SupabaseClient<any>,
+  supabase: SupabaseClient<NotificationsDb>,
   userId: string,
   alerts: AlertItem[]
 ): Promise<string[]> {

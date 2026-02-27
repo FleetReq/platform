@@ -23,6 +23,9 @@ export type MaintenanceStatus = 'good' | 'warning' | 'overdue' | 'unknown'
 // Constants
 // ---------------------------------------------------------------------------
 
+/** Miles-until-service threshold below which a "warning" status is shown. */
+const MAINTENANCE_WARNING_MILES_THRESHOLD = 1000
+
 export const MAINTENANCE_INTERVALS: Record<string, MaintenanceInterval> = {
   oil_change: { months: 6, miles: 5000, yellowThreshold: 0.8, redThreshold: 1.0 },
   tire_rotation: { months: 6, miles: 7500, yellowThreshold: 0.8, redThreshold: 1.0 },
@@ -96,7 +99,7 @@ export function getMaintenanceStatus(
 
     if (milesUntilService <= 0) {
       mileageStatus = 'overdue'
-    } else if (milesUntilService <= 1000) {
+    } else if (milesUntilService <= MAINTENANCE_WARNING_MILES_THRESHOLD) {
       mileageStatus = 'warning'
     }
   } else if (interval.miles && lastMaintenanceRecord.mileage != null && currentMileage !== null) {

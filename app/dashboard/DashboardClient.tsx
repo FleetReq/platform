@@ -1387,6 +1387,10 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
         }
       } catch (err) {
         console.error('[Dashboard] Failed to refresh org after cancellation:', err)
+        setMessage({
+          type: 'success',
+          text: 'Account deletion scheduled. Refresh the page to see your updated plan.'
+        })
       }
     } catch (error) {
       setMessage({
@@ -2168,7 +2172,7 @@ export default function DashboardClient({
   const [selectedCarId, setSelectedCarId] = useState<string | null>(null)
 
   // Read ?tab= URL param to allow navigation from hamburger menu
-  const validTabs = ['dashboard', 'add-car', 'add-fillup', 'add-trip', 'add-maintenance', 'records', 'settings'] as const
+  const validTabs = ['overview', 'dashboard', 'add-car', 'add-fillup', 'add-trip', 'add-maintenance', 'records', 'settings'] as const
   useEffect(() => {
     const tabParam = searchParams.get('tab')
     if (tabParam && validTabs.includes(tabParam as typeof validTabs[number])) {

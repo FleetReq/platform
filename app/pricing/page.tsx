@@ -196,7 +196,7 @@ export default function PricingPage() {
       // Check if user is logged in
       if (!supabase) {
         console.error('Supabase client not configured')
-        setCheckoutError('Configuration error. Please check environment variables.')
+        setCheckoutError('An error occurred. Please try again or contact support.')
         setLoading(null)
         return
       }
@@ -246,7 +246,7 @@ export default function PricingPage() {
     try {
       if (!supabase) {
         console.error('Supabase client not configured')
-        setCheckoutError('Configuration error. Please check environment variables.')
+        setCheckoutError('An error occurred. Please try again or contact support.')
         setLoading(null)
         return
       }
