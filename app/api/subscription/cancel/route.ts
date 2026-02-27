@@ -84,7 +84,12 @@ export async function POST(request: NextRequest) {
           })
 
           const subscriptionItem = subscription.items.data[0] as SubscriptionItemWithPeriod
-          subscriptionEndDate = new Date(subscriptionItem.current_period_end * 1000).toISOString()
+          const periodEnd = subscriptionItem.current_period_end ?? (subscription as unknown as { current_period_end?: number }).current_period_end
+          if (!periodEnd) {
+            console.error('[cancel] No current_period_end on subscription item or subscription')
+          } else {
+            subscriptionEndDate = new Date(periodEnd * 1000).toISOString()
+          }
         }
       } catch (stripeError) {
         console.error('Stripe cancellation error:', stripeError)
@@ -132,12 +137,6 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Cancellation error:', error)
-    return NextResponse.json(
-      {
-        error: 'Failed to cancel subscription',
-        details: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to cancel subscription' }, { status: 500 })
   }
 }

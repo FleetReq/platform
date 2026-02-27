@@ -69,9 +69,9 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  // Verify HMAC
+  // Verify HMAC — length check required: timingSafeEqual throws if buffer lengths differ
   const expectedToken = generateUnsubscribeToken(userId)
-  if (!crypto.timingSafeEqual(Buffer.from(token), Buffer.from(expectedToken))) {
+  if (token.length !== expectedToken.length || !crypto.timingSafeEqual(Buffer.from(token), Buffer.from(expectedToken))) {
     return new NextResponse(
       htmlPage('Invalid Link', '<h1>Invalid link</h1><p>This unsubscribe link has expired or is invalid.</p>'),
       { status: 403, headers: { 'Content-Type': 'text/html' } }
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
-  const newValue = resubscribe ? true : false
+  const newValue = resubscribe
 
   const { error } = await supabase
     .from('user_profiles')

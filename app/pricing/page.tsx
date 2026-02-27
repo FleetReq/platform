@@ -95,7 +95,6 @@ const allFeatures = [
 ]
 
 export default function PricingPage() {
-  const [showAnnual, setShowAnnual] = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
   const [currentPlan, setCurrentPlan] = useState<'free' | 'personal' | 'business' | null>(null)
   const [showVehicleModal, setShowVehicleModal] = useState(false)
@@ -193,14 +192,6 @@ export default function PricingPage() {
 
     setCheckoutError('')
     try {
-      // Check if user is logged in
-      if (!supabase) {
-        console.error('Supabase client not configured')
-        setCheckoutError('An error occurred. Please try again or contact support.')
-        setLoading(null)
-        return
-      }
-
       const { data: { user: checkoutUser } } = await supabase.auth.getUser()
 
       if (!checkoutUser) {
@@ -244,13 +235,6 @@ export default function PricingPage() {
     setCheckoutError('')
 
     try {
-      if (!supabase) {
-        console.error('Supabase client not configured')
-        setCheckoutError('An error occurred. Please try again or contact support.')
-        setLoading(null)
-        return
-      }
-
       const { data: { user: businessUser } } = await supabase.auth.getUser()
 
       if (!businessUser) {
@@ -305,28 +289,6 @@ export default function PricingPage() {
             Start free and upgrade as you grow.
           </p>
 
-          {/* Billing Toggle */}
-          <div className="flex items-center justify-center mb-8">
-            <span className={`mr-3 ${!showAnnual ? 'text-gray-900 dark:text-white font-medium' : 'text-gray-500'}`}>
-              Monthly
-            </span>
-            <button
-              onClick={() => setShowAnnual(!showAnnual)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                showAnnual ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
-              }`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  showAnnual ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
-            <span className={`ml-3 ${showAnnual ? 'text-gray-900 dark:text-white font-medium' : 'text-gray-500'}`}>
-              Annual
-              <span className="ml-1 text-sm text-green-600 font-medium">(Save 20%)</span>
-            </span>
-          </div>
         </div>
 
         {/* Pricing Cards */}
@@ -358,20 +320,11 @@ export default function PricingPage() {
 
                 <div className="mb-6">
                   <span className="text-4xl font-bold text-gray-900 dark:text-white">
-                    {tier.price === 'Free' ? tier.price : (
-                      showAnnual && tier.price !== 'Free'
-                        ? `$${Math.round(parseInt(tier.price.replace('$', '')) * 12 * 0.8)}`
-                        : tier.price
-                    )}
+                    {tier.price}
                   </span>
                   {tier.period && (
                     <span className="text-gray-600 dark:text-gray-300">
-                      {showAnnual
-                        ? tier.period.includes('/vehicle')
-                          ? '/vehicle/year'
-                          : '/year'
-                        : tier.period
-                      }
+                      {tier.period}
                     </span>
                   )}
                 </div>
@@ -547,7 +500,7 @@ export default function PricingPage() {
                   What payment methods do you accept?
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300">
-                  We accept all major credit cards, PayPal, and ACH transfers for annual plans.
+                  We accept all major credit cards and PayPal.
                   Enterprise customers can pay via invoice.
                 </p>
               </div>
@@ -603,7 +556,7 @@ export default function PricingPage() {
                     min="1"
                     max={PLAN_LIMITS.business.maxVehicles}
                     value={vehicleCount}
-                    onChange={(e) => setVehicleCount(Math.max(1, parseInt(e.target.value) || 1))}
+                    onChange={(e) => setVehicleCount(Math.min(PLAN_LIMITS.business.maxVehicles, Math.max(1, parseInt(e.target.value) || 1)))}
                     className="flex-1 px-4 py-3 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-center text-2xl font-bold text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500"
                   />
                   <button

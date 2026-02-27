@@ -26,6 +26,9 @@ export type MaintenanceStatus = 'good' | 'warning' | 'overdue' | 'unknown'
 /** Miles-until-service threshold below which a "warning" status is shown. */
 const MAINTENANCE_WARNING_MILES_THRESHOLD = 1000
 
+/** Average days per month (365.25 / 12) used for time-based interval calculations. */
+const AVG_DAYS_PER_MONTH = 30.44
+
 export const MAINTENANCE_INTERVALS: Record<string, MaintenanceInterval> = {
   oil_change: { months: 6, miles: 5000, yellowThreshold: 0.8, redThreshold: 1.0 },
   tire_rotation: { months: 6, miles: 7500, yellowThreshold: 0.8, redThreshold: 1.0 },
@@ -83,7 +86,7 @@ export function getMaintenanceStatus(
   } else if (interval.months) {
     // Fallback: Use default time interval
     const lastDate = new Date(lastMaintenanceRecord.date)
-    const monthsElapsed = (today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44)
+    const monthsElapsed = (today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24 * AVG_DAYS_PER_MONTH)
     const timeProgress = monthsElapsed / interval.months
 
     if (timeProgress >= (interval.redThreshold || 1.0)) {
@@ -151,7 +154,7 @@ export function getMaintenanceDetail(
     }
   } else if (interval.months) {
     const lastDate = new Date(lastMaintenanceRecord.date)
-    const monthsElapsed = (today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44)
+    const monthsElapsed = (today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24 * AVG_DAYS_PER_MONTH)
     const monthsRemaining = interval.months - monthsElapsed
 
     if (monthsRemaining <= 0) {

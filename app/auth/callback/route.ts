@@ -5,7 +5,9 @@ import { cookies } from 'next/headers'
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
-  const next = requestUrl.searchParams.get('next') ?? '/dashboard'
+  // Validate next: only allow relative paths with safe characters (prevent open redirect)
+  const rawNext = requestUrl.searchParams.get('next') ?? '/dashboard'
+  const next = /^\/[a-zA-Z0-9\-_/?=&%#]*$/.test(rawNext) ? rawNext : '/dashboard'
 
   if (code) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -45,6 +47,8 @@ export async function GET(request: NextRequest) {
       if (!error) {
         // Successfully established session, redirect to app
         return NextResponse.redirect(`${requestUrl.origin}${next}`)
+      } else {
+        console.error('[auth/callback] exchangeCodeForSession error:', error.message)
       }
     } catch (error) {
       console.error('Error exchanging code for session:', error)

@@ -51,6 +51,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No organization found' }, { status: 404 })
     }
 
+    // Only the org owner can change the subscription
+    if (membership.role !== 'owner') {
+      return NextResponse.json({ error: 'Only the organization owner can change the subscription' }, { status: 403 })
+    }
+
     // Get current subscription plan from org
     const currentTier = await getOrgSubscriptionPlan(supabase, user.id, activeOrgId)
 
@@ -160,7 +165,13 @@ export async function POST(request: NextRequest) {
 
           // Set effective date to end of current period
           const subscriptionItem = subscription.items.data[0] as SubscriptionItemWithPeriod
-          downgradeEffectiveDate = new Date(subscriptionItem.current_period_end * 1000)
+          const periodEnd = subscriptionItem.current_period_end ?? (subscription as unknown as { current_period_end?: number }).current_period_end
+          if (!periodEnd) {
+            console.error('[downgrade] No current_period_end on subscription item or subscription — falling back to now')
+            downgradeEffectiveDate = new Date()
+          } else {
+            downgradeEffectiveDate = new Date(periodEnd * 1000)
+          }
         }
       } catch (stripeError) {
         console.error('Stripe error during downgrade:', stripeError)
@@ -208,14 +219,10 @@ export async function POST(request: NextRequest) {
       message: daysUntilDowngrade > 0
         ? `Your subscription will downgrade to ${targetTier} tier in ${daysUntilDowngrade} day(s). You'll keep ${currentTier} tier access until ${downgradeEffectiveDate.toLocaleDateString()}.`
         : `Your subscription has been downgraded to ${targetTier} tier.`,
-      vehiclesDeleted: vehiclesToDelete?.length || 0,
-      dataRetentionWarning: null
+      vehiclesDeleted: vehiclesToDelete?.length || 0
     })
   } catch (error) {
     console.error('Error in downgrade API:', error)
-    return NextResponse.json({
-      error: 'Internal server error',
-      details: error instanceof Error ? error.message : String(error)
-    }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

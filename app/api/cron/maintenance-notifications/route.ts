@@ -68,7 +68,7 @@ type NotificationsDb = {
 // ---------------------------------------------------------------------------
 
 function isAuthorized(request: NextRequest): boolean {
-  if (!cronSecret) return true // no secret configured = allow (dev)
+  if (!cronSecret) return false // no secret configured = deny (set CRON_SECRET in env)
   const auth = request.headers.get('authorization')
   return auth === `Bearer ${cronSecret}`
 }
@@ -127,8 +127,10 @@ async function computeDigests(): Promise<{ digests: UserDigest[]; skipped: numbe
       email = authUser.user.email
     }
 
-    const notificationFrequency: NotificationFrequency =
-      (profile.notification_frequency as NotificationFrequency) || 'weekly'
+    const validFrequencies: NotificationFrequency[] = ['daily', 'weekly', 'monthly']
+    const notificationFrequency: NotificationFrequency = validFrequencies.includes(
+      profile.notification_frequency as NotificationFrequency
+    ) ? (profile.notification_frequency as NotificationFrequency) : 'weekly'
     const notificationWarningEnabled: boolean = profile.notification_warning_enabled ?? true
 
     // 2. Get user's org and then cars
@@ -505,8 +507,12 @@ export async function POST(request: NextRequest) {
       sent++
 
       // Record which alerts were sent (upsert updates notified_at for repeating overdue)
+      // If this write fails, the email was already sent — log prominently to prevent silent duplicates
       const recordErrors = await recordSentAlerts(supabase, digest.userId, digest.alerts)
-      errors.push(...recordErrors)
+      if (recordErrors.length > 0) {
+        console.error(`[notifications] DEDUP WRITE FAILURE for user ${digest.userId} — duplicate emails may be sent on next run:`, recordErrors)
+        errors.push(...recordErrors)
+      }
 
       // Update last_notification_sent_at
       const { error: updateError } = await supabase
