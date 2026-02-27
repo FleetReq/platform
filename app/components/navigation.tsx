@@ -43,6 +43,7 @@ export function Navigation() {
   const [orgs, setOrgs] = useState<OrgEntry[]>([]);
   const [activeOrgId, setActiveOrgId] = useState<string | null>(null);
   const [orgMenuOpen, setOrgMenuOpen] = useState(false);
+  const [orgsLoadFailed, setOrgsLoadFailed] = useState(false);
   const orgMenuRef = useRef<HTMLDivElement>(null);
 
   // Fetch user and subscription tier
@@ -70,6 +71,7 @@ export function Navigation() {
           }
         } catch (err) {
           console.error('[nav] Failed to load orgs:', err);
+          setOrgsLoadFailed(true);
         }
       }
     };
@@ -100,6 +102,7 @@ export function Navigation() {
           }
         } catch (err) {
           console.error('[nav] Failed to load orgs:', err);
+          setOrgsLoadFailed(true);
         }
       } else {
         setSubscriptionTier('free');
@@ -200,6 +203,19 @@ export function Navigation() {
               </div>
             </Link>
             {user && <SubscriptionBadge tier={subscriptionTier} />}
+
+            {/* Org load failure indicator */}
+            {user && orgsLoadFailed && orgs.length === 0 && (
+              <span
+                title="Could not load organizations. Refresh to retry."
+                className="text-yellow-500 dark:text-yellow-400 cursor-default"
+                aria-label="Organization list failed to load"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                </svg>
+              </span>
+            )}
 
             {/* Org Switcher — only when authenticated with 2+ orgs */}
             {user && orgs.length > 1 && (

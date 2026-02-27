@@ -1201,6 +1201,7 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
   const [confirmDeleteCarId, setConfirmDeleteCarId] = useState<string | null>(null)
   const [subscriptionPlan, setSubscriptionPlan] = useState<'free' | 'personal' | 'business'>(initialSubscriptionPlan)
   const [subscriptionEndDate, setSubscriptionEndDate] = useState<string | null>(null)
+  const [subscriptionFetchError, setSubscriptionFetchError] = useState(false)
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [isCancelling, setIsCancelling] = useState(false)
   const [cancellationReason, setCancellationReason] = useState('')
@@ -1239,6 +1240,7 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
           }
         } catch (err) {
           console.error('[Dashboard] Failed to fetch org subscription info:', err)
+          setSubscriptionFetchError(true)
         }
 
         // Get notification preferences from user_profiles
@@ -2053,6 +2055,11 @@ function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', or
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Subscription Management</h3>
           <div className="space-y-4">
+            {subscriptionFetchError && (
+              <p className="text-sm text-red-600 dark:text-red-400" role="alert">
+                Could not load current plan. Showing last known plan — please refresh to get the latest.
+              </p>
+            )}
             <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
               <div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">Current Plan</div>
