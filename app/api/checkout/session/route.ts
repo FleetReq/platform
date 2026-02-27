@@ -81,6 +81,9 @@ export async function POST(request: NextRequest) {
     // Use pre-created Stripe Price IDs (set env vars STRIPE_PERSONAL_PRICE_ID / STRIPE_BUSINESS_PRICE_ID
     // after creating products in the Stripe dashboard). Falls back to inline price_data for local dev.
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = []
+    const quantity = tier === 'business'
+      ? validateInteger(vehicleCount, { min: 1, max: PLAN_LIMITS.business.maxVehicles }) ?? DEFAULT_BUSINESS_VEHICLE_COUNT
+      : 1
 
     if (tier === 'personal') {
       const priceId = process.env.STRIPE_PERSONAL_PRICE_ID
@@ -101,7 +104,6 @@ export async function POST(request: NextRequest) {
             }
       )
     } else if (tier === 'business') {
-      const quantity = validateInteger(vehicleCount, { min: 1, max: PLAN_LIMITS.business.maxVehicles }) ?? DEFAULT_BUSINESS_VEHICLE_COUNT
       const priceId = process.env.STRIPE_BUSINESS_PRICE_ID
       lineItems.push(
         priceId
