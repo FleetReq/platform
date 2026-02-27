@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,22 +15,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Use service role key to bypass RLS for system operations
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-    if (!supabaseUrl || !serviceRoleKey) {
+    const supabase = createAdminClient()
+    if (!supabase) {
       return NextResponse.json(
         { error: 'Missing Supabase credentials' },
         { status: 500 }
       )
     }
-
-    const supabase = createClient(supabaseUrl, serviceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    })
 
     // Find orgs scheduled for deletion (scheduled_deletion_date has passed)
     const { data: expiredOrgs, error: fetchError } = await supabase
@@ -196,22 +187,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-    if (!supabaseUrl || !serviceRoleKey) {
+    const supabase = createAdminClient()
+    if (!supabase) {
       return NextResponse.json(
         { error: 'Missing Supabase credentials' },
         { status: 500 }
       )
     }
-
-    const supabase = createClient(supabaseUrl, serviceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    })
 
     // Find orgs scheduled for deletion
     const { data: expiredOrgs, error: fetchError } = await supabase

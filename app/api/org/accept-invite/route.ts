@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase'
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 import { withAuth, errorResponse } from '@/lib/api-middleware'
 import { validateUUID } from '@/lib/validation'
@@ -18,13 +18,8 @@ export async function GET(request: NextRequest) {
   const validatedId = validateUUID(invite_id)
   if (!validatedId) return errorResponse('Invalid invitation ID', 400)
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!url || !serviceKey) return errorResponse('Server configuration error', 503)
-
-  const adminClient = createClient(url, serviceKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  })
+  const adminClient = createAdminClient()
+  if (!adminClient) return errorResponse('Server configuration error', 503)
 
   const { data: invite } = await adminClient
     .from('org_members')
@@ -57,15 +52,11 @@ export async function POST(request: NextRequest) {
 
     // Use service role to bypass RLS for both SELECT and UPDATE.
     // Security is enforced below: user is authenticated + email must match.
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-    if (!url || !serviceKey) {
+    const adminClient = createAdminClient()
+    if (!adminClient) {
       console.error('accept-invite: missing SUPABASE_SERVICE_ROLE_KEY')
       return errorResponse('Server configuration error', 503)
     }
-    const adminClient = createClient(url, serviceKey, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    })
 
     // Find the pending invite
     const { data: invite, error: inviteError } = await adminClient
@@ -123,13 +114,8 @@ export async function DELETE(request: NextRequest) {
 
     if (!invite_id) return errorResponse('invite_id is required', 400)
 
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-    if (!url || !serviceKey) return errorResponse('Server configuration error', 503)
-
-    const adminClient = createClient(url, serviceKey, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    })
+    const adminClient = createAdminClient()
+    if (!adminClient) return errorResponse('Server configuration error', 503)
 
     // Find the pending invite and verify email ownership before deleting
     const { data: invite } = await adminClient

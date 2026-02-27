@@ -1,5 +1,6 @@
-import { SupabaseClient, createClient } from '@supabase/supabase-js'
+import { SupabaseClient } from '@supabase/supabase-js'
 import { isAdmin, PLAN_LIMITS } from '@/lib/constants'
+import { createAdminClient } from '@/lib/supabase'
 
 export type OrgRole = 'owner' | 'editor' | 'viewer'
 
@@ -239,16 +240,11 @@ export async function verifyCarAccess(
  * 2. If no existing org found, create a new one
  */
 export async function ensureUserHasOrg(userId: string): Promise<OrgMembership | null> {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!url || !serviceKey) {
+  const adminClient = createAdminClient()
+  if (!adminClient) {
     console.error('ensureUserHasOrg: missing SUPABASE_SERVICE_ROLE_KEY')
     return null
   }
-
-  const adminClient = createClient(url, serviceKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  })
 
   // --- Priority 1: Reconnect to existing org that has this user's cars ---
   const { data: existingCar } = await adminClient

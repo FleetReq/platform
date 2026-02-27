@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase'
 import { RATE_LIMITS } from '@/lib/rate-limit'
 import { sanitizeString } from '@/lib/validation'
 import { withOrg, errorResponse } from '@/lib/api-middleware'
@@ -36,12 +36,8 @@ export async function GET(request: NextRequest) {
     })
     const authEmailMap = new Map<string, string>()
     if (missingEmailIds.length > 0) {
-      const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-      if (url && serviceKey) {
-        const adminClient = createClient(url, serviceKey, {
-          auth: { autoRefreshToken: false, persistSession: false },
-        })
+      const adminClient = createAdminClient()
+      if (adminClient) {
         const { data: authUsers } = await adminClient.auth.admin.listUsers()
         if (authUsers) {
           for (const u of authUsers.users) {

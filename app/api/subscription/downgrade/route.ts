@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@/lib/supabase'
+import { createRouteHandlerClient, createAdminClient } from '@/lib/supabase'
 import Stripe from 'stripe'
-import { createClient } from '@supabase/supabase-js'
 import { getUserOrg, getOrgDetails, getOrgSubscriptionPlan } from '@/lib/org'
 import { validateUUID } from '@/lib/validation'
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
@@ -129,21 +128,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Create admin Supabase client for updating user profiles
-    const adminUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-    if (!adminUrl || !adminKey) {
-      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
+    const supabaseAdmin = createAdminClient()
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 503 })
     }
-    const supabaseAdmin = createClient(
-      adminUrl,
-      adminKey,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
-        }
-      }
-    )
 
     // Get org's Stripe customer ID
     const org = await getOrgDetails(supabase, membership.org_id)

@@ -1,5 +1,5 @@
 import Stripe from 'stripe'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase'
 import { BUSINESS_PRICE_PER_VEHICLE_USD } from '@/lib/constants'
 
 // As of Stripe API 2025-03-31, period fields moved from subscription to subscription item level
@@ -34,24 +34,11 @@ export async function updateStripeSubscriptionQuantity(
   message?: string
   error?: string
 }> {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!supabaseUrl || !serviceKey) {
-    return { success: false, error: 'Server configuration error: missing Supabase credentials' }
-  }
-
   try {
-    // Create admin Supabase client
-    const supabase = createClient(
-      supabaseUrl,
-      serviceKey,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
-        }
-      }
-    )
+    const supabase = createAdminClient()
+    if (!supabase) {
+      return { success: false, error: 'Server configuration error: missing Supabase credentials' }
+    }
 
     // Get user's org and Stripe customer ID (accepted memberships only)
     const { data: membership } = await supabase
@@ -151,24 +138,12 @@ export async function updateStripeSubscriptionQuantity(
  * @returns Current vehicle count from Stripe
  */
 export async function getStripeVehicleCount(userId: string): Promise<number> {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!supabaseUrl || !serviceKey) {
-    console.error('getStripeVehicleCount: missing Supabase env vars')
-    return 0
-  }
-
   try {
-    const supabase = createClient(
-      supabaseUrl,
-      serviceKey,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
-        }
-      }
-    )
+    const supabase = createAdminClient()
+    if (!supabase) {
+      console.error('getStripeVehicleCount: missing Supabase env vars')
+      return 0
+    }
 
     const { data: membership } = await supabase
       .from('org_members')

@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { NextRequest } from 'next/server'
 
@@ -51,6 +52,16 @@ export const createServerSupabaseClient = async () => {
         }
       },
     },
+  })
+}
+
+// Admin client for server-side operations that bypass RLS (uses service role key)
+export function createAdminClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !serviceKey) return null
+  return createClient(url, serviceKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
   })
 }
 

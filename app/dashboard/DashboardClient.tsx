@@ -2163,6 +2163,7 @@ export default function DashboardClient({
   const [userSubscriptionPlan, setUserSubscriptionPlan] = useState<'free' | 'personal' | 'business'>(initialSubscriptionPlan)
   const [maxVehicles, setMaxVehicles] = useState<number>(initialMaxVehicles)
   const [allOrgs, setAllOrgs] = useState<{org_id: string, org_name: string, role: string, subscription_plan: string}[]>([])
+  const [allOrgsLoadError, setAllOrgsLoadError] = useState(false)
   const [leavingOrgId, setLeavingOrgId] = useState<string | null>(null)
   const [leaveOrgError, setLeaveOrgError] = useState<string>('')
   const [pendingLeaveOrgId, setPendingLeaveOrgId] = useState<string | null>(null)
@@ -2192,6 +2193,7 @@ export default function DashboardClient({
   useEffect(() => {
     if (activeTab !== 'settings') return
     const loadOrgs = async () => {
+      setAllOrgsLoadError(false)
       try {
         const r = await fetchWithTimeout('/api/org?all=true')
         if (r.ok) {
@@ -2202,6 +2204,7 @@ export default function DashboardClient({
         }
       } catch (err) {
         console.error('[Settings] Failed to load organizations:', err)
+        setAllOrgsLoadError(true)
       }
     }
     loadOrgs()
@@ -2862,7 +2865,12 @@ export default function DashboardClient({
                   </div>
                   {userSubscriptionPlan !== 'free' && <OrgManagement />}
                   {/* Leave Organization — shown only for non-owner memberships */}
-                  {allOrgs.filter(o => o.role !== 'owner').length > 0 && (
+                  {allOrgsLoadError && (
+                    <p className="text-sm text-red-600 dark:text-red-400" role="alert">
+                      Could not load organization list. Please refresh to try again.
+                    </p>
+                  )}
+                  {!allOrgsLoadError && allOrgs.filter(o => o.role !== 'owner').length > 0 && (
                     <div className="card-professional p-6">
                       <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Other Organizations</h3>
                       <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
