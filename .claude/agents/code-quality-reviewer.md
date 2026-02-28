@@ -13,12 +13,12 @@ This is a whole-codebase scan, not a style review. Every finding must be specifi
 
 ### 1. Silent catch blocks (highest priority)
 Errors that are caught and swallowed mean failures are invisible — to users and to you.
-```
-catch { }
-catch (e) { }
-catch (error) { } // with no error handling inside
-catch { console.error(...) } // logged but no user feedback and no rethrow
-```
+
+    catch { }
+    catch (e) { }
+    catch (error) { } // with no error handling inside
+    catch { console.error(...) } // logged but no user feedback and no rethrow
+
 Grep for `catch` blocks and check if they: (a) notify the user, (b) log meaningfully, (c) rethrow if appropriate.
 A catch block that does nothing is a bug waiting to be invisible.
 
@@ -42,7 +42,7 @@ Each suppression is a linter warning someone chose to silence instead of fix.
 - Hardcoded URLs that should be env vars
 
 ### 5. console.log left in production paths
-- Grep for `console.log(` in `app/` and `lib/` and `components/`
+- Grep for `console.log(` in `app/`, `lib/`, and `components/`
 - `console.error` and `console.warn` are acceptable in catch blocks
 - `console.log` in render paths, event handlers, or API routes is debug code that wasn't cleaned up
 
@@ -71,20 +71,28 @@ These are documented technical debt — find them all and surface them.
 - Indicates a component that has outgrown its structure
 - Flag but don't force a fix — just surface it for awareness
 
+## Regression detection
+
+Before finalizing the report, run:
+  git diff code-quality-baseline -- app/ lib/ components/
+
+For any finding that exists in a line modified since the baseline, label it
+[regression from fix] in the report. This means the issue was introduced
+during cleanup, not pre-existing debt. Treat these as higher priority since
+they indicate a fix went wrong.
+
 ## How to run
 
 Run each grep pass across `app/`, `lib/`, and `components/`. Skip `node_modules/`, `.next/`, and test fixtures.
 
-```
 Patterns to grep:
-- catch\s*\{?\s*\}  (empty catches)
-- eslint-disable
-- setTimeout
-- console\.log
-- TODO|FIXME|HACK
-- as unknown as
-- dangerouslySetInnerHTML
-```
+  - catch\s*\{?\s*\}  (empty catches)
+  - eslint-disable
+  - setTimeout
+  - console\.log
+  - TODO|FIXME|HACK
+  - as unknown as
+  - dangerouslySetInnerHTML
 
 Then read surrounding context for each match to assess severity.
 
