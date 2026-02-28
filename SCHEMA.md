@@ -47,10 +47,12 @@ CREATE TABLE public.user_profiles (
   notification_frequency text NOT NULL DEFAULT 'weekly',
   notification_warning_enabled boolean NOT NULL DEFAULT true,
   last_notification_sent_at timestamp with time zone NULL,
+  default_car_id uuid NULL,
   created_at timestamp with time zone NULL DEFAULT now(),
   updated_at timestamp with time zone NULL DEFAULT now(),
 
   CONSTRAINT user_profiles_pkey PRIMARY KEY (id),
+  CONSTRAINT user_profiles_default_car_id_fkey FOREIGN KEY (default_car_id) REFERENCES cars (id) ON DELETE SET NULL,
   CONSTRAINT user_profiles_github_id_key UNIQUE (github_id),
   CONSTRAINT user_profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users (id)
 )
@@ -68,6 +70,7 @@ CREATE TABLE public.user_profiles (
 - `notification_frequency` - How often to re-send overdue alerts for paid users: 'daily' | 'weekly' | 'monthly' (default 'weekly'). Free = one-time only.
 - `notification_warning_enabled` - Whether to send warning (approaching due) emails. Family/Business only (default true).
 - `last_notification_sent_at` - Timestamp of last notification email sent
+- `default_car_id` - FK to cars(id) — last-selected vehicle, persisted across sessions; NULLed on car deletion
 
 > **Note:** Subscription/billing fields have moved to the `organizations` table.
 

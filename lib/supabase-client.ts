@@ -39,6 +39,7 @@ export interface UserProfile {
   is_admin?: boolean
   email_notifications_enabled?: boolean
   last_notification_sent_at?: string
+  default_car_id?: string | null
   created_at: string
   updated_at?: string
 }
