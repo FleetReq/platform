@@ -9,7 +9,6 @@ import type { User } from '@supabase/supabase-js'
 
 // User Settings Component
 export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', orgRole = 'owner' }: { cars?: Car[], onCarDeleted?: () => void, initialSubscriptionPlan?: 'free' | 'personal' | 'business', orgRole?: 'owner' | 'editor' | 'viewer' }) {
-  const userOrgRole = orgRole
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [isChangingPassword, setIsChangingPassword] = useState(false)
   const [currentPassword, setCurrentPassword] = useState('')
@@ -44,7 +43,11 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
   useEffect(() => {
     const getUser = async () => {
       if (!supabase) return
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError || !user) {
+        window.location.href = '/login'
+        return
+      }
       setCurrentUser(user)
 
       // Fetch subscription info from org + notification prefs from user_profiles
@@ -870,7 +873,7 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
       )}
 
       {/* Subscription Management — owner of this org only */}
-      {userOrgRole === 'owner' && (
+      {orgRole === 'owner' && (
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Subscription Management</h3>
           <div className="space-y-4">
@@ -931,7 +934,7 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
       )}
 
       {/* Delete Account — always visible, clearly scoped to the user's own account */}
-      {userOrgRole === 'owner' && (
+      {orgRole === 'owner' && (
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Delete My Account</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">

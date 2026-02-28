@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
 
 interface OrgMember {
   id: string
@@ -77,7 +78,7 @@ export default function OrgManagement() {
     setMessage(null)
 
     try {
-      const res = await fetch('/api/org/members', {
+      const res = await fetchWithTimeout('/api/org/members', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: inviteEmail.trim(), role: inviteRole }),
@@ -104,7 +105,7 @@ export default function OrgManagement() {
   const handleRemoveMember = async (memberId: string) => {
     setPendingRemoveMemberId(null)
     try {
-      const res = await fetch('/api/org/members', {
+      const res = await fetchWithTimeout('/api/org/members', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ member_id: memberId }),
@@ -125,7 +126,7 @@ export default function OrgManagement() {
 
   const handleChangeRole = async (memberId: string, newRole: 'editor' | 'viewer') => {
     try {
-      const res = await fetch(`/api/org/members/${memberId}`, {
+      const res = await fetchWithTimeout(`/api/org/members/${memberId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role: newRole }),
@@ -148,7 +149,7 @@ export default function OrgManagement() {
     if (!orgName.trim()) return
 
     try {
-      const res = await fetch('/api/org', {
+      const res = await fetchWithTimeout('/api/org', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: orgName.trim() }),

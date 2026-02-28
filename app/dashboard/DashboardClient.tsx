@@ -1389,7 +1389,7 @@ export default function DashboardClient({
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ default_car_id: newCarId }),
-                      }).catch(() => {})
+                      }).catch((err) => console.error('[Dashboard] Failed to persist default car:', err))
                     }}
                     className="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 pr-8 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
                   >

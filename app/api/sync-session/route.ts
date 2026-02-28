@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     const cookieName = `sb-${projectRef}-auth-token`
     response.cookies.set(cookieName, JSON.stringify(session), {
       path: '/',
-      maxAge: session.expires_in || 3600,
+      maxAge: Math.min(session.expires_in || 3600, 3600),
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
       httpOnly: false,

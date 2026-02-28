@@ -46,6 +46,23 @@ export function Navigation() {
   const [orgsLoadFailed, setOrgsLoadFailed] = useState(false);
   const orgMenuRef = useRef<HTMLDivElement>(null);
 
+  const refreshOrgs = async () => {
+    try {
+      const res = await fetch('/api/org?all=true');
+      if (res.status === 401) {
+        setSubscriptionTier('free');
+        setOrgs([]);
+      } else if (res.ok) {
+        const data = await res.json();
+        setOrgs(data.orgs || []);
+        setActiveOrgId(data.active_org_id);
+      }
+    } catch (err) {
+      console.error('[nav] Failed to load orgs:', err);
+      setOrgsLoadFailed(true);
+    }
+  };
+
   // Fetch user and subscription tier
   useEffect(() => {
     const fetchUserData = async () => {
@@ -57,22 +74,7 @@ export function Navigation() {
       if (currentUser) {
         const tier = await getUserSubscriptionPlan(currentUser.id);
         setSubscriptionTier(tier);
-
-        // Fetch orgs for switcher
-        try {
-          const res = await fetch('/api/org?all=true');
-          if (res.status === 401) {
-            setSubscriptionTier('free');
-            setOrgs([]);
-          } else if (res.ok) {
-            const data = await res.json();
-            setOrgs(data.orgs || []);
-            setActiveOrgId(data.active_org_id);
-          }
-        } catch (err) {
-          console.error('[nav] Failed to load orgs:', err);
-          setOrgsLoadFailed(true);
-        }
+        await refreshOrgs();
       }
     };
 
@@ -86,24 +88,10 @@ export function Navigation() {
       if (session?.user) {
         const tier = await getUserSubscriptionPlan(session.user.id);
         setSubscriptionTier(tier);
-
         // Re-fetch orgs on every sign-in so the switcher is up-to-date
         // (fetchUserData only runs on mount, so it misses sign-ins that happen
         // after the initial load, e.g. after sign out → sign back in)
-        try {
-          const res = await fetch('/api/org?all=true');
-          if (res.status === 401) {
-            setSubscriptionTier('free');
-            setOrgs([]);
-          } else if (res.ok) {
-            const data = await res.json();
-            setOrgs(data.orgs || []);
-            setActiveOrgId(data.active_org_id);
-          }
-        } catch (err) {
-          console.error('[nav] Failed to load orgs:', err);
-          setOrgsLoadFailed(true);
-        }
+        await refreshOrgs();
       } else {
         setSubscriptionTier('free');
         setOrgs([]);
@@ -112,7 +100,7 @@ export function Navigation() {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- intentional: mount-only; refreshOrgs uses only stable state setters
 
   const [signingOut, setSigningOut] = useState(false)
 

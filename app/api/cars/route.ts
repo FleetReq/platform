@@ -91,6 +91,7 @@ export async function POST(request: NextRequest) {
           prorationInfo = { prorationAmount: result.prorationAmount, message: result.message }
         } else {
           console.error('Failed to update Stripe subscription:', result.error)
+          return errorResponse('Vehicle created but billing update failed. Please contact support.', 502)
         }
       }
     }
