@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
 
     // Build records with computed miles_driven
     const fillUpRecords = sorted.map(fillUp => {
-      const milesDrivern = prevOdometer !== null
+      const milesDriven = prevOdometer !== null
         ? fillUp.odometer_reading - prevOdometer
         : null
       prevOdometer = fillUp.odometer_reading
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
         gallons: fillUp.gallons,
         price_per_gallon: fillUp.price_per_gallon,
         total_cost: parseFloat((fillUp.gallons * fillUp.price_per_gallon).toFixed(2)),
-        miles_driven: milesDrivern !== null && milesDrivern > 0 ? milesDrivern : null,
+        miles_driven: milesDriven !== null && milesDriven > 0 ? milesDriven : null,
         created_by_user_id: user.id,
       }
     })

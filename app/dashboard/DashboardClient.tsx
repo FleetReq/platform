@@ -6,7 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner } from '@/lib/supabase-client'
 import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
 import { MAINTENANCE_INTERVALS, getMaintenanceStatus, getLatestMaintenanceRecord } from '@/lib/maintenance'
-import { MAINTENANCE_TYPES, MAINTENANCE_TYPE_FILTER_OPTIONS, getStatusColor, getStatusTextColor, getIrsRate, DASHBOARD_RECORDS_LIMIT, type MaintenanceStatus } from '@/lib/constants'
+import { MAINTENANCE_TYPES, MAINTENANCE_TYPE_FILTER_OPTIONS, getStatusColor, getStatusTextColor, getIrsRate, DASHBOARD_RECORDS_LIMIT, RECORDS_PER_PAGE, type MaintenanceStatus } from '@/lib/constants'
 import BackgroundAnimation from '../components/BackgroundAnimation'
 import RecordDetailModal from '../../components/RecordDetailModal'
 import OrgManagement from '@/components/OrgManagement'
@@ -258,7 +258,7 @@ function RecordsManager({
   const [deleteConfirm, setDeleteConfirm] = useState<{ type: 'fillup' | 'maintenance', id: string, description: string } | null>(null)
   const [deleteError, setDeleteError] = useState('')
   const [selectedRecord, setSelectedRecord] = useState<{ type: 'fillup' | 'maintenance', record: FillUp | MaintenanceRecord, car: Car } | null>(null)
-  const recordsPerPage = 20
+  const recordsPerPage = RECORDS_PER_PAGE
 
   // Filter records based on search and filters
   const filteredRecords = useMemo(() => {

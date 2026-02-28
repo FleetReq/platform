@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase-client'
+import { INVITE_CHECK_TIMEOUT_MS, MIN_PASSWORD_LENGTH } from '@/lib/constants'
 import type { User } from '@supabase/supabase-js'
 
 interface AuthComponentProps {
@@ -86,7 +87,7 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
   const checkPendingInvites = async (signedInUser: User | null): Promise<boolean> => {
     let cancelled = false
     const timeout = new Promise<boolean>(resolve =>
-      setTimeout(() => { cancelled = true; resolve(false) }, 3000)
+      setTimeout(() => { cancelled = true; resolve(false) }, INVITE_CHECK_TIMEOUT_MS)
     )
     return Promise.race([checkPendingInvitesInner(signedInUser, () => cancelled), timeout])
   }
@@ -359,7 +360,7 @@ export default function AuthComponent({ onAuthChange }: AuthComponentProps) {
               className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               placeholder="Your password"
               required
-              minLength={6}
+              minLength={MIN_PASSWORD_LENGTH}
             />
           </div>
         )}

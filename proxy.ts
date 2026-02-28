@@ -9,9 +9,16 @@ export async function proxy(request: NextRequest) {
     },
   })
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('[proxy] Missing required env vars: NEXT_PUBLIC_SUPABASE_URL and/or NEXT_PUBLIC_SUPABASE_ANON_KEY')
+    return response
+  }
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {
@@ -56,8 +63,9 @@ export async function proxy(request: NextRequest) {
     if (user && pathname === '/login') {
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
-  } catch {
-    // Auth check failed — redirect protected routes to login
+  } catch (error) {
+    console.error('[proxy] Auth check failed:', error)
+    // Redirect protected routes to login so users aren't stuck on a broken page
     const pathname = request.nextUrl.pathname
     if (pathname.startsWith('/dashboard')) {
       return NextResponse.redirect(new URL('/login', request.url))

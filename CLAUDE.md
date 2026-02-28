@@ -63,7 +63,7 @@ Update CLAUDE.md immediately after completing work or making strategic decisions
 - New `POST /api/org/switch` endpoint sets cookie to switch active org
 - `GET /api/org?all=true` lists all user's orgs (for switcher dropdown)
 - `POST /api/org/accept-invite` is now **non-destructive** — keeps existing memberships, just adds new one
-- New `OrgSwitcher` component in dashboard left column (hidden for single-org users)
+- Org switcher in `app/components/navigation.tsx` (hidden for single-org users)
 - Dashboard `handleOrgSwitch` reloads plan, role, and all data; resets selectedCarId
 - Cookie: `fleetreq-active-org` (not httpOnly, sameSite lax, 1yr maxAge)
 
@@ -176,7 +176,7 @@ All require `SUPABASE_SERVICE_ROLE_KEY`. Emails also need `RESEND_API_KEY`. Auth
 ### Components
 - `components/AuthComponent.tsx` — Auth UI & session + pending invite check
 - `components/OrgManagement.tsx` — Team management (members, invites, roles)
-- `components/OrgSwitcher.tsx` — Multi-org dropdown switcher (hidden for single-org users)
+- `app/components/navigation.tsx` — Nav bar with org switcher (multi-org dropdown, hidden for single-org users)
 - `components/UserSettings.tsx` — Account settings (extracted from DashboardClient)
 - `components/FuelChartPanel.tsx` — Fuel efficiency chart (extracted from DashboardClient)
 - `components/UpgradePrompt.tsx` — Paywall overlays

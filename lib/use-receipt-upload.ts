@@ -3,9 +3,9 @@
 import { useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase-client'
 import { compressImage, validateImageFile } from '@/lib/image-compression'
+import { STORAGE_BUCKET_RECEIPTS } from '@/lib/constants'
 
 export const MAX_RECEIPTS = 5
-const BUCKET = 'receipts'
 
 export interface ReceiptFile {
   id: string
@@ -86,7 +86,7 @@ export function useReceiptUpload() {
         )
         const storagePath = `${userId}/${recordType}/${recordId}/${receiptFile.id}_${compressed.fileName}`
         const { error } = await supabase.storage
-          .from(BUCKET)
+          .from(STORAGE_BUCKET_RECEIPTS)
           .upload(storagePath, compressed.blob, {
             contentType: 'image/jpeg',
             upsert: false,
@@ -113,7 +113,7 @@ export function useReceiptUpload() {
   const deleteFromStorage = useCallback(async (storagePaths: string[]): Promise<{ error: Error | null }> => {
     if (storagePaths.length === 0) return { error: null }
     const supabase = createClient()
-    const { error } = await supabase.storage.from(BUCKET).remove(storagePaths)
+    const { error } = await supabase.storage.from(STORAGE_BUCKET_RECEIPTS).remove(storagePaths)
     if (error) {
       console.error('[use-receipt-upload] Failed to remove files from storage:', error)
       return { error: new Error(error.message) }

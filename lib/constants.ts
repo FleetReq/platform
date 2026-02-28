@@ -7,10 +7,14 @@
 // Auth & Access Control
 // ---------------------------------------------------------------------------
 
-// Admin user IDs are loaded from the environment variable only.
-// Requires NEXT_PUBLIC_ADMIN_USER_IDS to be set in the deployment environment.
+// Admin user IDs — server-side only. Use ADMIN_USER_IDS (no NEXT_PUBLIC_ prefix)
+// so the values are not bundled into the client JS. Client-side isAdmin() calls
+// will always return false; real enforcement is server-side in API routes.
+// NOTE: rename env var from NEXT_PUBLIC_ADMIN_USER_IDS → ADMIN_USER_IDS in
+// .env.local and Vercel. During transition, falls back to the old name.
 export const ADMIN_USER_IDS: readonly string[] =
-  process.env.NEXT_PUBLIC_ADMIN_USER_IDS?.split(',').map(s => s.trim()).filter(Boolean) ?? []
+  (process.env.ADMIN_USER_IDS ?? process.env.NEXT_PUBLIC_ADMIN_USER_IDS)
+    ?.split(',').map(s => s.trim()).filter(Boolean) ?? []
 
 export function isAdmin(userId: string): boolean {
   return ADMIN_USER_IDS.includes(userId)
@@ -76,8 +80,26 @@ export const MAX_ODOMETER_MILES = 9_999_999
 /** Records fetched per dashboard load (fill-ups and maintenance). */
 export const DASHBOARD_RECORDS_LIMIT = 50
 
+/** Records displayed per page in the dashboard records table. */
+export const RECORDS_PER_PAGE = 20
+
 /** Records fetched by form dropdowns for recent activity context. */
 export const FORM_RECORDS_LIMIT = 10
+
+/** Supabase Storage bucket name for receipt photos. */
+export const STORAGE_BUCKET_RECEIPTS = 'receipts'
+
+/** Minimum password length (matches Supabase auth default). */
+export const MIN_PASSWORD_LENGTH = 6
+
+/** Timeout (ms) for sign-out network call before optimistic clear proceeds. */
+export const SIGN_OUT_TIMEOUT_MS = 1500
+
+/** Timeout (ms) for pending invite check to prevent blocking login. */
+export const INVITE_CHECK_TIMEOUT_MS = 3000
+
+/** Abort timeout (ms) for fetchWithTimeout — fits within Vercel function limit. */
+export const FETCH_TIMEOUT_MS = 8000
 
 /** Canonical site URL. Single source of truth — used in emails, sitemaps, and structured data. */
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://fleetreq.vercel.app'

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase, type Car } from '@/lib/supabase-client'
 import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
 import { validateSubscriptionPlan } from '@/lib/validation'
-import { ACCOUNT_DELETION_GRACE_DAYS, PLAN_LIMITS, PLAN_DISPLAY_NAMES, getPlanColor, type SubscriptionPlan } from '@/lib/constants'
+import { ACCOUNT_DELETION_GRACE_DAYS, PLAN_LIMITS, PLAN_DISPLAY_NAMES, getPlanColor, MIN_PASSWORD_LENGTH, type SubscriptionPlan } from '@/lib/constants'
 import type { User } from '@supabase/supabase-js'
 
 // User Settings Component
@@ -102,7 +102,7 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
       return
     }
 
-    if (newPassword.length < 6) {
+    if (newPassword.length < MIN_PASSWORD_LENGTH) {
       setMessage({ type: 'error', text: 'New password must be at least 6 characters' })
       return
     }
@@ -762,12 +762,9 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
                   <span className="text-sm font-medium text-green-600">Connected</span>
                 </div>
               ) : (
-                <button
-                  onClick={handleLinkGoogle}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
-                >
-                  Link Account
-                </button>
+                <span className="text-sm text-gray-400 dark:text-gray-500 italic">
+                  Not linked
+                </span>
               )}
             </div>
           </div>

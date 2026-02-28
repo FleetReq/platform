@@ -2,14 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase-client'
+import { STORAGE_BUCKET_RECEIPTS } from '@/lib/constants'
 
 interface ReceiptGalleryProps {
   receiptUrls: string[]
   onRemove?: (path: string) => void
   editable?: boolean
 }
-
-const BUCKET = 'receipts'
 
 export default function ReceiptGallery({ receiptUrls, onRemove, editable = false }: ReceiptGalleryProps) {
   const [signedUrls, setSignedUrls] = useState<Record<string, string>>({})
@@ -26,7 +25,7 @@ export default function ReceiptGallery({ receiptUrls, onRemove, editable = false
       setLoading(true)
       const supabase = createClient()
       const { data, error } = await supabase.storage
-        .from(BUCKET)
+        .from(STORAGE_BUCKET_RECEIPTS)
         .createSignedUrls(receiptUrls, 3600) // 1 hour expiry
 
       if (!error && data) {

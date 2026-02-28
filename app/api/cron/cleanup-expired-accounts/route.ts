@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import { STORAGE_BUCKET_RECEIPTS } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
 
@@ -65,12 +66,12 @@ export async function POST(request: NextRequest) {
 
         // Delete receipt storage for org
         const { data: storageFiles } = await supabase.storage
-          .from('receipts')
+          .from(STORAGE_BUCKET_RECEIPTS)
           .list(orgId, { limit: 1000 })
         if (storageFiles && storageFiles.length > 0) {
           const allPaths: string[] = []
           const listRecursive = async (prefix: string) => {
-            const { data: items } = await supabase.storage.from('receipts').list(prefix, { limit: 1000 })
+            const { data: items } = await supabase.storage.from(STORAGE_BUCKET_RECEIPTS).list(prefix, { limit: 1000 })
             if (items) {
               for (const item of items) {
                 const fullPath = `${prefix}/${item.name}`
@@ -84,7 +85,7 @@ export async function POST(request: NextRequest) {
           }
           await listRecursive(orgId)
           if (allPaths.length > 0) {
-            await supabase.storage.from('receipts').remove(allPaths)
+            await supabase.storage.from(STORAGE_BUCKET_RECEIPTS).remove(allPaths)
           }
         }
 

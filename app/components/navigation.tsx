@@ -6,10 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import { ThemeToggle } from "../theme-toggle";
 import { SubscriptionBadge } from "./SubscriptionBadge";
 import { supabase, getUserSubscriptionPlan } from "@/lib/supabase-client";
-
-const planLabels: Record<string, string> = {
-  free: 'Free', personal: 'Family', business: 'Business',
-}
+import { PLAN_DISPLAY_NAMES, SIGN_OUT_TIMEOUT_MS } from "@/lib/constants";
 const planColors: Record<string, string> = {
   free: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300',
   personal: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
@@ -77,7 +74,7 @@ export function Navigation() {
       }
     };
 
-    fetchUserData();
+    fetchUserData().catch(err => console.error('[nav] Failed to load user data:', err));
 
     if (!supabase) return;
 
@@ -117,7 +114,7 @@ export function Navigation() {
     if (supabase) {
       await Promise.race([
         supabase.auth.signOut().catch(console.error),
-        new Promise(resolve => setTimeout(resolve, 1500)),
+        new Promise(resolve => setTimeout(resolve, SIGN_OUT_TIMEOUT_MS)),
       ])
     }
     try {
@@ -154,14 +151,21 @@ export function Navigation() {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const handleOrgSwitch = (orgId: string) => {
+  const handleOrgSwitch = async (orgId: string) => {
     if (orgId === activeOrgId) { setOrgMenuOpen(false); return; }
     setOrgMenuOpen(false)
-    // Set cookie immediately client-side — the dropdown only shows orgs the user
-    // already belongs to (validated when the list was fetched), so no API round-
-    // trip is needed. The reload sends the new cookie with every server request.
-    document.cookie = `fleetreq-active-org=${orgId}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`
-    window.location.reload()
+    // Use the API endpoint so membership is validated server-side before the
+    // cookie is set. Direct cookie writes would allow bypassing revocation checks.
+    const res = await fetch('/api/org/switch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ org_id: orgId }),
+    })
+    if (res.ok) {
+      window.location.reload()
+    } else {
+      console.error('[nav] Failed to switch org:', await res.text())
+    }
   };
 
   // Helper function to check if current page matches navigation item
@@ -239,7 +243,7 @@ export function Navigation() {
                             <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{org.org_name}</div>
                             <div className="flex items-center gap-1.5">
                               <span className={`inline-block px-1.5 text-[10px] font-medium rounded ${planColors[org.subscription_plan]}`}>
-                                {planLabels[org.subscription_plan]}
+                                {PLAN_DISPLAY_NAMES[org.subscription_plan]}
                               </span>
                               <span className="text-[10px] text-gray-400 dark:text-gray-500 capitalize">{org.role}</span>
                             </div>
@@ -386,7 +390,7 @@ export function Navigation() {
                           <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{org.org_name}</div>
                           <div className="flex items-center gap-1.5">
                             <span className={`inline-block px-1.5 text-[10px] font-medium rounded ${planColors[org.subscription_plan]}`}>
-                              {planLabels[org.subscription_plan]}
+                              {PLAN_DISPLAY_NAMES[org.subscription_plan]}
                             </span>
                             <span className="text-[10px] text-gray-400 dark:text-gray-500 capitalize">{org.role}</span>
                           </div>

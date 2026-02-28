@@ -4,6 +4,7 @@ import { updateStripeSubscriptionQuantity } from '@/lib/stripe-helpers'
 import { rateLimit, RATE_LIMITS, getRateLimitHeaders } from '@/lib/rate-limit'
 import { validateUUID } from '@/lib/validation'
 import { getUserOrg, getOrgSubscriptionPlan, isOrgOwner } from '@/lib/org'
+import { STORAGE_BUCKET_RECEIPTS } from '@/lib/constants'
 
 export async function DELETE(
   request: NextRequest,
@@ -104,7 +105,7 @@ export async function DELETE(
 
     // Clean up receipt storage files (non-blocking)
     if (receiptPaths.length > 0) {
-      supabase.storage.from('receipts').remove(receiptPaths).catch((err: unknown) => {
+      supabase.storage.from(STORAGE_BUCKET_RECEIPTS).remove(receiptPaths).catch((err: unknown) => {
         console.error('Error cleaning up receipt storage for car delete:', err)
       })
     }

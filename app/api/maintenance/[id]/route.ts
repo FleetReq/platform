@@ -3,7 +3,7 @@ import { RATE_LIMITS } from '@/lib/rate-limit'
 import { sanitizeString, validateInteger, validateFloat, validateUUID, validateDate, validateMaintenanceType } from '@/lib/validation'
 import { withOrg, errorResponse } from '@/lib/api-middleware'
 import { canEdit, isOrgOwner, getOrgSubscriptionPlan } from '@/lib/org'
-import { MAX_ODOMETER_MILES } from '@/lib/constants'
+import { MAX_ODOMETER_MILES, STORAGE_BUCKET_RECEIPTS } from '@/lib/constants'
 
 type MaintenanceWithReceipts = { id: string; car_id: string; receipt_urls: string[] }
 
@@ -92,7 +92,7 @@ export async function PATCH(
       const newPaths: string[] = (updateData.receipt_urls as string[]) || []
       const removedPaths = oldPaths.filter((p: string) => !newPaths.includes(p))
       if (removedPaths.length > 0) {
-        await supabase.storage.from('receipts').remove(removedPaths)
+        await supabase.storage.from(STORAGE_BUCKET_RECEIPTS).remove(removedPaths)
       }
     }
 
@@ -134,7 +134,7 @@ export async function DELETE(
     // Clean up storage files (non-blocking)
     const receiptUrls: string[] = (maintenance as MaintenanceWithReceipts).receipt_urls || []
     if (receiptUrls.length > 0) {
-      supabase.storage.from('receipts').remove(receiptUrls).catch((err: unknown) => {
+      supabase.storage.from(STORAGE_BUCKET_RECEIPTS).remove(receiptUrls).catch((err: unknown) => {
         console.error('Error cleaning up receipt storage:', err)
       })
     }

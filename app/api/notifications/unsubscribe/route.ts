@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (resubscribe) {
-    const unsubUrl = `/api/notifications/unsubscribe?uid=${userId}&token=${token}`
+    const unsubUrl = `/api/notifications/unsubscribe?uid=${encodeURIComponent(userId)}&token=${encodeURIComponent(token)}`
     return new NextResponse(
       htmlPage('Re-subscribed', `
         <h1>You're re-subscribed!</h1>
@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  const resubUrl = `/api/notifications/unsubscribe?uid=${userId}&token=${token}&resubscribe=1`
+  const resubUrl = `/api/notifications/unsubscribe?uid=${encodeURIComponent(userId)}&token=${encodeURIComponent(token)}&resubscribe=1`
   return new NextResponse(
     htmlPage('Unsubscribed', `
       <h1>You've been unsubscribed</h1>
