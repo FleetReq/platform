@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase, getUserSubscriptionPlan } from '@/lib/supabase-client'
 import { PLAN_LIMITS } from '@/lib/constants'
+import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
 
 interface PricingTier {
   name: string
@@ -201,7 +202,7 @@ export default function PricingPage() {
       }
 
       // Create checkout session
-      const response = await fetch('/api/checkout/session', {
+      const response = await fetchWithTimeout('/api/checkout/session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -244,7 +245,7 @@ export default function PricingPage() {
       }
 
       // Create checkout session with selected vehicle count
-      const response = await fetch('/api/checkout/session', {
+      const response = await fetchWithTimeout('/api/checkout/session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

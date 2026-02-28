@@ -4,6 +4,7 @@ import { sanitizeString, validateYear, validateInteger, validateLicensePlate, va
 import { withOrg, READ_RATE_LIMIT, errorResponse } from '@/lib/api-middleware'
 import { getOrgSubscriptionPlan, canEdit } from '@/lib/org'
 import { updateStripeSubscriptionQuantity } from '@/lib/stripe-helpers'
+import { MAX_ODOMETER_MILES } from '@/lib/constants'
 
 export async function GET(request: NextRequest) {
   return withOrg(request, async ({ supabase, membership }) => {
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
     const color = sanitizeString(body.color, { maxLength: 30 })
     const license_plate = validateLicensePlate(body.license_plate)
     const nickname = sanitizeString(body.nickname, { maxLength: 50 })
-    const current_mileage = validateInteger(body.current_mileage, { min: 0, max: 999999 })
+    const current_mileage = validateInteger(body.current_mileage, { min: 0, max: MAX_ODOMETER_MILES })
 
     if (!make || !model || !year) {
       return errorResponse('Make, model, and year are required', 400)
@@ -141,7 +142,7 @@ export async function PATCH(request: NextRequest) {
       updateData.nickname = sanitizeString(body.nickname, { maxLength: 50 }) || null
     }
     if (body.current_mileage !== undefined) {
-      const current_mileage = validateInteger(body.current_mileage, { min: 0, max: 999999 })
+      const current_mileage = validateInteger(body.current_mileage, { min: 0, max: MAX_ODOMETER_MILES })
       if (current_mileage === null) return errorResponse('Invalid mileage value', 400)
 
       if (!body.manual_override) {

@@ -3,6 +3,7 @@ import { RATE_LIMITS } from '@/lib/rate-limit'
 import { sanitizeString, validateInteger, validateFloat, validateUUID, validateDate, validateMaintenanceType } from '@/lib/validation'
 import { withOrg, errorResponse } from '@/lib/api-middleware'
 import { canEdit, isOrgOwner, getOrgSubscriptionPlan } from '@/lib/org'
+import { MAX_ODOMETER_MILES } from '@/lib/constants'
 
 type MaintenanceWithReceipts = { id: string; car_id: string; receipt_urls: string[] }
 
@@ -53,11 +54,11 @@ export async function PATCH(
     }
     if (body.oil_type !== undefined) updateData.oil_type = sanitizeString(body.oil_type, { maxLength: 20 })
     if (body.cost !== undefined) updateData.cost = validateFloat(body.cost, { min: 0, max: 10000, precision: 2 })
-    if (body.mileage !== undefined) updateData.mileage = validateInteger(body.mileage, { min: 0, max: 999999 })
+    if (body.mileage !== undefined) updateData.mileage = validateInteger(body.mileage, { min: 0, max: MAX_ODOMETER_MILES })
     if (body.service_provider !== undefined) updateData.service_provider = sanitizeString(body.service_provider, { maxLength: 100 })
     if (body.location !== undefined) updateData.location = sanitizeString(body.location, { maxLength: 200 })
     if (body.next_service_date !== undefined) updateData.next_service_date = validateDate(body.next_service_date, { allowPast: false }) || null
-    if (body.next_service_mileage !== undefined) updateData.next_service_mileage = validateInteger(body.next_service_mileage, { min: 0, max: 999999 }) || null
+    if (body.next_service_mileage !== undefined) updateData.next_service_mileage = validateInteger(body.next_service_mileage, { min: 0, max: MAX_ODOMETER_MILES }) || null
     if (body.notes !== undefined) updateData.notes = sanitizeString(body.notes, { maxLength: 500 })
 
     if (body.receipt_urls !== undefined) {

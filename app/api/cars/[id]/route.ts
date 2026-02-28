@@ -137,7 +137,7 @@ export async function DELETE(
             message: 'Car deleted successfully, but billing could not be updated. Please contact support to ensure your subscription reflects the correct vehicle count.',
             billingError: true,
             proration: null
-          })
+          }, { status: 207 })
         }
       }
     }

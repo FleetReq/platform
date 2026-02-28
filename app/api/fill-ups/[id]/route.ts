@@ -3,6 +3,7 @@ import { RATE_LIMITS } from '@/lib/rate-limit'
 import { sanitizeString, validateInteger, validateFloat, validateUUID, validateDate, validateFuelType } from '@/lib/validation'
 import { withOrg, errorResponse } from '@/lib/api-middleware'
 import { canEdit, isOrgOwner } from '@/lib/org'
+import { MAX_ODOMETER_MILES } from '@/lib/constants'
 
 type FillUpWithReceipts = { id: string; car_id: string; receipt_urls: string[] }
 
@@ -37,7 +38,7 @@ export async function PATCH(
       const date = validateDate(body.date, { allowFuture: false })
       if (date) updateData.date = date
     }
-    if (body.odometer_reading !== undefined) updateData.odometer_reading = validateInteger(body.odometer_reading, { min: 0, max: 999999 })
+    if (body.odometer_reading !== undefined) updateData.odometer_reading = validateInteger(body.odometer_reading, { min: 0, max: MAX_ODOMETER_MILES })
     if (body.gallons !== undefined) updateData.gallons = validateFloat(body.gallons, { min: 0.1, max: 100, precision: 3 })
     if (body.price_per_gallon !== undefined) updateData.price_per_gallon = validateFloat(body.price_per_gallon, { min: 0, max: 20, precision: 3 })
     if (body.fuel_type !== undefined) updateData.fuel_type = validateFuelType(body.fuel_type)

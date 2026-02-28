@@ -39,8 +39,8 @@ export default function OrgManagement() {
   const loadOrg = useCallback(async () => {
     try {
       const [orgRes, membersRes] = await Promise.all([
-        fetch('/api/org'),
-        fetch('/api/org/members'),
+        fetchWithTimeout('/api/org'),
+        fetchWithTimeout('/api/org/members'),
       ])
 
       if (orgRes.ok) {

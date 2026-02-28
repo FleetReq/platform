@@ -68,8 +68,8 @@ export default function AddFillUpForm({ cars, onSuccess, subscriptionPlan = 'fre
               .filter((l: string | null): l is string => l !== null && l.trim() !== '')
             )]
 
-            setRecentGasStations(stations as string[])
-            setRecentLocations(locations as string[])
+            setRecentGasStations(stations)
+            setRecentLocations(locations)
           } else {
             // No previous fill-ups, just set current mileage
             const selectedCar = cars.find(c => c.id === formData.car_id)

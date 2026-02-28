@@ -3,7 +3,7 @@ import { createRouteHandlerClient } from '@/lib/supabase'
 import { verifyCarAccess } from '@/lib/org'
 import { validateUUID, validateFloat, validateDate } from '@/lib/validation'
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
-import { PRICE_PER_GALLON_MAX } from '@/lib/constants'
+import { PRICE_PER_GALLON_MAX, MAX_ODOMETER_MILES } from '@/lib/constants'
 
 interface BulkFillUpData {
   miles: number
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       const fillUp = fill_ups[i]
       const validatedDate = validateDate(fillUp.date)
       const validatedGallons = validateFloat(fillUp.gallons, { min: 0.001, max: 1000 })
-      const validatedOdometer = validateFloat(fillUp.odometer_reading, { min: 0, max: 9999999 })
+      const validatedOdometer = validateFloat(fillUp.odometer_reading, { min: 0, max: MAX_ODOMETER_MILES })
       const validatedPricePerGallon = validateFloat(fillUp.price_per_gallon, { min: 0, max: PRICE_PER_GALLON_MAX })
 
       if (!validatedDate || validatedGallons === null || validatedOdometer === null || validatedPricePerGallon === null) {

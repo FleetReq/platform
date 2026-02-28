@@ -3,6 +3,7 @@ import { RATE_LIMITS } from '@/lib/rate-limit'
 import { sanitizeString, validateInteger, validateFloat, validateUUID, validateDate, validateMaintenanceType } from '@/lib/validation'
 import { withOrg, errorResponse } from '@/lib/api-middleware'
 import { verifyCarAccess, getOrgSubscriptionPlan } from '@/lib/org'
+import { MAX_ODOMETER_MILES } from '@/lib/constants'
 
 export async function GET(request: NextRequest) {
   return withOrg(request, async ({ supabase, membership }) => {
@@ -42,11 +43,11 @@ export async function POST(request: NextRequest) {
     const type = validateMaintenanceType(body.type)
     const oil_type = sanitizeString(body.oil_type, { maxLength: 20 })
     const cost = validateFloat(body.cost, { min: 0, max: 10000, precision: 2 })
-    const mileage = validateInteger(body.mileage, { min: 0, max: 999999 })
+    const mileage = validateInteger(body.mileage, { min: 0, max: MAX_ODOMETER_MILES })
     const service_provider = sanitizeString(body.service_provider, { maxLength: 100 })
     const location = sanitizeString(body.location, { maxLength: 200 })
     const next_service_date = validateDate(body.next_service_date, { allowPast: false })
-    const next_service_mileage = validateInteger(body.next_service_mileage, { min: 0, max: 999999 })
+    const next_service_mileage = validateInteger(body.next_service_mileage, { min: 0, max: MAX_ODOMETER_MILES })
     const notes = sanitizeString(body.notes, { maxLength: 500 })
 
     let receipt_urls: string[] | undefined

@@ -70,6 +70,9 @@ export const ACCOUNT_DELETION_GRACE_DAYS = 30
 /** Maximum plausible fuel price per gallon (covers aviation fuel and future diesel). */
 export const PRICE_PER_GALLON_MAX = 100
 
+/** Maximum odometer/mileage reading accepted in validation (supports high-mileage commercial fleets). */
+export const MAX_ODOMETER_MILES = 9_999_999
+
 /** Records fetched per dashboard load (fill-ups and maintenance). */
 export const DASHBOARD_RECORDS_LIMIT = 50
 

@@ -83,8 +83,8 @@ export async function POST(request: NextRequest) {
             cancel_at_period_end: true,
           })
 
-          const subscriptionItem = subscription.items.data[0] as SubscriptionItemWithPeriod
-          const periodEnd = subscriptionItem.current_period_end
+          const subscriptionItem = (subscription.items.data[0] ?? null) as SubscriptionItemWithPeriod | null
+          const periodEnd = subscriptionItem?.current_period_end
           if (!periodEnd) {
             console.error('[cancel] No current_period_end on subscription item or subscription')
           } else {

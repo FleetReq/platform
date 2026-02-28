@@ -3,7 +3,7 @@ import { RATE_LIMITS } from '@/lib/rate-limit'
 import { sanitizeString, validateInteger, validateFloat, validateUUID, validateDate, validateFuelType } from '@/lib/validation'
 import { withOrg, errorResponse } from '@/lib/api-middleware'
 import { verifyCarAccess, getOrgSubscriptionPlan } from '@/lib/org'
-import { PRICE_PER_GALLON_MAX } from '@/lib/constants'
+import { PRICE_PER_GALLON_MAX, MAX_ODOMETER_MILES } from '@/lib/constants'
 
 export async function GET(request: NextRequest) {
   return withOrg(request, async ({ supabase, membership }) => {
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     const car_id = validateUUID(body.car_id)
     const date = validateDate(body.date, { allowFuture: false }) || new Date().toISOString().split('T')[0]
-    const odometer_reading = validateInteger(body.odometer_reading, { min: 0, max: 999999 })
+    const odometer_reading = validateInteger(body.odometer_reading, { min: 0, max: MAX_ODOMETER_MILES })
     const gallons = validateFloat(body.gallons, { min: 0.1, max: 100, precision: 3 })
     const price_per_gallon = validateFloat(body.price_per_gallon, { min: 0, max: PRICE_PER_GALLON_MAX, precision: 3 })
     const fuel_type = validateFuelType(body.fuel_type)

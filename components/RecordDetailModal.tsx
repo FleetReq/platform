@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import type { Car, FillUp, MaintenanceRecord } from '@/lib/supabase-client'
+import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
 import { MAINTENANCE_TYPE_LABELS } from '@/lib/maintenance'
 import { useReceiptUpload, MAX_RECEIPTS } from '@/lib/use-receipt-upload'
 import ReceiptPhotoPicker from './ReceiptPhotoPicker'
@@ -135,7 +136,7 @@ export default function RecordDetailModal({
       }
 
       const endpoint = recordType === 'fillup' ? '/api/fill-ups' : '/api/maintenance'
-      const response = await fetch(`${endpoint}/${record.id}`, {
+      const response = await fetchWithTimeout(`${endpoint}/${record.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),

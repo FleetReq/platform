@@ -31,6 +31,7 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
   const [notificationWarningEnabled, setNotificationWarningEnabled] = useState(true)
   const [isTogglingNotifications, setIsTogglingNotifications] = useState(false)
   const [isSavingNotificationSettings, setIsSavingNotificationSettings] = useState(false)
+  const [notificationLoadError, setNotificationLoadError] = useState(false)
 
   // Downgrade modal state
   const [showDowngradeModal, setShowDowngradeModal] = useState(false)
@@ -80,6 +81,7 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
           }
         } catch (err) {
           console.error('[UserSettings] Failed to load notification preferences:', err)
+          setNotificationLoadError(true)
         }
       }
     }
@@ -161,11 +163,15 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
         method: 'DELETE'
       })
 
-      if (!response.ok) {
+      if (!response.ok && response.status !== 207) {
         throw new Error('Failed to delete vehicle')
       }
 
-      setMessage({ type: 'success', text: 'Vehicle deleted successfully' })
+      if (response.status === 207) {
+        setMessage({ type: 'error', text: 'Vehicle deleted, but billing could not be updated. Please contact support.' })
+      } else {
+        setMessage({ type: 'success', text: 'Vehicle deleted successfully' })
+      }
       setConfirmDeleteCarId(null)
       if (onCarDeleted) onCarDeleted()
     } catch (error) {
@@ -205,7 +211,7 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
       setCancellationReason('')
       setConfirmationText('')
 
-      // Refresh subscription info from org
+      // Refresh subscription info from org (best-effort — cancellation already succeeded)
       try {
         const orgRes = await fetchWithTimeout('/api/org')
         if (orgRes.ok) {
@@ -215,10 +221,7 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
         }
       } catch (err) {
         console.error('[Dashboard] Failed to refresh org after cancellation:', err)
-        setMessage({
-          type: 'success',
-          text: 'Account deletion scheduled. Refresh the page to see your updated plan.'
-        })
+        // Do not overwrite the success message — cancellation succeeded, this is just a cosmetic refresh
       }
     } catch (error) {
       setMessage({
@@ -315,6 +318,11 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
       {/* Notifications */}
       <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Notifications</h3>
+        {notificationLoadError && (
+          <div className="mb-3 px-3 py-2 rounded-md bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-300 text-sm border border-yellow-200 dark:border-yellow-800">
+            Could not load notification preferences — showing defaults. Refresh to try again.
+          </div>
+        )}
         <div className="space-y-3">
           {/* Master on/off toggle — all users */}
           <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">

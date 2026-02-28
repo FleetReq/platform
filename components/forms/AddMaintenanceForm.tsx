@@ -66,8 +66,8 @@ export default function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan =
               .filter((l: string | null): l is string => l !== null && l.trim() !== '')
             )]
 
-            setRecentServiceProviders(providers as string[])
-            setRecentLocations(locations as string[])
+            setRecentServiceProviders(providers)
+            setRecentLocations(locations)
           } else {
             // No previous maintenance, just set current mileage
             const selectedCar = cars.find(c => c.id === formData.car_id)
