@@ -71,6 +71,27 @@ export const metadata: Metadata = {
   },
 };
 
+// STATIC OBJECT ONLY — never include user-controlled values here
+const STRUCTURED_DATA = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'FleetReq',
+  applicationCategory: 'BusinessApplication',
+  description: 'Professional fleet management and mileage tracking for contractors. Track fuel efficiency, maintenance schedules, and IRS-compliant tax deductions.',
+  url: siteUrl,
+  offers: {
+    '@type': 'AggregateOffer',
+    priceCurrency: 'USD',
+    lowPrice: '0',
+    highPrice: String(BUSINESS_PRICE_PER_VEHICLE_USD),
+    priceSpecification: [
+      { '@type': 'UnitPriceSpecification', price: '0', priceCurrency: 'USD', name: 'Free' },
+      { '@type': 'UnitPriceSpecification', price: String(PERSONAL_PRICE_USD), priceCurrency: 'USD', name: 'Family' },
+      { '@type': 'UnitPriceSpecification', price: String(BUSINESS_PRICE_PER_VEHICLE_USD), priceCurrency: 'USD', name: 'Business' },
+    ],
+  },
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -135,45 +156,10 @@ export default function RootLayout({
         </ThemeProvider>
         <Analytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
 
-        {/* Structured Data — SAFE: static object only, never include user-controlled values here */}
+        {/* Structured Data — see STRUCTURED_DATA const above; never add user-controlled values */}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'SoftwareApplication',
-              name: 'FleetReq',
-              applicationCategory: 'BusinessApplication',
-              description: 'Professional fleet management and mileage tracking for contractors. Track fuel efficiency, maintenance schedules, and IRS-compliant tax deductions.',
-              url: siteUrl,
-              offers: {
-                '@type': 'AggregateOffer',
-                priceCurrency: 'USD',
-                lowPrice: '0',
-                highPrice: String(BUSINESS_PRICE_PER_VEHICLE_USD),
-                priceSpecification: [
-                  {
-                    '@type': 'UnitPriceSpecification',
-                    price: '0',
-                    priceCurrency: 'USD',
-                    name: 'Free'
-                  },
-                  {
-                    '@type': 'UnitPriceSpecification',
-                    price: String(PERSONAL_PRICE_USD),
-                    priceCurrency: 'USD',
-                    name: 'Family'
-                  },
-                  {
-                    '@type': 'UnitPriceSpecification',
-                    price: String(BUSINESS_PRICE_PER_VEHICLE_USD),
-                    priceCurrency: 'USD',
-                    name: 'Business'
-                  }
-                ]
-              }
-            })
-          }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA) }}
         />
       </body>
     </html>

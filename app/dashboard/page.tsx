@@ -21,8 +21,7 @@ export default async function DashboardPage() {
 
   const orgId = membership?.org_id ?? null
 
-  // Get full org details (plan, max_vehicles, name) — getUserOrg only returns role
-  let orgName: string | null = null
+  // Get full org details (plan, max_vehicles) — getUserOrg only returns role
   let subscriptionPlan: 'free' | 'personal' | 'business' = 'free'
   let maxVehicles = PLAN_LIMITS.free.maxVehicles
 
@@ -32,7 +31,6 @@ export default async function DashboardPage() {
   } else if (orgId) {
     const orgDetails = await getOrgDetails(supabase, orgId)
     if (orgDetails) {
-      orgName = orgDetails.name
       subscriptionPlan = orgDetails.subscription_plan
       maxVehicles = orgDetails.max_vehicles
     }
@@ -55,8 +53,6 @@ export default async function DashboardPage() {
   return (
     <DashboardClient
       initialUser={user}
-      initialOrgId={orgId}
-      initialOrgName={orgName}
       initialOrgRole={membership?.role ?? 'viewer'}
       initialSubscriptionPlan={subscriptionPlan}
       initialMaxVehicles={maxVehicles}

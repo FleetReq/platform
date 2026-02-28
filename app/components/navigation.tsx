@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { ThemeToggle } from "../theme-toggle";
 import { SubscriptionBadge } from "./SubscriptionBadge";
@@ -37,7 +37,6 @@ const authenticatedNavigationItems = [
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
-  const router = useRouter();
   const [user, setUser] = useState<{ id: string; email?: string; user_metadata?: { full_name?: string } } | null>(null);
   const [subscriptionTier, setSubscriptionTier] = useState<'free' | 'personal' | 'business'>('free');
   const [orgs, setOrgs] = useState<OrgEntry[]>([]);
@@ -100,7 +99,7 @@ export function Navigation() {
     });
 
     return () => subscription.unsubscribe();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- intentional: mount-only; refreshOrgs uses only stable state setters
+  }, []);
 
   const [signingOut, setSigningOut] = useState(false)
 
@@ -118,7 +117,7 @@ export function Navigation() {
     if (supabase) {
       await Promise.race([
         supabase.auth.signOut().catch(console.error),
-        new Promise(resolve => setTimeout(resolve, 3000)),
+        new Promise(resolve => setTimeout(resolve, 1500)),
       ])
     }
     try {

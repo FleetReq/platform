@@ -1,5 +1,5 @@
 import { createBrowserClient } from '@supabase/ssr'
-import { isAdmin as _isAdmin, isOwner as _isOwner, PLAN_LIMITS } from '@/lib/constants'
+import { isAdmin as _isAdmin, isOwner as _isOwner, PLAN_LIMITS, PERSONAL_PRICE_USD, BUSINESS_PRICE_PER_VEHICLE_USD } from '@/lib/constants'
 
 // Create a new Supabase client for browser use
 // Call this function in each component instead of using a singleton
@@ -184,28 +184,17 @@ export const getUserMaxVehicles = async (userId: string): Promise<number> => {
   return getOrgValue(userId, 'max_vehicles', 1)
 }
 
-export const hasFeatureAccess = (userId: string, plan: 'free' | 'personal' | 'business', feature: string): boolean => {
-  if (_isAdmin(userId)) return true
-
-  const features = {
-    free: ['fuel_tracking', 'basic_analytics', 'unlimited_history', 'maintenance_tracking'],
-    personal: ['fuel_tracking', 'basic_analytics', 'maintenance_tracking', 'mobile_app', 'unlimited_history', 'receipt_upload'],
-    business: ['fuel_tracking', 'basic_analytics', 'maintenance_tracking', 'mobile_app', 'unlimited_history', 'receipt_upload', 'team_collaboration', 'tax_mileage_tracking', 'professional_reporting', 'advanced_mobile_features']
-  }
-
-  return features[plan]?.includes(feature) || false
-}
-
 export const getUpgradeMessage = (feature: string): string => {
-  const messages = {
-    maintenance_tracking: "Upgrade to Family ($4/month) to unlock maintenance scheduling and tracking",
-    mobile_app: "Upgrade to Family ($4/month) for mobile app access and detailed notifications",
+  const family = `Family ($${PERSONAL_PRICE_USD}/month)`
+  const business = `Business ($${BUSINESS_PRICE_PER_VEHICLE_USD}/vehicle/month)`
+  const messages: Record<string, string> = {
+    maintenance_tracking: `Upgrade to ${family} to unlock maintenance scheduling and tracking`,
+    mobile_app: `Upgrade to ${family} for mobile app access and detailed notifications`,
     unlimited_history: "All plans include unlimited data history",
-    team_collaboration: "Upgrade to Business ($12/vehicle/month) to invite team members and collaborate",
-    tax_mileage_tracking: "Upgrade to Business ($12/vehicle/month) for IRS-compliant business mileage tracking",
-    professional_reporting: "Upgrade to Business ($12/vehicle/month) for professional reports and tax compliance",
-    receipt_upload: "Upgrade to Family ($4/month) to upload receipt photos"
+    team_collaboration: `Upgrade to ${business} to invite team members and collaborate`,
+    tax_mileage_tracking: `Upgrade to ${business} for IRS-compliant business mileage tracking`,
+    professional_reporting: `Upgrade to ${business} for professional reports and tax compliance`,
+    receipt_upload: `Upgrade to ${family} to upload receipt photos`,
   }
-
-  return messages[feature as keyof typeof messages] || "Upgrade to unlock this feature"
+  return messages[feature] ?? "Upgrade to unlock this feature"
 }

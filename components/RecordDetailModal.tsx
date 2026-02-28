@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import type { Car, FillUp, MaintenanceRecord } from '@/lib/supabase-client'
-import { hasFeatureAccess } from '@/lib/supabase-client'
 import { MAINTENANCE_TYPE_LABELS } from '@/lib/maintenance'
 import { useReceiptUpload, MAX_RECEIPTS } from '@/lib/use-receipt-upload'
 import ReceiptPhotoPicker from './ReceiptPhotoPicker'
@@ -50,12 +49,11 @@ export default function RecordDetailModal({
   const [mode, setMode] = useState<'view' | 'edit'>('view')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-  const canUploadReceipts = hasFeatureAccess(userId, subscriptionPlan, 'receipt_upload')
+  const canUploadReceipts = subscriptionPlan !== 'free'
 
   // Existing receipt URLs on the record
   const existingReceiptUrls: string[] = (record as { receipt_urls?: string[] }).receipt_urls || []
   const [currentReceiptUrls, setCurrentReceiptUrls] = useState<string[]>(existingReceiptUrls)
-  const [removedReceiptUrls, setRemovedReceiptUrls] = useState<string[]>([])
 
   // For new photo uploads in edit mode
   const receiptUpload = useReceiptUpload()
@@ -93,14 +91,13 @@ export default function RecordDetailModal({
         })
       }
       setCurrentReceiptUrls(existingReceiptUrls)
-      setRemovedReceiptUrls([])
       receiptUpload.reset()
     }
-  }, [mode, record.id, existingReceiptUrls]) // record.id ensures form resets when a different record is opened; existingReceiptUrls is stable for the same record
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: record.id covers record changes; receiptUpload.reset is stable; recordType is constant for a given modal instance
+  }, [mode, record.id, existingReceiptUrls])
 
   const handleRemoveExistingPhoto = (path: string) => {
     setCurrentReceiptUrls((prev) => prev.filter((p) => p !== path))
-    setRemovedReceiptUrls((prev) => [...prev, path])
   }
 
   const handleSave = async () => {
@@ -148,7 +145,10 @@ export default function RecordDetailModal({
         const errData = await response.json()
         // Rollback uploaded photos on failure
         if (newPaths.length > 0) {
-          await receiptUpload.deleteFromStorage(newPaths)
+          const { error: cleanupError } = await receiptUpload.deleteFromStorage(newPaths)
+          if (cleanupError) {
+            throw new Error(`${errData.error || 'Failed to save'} — receipt cleanup may be incomplete`)
+          }
         }
         throw new Error(errData.error || 'Failed to save')
       }

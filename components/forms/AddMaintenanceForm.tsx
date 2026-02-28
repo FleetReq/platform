@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { type Car, type MaintenanceRecord, hasFeatureAccess } from '@/lib/supabase-client'
+import { type Car, type MaintenanceRecord } from '@/lib/supabase-client'
 import { MAINTENANCE_TYPES, FORM_RECORDS_LIMIT } from '@/lib/constants'
 import { useReceiptUpload } from '@/lib/use-receipt-upload'
 import ReceiptPhotoPicker from '@/components/ReceiptPhotoPicker'
@@ -17,7 +17,7 @@ interface AddMaintenanceFormProps {
 
 export default function AddMaintenanceForm({ cars, onSuccess, subscriptionPlan = 'free', userId = '' }: AddMaintenanceFormProps) {
   const receiptUpload = useReceiptUpload()
-  const canUploadReceipts = hasFeatureAccess(userId, subscriptionPlan, 'receipt_upload')
+  const canUploadReceipts = subscriptionPlan !== 'free'
 
   const [formData, setFormData] = useState({
     car_id: cars[0]?.id || '',

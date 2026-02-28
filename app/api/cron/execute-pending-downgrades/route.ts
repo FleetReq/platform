@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase'
 import { PLAN_LIMITS } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
@@ -16,22 +16,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Use service role key to bypass RLS for system operations
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-    if (!supabaseUrl || !serviceRoleKey) {
-      return NextResponse.json(
-        { error: 'Missing Supabase credentials' },
-        { status: 500 }
-      )
+    const supabase = createAdminClient()
+    if (!supabase) {
+      return NextResponse.json({ error: 'Missing Supabase credentials' }, { status: 500 })
     }
-
-    const supabase = createClient(supabaseUrl, serviceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    })
 
     // Find orgs with pending downgrades that have reached their effective date
     const { data: pendingDowngrades, error: fetchError } = await supabase
@@ -179,22 +167,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-    if (!supabaseUrl || !serviceRoleKey) {
-      return NextResponse.json(
-        { error: 'Missing Supabase credentials' },
-        { status: 500 }
-      )
+    const supabase = createAdminClient()
+    if (!supabase) {
+      return NextResponse.json({ error: 'Missing Supabase credentials' }, { status: 500 })
     }
-
-    const supabase = createClient(supabaseUrl, serviceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    })
 
     // Find orgs with pending downgrades that have reached their effective date
     const { data: pendingDowngrades, error: fetchError } = await supabase

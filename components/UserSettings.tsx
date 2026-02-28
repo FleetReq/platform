@@ -66,16 +66,20 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
         }
 
         // Get notification preferences from user_profiles
-        const { data: profile } = await supabase
-          .from('user_profiles')
-          .select('email_notifications_enabled, notification_frequency, notification_warning_enabled')
-          .eq('id', user.id)
-          .maybeSingle()
+        try {
+          const { data: profile } = await supabase
+            .from('user_profiles')
+            .select('email_notifications_enabled, notification_frequency, notification_warning_enabled')
+            .eq('id', user.id)
+            .maybeSingle()
 
-        if (profile) {
-          setEmailNotificationsEnabled(profile.email_notifications_enabled ?? true)
-          setNotificationFrequency((profile.notification_frequency as 'daily' | 'weekly' | 'monthly') || 'weekly')
-          setNotificationWarningEnabled(profile.notification_warning_enabled ?? true)
+          if (profile) {
+            setEmailNotificationsEnabled(profile.email_notifications_enabled ?? true)
+            setNotificationFrequency((profile.notification_frequency as 'daily' | 'weekly' | 'monthly') || 'weekly')
+            setNotificationWarningEnabled(profile.notification_warning_enabled ?? true)
+          }
+        } catch (err) {
+          console.error('[UserSettings] Failed to load notification preferences:', err)
         }
       }
     }

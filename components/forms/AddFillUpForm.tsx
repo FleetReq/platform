@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { type Car, type FillUp, hasFeatureAccess } from '@/lib/supabase-client'
+import { type Car, type FillUp } from '@/lib/supabase-client'
 import { useReceiptUpload } from '@/lib/use-receipt-upload'
 import ReceiptPhotoPicker from '@/components/ReceiptPhotoPicker'
 import { isFutureDate } from '@/lib/date-utils'
@@ -17,7 +17,7 @@ interface AddFillUpFormProps {
 
 export default function AddFillUpForm({ cars, onSuccess, subscriptionPlan = 'free', userId = '' }: AddFillUpFormProps) {
   const receiptUpload = useReceiptUpload()
-  const canUploadReceipts = hasFeatureAccess(userId, subscriptionPlan, 'receipt_upload')
+  const canUploadReceipts = subscriptionPlan !== 'free'
   const [formData, setFormData] = useState({
     car_id: cars[0]?.id || '',
     date: new Date().toLocaleDateString('en-CA'),

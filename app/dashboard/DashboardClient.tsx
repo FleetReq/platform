@@ -5,11 +5,9 @@ import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase, type Car, type FillUp, type MaintenanceRecord, isOwner } from '@/lib/supabase-client'
 import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
-import { validateSubscriptionPlan } from '@/lib/validation'
 import { MAINTENANCE_INTERVALS, getMaintenanceStatus, getLatestMaintenanceRecord } from '@/lib/maintenance'
-import { MAINTENANCE_TYPES, MAINTENANCE_TYPE_FILTER_OPTIONS, getStatusColor, getStatusTextColor, getIrsRate, OWNER_USER_ID, PLAN_LIMITS, PLAN_DISPLAY_NAMES, getPlanColor, ACCOUNT_DELETION_GRACE_DAYS, DASHBOARD_RECORDS_LIMIT, type SubscriptionPlan, type MaintenanceStatus } from '@/lib/constants'
+import { MAINTENANCE_TYPES, MAINTENANCE_TYPE_FILTER_OPTIONS, getStatusColor, getStatusTextColor, getIrsRate, DASHBOARD_RECORDS_LIMIT, type MaintenanceStatus } from '@/lib/constants'
 import BackgroundAnimation from '../components/BackgroundAnimation'
-import { useTheme } from '../theme-provider'
 import RecordDetailModal from '../../components/RecordDetailModal'
 import OrgManagement from '@/components/OrgManagement'
 import AddCarForm from '@/components/forms/AddCarForm'
@@ -79,14 +77,14 @@ function MaintenanceStatusGrid({
   cars,
   maintenanceRecords,
   subscriptionPlan,
-  userId
 }: {
   selectedCarId: string | null,
   cars: Car[],
   maintenanceRecords: MaintenanceRecord[],
   subscriptionPlan: 'free' | 'personal' | 'business',
-  userId: string | null
 }) {
+  const [showUntracked, setShowUntracked] = useState(false)
+
   if (!selectedCarId) {
     return (
       <div className="card-professional p-4">
@@ -102,8 +100,6 @@ function MaintenanceStatusGrid({
   // All tiers can view maintenance status (🟢/🔴). Adding/editing records is
   // gated on the add-maintenance form, not here.
   const hasMaintenanceAccess = true
-
-  const [showUntracked, setShowUntracked] = useState(false)
 
   const maintenanceTypes = MAINTENANCE_TYPES
 
@@ -404,7 +400,7 @@ function RecordsManager({
 
     return Array.from(userIds).map(userId => {
       // For now, we'll just show the user ID. In a real app, you'd fetch user profiles
-      return { id: userId, name: userId === OWNER_USER_ID ? 'Owner' : `User ${userId?.slice(0, 8) || 'Unknown'}...` }
+      return { id: userId, name: isOwner(userId) ? 'Owner' : `User ${userId?.slice(0, 8) || 'Unknown'}...` }
     })
   }, [cars, fillUps, maintenanceRecords])
 
@@ -1041,6 +1037,7 @@ function CarDetailEditor({ carId, cars, onUpdate }: { carId: string, cars: Car[]
         nickname: selectedCar.nickname || '',
       })
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: listing specific props avoids re-running when parent re-renders and cars.find() returns a new object reference with the same data
   }, [selectedCar?.id, selectedCar?.make, selectedCar?.model, selectedCar?.year, selectedCar?.color, selectedCar?.license_plate, selectedCar?.nickname])
 
   if (!selectedCar) return null
@@ -1168,10 +1165,10 @@ function CarDetailEditor({ carId, cars, onUpdate }: { carId: string, cars: Car[]
 }
 
 
+const VALID_TABS = ['overview', 'dashboard', 'add-car', 'add-fillup', 'add-trip', 'add-maintenance', 'records', 'settings'] as const
+
 interface DashboardClientProps {
   initialUser: User
-  initialOrgId: string | null
-  initialOrgName: string | null
   initialOrgRole: 'owner' | 'editor' | 'viewer'
   initialSubscriptionPlan: 'free' | 'personal' | 'business'
   initialMaxVehicles: number
@@ -1182,8 +1179,6 @@ interface DashboardClientProps {
 
 export default function DashboardClient({
   initialUser,
-  initialOrgId: _initialOrgId,
-  initialOrgName,
   initialOrgRole,
   initialSubscriptionPlan,
   initialMaxVehicles,
@@ -1193,20 +1188,16 @@ export default function DashboardClient({
 }: DashboardClientProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const { theme } = useTheme()
-  const isDark = theme === 'dark'
   const [user, setUser] = useState<User | null>(initialUser)
   const [cars, setCars] = useState<Car[]>(initialCars)
-  const [dataLoaded, setDataLoaded] = useState(true)
   const [stats, setStats] = useState<UserStats | null>(null)
   const [fillUps, setFillUps] = useState<FillUp[]>(initialFillUps)
   const [maintenanceRecords, setMaintenanceRecords] = useState<MaintenanceRecord[]>(initialMaintenanceRecords)
   const [loading, setLoading] = useState(false)
-  const [userIsOwner, setUserIsOwner] = useState(isOwner(initialUser.id))
-  const [userOrgRole, setUserOrgRole] = useState<'owner' | 'editor' | 'viewer'>(initialOrgRole)
-  const [userOrgName, setUserOrgName] = useState<string | null>(initialOrgName)
-  const [userSubscriptionPlan, setUserSubscriptionPlan] = useState<'free' | 'personal' | 'business'>(initialSubscriptionPlan)
-  const [maxVehicles, setMaxVehicles] = useState<number>(initialMaxVehicles)
+  const userIsOwner = isOwner(initialUser.id)
+  const userOrgRole = initialOrgRole
+  const userSubscriptionPlan = initialSubscriptionPlan
+  const maxVehicles = initialMaxVehicles
   const [allOrgs, setAllOrgs] = useState<{org_id: string, org_name: string, role: string, subscription_plan: string}[]>([])
   const [allOrgsLoadError, setAllOrgsLoadError] = useState(false)
   const [leavingOrgId, setLeavingOrgId] = useState<string | null>(null)
@@ -1218,10 +1209,9 @@ export default function DashboardClient({
   const carPrefLoaded = useRef(false)
 
   // Read ?tab= URL param to allow navigation from hamburger menu
-  const validTabs = ['overview', 'dashboard', 'add-car', 'add-fillup', 'add-trip', 'add-maintenance', 'records', 'settings'] as const
   useEffect(() => {
     const tabParam = searchParams.get('tab')
-    if (tabParam && validTabs.includes(tabParam as typeof validTabs[number])) {
+    if (tabParam && VALID_TABS.includes(tabParam as typeof VALID_TABS[number])) {
       setActiveTab(tabParam as typeof activeTab)
     }
   }, [searchParams])
@@ -1230,19 +1220,24 @@ export default function DashboardClient({
   useEffect(() => {
     if (cars.length === 0 || !supabase || carPrefLoaded.current) return
     carPrefLoaded.current = true
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) { setSelectedCarId(cars[0].id); return }
-      supabase
-        .from('user_profiles')
-        .select('default_car_id')
-        .eq('id', user.id)
-        .maybeSingle()
-        .then(({ data: profile }) => {
-          const savedId = profile?.default_car_id
-          const valid = savedId ? cars.find(c => c.id === savedId) : null
-          setSelectedCarId(valid ? savedId! : cars[0].id)
-        })
-    })
+    const initCarSelection = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) { setSelectedCarId(cars[0].id); return }
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('default_car_id')
+          .eq('id', user.id)
+          .maybeSingle()
+        const savedId = profile?.default_car_id
+        const valid = savedId ? cars.find(c => c.id === savedId) : null
+        setSelectedCarId(valid ? savedId as string : cars[0].id)
+      } catch (err) {
+        console.error('[Dashboard] Failed to restore vehicle selection:', err)
+        setSelectedCarId(cars[0].id)
+      }
+    }
+    initCarSelection()
   }, [cars])
 
   // Fetch all orgs when settings tab is opened (for Leave Organization section)
@@ -1324,7 +1319,7 @@ export default function DashboardClient({
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [router])
 
 
   // Show loading overlay during mutation-triggered refreshes (mileage update, vehicle edit, etc.)
@@ -1558,7 +1553,6 @@ export default function DashboardClient({
                 cars={cars}
                 maintenanceRecords={maintenanceRecords}
                 subscriptionPlan={userSubscriptionPlan}
-                userId={user?.id || null}
               />
             )}
           </div>
@@ -1607,7 +1601,7 @@ export default function DashboardClient({
                   }
 
                   // Add gold ring for Add Car tab when tutorial is showing (no pulsing)
-                  const showTutorial = dataLoaded && cars.length === 0 && activeTab !== 'add-car'
+                  const showTutorial = cars.length === 0 && activeTab !== 'add-car'
                   const shouldHighlight = showTutorial && tab.id === 'add-car'
 
                   return (

@@ -66,7 +66,7 @@ export function createAdminClient() {
 }
 
 // Re-export auth helpers from centralized constants
-export { isOwner, isAdmin, OWNER_USER_ID } from '@/lib/constants'
+export { isOwner, isAdmin } from '@/lib/constants'
 
 // Re-export types and helpers from client module for server-side use
 export type {
