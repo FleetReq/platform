@@ -9,7 +9,8 @@
 
 export const OWNER_USER_ID = 'b73a07b2-ed72-41b1-943f-e119afc9eddb'
 
-export const ADMIN_USER_IDS = [OWNER_USER_ID] as const
+const envAdmins = process.env.NEXT_PUBLIC_ADMIN_USER_IDS?.split(',').map(s => s.trim()).filter(Boolean) ?? []
+export const ADMIN_USER_IDS: readonly string[] = envAdmins.length > 0 ? envAdmins : [OWNER_USER_ID]
 
 export function isAdmin(userId: string): boolean {
   return (ADMIN_USER_IDS as readonly string[]).includes(userId)

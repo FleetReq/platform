@@ -1,37 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createRouteHandlerClient } from '@/lib/supabase'
-import { getUserOrg, verifyCarAccess } from '@/lib/org'
+import { withOrg, errorResponse } from '@/lib/api-middleware'
+import { verifyCarAccess } from '@/lib/org'
 import { sanitizeString, validateUUID, validateDate, validateFloat } from '@/lib/validation'
-import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
+import { RATE_LIMITS } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
 
 // GET /api/trips - Fetch all trips for the authenticated user
 export async function GET(request: NextRequest) {
-  try {
-    const supabase = await createRouteHandlerClient(request)
-    if (!supabase) {
-      return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
-    }
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const rateLimitResult = rateLimit(user.id, RATE_LIMITS.READ)
-    if (!rateLimitResult.success) {
-      return NextResponse.json({ error: 'Rate limit exceeded. Please try again later.' }, { status: 429 })
-    }
-
-    // Get user's org membership (respect active org cookie)
-    const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
-    const membership = await getUserOrg(supabase, user.id, activeOrgId)
-    if (!membership) {
-      return NextResponse.json({ trips: [] })
-    }
-
+  return withOrg(request, async ({ supabase, membership }) => {
     // Get query parameters for filtering
     const { searchParams } = new URL(request.url)
     const carId = searchParams.get('car_id')
@@ -64,35 +41,16 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('Error fetching trips:', error)
-      return NextResponse.json({ error: 'Failed to fetch trips' }, { status: 500 })
+      return errorResponse('Failed to fetch trips', 500)
     }
 
     return NextResponse.json({ trips })
-  } catch (error) {
-    console.error('API error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  }, { rateLimitConfig: RATE_LIMITS.READ, emptyOnUnauth: 'trips' })
 }
 
 // POST /api/trips - Create a new trip
 export async function POST(request: NextRequest) {
-  try {
-    const supabase = await createRouteHandlerClient(request)
-    if (!supabase) {
-      return NextResponse.json({ error: 'Database not configured' }, { status: 503 })
-    }
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const rateLimitResult = rateLimit(user.id, RATE_LIMITS.WRITE)
-    if (!rateLimitResult.success) {
-      return NextResponse.json({ error: 'Rate limit exceeded. Please try again later.' }, { status: 429 })
-    }
-
+  return withOrg(request, async ({ supabase, user, activeOrgId }) => {
     const body = await request.json()
     const {
       car_id,
@@ -108,57 +66,41 @@ export async function POST(request: NextRequest) {
     // Validate required fields
     const validatedCarId = validateUUID(car_id)
     if (!validatedCarId) {
-      return NextResponse.json({ error: 'Invalid or missing car_id' }, { status: 400 })
+      return errorResponse('Invalid or missing car_id', 400)
     }
 
     const validatedDate = validateDate(date)
     if (!validatedDate) {
-      return NextResponse.json({ error: 'Invalid or missing date (expected YYYY-MM-DD)' }, { status: 400 })
+      return errorResponse('Invalid or missing date (expected YYYY-MM-DD)', 400)
     }
 
     if (!end_location || !purpose) {
-      return NextResponse.json(
-        { error: 'Missing required fields: end_location, purpose' },
-        { status: 400 }
-      )
+      return errorResponse('Missing required fields: end_location, purpose', 400)
     }
 
     // Validate purpose
     if (purpose !== 'business' && purpose !== 'personal') {
-      return NextResponse.json(
-        { error: 'Purpose must be either "business" or "personal"' },
-        { status: 400 }
-      )
+      return errorResponse('Purpose must be either "business" or "personal"', 400)
     }
 
     // Validate business_purpose is provided for business trips
     if (purpose === 'business' && !business_purpose) {
-      return NextResponse.json(
-        { error: 'business_purpose is required for business trips (IRS compliance)' },
-        { status: 400 }
-      )
+      return errorResponse('business_purpose is required for business trips (IRS compliance)', 400)
     }
 
     // Validate miles
     const validatedMiles = validateFloat(miles, { min: 0.1, max: 10000 })
     if (validatedMiles === null) {
-      return NextResponse.json(
-        { error: 'Miles must be a positive number (max 10,000)' },
-        { status: 400 }
-      )
+      return errorResponse('Miles must be a positive number (max 10,000)', 400)
     }
 
     // Verify user has edit access to this car through their org
-    const activeOrgId = request.cookies.get('fleetreq-active-org')?.value || null
     const carAccess = await verifyCarAccess(supabase, user.id, validatedCarId, activeOrgId)
     if (!carAccess.hasAccess) {
-      return NextResponse.json(
-        { error: 'Car not found or does not belong to your organization' },
-        { status: 404 }
-      )
+      return errorResponse('Car not found or does not belong to your organization', 404)
     }
     if (!carAccess.canEdit) {
-      return NextResponse.json({ error: 'Viewers cannot add trips' }, { status: 403 })
+      return errorResponse('Viewers cannot add trips', 403)
     }
 
     // Insert the trip
@@ -180,12 +122,9 @@ export async function POST(request: NextRequest) {
 
     if (insertError) {
       console.error('Error creating trip:', insertError)
-      return NextResponse.json({ error: 'Failed to create trip' }, { status: 500 })
+      return errorResponse('Failed to create trip', 500)
     }
 
     return NextResponse.json({ trip }, { status: 201 })
-  } catch (error) {
-    console.error('API error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
+  }, { rateLimitConfig: RATE_LIMITS.WRITE })
 }

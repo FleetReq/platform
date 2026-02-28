@@ -96,7 +96,8 @@ Update CLAUDE.md immediately after completing work or making strategic decisions
 - Professional reporting (CSV/PDF export)
 - Excel import wizard
 - Custom autocomplete (replace `<datalist>` for iOS)
-- **Remember last-used vehicle** — Add `default_car_id` column to `user_profiles`, PATCH it on car selection, use it as initial `selectedCarId` in `DashboardClient.tsx` (currently always defaults to `cars[0]`)
+- ~~**Remember last-used vehicle (ISSUE-16)**~~ ✅ Done (2026-02-28)
+- ~~**DashboardClient.tsx split (ISSUE-17)**~~ ✅ Done (2026-02-28) — extracted `UserSettings` + `FuelChartPanel`; DashboardClient is now ~2250 lines
 
 ### 🔮 Medium-term (3-6 months)
 - Native mobile apps (after PWA proves PMF)
@@ -168,7 +169,7 @@ All require `SUPABASE_SERVICE_ROLE_KEY`. Emails also need `RESEND_API_KEY`. Auth
 ## 📁 Key Files
 
 ### Application
-- `app/dashboard/page.tsx` — Main dashboard (~3700 lines)
+- `app/dashboard/DashboardClient.tsx` — Main dashboard client (~2250 lines, split from 3700)
 - `app/page.tsx` — Landing page
 - `app/pricing/page.tsx` — Pricing table
 
@@ -176,6 +177,8 @@ All require `SUPABASE_SERVICE_ROLE_KEY`. Emails also need `RESEND_API_KEY`. Auth
 - `components/AuthComponent.tsx` — Auth UI & session + pending invite check
 - `components/OrgManagement.tsx` — Team management (members, invites, roles)
 - `components/OrgSwitcher.tsx` — Multi-org dropdown switcher (hidden for single-org users)
+- `components/UserSettings.tsx` — Account settings (extracted from DashboardClient)
+- `components/FuelChartPanel.tsx` — Fuel efficiency chart (extracted from DashboardClient)
 - `components/UpgradePrompt.tsx` — Paywall overlays
 - `app/theme-toggle.tsx` — Light/dark toggle
 
@@ -189,6 +192,7 @@ All require `SUPABASE_SERVICE_ROLE_KEY`. Emails also need `RESEND_API_KEY`. Auth
 - `app/api/org/members/[id]/route.ts` — PATCH member role
 - `app/api/org/accept-invite/route.ts` — POST accept invitation (non-destructive)
 - `app/api/org/switch/route.ts` — POST switch active org (sets cookie)
+- `app/api/profile/route.ts` — PATCH user profile preferences (default_car_id)
 
 ### Libraries
 - `lib/supabase.ts` — Server-side clients
