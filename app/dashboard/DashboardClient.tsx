@@ -67,6 +67,10 @@ function getIntervalDisplay(
   return parts.length > 0 ? `Every ${parts.join(' / ')}` : ''
 }
 
+function getOnboardingStorageKey(userId: string) {
+  return `fleetreq-onboarding-dismissed-${userId}`
+}
+
 // Shared empty state shown in left-column cards when no vehicles exist
 function NoVehiclePrompt() {
   return (
@@ -75,6 +79,41 @@ function NoVehiclePrompt() {
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
       </svg>
       <p className="text-sm font-medium">Add a car to unlock</p>
+    </div>
+  )
+}
+
+// Single step row in the Getting Started checklist
+// active: controls circle color (blue = current step, gray = future). When active=true, onClick must also be provided.
+function OnboardingStep({ number, label, done, active, onClick }: {
+  number: number
+  label: string
+  done: boolean
+  active: boolean  // true = current step (blue circle). Caller must also pass onClick when active=true.
+  onClick?: () => void
+}) {
+  return (
+    <div role="listitem" className={`flex items-center gap-3 px-2 py-1.5 rounded-lg ${done ? 'opacity-50' : ''}`}>
+      <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
+        done ? 'bg-green-500' : active ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'
+      }`} aria-hidden="true">
+        {done ? (
+          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+          </svg>
+        ) : (
+          <span className="text-white text-[10px] font-bold">{number}</span>
+        )}
+      </div>
+      {done ? (
+        <span className="text-xs text-gray-400 dark:text-gray-500 line-through">{label}</span>
+      ) : onClick ? (
+        <button onClick={onClick} className="text-xs text-blue-600 dark:text-blue-400 font-medium hover:underline underline-offset-2 text-left">
+          {label} →
+        </button>
+      ) : (
+        <span aria-disabled="true" className="text-xs text-gray-400 dark:text-gray-500">{label}</span>
+      )}
     </div>
   )
 }
@@ -1213,6 +1252,11 @@ export default function DashboardClient({
   const [pendingLeaveOrgId, setPendingLeaveOrgId] = useState<string | null>(null)
   const [loadError, setLoadError] = useState(false)
   const [statsError, setStatsError] = useState(false)
+  const onboardingStorageKey = getOnboardingStorageKey(initialUser.id)
+  const [onboardingDismissed, setOnboardingDismissed] = useState(() => {
+    try { return localStorage.getItem(getOnboardingStorageKey(initialUser.id)) === 'true' } catch { return false }
+  })
+  const [onboardingJustCompleted, setOnboardingJustCompleted] = useState(false)
   const CURRENT_YEAR = useMemo(() => new Date().getFullYear(), [])
   const CURRENT_IRS_RATE = useMemo(() => getIrsRate(CURRENT_YEAR), [CURRENT_YEAR])
   const [activeTab, setActiveTab] = useState<'overview' | 'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'add-trip' | 'records' | 'settings'>('overview')
@@ -1287,6 +1331,19 @@ export default function DashboardClient({
   useEffect(() => {
     loadData()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps -- intentional: mount-only; supabase is a module singleton and React state setters are guaranteed stable
+
+  // Show "All set!" briefly then auto-dismiss the onboarding card when all steps complete
+  useEffect(() => {
+    const allDone = cars.length > 0 && fillUps.length > 0 && maintenanceRecords.length > 0
+    if (allDone && !onboardingDismissed && !onboardingJustCompleted) {
+      setOnboardingJustCompleted(true)
+      const timer = setTimeout(() => {
+        setOnboardingDismissed(true)
+        try { localStorage.setItem(onboardingStorageKey, 'true') } catch { /* ignore */ }
+      }, 2500)
+      return () => clearTimeout(timer)
+    }
+  }, [cars.length, fillUps.length, maintenanceRecords.length, onboardingDismissed, onboardingJustCompleted, onboardingStorageKey])
 
   const loadData = useCallback(async (showSkeleton = false) => {
     if (showSkeleton) setLoading(true)
@@ -1429,6 +1486,75 @@ export default function DashboardClient({
                 </>
               )}
             </div>
+
+            {/* Getting Started — shown until all 3 steps complete or dismissed.
+                Note: left column is hidden on mobile when activeTab !== 'overview', so this
+                card is only visible on mobile from the Overview tab. This is acceptable —
+                the navigation itself (add-car → add-fillup) provides in-context guidance. */}
+            {!onboardingDismissed && userOrgRole !== 'viewer' && (
+              <div className="card-professional p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-bold text-gradient-primary">Get Started</h3>
+                  {!onboardingJustCompleted && (
+                    <button
+                      onClick={() => {
+                        setOnboardingDismissed(true)
+                        try { localStorage.setItem(onboardingStorageKey, 'true') } catch { /* ignore */ }
+                      }}
+                      className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                      aria-label="Dismiss getting started checklist"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+
+                {/* Completion state — shown for ~2.5s before auto-dismissing */}
+                {onboardingJustCompleted ? (
+                  <div className="flex items-center justify-center gap-2 py-3 text-green-600 dark:text-green-400" role="status">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="text-sm font-medium">You&apos;re all set!</span>
+                  </div>
+                ) : (
+                  <>
+                    {/* aria-live so screen readers announce step completions */}
+                    <div aria-live="polite" className="sr-only">
+                      {cars.length > 0 && 'Step 1 complete: vehicle added.'}
+                      {fillUps.length > 0 && ' Step 2 complete: fill-up logged.'}
+                      {maintenanceRecords.length > 0 && ' Step 3 complete: maintenance recorded.'}
+                    </div>
+                    <div className="space-y-1" role="list" aria-label="Setup checklist">
+                      <OnboardingStep
+                        number={1}
+                        label="Add your first vehicle"
+                        done={cars.length > 0}
+                        active={cars.length === 0}
+                        onClick={cars.length === 0 ? () => setActiveTab('add-car') : undefined}
+                      />
+                      <OnboardingStep
+                        number={2}
+                        label="Log your first fill-up"
+                        done={fillUps.length > 0}
+                        active={cars.length > 0 && fillUps.length === 0}
+                        onClick={cars.length > 0 && fillUps.length === 0 ? () => setActiveTab('add-fillup') : undefined}
+                      />
+                      {/* Step 3 only requires a car, not a fill-up */}
+                      <OnboardingStep
+                        number={3}
+                        label="Record a maintenance item"
+                        done={maintenanceRecords.length > 0}
+                        active={cars.length > 0 && maintenanceRecords.length === 0}
+                        onClick={cars.length > 0 && maintenanceRecords.length === 0 ? () => setActiveTab('add-maintenance') : undefined}
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
 
             {/* Performance Overview */}
             <div className="card-professional p-4 space-y-3 overflow-hidden">
@@ -1714,7 +1840,11 @@ export default function DashboardClient({
                       </Link>
                     </div>
                   ) : (
-                    <AddCarForm onSuccess={() => { loadData(true); setActiveTab('dashboard'); }} />
+                    <AddCarForm onSuccess={() => {
+                      const wasFirstCar = cars.length === 0
+                      loadData(true)
+                      setActiveTab(wasFirstCar ? 'add-fillup' : 'dashboard')
+                    }} />
                   )}
                 </div>
               )}
