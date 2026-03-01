@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { RATE_LIMITS } from '@/lib/rate-limit'
 import { withAuth, errorResponse } from '@/lib/api-middleware'
+import { validateUUID } from '@/lib/validation'
 
 // PATCH /api/profile — Update user profile preferences (e.g. default_car_id)
 export async function PATCH(request: NextRequest) {
@@ -8,10 +9,7 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json()
     const default_car_id = body.default_car_id ?? null
 
-    if (
-      default_car_id !== null &&
-      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(default_car_id)
-    ) {
+    if (default_car_id !== null && !validateUUID(default_car_id)) {
       return errorResponse('Invalid car ID', 400)
     }
 

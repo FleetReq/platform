@@ -88,7 +88,7 @@ Update CLAUDE.md immediately after completing work or making strategic decisions
 
 ### 🆕 Next Up
 1. **Performance Overview redesign** — Tax metrics for contractors (Cost Per Mile, YTD costs, IRS deduction). Core value prop. Files: `app/api/stats/route.ts`, `app/dashboard/page.tsx`
-2. **Security integration** — Apply `lib/rate-limit.ts` and `lib/validation.ts` to all API routes
+2. ~~**Security integration**~~ ✅ Done (2026-02-28) — All 21 user-facing routes use middleware with rate limiting; all data-mutating routes use `lib/validation.ts`
 3. **PWA support** — `next-pwa`, manifest, service worker, install prompt
 4. **First-time UX improvements** — Better onboarding flow
 
@@ -199,8 +199,8 @@ All require `SUPABASE_SERVICE_ROLE_KEY`. Emails also need `RESEND_API_KEY`. Auth
 - `lib/supabase-client.ts` — Client-side + helpers (`isAdmin`, `getUserSubscriptionPlan`, `getActiveOrgId`, etc.)
 - `lib/org.ts` — Org helpers (`getUserOrg`, `getUserOrgs`, `canEdit`, `isOrgOwner`, `verifyCarAccess`)
 - `lib/maintenance.ts` — Shared maintenance logic (`MAINTENANCE_INTERVALS`, `getMaintenanceStatus`)
-- `lib/rate-limit.ts` — Rate limiting (not yet integrated into routes)
-- `lib/validation.ts` — Input validation/sanitization (not yet integrated into routes)
+- `lib/rate-limit.ts` — Rate limiting (integrated via `withAuth`/`withOrg` middleware in all user-facing routes)
+- `lib/validation.ts` — Input validation/sanitization (integrated in all data-mutating routes)
 
 ### Documentation
 - `SCHEMA.md` — Database schema, constraints, RLS policies
