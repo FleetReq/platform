@@ -87,7 +87,7 @@ Update CLAUDE.md immediately after completing work or making strategic decisions
 - [ ] Manual browser testing (all 3 tiers + org roles, light/dark, TESTING_CHECKLIST.md)
 
 ### 🆕 Next Up
-1. **Performance Overview redesign** — Tax metrics for contractors (Cost Per Mile, YTD costs, IRS deduction). Core value prop. Files: `app/api/stats/route.ts`, `app/dashboard/page.tsx`
+1. ~~**Performance Overview redesign**~~ ✅ Done (2026-02-28) — Already implemented; UX polished: Cost/Mile hero stat, dynamic year label, loading skeleton, business-miles empty state, fixed upgrade CTA to Business
 2. ~~**Security integration**~~ ✅ Done (2026-02-28) — All 21 user-facing routes use middleware with rate limiting; all data-mutating routes use `lib/validation.ts`
 3. **PWA support** — `next-pwa`, manifest, service worker, install prompt
 4. **First-time UX improvements** — Better onboarding flow

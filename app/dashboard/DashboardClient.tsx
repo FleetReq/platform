@@ -1423,7 +1423,7 @@ export default function DashboardClient({
               )}
             </div>
 
-            {/* Performance Overview - Dual Panel Design */}
+            {/* Performance Overview */}
             <div className="card-professional p-4 space-y-3 overflow-hidden">
               <h3 className="text-sm font-bold text-gradient-primary">Performance Overview</h3>
 
@@ -1434,9 +1434,14 @@ export default function DashboardClient({
                   </svg>
                   <p className="text-sm font-medium">Add a car to unlock</p>
                 </div>
-              ) : stats ? (
+              ) : !stats ? (
+                <div className="space-y-3 animate-pulse">
+                  <div className="h-[92px] bg-gray-200 dark:bg-gray-700 rounded-lg" />
+                  <div className="h-[88px] bg-gray-200 dark:bg-gray-700 rounded-lg" />
+                </div>
+              ) : (
                 <div className="space-y-3">
-                  {/* Budget Focus Panel (Always Visible) */}
+                  {/* Budget Focus Panel */}
                   <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-2">
                       <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
@@ -1444,96 +1449,116 @@ export default function DashboardClient({
                       </svg>
                       <h4 className="text-xs font-semibold text-gray-900 dark:text-white">Budget Focus</h4>
                     </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="text-center p-2 bg-orange-200 dark:bg-orange-900/20 border border-orange-400 dark:border-orange-800/30 rounded min-w-0">
-                        <div className="text-xs font-bold text-orange-700 dark:text-orange-400 truncate">${stats.cost_per_mile.toFixed(2)}</div>
-                        <div className="text-[10px] text-gray-600 dark:text-gray-400">Cost/Mile</div>
+                    {/* Cost/Mile as hero metric */}
+                    <div className="mb-2 text-center p-2.5 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800/40 rounded-lg">
+                      <div className="text-lg font-bold text-orange-700 dark:text-orange-400">
+                        {stats.cost_per_mile > 0 ? `$${stats.cost_per_mile.toFixed(2)}` : '—'}
                       </div>
-                      <div className="text-center p-2 bg-purple-200 dark:bg-purple-900/20 border border-purple-400 dark:border-purple-800/30 rounded min-w-0">
-                        <div className="text-xs font-bold text-purple-700 dark:text-purple-400 truncate">${stats.this_month_total_cost.toFixed(2)}</div>
-                        <div className="text-[10px] text-gray-600 dark:text-gray-400">This Month</div>
+                      <div className="text-[10px] text-gray-500 dark:text-gray-400">Cost Per Mile (all-time avg)</div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="text-center p-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800/30 rounded min-w-0">
+                        <div className="text-xs font-bold text-purple-700 dark:text-purple-400 truncate">
+                          {stats.this_month_total_cost > 0 ? `$${stats.this_month_total_cost.toFixed(2)}` : '—'}
+                        </div>
+                        <div className="text-[10px] text-gray-500 dark:text-gray-400">This Month</div>
                       </div>
-                      <div className="text-center p-2 bg-emerald-200 dark:bg-emerald-900/20 border border-emerald-400 dark:border-emerald-800/30 rounded min-w-0">
-                        <div className="text-xs font-bold text-emerald-700 dark:text-emerald-400 truncate">${Math.round((stats.total_spent + stats.total_maintenance_cost) * 100) / 100}</div>
-                        <div className="text-[10px] text-gray-600 dark:text-gray-400">All-Time</div>
+                      <div className="text-center p-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/30 rounded min-w-0">
+                        <div className="text-xs font-bold text-emerald-700 dark:text-emerald-400 truncate">
+                          ${(stats.total_spent + stats.total_maintenance_cost).toFixed(2)}
+                        </div>
+                        <div className="text-[10px] text-gray-500 dark:text-gray-400">All-Time</div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Tax Tracking Panel (Locked for Free Tier) */}
+                  {/* Tax Tracking Panel */}
                   <div className="relative border border-gray-200 dark:border-gray-700 rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-2">
                       <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4zm2.5 2.1h-15V5h15v14.1zm0-16.1h-15c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
                       </svg>
-                      <h4 className="text-xs font-semibold text-gray-900 dark:text-white">Tax Tracking 2025</h4>
+                      <h4 className="text-xs font-semibold text-gray-900 dark:text-white">Tax Tracking {CURRENT_YEAR}</h4>
                       {userSubscriptionPlan !== 'business' && (
-                        <span className="ml-auto text-[10px] px-2 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded">
-                          🔒 LOCKED
+                        <span className="ml-auto text-[10px] px-2 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded">
+                          🔒 Business
                         </span>
                       )}
                     </div>
 
-                    {/* Show metrics for Business only, locked overlay for Free/Family */}
                     {userSubscriptionPlan === 'business' ? (
-                      <div className="space-y-2">
-                        <div className="grid grid-cols-3 gap-2">
-                          <div className="text-center p-2 bg-gray-200 dark:bg-gray-700/20 border border-gray-400 dark:border-gray-600/30 rounded min-w-0">
-                            <div className="text-xs font-bold text-gray-900 dark:text-gray-200 truncate">${stats.ytd_total_cost.toFixed(2)}</div>
-                            <div className="text-[10px] text-gray-600 dark:text-gray-400">YTD Total</div>
+                      stats.business_miles === 0 ? (
+                        /* Empty state: business plan, no trips logged yet */
+                        <div className="space-y-2 py-1">
+                          <div className="text-[11px] text-gray-500 dark:text-gray-400 text-center">No business trips logged yet.</div>
+                          <div className="text-[10px] text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded p-2">
+                            💡 Use the <strong>Trips</strong> tab to log business drives — each trip counts toward your IRS deduction.
                           </div>
-                          <div className="text-center p-2 bg-green-200 dark:bg-green-900/20 border border-green-400 dark:border-green-800/30 rounded min-w-0">
-                            <div className="text-xs font-bold text-green-700 dark:text-green-400 truncate">${Math.round(stats.business_miles * CURRENT_IRS_RATE).toLocaleString()}</div>
-                            <div className="text-[10px] text-gray-600 dark:text-gray-400">Tax Deduction</div>
-                          </div>
-                          <div className="text-center p-2 bg-blue-200 dark:bg-blue-900/20 border border-blue-400 dark:border-blue-800/30 rounded min-w-0">
-                            <div className="text-xs font-bold text-blue-700 dark:text-blue-400 truncate">{stats.business_percentage}%</div>
-                            <div className="text-[10px] text-gray-600 dark:text-gray-400">Business</div>
+                          <div className="text-[10px] text-gray-400 dark:text-gray-500 text-center">
+                            IRS rate: ${CURRENT_IRS_RATE}/mile ({CURRENT_YEAR})
                           </div>
                         </div>
-                        <div className="text-center p-2 bg-emerald-200 dark:bg-emerald-900/20 border border-emerald-400 dark:border-emerald-800/30 rounded">
-                          <div className="text-[10px] text-gray-600 dark:text-gray-400 mb-0.5">Business Miles (YTD)</div>
-                          <div className="text-xs font-bold text-emerald-700 dark:text-emerald-400">{stats.business_miles.toLocaleString()}</div>
+                      ) : (
+                        /* Business plan with trip data */
+                        <div className="space-y-2">
+                          {/* IRS Deduction as hero metric */}
+                          <div className="text-center p-2.5 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/40 rounded-lg">
+                            <div className="text-lg font-bold text-green-700 dark:text-green-400">
+                              ${Math.round(stats.business_miles * CURRENT_IRS_RATE).toLocaleString()}
+                            </div>
+                            <div className="text-[10px] text-gray-500 dark:text-gray-400">Estimated IRS Deduction</div>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2">
+                            <div className="text-center p-2 bg-gray-100 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-600/30 rounded min-w-0">
+                              <div className="text-xs font-bold text-gray-900 dark:text-gray-200 truncate">${stats.ytd_total_cost.toFixed(0)}</div>
+                              <div className="text-[10px] text-gray-500 dark:text-gray-400">YTD Spend</div>
+                            </div>
+                            <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 rounded min-w-0">
+                              <div className="text-xs font-bold text-blue-700 dark:text-blue-400 truncate">{stats.business_miles.toLocaleString()}</div>
+                              <div className="text-[10px] text-gray-500 dark:text-gray-400">Biz Miles</div>
+                            </div>
+                            <div className="text-center p-2 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800/30 rounded min-w-0">
+                              <div className="text-xs font-bold text-indigo-700 dark:text-indigo-400 truncate">{stats.business_percentage}%</div>
+                              <div className="text-[10px] text-gray-500 dark:text-gray-400">Business</div>
+                            </div>
+                          </div>
+                          <div className="text-[10px] text-gray-400 dark:text-gray-500 text-center">
+                            IRS rate: ${CURRENT_IRS_RATE}/mile ({CURRENT_YEAR})
+                          </div>
                         </div>
-                        <div className="text-[10px] text-amber-700 dark:text-amber-400 text-center bg-amber-200 dark:bg-amber-900/20 rounded p-1.5 border border-amber-400 dark:border-amber-800">
-                          💡 Use &quot;Add Trip&quot; tab to log business trips for tax deductions
-                        </div>
-                        <div className="text-[10px] text-gray-500 dark:text-gray-400 text-center">
-                          IRS rate: ${CURRENT_IRS_RATE}/mile ({CURRENT_YEAR}) • Tracks business purpose trips
-                        </div>
-                      </div>
+                      )
                     ) : (
-                      /* Locked State for Free Tier */
+                      /* Locked overlay for Free/Family */
                       <div className="relative">
                         <div className="filter blur-sm pointer-events-none select-none">
                           <div className="grid grid-cols-3 gap-2">
-                            <div className="text-center p-2 bg-gray-200 dark:bg-gray-700/20 border border-gray-400 dark:border-gray-600/30 rounded min-w-0">
+                            <div className="text-center p-2 bg-gray-200 dark:bg-gray-700/20 border border-gray-300 dark:border-gray-600/30 rounded min-w-0">
                               <div className="text-xs font-bold text-gray-900 dark:text-gray-200 truncate">12,450</div>
-                              <div className="text-[10px] text-gray-600 dark:text-gray-400">Miles Tracked</div>
+                              <div className="text-[10px] text-gray-500 dark:text-gray-400">Biz Miles</div>
                             </div>
-                            <div className="text-center p-2 bg-blue-200 dark:bg-blue-900/20 border border-blue-400 dark:border-blue-800/30 rounded min-w-0">
-                              <div className="text-xs font-bold text-blue-700 dark:text-blue-400 truncate">$8,715</div>
-                              <div className="text-[10px] text-gray-600 dark:text-gray-400">Potential Ded.</div>
+                            <div className="text-center p-2 bg-green-100 dark:bg-green-900/20 border border-green-200 dark:border-green-800/30 rounded min-w-0">
+                              <div className="text-xs font-bold text-green-700 dark:text-green-400 truncate">$8,715</div>
+                              <div className="text-[10px] text-gray-500 dark:text-gray-400">Tax Deduction</div>
                             </div>
-                            <div className="text-center p-2 bg-orange-200 dark:bg-orange-900/20 border border-orange-400 dark:border-orange-800/30 rounded min-w-0">
+                            <div className="text-center p-2 bg-orange-100 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800/30 rounded min-w-0">
                               <div className="text-xs font-bold text-orange-700 dark:text-orange-400 truncate">$0.45</div>
-                              <div className="text-[10px] text-gray-600 dark:text-gray-400">$/Mile</div>
+                              <div className="text-[10px] text-gray-500 dark:text-gray-400">Cost/Mile</div>
                             </div>
                           </div>
                         </div>
                         <div className="absolute inset-0 flex items-center justify-center">
                           <Link
-                            href="/pricing#family"
+                            href="/pricing#business"
                             className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-2 rounded-lg font-medium shadow-lg transition-colors"
                           >
-                            Upgrade to Family - $4/mo
+                            Upgrade to Business
                           </Link>
                         </div>
                       </div>
                     )}
                   </div>
                 </div>
-              ) : null}
+              )}
             </div>
 
             {/* Maintenance Status - Dynamic */}
