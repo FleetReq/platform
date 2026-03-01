@@ -1256,12 +1256,20 @@ export default function DashboardClient({
   const [onboardingDismissed, setOnboardingDismissed] = useState(() => {
     try {
       // New user-scoped key
-      if (localStorage.getItem(getOnboardingStorageKey(initialUser.id)) === 'true') return true
-      // Legacy unscoped key — migrate existing users who dismissed before user-scoping was added
-      if (localStorage.getItem('fleetreq-onboarding-dismissed') === 'true') return true
+      if (localStorage.getItem(onboardingStorageKey) === 'true') return true
+      // Legacy unscoped key — one-time migration: write scoped key so this branch never runs again
+      if (localStorage.getItem('fleetreq-onboarding-dismissed') === 'true') {
+        localStorage.setItem(onboardingStorageKey, 'true')
+        return true
+      }
     } catch { /* ignore */ }
-    // Already has all data on mount → skip onboarding entirely, no flash
-    return initialCars.length > 0 && initialFillUps.length > 0 && initialMaintenanceRecords.length > 0
+    // Already has all data on mount → skip onboarding, write key so loadData refresh
+    // never triggers the completion animation for established users
+    const allDataPresent = initialCars.length > 0 && initialFillUps.length > 0 && initialMaintenanceRecords.length > 0
+    if (allDataPresent) {
+      try { localStorage.setItem(onboardingStorageKey, 'true') } catch { /* ignore */ }
+    }
+    return allDataPresent
   })
   const [onboardingJustCompleted, setOnboardingJustCompleted] = useState(false)
   const CURRENT_YEAR = useMemo(() => new Date().getFullYear(), [])
