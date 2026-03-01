@@ -18,10 +18,6 @@ import type { User } from '@supabase/supabase-js'
 import UserSettings from '@/components/UserSettings'
 import FuelChartPanel from '@/components/FuelChartPanel'
 
-const CURRENT_YEAR = new Date().getFullYear()
-const CURRENT_IRS_RATE = getIrsRate(CURRENT_YEAR)
-
-
 interface UserStats {
   total_cars: number
   total_fill_ups: number
@@ -69,6 +65,18 @@ function getIntervalDisplay(
   if (interval.miles) parts.push(`${(interval.miles / 1000).toFixed(0)}k mi`)
   if (interval.months) parts.push(`${interval.months} mo`)
   return parts.length > 0 ? `Every ${parts.join(' / ')}` : ''
+}
+
+// Shared empty state shown in left-column cards when no vehicles exist
+function NoVehiclePrompt() {
+  return (
+    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+      <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+      </svg>
+      <p className="text-sm font-medium">Add a car to unlock</p>
+    </div>
+  )
 }
 
 // Maintenance Status Grid Component
@@ -194,8 +202,8 @@ function MaintenanceStatusGrid({
           </>
         ) : (
           <div className="relative">
-            {/* Blurred preview */}
-            <div className="filter blur-sm pointer-events-none select-none">
+            {/* Blurred preview — aria-hidden so screen readers skip fake data */}
+            <div className="filter blur-sm pointer-events-none select-none" aria-hidden="true">
               <div className="grid grid-cols-2 gap-1">
                 {maintenanceTypes.slice(0, 6).map(({ key, label, icon }) => (
                   <div
@@ -1204,6 +1212,9 @@ export default function DashboardClient({
   const [leaveOrgError, setLeaveOrgError] = useState<string>('')
   const [pendingLeaveOrgId, setPendingLeaveOrgId] = useState<string | null>(null)
   const [loadError, setLoadError] = useState(false)
+  const [statsError, setStatsError] = useState(false)
+  const CURRENT_YEAR = useMemo(() => new Date().getFullYear(), [])
+  const CURRENT_IRS_RATE = useMemo(() => getIrsRate(CURRENT_YEAR), [CURRENT_YEAR])
   const [activeTab, setActiveTab] = useState<'overview' | 'dashboard' | 'add-car' | 'add-fillup' | 'add-maintenance' | 'add-trip' | 'records' | 'settings'>('overview')
   const [selectedCarId, setSelectedCarId] = useState<string | null>(null)
   const carPrefLoaded = useRef(false)
@@ -1305,6 +1316,7 @@ export default function DashboardClient({
       // Extract data
       const carsData = carsResponse?.ok ? (await carsResponse.json()).cars || [] : []
       const statsData = statsResponse?.ok ? (await statsResponse.json()).stats : null
+      setStatsError(!statsResponse?.ok)
       const fillUpsData = fillUpsResponse?.ok ? (await fillUpsResponse.json()).fillUps || [] : []
       const maintenanceData = maintenanceResponse?.ok ? (await maintenanceResponse.json()).maintenanceRecords || [] : []
 
@@ -1366,12 +1378,7 @@ export default function DashboardClient({
             <div className="card-professional p-4">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Selected Vehicle</h3>
               {cars.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                  <p className="text-sm font-medium">Add a car to unlock</p>
-                </div>
+                <NoVehiclePrompt />
               ) : (
                 <>
                 <div className="relative mb-3">
@@ -1428,23 +1435,28 @@ export default function DashboardClient({
               <h3 className="text-sm font-bold text-gradient-primary">Performance Overview</h3>
 
               {cars.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                  <p className="text-sm font-medium">Add a car to unlock</p>
+                <NoVehiclePrompt />
+              ) : statsError ? (
+                <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+                  <p className="text-sm">Could not load stats.</p>
+                  <button
+                    onClick={() => { setStatsError(false); void loadData() }}
+                    className="mt-2 text-xs text-blue-600 dark:text-blue-400 underline underline-offset-2"
+                  >
+                    Retry
+                  </button>
                 </div>
               ) : !stats ? (
-                <div className="space-y-3 animate-pulse">
-                  <div className="h-[92px] bg-gray-200 dark:bg-gray-700 rounded-lg" />
-                  <div className="h-[88px] bg-gray-200 dark:bg-gray-700 rounded-lg" />
+                <div className="space-y-3 animate-pulse" role="status" aria-label="Loading performance data">
+                  <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+                  <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-lg" />
                 </div>
               ) : (
                 <div className="space-y-3">
                   {/* Budget Focus Panel */}
                   <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-2">
-                      <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
                       </svg>
                       <h4 className="text-xs font-semibold text-gray-900 dark:text-white">Budget Focus</h4>
@@ -1454,20 +1466,20 @@ export default function DashboardClient({
                       <div className="text-lg font-bold text-orange-700 dark:text-orange-400">
                         {stats.cost_per_mile > 0 ? `$${stats.cost_per_mile.toFixed(2)}` : '—'}
                       </div>
-                      <div className="text-[10px] text-gray-500 dark:text-gray-400">Cost Per Mile (all-time avg)</div>
+                      <div className="text-[11px] text-gray-500 dark:text-gray-400">Cost Per Mile (all-time avg)</div>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="text-center p-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800/30 rounded min-w-0">
                         <div className="text-xs font-bold text-purple-700 dark:text-purple-400 truncate">
                           {stats.this_month_total_cost > 0 ? `$${stats.this_month_total_cost.toFixed(2)}` : '—'}
                         </div>
-                        <div className="text-[10px] text-gray-500 dark:text-gray-400">This Month</div>
+                        <div className="text-[11px] text-gray-500 dark:text-gray-400">This Month</div>
                       </div>
                       <div className="text-center p-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/30 rounded min-w-0">
                         <div className="text-xs font-bold text-emerald-700 dark:text-emerald-400 truncate">
                           ${(stats.total_spent + stats.total_maintenance_cost).toFixed(2)}
                         </div>
-                        <div className="text-[10px] text-gray-500 dark:text-gray-400">All-Time</div>
+                        <div className="text-[11px] text-gray-500 dark:text-gray-400">All-Time</div>
                       </div>
                     </div>
                   </div>
@@ -1475,26 +1487,31 @@ export default function DashboardClient({
                   {/* Tax Tracking Panel */}
                   <div className="relative border border-gray-200 dark:border-gray-700 rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-2">
-                      <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4zm2.5 2.1h-15V5h15v14.1zm0-16.1h-15c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/>
                       </svg>
                       <h4 className="text-xs font-semibold text-gray-900 dark:text-white">Tax Tracking {CURRENT_YEAR}</h4>
                       {userSubscriptionPlan !== 'business' && (
-                        <span className="ml-auto text-[10px] px-2 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded">
-                          🔒 Business
+                        <span className="ml-auto text-[11px] px-2 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded" aria-label="Requires Business plan">
+                          <span aria-hidden="true">🔒</span> Business
                         </span>
                       )}
                     </div>
+
+                    {/* IRS rate footnote shared by both data branches */}
+                    {userSubscriptionPlan === 'business' && (
+                      <p className="sr-only">IRS mileage rate: ${CURRENT_IRS_RATE} per mile for {CURRENT_YEAR}</p>
+                    )}
 
                     {userSubscriptionPlan === 'business' ? (
                       stats.business_miles === 0 ? (
                         /* Empty state: business plan, no trips logged yet */
                         <div className="space-y-2 py-1">
                           <div className="text-[11px] text-gray-500 dark:text-gray-400 text-center">No business trips logged yet.</div>
-                          <div className="text-[10px] text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded p-2">
-                            💡 Use the <strong>Trips</strong> tab to log business drives — each trip counts toward your IRS deduction.
+                          <div className="text-[11px] text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded p-2">
+                            <span aria-hidden="true">💡</span> Use the <strong>Trips</strong> tab to log business drives — each trip counts toward your IRS deduction.
                           </div>
-                          <div className="text-[10px] text-gray-400 dark:text-gray-500 text-center">
+                          <div className="text-[11px] text-gray-400 dark:text-gray-500 text-center" aria-hidden="true">
                             IRS rate: ${CURRENT_IRS_RATE}/mile ({CURRENT_YEAR})
                           </div>
                         </div>
@@ -1506,43 +1523,43 @@ export default function DashboardClient({
                             <div className="text-lg font-bold text-green-700 dark:text-green-400">
                               ${Math.round(stats.business_miles * CURRENT_IRS_RATE).toLocaleString()}
                             </div>
-                            <div className="text-[10px] text-gray-500 dark:text-gray-400">Estimated IRS Deduction</div>
+                            <div className="text-[11px] text-gray-500 dark:text-gray-400">Est. IRS Deduction</div>
                           </div>
                           <div className="grid grid-cols-3 gap-2">
                             <div className="text-center p-2 bg-gray-100 dark:bg-gray-700/30 border border-gray-200 dark:border-gray-600/30 rounded min-w-0">
                               <div className="text-xs font-bold text-gray-900 dark:text-gray-200 truncate">${stats.ytd_total_cost.toFixed(0)}</div>
-                              <div className="text-[10px] text-gray-500 dark:text-gray-400">YTD Spend</div>
+                              <div className="text-[11px] text-gray-500 dark:text-gray-400">YTD Spend</div>
                             </div>
                             <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 rounded min-w-0">
                               <div className="text-xs font-bold text-blue-700 dark:text-blue-400 truncate">{stats.business_miles.toLocaleString()}</div>
-                              <div className="text-[10px] text-gray-500 dark:text-gray-400">Biz Miles</div>
+                              <div className="text-[11px] text-gray-500 dark:text-gray-400">Biz Miles</div>
                             </div>
                             <div className="text-center p-2 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800/30 rounded min-w-0">
-                              <div className="text-xs font-bold text-indigo-700 dark:text-indigo-400 truncate">{stats.business_percentage}%</div>
-                              <div className="text-[10px] text-gray-500 dark:text-gray-400">Business</div>
+                              <div className="text-xs font-bold text-indigo-700 dark:text-indigo-400 truncate">{stats.business_percentage.toFixed(1)}%</div>
+                              <div className="text-[11px] text-gray-500 dark:text-gray-400">Business</div>
                             </div>
                           </div>
-                          <div className="text-[10px] text-gray-400 dark:text-gray-500 text-center">
+                          <div className="text-[11px] text-gray-400 dark:text-gray-500 text-center" aria-hidden="true">
                             IRS rate: ${CURRENT_IRS_RATE}/mile ({CURRENT_YEAR})
                           </div>
                         </div>
                       )
                     ) : (
-                      /* Locked overlay for Free/Family */
+                      /* Locked overlay for Free/Family — aria-hidden on fake data */
                       <div className="relative">
-                        <div className="filter blur-sm pointer-events-none select-none">
+                        <div className="filter blur-sm pointer-events-none select-none" aria-hidden="true">
                           <div className="grid grid-cols-3 gap-2">
                             <div className="text-center p-2 bg-gray-200 dark:bg-gray-700/20 border border-gray-300 dark:border-gray-600/30 rounded min-w-0">
                               <div className="text-xs font-bold text-gray-900 dark:text-gray-200 truncate">12,450</div>
-                              <div className="text-[10px] text-gray-500 dark:text-gray-400">Biz Miles</div>
+                              <div className="text-[11px] text-gray-500 dark:text-gray-400">Biz Miles</div>
                             </div>
                             <div className="text-center p-2 bg-green-100 dark:bg-green-900/20 border border-green-200 dark:border-green-800/30 rounded min-w-0">
                               <div className="text-xs font-bold text-green-700 dark:text-green-400 truncate">$8,715</div>
-                              <div className="text-[10px] text-gray-500 dark:text-gray-400">Tax Deduction</div>
+                              <div className="text-[11px] text-gray-500 dark:text-gray-400">Tax Deduction</div>
                             </div>
                             <div className="text-center p-2 bg-orange-100 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800/30 rounded min-w-0">
-                              <div className="text-xs font-bold text-orange-700 dark:text-orange-400 truncate">$0.45</div>
-                              <div className="text-[10px] text-gray-500 dark:text-gray-400">Cost/Mile</div>
+                              <div className="text-xs font-bold text-orange-700 dark:text-orange-400 truncate">$0.70</div>
+                              <div className="text-[11px] text-gray-500 dark:text-gray-400">Cost/Mile</div>
                             </div>
                           </div>
                         </div>
@@ -1565,12 +1582,7 @@ export default function DashboardClient({
             {cars.length === 0 ? (
               <div className="card-professional p-4">
                 <h3 className="text-sm font-bold mb-3 text-gradient-primary">Maintenance Status</h3>
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                  <p className="text-sm font-medium">Add a car to unlock</p>
-                </div>
+                <NoVehiclePrompt />
               </div>
             ) : (
               <MaintenanceStatusGrid
