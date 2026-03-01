@@ -1265,7 +1265,7 @@ export default function DashboardClient({
     } catch { /* ignore */ }
     // Already has all data on mount → skip onboarding, write key so loadData refresh
     // never triggers the completion animation for established users
-    const allDataPresent = initialCars.length > 0 && initialFillUps.length > 0 && initialMaintenanceRecords.length > 0
+    const allDataPresent = initialCars.length > 0 && initialFillUps.length > 0
     if (allDataPresent) {
       try { localStorage.setItem(onboardingStorageKey, 'true') } catch { /* ignore */ }
     }
@@ -1349,7 +1349,7 @@ export default function DashboardClient({
 
   // Show "All set!" briefly then auto-dismiss the onboarding card when all steps complete
   useEffect(() => {
-    const allDone = cars.length > 0 && fillUps.length > 0 && maintenanceRecords.length > 0
+    const allDone = cars.length > 0 && fillUps.length > 0
     if (allDone && !onboardingDismissed && !onboardingJustCompleted) {
       setOnboardingJustCompleted(true)
       const timer = setTimeout(() => {
@@ -1358,7 +1358,7 @@ export default function DashboardClient({
       }, 2500)
       return () => clearTimeout(timer)
     }
-  }, [cars.length, fillUps.length, maintenanceRecords.length, onboardingDismissed, onboardingJustCompleted, onboardingStorageKey])
+  }, [cars.length, fillUps.length, onboardingDismissed, onboardingJustCompleted, onboardingStorageKey])
 
   const loadData = useCallback(async (showSkeleton = false) => {
     if (showSkeleton) setLoading(true)
@@ -1502,7 +1502,7 @@ export default function DashboardClient({
               )}
             </div>
 
-            {/* Getting Started — shown until all 3 steps complete or dismissed.
+            {/* Getting Started — shown until all steps complete or dismissed.
                 Note: left column is hidden on mobile when activeTab !== 'overview', so this
                 card is only visible on mobile from the Overview tab. This is acceptable —
                 the navigation itself (add-car → add-fillup) provides in-context guidance. */}
@@ -1540,7 +1540,6 @@ export default function DashboardClient({
                     <div aria-live="polite" className="sr-only">
                       {cars.length > 0 && 'Step 1 complete: vehicle added.'}
                       {fillUps.length > 0 && ' Step 2 complete: fill-up logged.'}
-                      {maintenanceRecords.length > 0 && ' Step 3 complete: maintenance recorded.'}
                     </div>
                     <div className="space-y-1" role="list" aria-label="Setup checklist">
                       <OnboardingStep
@@ -1556,14 +1555,6 @@ export default function DashboardClient({
                         done={fillUps.length > 0}
                         active={cars.length > 0 && fillUps.length === 0}
                         onClick={cars.length > 0 && fillUps.length === 0 ? () => setActiveTab('add-fillup') : undefined}
-                      />
-                      {/* Step 3 only requires a car, not a fill-up */}
-                      <OnboardingStep
-                        number={3}
-                        label="Record a maintenance item"
-                        done={maintenanceRecords.length > 0}
-                        active={cars.length > 0 && maintenanceRecords.length === 0}
-                        onClick={cars.length > 0 && maintenanceRecords.length === 0 ? () => setActiveTab('add-maintenance') : undefined}
                       />
                     </div>
                   </>
