@@ -76,7 +76,3 @@ export type {
   UserProfile
 } from './supabase-client'
 
-export {
-  calculateMPG,
-  getMilesDriven
-} from './supabase-client'

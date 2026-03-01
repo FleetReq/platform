@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { SITE_URL } from '@/lib/constants'
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
@@ -61,6 +62,17 @@ export async function GET(request: NextRequest) {
   const userId = searchParams.get('uid')
   const token = searchParams.get('token')
   const resubscribe = searchParams.get('resubscribe') === '1'
+
+  // Rate limit before any processing — keyed on uid to stop repeated bot triggers
+  if (userId) {
+    const rateLimitResult = rateLimit(`unsubscribe:${userId}`, RATE_LIMITS.ANONYMOUS)
+    if (!rateLimitResult.success) {
+      return new NextResponse(
+        htmlPage('Too Many Requests', '<h1>Too many requests</h1><p>Please wait a few minutes and try again.</p>'),
+        { status: 429, headers: { 'Content-Type': 'text/html' } }
+      )
+    }
+  }
 
   if (!userId || !token) {
     return new NextResponse(

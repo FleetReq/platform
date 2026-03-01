@@ -1,5 +1,5 @@
 import { createBrowserClient } from '@supabase/ssr'
-import { isAdmin as _isAdmin, isOwner as _isOwner, PLAN_LIMITS, PERSONAL_PRICE_USD, BUSINESS_PRICE_PER_VEHICLE_USD } from '@/lib/constants'
+import { isAdmin as _isAdmin, isOwner as _isOwner, PLAN_LIMITS } from '@/lib/constants'
 
 // Create a new Supabase client for browser use
 // Call this function in each component instead of using a singleton
@@ -184,17 +184,3 @@ export const getUserMaxVehicles = async (userId: string): Promise<number> => {
   return getOrgValue(userId, 'max_vehicles', 1)
 }
 
-export const getUpgradeMessage = (feature: string): string => {
-  const family = `Family ($${PERSONAL_PRICE_USD}/month)`
-  const business = `Business ($${BUSINESS_PRICE_PER_VEHICLE_USD}/vehicle/month)`
-  const messages: Record<string, string> = {
-    maintenance_tracking: `Upgrade to ${family} to unlock maintenance scheduling and tracking`,
-    mobile_app: `Upgrade to ${family} for mobile app access and detailed notifications`,
-    unlimited_history: "All plans include unlimited data history",
-    team_collaboration: `Upgrade to ${business} to invite team members and collaborate`,
-    tax_mileage_tracking: `Upgrade to ${business} for IRS-compliant business mileage tracking`,
-    professional_reporting: `Upgrade to ${business} for professional reports and tax compliance`,
-    receipt_upload: `Upgrade to ${family} to upload receipt photos`,
-  }
-  return messages[feature] ?? "Upgrade to unlock this feature"
-}

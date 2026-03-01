@@ -10,10 +10,8 @@
 // Admin user IDs — server-side only. Use ADMIN_USER_IDS (no NEXT_PUBLIC_ prefix)
 // so the values are not bundled into the client JS. Client-side isAdmin() calls
 // will always return false; real enforcement is server-side in API routes.
-// NOTE: rename env var from NEXT_PUBLIC_ADMIN_USER_IDS → ADMIN_USER_IDS in
-// .env.local and Vercel. During transition, falls back to the old name.
 export const ADMIN_USER_IDS: readonly string[] =
-  (process.env.ADMIN_USER_IDS ?? process.env.NEXT_PUBLIC_ADMIN_USER_IDS)
+  process.env.ADMIN_USER_IDS
     ?.split(',').map(s => s.trim()).filter(Boolean) ?? []
 
 export function isAdmin(userId: string): boolean {
@@ -41,11 +39,6 @@ export const PLAN_LIMITS: Record<SubscriptionPlan, { maxVehicles: number; maxMem
   free:     { maxVehicles: 1,   maxMembers: 1 },
   personal: { maxVehicles: 3,   maxMembers: 3 },
   business: { maxVehicles: UNLIMITED_VEHICLES, maxMembers: 6 },
-}
-
-/** Returns 'Unlimited' for the sentinel value, otherwise the number as a string. */
-export function formatVehicleLimit(n: number): string {
-  return n >= UNLIMITED_VEHICLES ? 'Unlimited' : String(n)
 }
 
 /** Display names for each subscription plan (DB value → UI label). */
@@ -109,9 +102,9 @@ export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://fleetreq.ve
 // ---------------------------------------------------------------------------
 
 export const IRS_MILEAGE_RATES: Record<number, number> = {
-  2024: 0.67,
-  2025: 0.70,
-  2026: 0.725,
+  2024: 0.67,  // IRS Rev. Proc. 2023-34
+  2025: 0.70,  // IRS Rev. Proc. 2024-25
+  2026: 0.725, // IRS Rev. Proc. 2025-37 (confirmed January 2026)
 }
 
 export function getIrsRate(year: number): number {

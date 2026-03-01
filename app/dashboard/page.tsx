@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
 import { createServerSupabaseClient } from '@/lib/supabase'
+import type { Car, FillUp, MaintenanceRecord } from '@/lib/supabase-client'
 import { getUserOrg, getOrgDetails, ensureUserHasOrg } from '@/lib/org'
 import { isAdmin, PLAN_LIMITS } from '@/lib/constants'
 import DashboardClient from './DashboardClient'
@@ -37,18 +38,30 @@ export default async function DashboardPage() {
   }
 
   // Fetch initial data server-side (cars, fill-ups, maintenance)
-  const { data: cars } = orgId
-    ? await supabase.from('cars').select('*').eq('org_id', orgId).order('created_at')
-    : { data: [] }
+  // Wrapped in try/catch so a Supabase outage or RLS error returns empty arrays
+  // instead of a 500 — DashboardClient will recover via client-side loadData()
+  let cars: Car[] = []
+  let fillUps: FillUp[] = []
+  let maintenanceRecords: MaintenanceRecord[] = []
+  try {
+    const { data: carsData } = orgId
+      ? await supabase.from('cars').select('*').eq('org_id', orgId).order('created_at')
+      : { data: [] }
+    cars = carsData ?? []
 
-  const carIds = (cars ?? []).map((c: { id: string }) => c.id)
-
-  const [fillUpsRes, maintenanceRes] = carIds.length > 0
-    ? await Promise.all([
+    const carIds = cars.map(c => c.id)
+    if (carIds.length > 0) {
+      const [fillUpsRes, maintenanceRes] = await Promise.all([
         supabase.from('fill_ups').select('*').in('car_id', carIds).order('date', { ascending: false }).limit(50),
         supabase.from('maintenance_records').select('*').in('car_id', carIds).order('date', { ascending: false }).limit(50),
       ])
-    : [{ data: [] }, { data: [] }]
+      fillUps = fillUpsRes.data ?? []
+      maintenanceRecords = maintenanceRes.data ?? []
+    }
+  } catch (err) {
+    console.error('[DashboardPage] Failed to load initial data:', err)
+    // pass empty arrays — DashboardClient will recover via client-side loadData()
+  }
 
   return (
     <DashboardClient
@@ -56,9 +69,9 @@ export default async function DashboardPage() {
       initialOrgRole={membership?.role ?? 'viewer'}
       initialSubscriptionPlan={subscriptionPlan}
       initialMaxVehicles={maxVehicles}
-      initialCars={cars ?? []}
-      initialFillUps={fillUpsRes.data ?? []}
-      initialMaintenanceRecords={maintenanceRes.data ?? []}
+      initialCars={cars}
+      initialFillUps={fillUps}
+      initialMaintenanceRecords={maintenanceRecords}
     />
   )
 }

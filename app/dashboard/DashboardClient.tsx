@@ -1562,13 +1562,13 @@ export default function DashboardClient({
               {/* Navigation Tabs - hidden on mobile (bottom tab bar used instead) */}
               <div className="relative z-50 hidden sm:flex gap-1 glass-morphism rounded-xl p-1 shadow-elegant">
                 {[
-                  { id: 'dashboard', label: 'Graph', adminOnly: false, requiresEdit: false },
-                  { id: 'add-car', label: 'Add Car', adminOnly: false, requiresEdit: true },
-                  { id: 'add-fillup', label: 'Add Fill-up', adminOnly: false, requiresEdit: true },
-                  { id: 'add-trip', label: 'Add Trip', adminOnly: false, requiresEdit: true },
-                  { id: 'add-maintenance', label: 'Maintenance', adminOnly: false, requiresEdit: true },
-                  { id: 'records', label: 'Records', adminOnly: false, requiresEdit: false },
-                  { id: 'settings', label: 'Settings', adminOnly: false, requiresEdit: false }
+                  { id: 'dashboard', label: 'Graph', requiresEdit: false },
+                  { id: 'add-car', label: 'Add Car', requiresEdit: true },
+                  { id: 'add-fillup', label: 'Add Fill-up', requiresEdit: true },
+                  { id: 'add-trip', label: 'Add Trip', requiresEdit: true },
+                  { id: 'add-maintenance', label: 'Maintenance', requiresEdit: true },
+                  { id: 'records', label: 'Records', requiresEdit: false },
+                  { id: 'settings', label: 'Settings', requiresEdit: false }
                 ].map((tab) => {
                   // Check if vehicle limit reached (only for Add Car tab)
                   const isVehicleLimitReached = tab.id === 'add-car' && cars.length >= maxVehicles
@@ -1580,7 +1580,7 @@ export default function DashboardClient({
                   // Only disable based on admin access, vehicle limit, or viewer role
                   const isDisabledNoCars = false // Removed: all tabs accessible with empty states
 
-                  const isDisabled = (tab.adminOnly && !userIsOwner) || isVehicleLimitReached || isDisabledNoCars || isViewerBlocked
+                  const isDisabled = isVehicleLimitReached || isDisabledNoCars || isViewerBlocked
                   const isActive = activeTab === tab.id || (tab.id === 'dashboard' && activeTab === 'overview')
 
                   // Show vehicle count for Add Car tab
@@ -1596,8 +1596,6 @@ export default function DashboardClient({
                     tooltipMessage = 'Add a vehicle first'
                   } else if (isVehicleLimitReached) {
                     tooltipMessage = 'Vehicle limit reached - Upgrade to add more'
-                  } else if (tab.adminOnly && !userIsOwner) {
-                    tooltipMessage = 'Admin access required'
                   }
 
                   // Add gold ring for Add Car tab when tutorial is showing (no pulsing)
