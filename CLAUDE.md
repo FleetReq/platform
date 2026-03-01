@@ -90,7 +90,7 @@ Update CLAUDE.md immediately after completing work or making strategic decisions
 1. ~~**Performance Overview redesign**~~ ✅ Done (2026-02-28) — Already implemented; UX polished: Cost/Mile hero stat, dynamic year label, loading skeleton, business-miles empty state, fixed upgrade CTA to Business
 2. ~~**Security integration**~~ ✅ Done (2026-02-28) — All 21 user-facing routes use middleware with rate limiting; all data-mutating routes use `lib/validation.ts`
 3. **PWA support** — `next-pwa`, manifest, service worker, install prompt
-4. **First-time UX improvements** — Better onboarding flow
+4. ~~**First-time UX improvements**~~ ✅ Done (2026-03-01) — 3-step onboarding checklist, first car → add-fillup navigation, "You're all set!" completion state, localStorage dismiss scoped to user ID
 
 ### 📅 Short-term
 - Professional reporting (CSV/PDF export)
