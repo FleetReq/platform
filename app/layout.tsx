@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "./theme-provider";
 import { Navigation } from "./components/navigation";
 import Analytics from "./components/Analytics";
+import InstallPrompt from "@/components/InstallPrompt";
 
 import { SITE_URL as siteUrl, PERSONAL_PRICE_USD, BUSINESS_PRICE_PER_VEHICLE_USD } from '@/lib/constants'
 
@@ -153,8 +154,24 @@ export default function RootLayout({
               </div>
             </div>
           </footer>
+          <InstallPrompt />
         </ThemeProvider>
         <Analytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
+
+        {/* Service worker registration */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').catch(function(err) {
+                    console.warn('[SW] Registration failed:', err);
+                  });
+                });
+              }
+            `,
+          }}
+        />
 
         {/* Structured Data — see STRUCTURED_DATA const above; never add user-controlled values */}
         <script

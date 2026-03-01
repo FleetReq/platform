@@ -1,5 +1,8 @@
 <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- F (top-left, white, behind) -->
+  <!-- Blue background so icon is visible on any surface -->
+  <rect width="32" height="32" rx="6" fill="#2563eb"/>
+
+  <!-- F (top-left, white) -->
   <text
     x="2"
     y="20"
@@ -9,13 +12,13 @@
     fill="white"
   >F</text>
 
-  <!-- R (bottom-right, blue, overlapping more on top) -->
+  <!-- R (bottom-right, lighter blue overlay) -->
   <text
     x="10"
     y="30"
     font-family="system-ui, -apple-system, 'Segoe UI', sans-serif"
     font-size="28"
     font-weight="900"
-    fill="#2563eb"
+    fill="#93c5fd"
   >R</text>
 </svg>
