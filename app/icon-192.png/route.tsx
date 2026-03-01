@@ -21,6 +21,10 @@ export function GET() {
         </span>
       </div>
     ),
-    { width: 192, height: 192 }
+    {
+      width: 192,
+      height: 192,
+      headers: { 'Cache-Control': 'public, max-age=31536000, immutable' },
+    }
   )
 }

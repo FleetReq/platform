@@ -3,15 +3,16 @@
 // or need to force all clients to re-fetch (e.g. after changing PRECACHE_URLS).
 // Format: 'fleetreq-vN'. The activate handler purges all caches with a
 // different name, so old assets are cleaned up automatically on the next load.
-const CACHE_NAME = 'fleetreq-v1'
+const CACHE_NAME = 'fleetreq-v2'
 
-// Pages to precache for offline fallback
+// Pages to precache for offline fallback.
+// NOTE: Do NOT include auth-gated pages (e.g. /dashboard) — cache.addAll fetches
+// them during SW install, which may store a redirect or stale HTML for signed-out
+// users. The network-first navigation handler falls back to '/' for unmatched pages.
 const PRECACHE_URLS = [
   '/',
-  '/dashboard',
   '/login',
   '/pricing',
-  '/manifest.webmanifest',
   '/icon.svg',
 ]
 
@@ -26,19 +27,21 @@ self.addEventListener('install', (event) => {
   )
 })
 
-// ── Activate: delete stale caches ───────────────────────────────────────────
+// ── Activate: delete stale caches, then claim clients ────────────────────────
 self.addEventListener('activate', (event) => {
+  // clients.claim() is inside waitUntil so pages are only taken over after
+  // stale cache deletion completes — prevents serving deleted cache entries.
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys
-          .filter((key) => key !== CACHE_NAME)
-          .map((key) => caches.delete(key))
+    caches.keys()
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((key) => key !== CACHE_NAME)
+            .map((key) => caches.delete(key))
+        )
       )
-    )
+      .then(() => self.clients.claim())
   )
-  // Take control of all open clients immediately
-  self.clients.claim()
 })
 
 // ── Fetch: routing strategy ──────────────────────────────────────────────────
@@ -69,29 +72,33 @@ self.addEventListener('fetch', (event) => {
       caches.match(request).then(
         (cached) =>
           cached ||
-          fetch(request).then((response) => {
-            if (response.ok) {
-              const clone = response.clone()
-              caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
-            }
-            return response
-          })
+          fetch(request)
+            .then((response) => {
+              if (response.ok) {
+                const clone = response.clone()
+                caches.open(CACHE_NAME)
+                  .then((cache) => cache.put(request, clone))
+                  .catch(() => { /* storage quota exceeded — cache miss is acceptable */ })
+              }
+              return response
+            })
+            .catch(() => new Response('', { status: 503, statusText: 'Offline' }))
       )
     )
     return
   }
 
   // Network-first: HTML navigation — always try fresh, fall back to cache.
-  // Note: /dashboard offline without a prior visit falls back to '/' (marketing page)
-  // since it is precached. A dedicated /offline page would improve this but is
-  // not implemented yet.
+  // If the specific page isn't cached, falls back to '/' (marketing page).
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
         .then((response) => {
           if (response.ok) {
             const clone = response.clone()
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
+            caches.open(CACHE_NAME)
+              .then((cache) => cache.put(request, clone))
+              .catch(() => { /* storage quota exceeded — cache miss is acceptable */ })
           }
           return response
         })
