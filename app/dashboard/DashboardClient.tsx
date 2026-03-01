@@ -1254,7 +1254,14 @@ export default function DashboardClient({
   const [statsError, setStatsError] = useState(false)
   const onboardingStorageKey = getOnboardingStorageKey(initialUser.id)
   const [onboardingDismissed, setOnboardingDismissed] = useState(() => {
-    try { return localStorage.getItem(getOnboardingStorageKey(initialUser.id)) === 'true' } catch { return false }
+    try {
+      // New user-scoped key
+      if (localStorage.getItem(getOnboardingStorageKey(initialUser.id)) === 'true') return true
+      // Legacy unscoped key — migrate existing users who dismissed before user-scoping was added
+      if (localStorage.getItem('fleetreq-onboarding-dismissed') === 'true') return true
+    } catch { /* ignore */ }
+    // Already has all data on mount → skip onboarding entirely, no flash
+    return initialCars.length > 0 && initialFillUps.length > 0 && initialMaintenanceRecords.length > 0
   })
   const [onboardingJustCompleted, setOnboardingJustCompleted] = useState(false)
   const CURRENT_YEAR = useMemo(() => new Date().getFullYear(), [])
