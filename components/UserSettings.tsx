@@ -1,15 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { supabase, type Car } from '@/lib/supabase-client'
 import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
 import { validateSubscriptionPlan } from '@/lib/validation'
-import { ACCOUNT_DELETION_GRACE_DAYS, PLAN_LIMITS, PLAN_DISPLAY_NAMES, getPlanColor, MIN_PASSWORD_LENGTH, type SubscriptionPlan } from '@/lib/constants'
+import { ACCOUNT_DELETION_GRACE_DAYS, PLAN_LIMITS, PLAN_DISPLAY_NAMES, getPlanColor, MIN_PASSWORD_LENGTH, PERSONAL_PRICE_USD, type SubscriptionPlan } from '@/lib/constants'
 import type { User } from '@supabase/supabase-js'
 
 // User Settings Component
 export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPlan = 'free', orgRole = 'owner' }: { cars?: Car[], onCarDeleted?: () => void, initialSubscriptionPlan?: 'free' | 'personal' | 'business', orgRole?: 'owner' | 'editor' | 'viewer' }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
+  const [userLoadFailed, setUserLoadFailed] = useState(false)
   const [isChangingPassword, setIsChangingPassword] = useState(false)
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -44,15 +45,14 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
   useEffect(() => {
     const getUser = async () => {
       if (!supabase) return
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
-      if (authError || !user) {
-        window.location.href = '/login'
-        return
-      }
-      setCurrentUser(user)
+      try {
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
+        if (authError || !user) {
+          window.location.href = '/login'
+          return
+        }
+        setCurrentUser(user)
 
-      // Fetch subscription info from org + notification prefs from user_profiles
-      if (user) {
         // Get org subscription info
         try {
           const orgRes = await fetchWithTimeout('/api/org')
@@ -62,7 +62,7 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
             setSubscriptionEndDate(orgData.org?.subscription_end_date || null)
           }
         } catch (err) {
-          console.error('[Dashboard] Failed to fetch org subscription info:', err)
+          console.error('[UserSettings] Failed to fetch org subscription info:', err)
           setSubscriptionFetchError(true)
         }
 
@@ -83,6 +83,10 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
           console.error('[UserSettings] Failed to load notification preferences:', err)
           setNotificationLoadError(true)
         }
+      } catch (err) {
+        console.error('[UserSettings] Failed to load user:', err)
+        setUserLoadFailed(true)
+        setMessage({ type: 'error', text: 'Failed to load account information. Please refresh the page.' })
       }
     }
     getUser()
@@ -220,7 +224,7 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
           setSubscriptionEndDate(orgData.org?.subscription_end_date || null)
         }
       } catch (err) {
-        console.error('[Dashboard] Failed to refresh org after cancellation:', err)
+        console.error('[UserSettings] Failed to refresh org after cancellation:', err)
         // Do not overwrite the success message — cancellation succeeded, this is just a cosmetic refresh
       }
     } catch (error) {
@@ -282,7 +286,12 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
     }
   }
 
-  const isGoogleLinked = currentUser?.app_metadata?.providers?.includes('google')
+  const isGoogleLinked = useMemo(() =>
+    currentUser?.app_metadata?.providers?.includes('google')
+    || currentUser?.app_metadata?.provider === 'google'
+    || currentUser?.identities?.some(i => i.provider === 'google')
+    || false,
+  [currentUser])
 
   return (
     <div className="space-y-8">
@@ -301,18 +310,29 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
       {/* Account Information */}
       <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Account Information</h3>
-        <div className="space-y-3">
-          <div>
-            <span className="font-medium text-gray-700 dark:text-gray-300">Email: </span>
-            <span className="text-gray-900 dark:text-white">{currentUser?.email}</span>
+        {!currentUser && userLoadFailed ? (
+          <p className="text-sm text-red-600 dark:text-red-400">Could not load account details — please refresh.</p>
+        ) : !currentUser ? (
+          <div className="space-y-3 animate-pulse">
+            <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-56"></div>
+            <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-44"></div>
           </div>
-          <div>
-            <span className="font-medium text-gray-700 dark:text-gray-300">Account Created: </span>
-            <span className="text-gray-900 dark:text-white">
-              {currentUser?.created_at ? new Date(currentUser.created_at).toLocaleDateString() : 'N/A'}
-            </span>
+        ) : (
+          <div className="space-y-3">
+            <div>
+              <span className="font-medium text-gray-700 dark:text-gray-300">Email: </span>
+              <span className="text-gray-900 dark:text-white">
+                {currentUser.email ?? (currentUser.user_metadata?.email as string | undefined)}
+              </span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700 dark:text-gray-300">Account Created: </span>
+              <span className="text-gray-900 dark:text-white">
+                {currentUser.created_at ? new Date(currentUser.created_at).toLocaleDateString() : 'N/A'}
+              </span>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Notifications */}
@@ -349,7 +369,7 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
                     setMessage({ type: 'error', text: 'Failed to update notification preference' })
                   }
                 } catch (err) {
-                  console.error('[Dashboard] Failed to update notification preference:', err)
+                  console.error('[UserSettings] Failed to update notification preference:', err)
                   setMessage({ type: 'error', text: 'Failed to update notification preference' })
                 } finally {
                   setIsTogglingNotifications(false)
@@ -403,7 +423,7 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
                         setMessage({ type: 'error', text: 'Failed to update frequency' })
                       }
                     } catch (err) {
-                      console.error('[Dashboard] Failed to update notification frequency:', err)
+                      console.error('[UserSettings] Failed to update notification frequency:', err)
                       setMessage({ type: 'error', text: 'Failed to update frequency' })
                     } finally {
                       setIsSavingNotificationSettings(false)
@@ -443,7 +463,7 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
                         setMessage({ type: 'error', text: 'Failed to update warning preference' })
                       }
                     } catch (err) {
-                      console.error('[Dashboard] Failed to update warning preference:', err)
+                      console.error('[UserSettings] Failed to update warning preference:', err)
                       setMessage({ type: 'error', text: 'Failed to update warning preference' })
                     } finally {
                       setIsSavingNotificationSettings(false)
@@ -604,8 +624,8 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
                         : 'border-gray-300 dark:border-gray-600 hover:border-blue-300'
                     }`}
                   >
-                    <div className="font-semibold text-gray-900 dark:text-white">Family Tier - $4/month</div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Up to 3 vehicles, full maintenance tracking</div>
+                    <div className="font-semibold text-gray-900 dark:text-white">Family Tier - ${PERSONAL_PRICE_USD}/month</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Up to {PLAN_LIMITS.personal.maxVehicles} vehicles, full maintenance tracking</div>
                   </button>
                 )}
                 {(subscriptionPlan === 'business' || subscriptionPlan === 'personal') && (
@@ -619,7 +639,7 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
                       }`}
                     >
                       <div className="font-semibold text-gray-900 dark:text-white">Free Tier</div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">1 vehicle, basic features</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">{PLAN_LIMITS.free.maxVehicles} vehicle, basic features</div>
                     </button>
 
                   </>
@@ -752,7 +772,11 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {isGoogleLinked ? (
+              {!currentUser && userLoadFailed ? (
+                <span className="text-sm text-gray-400 dark:text-gray-500">—</span>
+              ) : !currentUser ? (
+                <div className="h-5 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse"></div>
+              ) : isGoogleLinked ? (
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
                     <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -771,9 +795,14 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
         </div>
       </div>
 
-      {/* Change Password */}
+      {/* Change Password — hidden for Google OAuth users who have no password */}
       <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Change Password</h3>
+        {isGoogleLinked ? (
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Your account uses Google Sign-In. Manage your password through your Google account settings.
+          </p>
+        ) : (
         <form onSubmit={handlePasswordChange} className="space-y-4 max-w-md">
           <div>
             <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -801,7 +830,7 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
               className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               placeholder="Enter new password"
               required
-              minLength={6}
+              minLength={MIN_PASSWORD_LENGTH}
             />
           </div>
           <div>
@@ -816,7 +845,7 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
               className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
               placeholder="Confirm new password"
               required
-              minLength={6}
+              minLength={MIN_PASSWORD_LENGTH}
             />
           </div>
           <button
@@ -827,6 +856,7 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
             {isChangingPassword ? 'Updating...' : 'Update Password'}
           </button>
         </form>
+        )}
       </div>
 
       {/* Delete Vehicles */}
