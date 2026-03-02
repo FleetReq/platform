@@ -43,31 +43,33 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
   const [vehiclesNeededToDelete, setVehiclesNeededToDelete] = useState(0)
 
   useEffect(() => {
-    const getUser = async () => {
-      if (!supabase) return
+    const loadUser = async () => {
       try {
-        // Pre-populate from cached session immediately (no network, instant display)
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session?.user) {
-          setCurrentUser(session.user)
-        }
-
-        // Verify token with server and get fresh data (may take 500ms–2s)
-        const { data: { user }, error: authError } = await supabase.auth.getUser()
-        if (authError || !user) {
-          if (session?.user) {
-            // Session cookie exists — stay on page using cached session data.
-            // getUser() can transiently fail (e.g. "Auth session missing!" 400)
-            // even for valid sessions; redirecting here would kick out the user.
-            setMessage({ type: 'error', text: 'Could not verify your session — some features may be unavailable. Please refresh.' })
-          } else {
+        // Fetch user data via server-side API. The auth callback sets session cookies as
+        // httpOnly, so createBrowserClient cannot read them via document.cookie. However,
+        // the browser automatically includes httpOnly cookies in HTTP request headers, so
+        // API routes (which use createRouteHandlerClient) work correctly for all users.
+        const res = await fetchWithTimeout('/api/profile')
+        if (!res.ok) {
+          if (res.status === 401) {
             window.location.href = '/login'
+          } else {
+            setUserLoadFailed(true)
+            setMessage({ type: 'error', text: 'Failed to load account information. Please refresh the page.' })
           }
           return
         }
-        setCurrentUser(user)
+        const data = await res.json()
+        setCurrentUser(data as User)
 
-        // Get org subscription info
+        // Notification preferences come bundled in the same /api/profile response
+        if (data.notifications) {
+          setEmailNotificationsEnabled(data.notifications.email_notifications_enabled ?? true)
+          setNotificationFrequency((data.notifications.notification_frequency as 'daily' | 'weekly' | 'monthly') || 'weekly')
+          setNotificationWarningEnabled(data.notifications.notification_warning_enabled ?? true)
+        }
+
+        // Org subscription info
         try {
           const orgRes = await fetchWithTimeout('/api/org')
           if (orgRes.ok) {
@@ -79,31 +81,13 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
           console.error('[UserSettings] Failed to fetch org subscription info:', err)
           setSubscriptionFetchError(true)
         }
-
-        // Get notification preferences from user_profiles
-        try {
-          const { data: profile } = await supabase
-            .from('user_profiles')
-            .select('email_notifications_enabled, notification_frequency, notification_warning_enabled')
-            .eq('id', user.id)
-            .maybeSingle()
-
-          if (profile) {
-            setEmailNotificationsEnabled(profile.email_notifications_enabled ?? true)
-            setNotificationFrequency((profile.notification_frequency as 'daily' | 'weekly' | 'monthly') || 'weekly')
-            setNotificationWarningEnabled(profile.notification_warning_enabled ?? true)
-          }
-        } catch (err) {
-          console.error('[UserSettings] Failed to load notification preferences:', err)
-          setNotificationLoadError(true)
-        }
       } catch (err) {
         console.error('[UserSettings] Failed to load user:', err)
         setUserLoadFailed(true)
         setMessage({ type: 'error', text: 'Failed to load account information. Please refresh the page.' })
       }
     }
-    getUser()
+    loadUser()
   }, [])
 
   const handlePasswordChange = async (e: React.FormEvent) => {
@@ -368,15 +352,16 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
             </div>
             <button
               onClick={async () => {
-                if (!supabase || !currentUser) return
+                if (!currentUser) return
                 setIsTogglingNotifications(true)
                 const newValue = !emailNotificationsEnabled
                 try {
-                  const { error } = await supabase
-                    .from('user_profiles')
-                    .update({ email_notifications_enabled: newValue })
-                    .eq('id', currentUser.id)
-                  if (!error) {
+                  const res = await fetchWithTimeout('/api/profile', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email_notifications_enabled: newValue }),
+                  })
+                  if (res.ok) {
                     setEmailNotificationsEnabled(newValue)
                     setMessage({ type: 'success', text: newValue ? 'Email notifications enabled' : 'Email notifications disabled' })
                   } else {
@@ -422,16 +407,17 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
                 <select
                   value={notificationFrequency}
                   onChange={async (e) => {
-                    if (!supabase || !currentUser) return
+                    if (!currentUser) return
                     const newFreq = e.target.value as 'daily' | 'weekly' | 'monthly'
                     setNotificationFrequency(newFreq)
                     setIsSavingNotificationSettings(true)
                     try {
-                      const { error } = await supabase
-                        .from('user_profiles')
-                        .update({ notification_frequency: newFreq })
-                        .eq('id', currentUser.id)
-                      if (!error) {
+                      const res = await fetchWithTimeout('/api/profile', {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ notification_frequency: newFreq }),
+                      })
+                      if (res.ok) {
                         setMessage({ type: 'success', text: 'Reminder frequency updated' })
                       } else {
                         setMessage({ type: 'error', text: 'Failed to update frequency' })
@@ -462,15 +448,16 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
                 </div>
                 <button
                   onClick={async () => {
-                    if (!supabase || !currentUser) return
+                    if (!currentUser) return
                     setIsSavingNotificationSettings(true)
                     const newValue = !notificationWarningEnabled
                     try {
-                      const { error } = await supabase
-                        .from('user_profiles')
-                        .update({ notification_warning_enabled: newValue })
-                        .eq('id', currentUser.id)
-                      if (!error) {
+                      const res = await fetchWithTimeout('/api/profile', {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ notification_warning_enabled: newValue }),
+                      })
+                      if (res.ok) {
                         setNotificationWarningEnabled(newValue)
                         setMessage({ type: 'success', text: newValue ? 'Warning emails enabled' : 'Warning emails disabled' })
                       } else {
