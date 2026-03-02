@@ -35,6 +35,7 @@ export default function OrgManagement() {
   const [editingName, setEditingName] = useState(false)
   const [orgName, setOrgName] = useState('')
   const [pendingRemoveMemberId, setPendingRemoveMemberId] = useState<string | null>(null)
+  const [failedAvatars, setFailedAvatars] = useState<Set<string>>(new Set())
 
   const loadOrg = useCallback(async () => {
     try {
@@ -276,8 +277,14 @@ export default function OrgManagement() {
         {members.map((member) => (
           <div key={member.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-gray-50 dark:bg-gray-700/60">
             <div className="flex items-center gap-3 min-w-0">
-              {member.avatar_url ? (
-                <img src={member.avatar_url} alt="" className="w-8 h-8 rounded-full" />
+              {member.avatar_url && !failedAvatars.has(member.id) ? (
+                <img
+                  src={member.avatar_url}
+                  alt=""
+                  className="w-8 h-8 rounded-full"
+                  referrerPolicy="no-referrer"
+                  onError={() => setFailedAvatars(prev => { const s = new Set(prev); s.add(member.id); return s })}
+                />
               ) : (
                 <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-200">
                   {(member.email || '?')[0].toUpperCase()}

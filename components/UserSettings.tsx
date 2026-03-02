@@ -46,9 +46,18 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
     const getUser = async () => {
       if (!supabase) return
       try {
+        // Pre-populate from cached session immediately (no network, instant display)
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user) {
+          setCurrentUser(session.user)
+        }
+
+        // Verify token with server and get fresh data (may take 500ms–2s)
         const { data: { user }, error: authError } = await supabase.auth.getUser()
         if (authError || !user) {
-          window.location.href = '/login'
+          if (!session?.user) {
+            window.location.href = '/login'
+          }
           return
         }
         setCurrentUser(user)
