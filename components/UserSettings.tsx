@@ -67,6 +67,8 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
           setEmailNotificationsEnabled(data.notifications.email_notifications_enabled ?? true)
           setNotificationFrequency((data.notifications.notification_frequency as 'daily' | 'weekly' | 'monthly') || 'weekly')
           setNotificationWarningEnabled(data.notifications.notification_warning_enabled ?? true)
+        } else {
+          setNotificationLoadError(true)
         }
 
         // Org subscription info

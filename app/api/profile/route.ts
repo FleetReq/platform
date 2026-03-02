@@ -8,11 +8,14 @@ import { validateUUID } from '@/lib/validation'
 // so this works even when the browser-client cannot read the session via document.cookie.
 export async function GET(request: NextRequest) {
   return withAuth(request, async ({ supabase, user }) => {
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('user_profiles')
       .select('email_notifications_enabled, notification_frequency, notification_warning_enabled')
       .eq('id', user.id)
       .maybeSingle()
+    if (profileError) {
+      console.error('[Profile] Failed to load notification prefs:', profileError)
+    }
 
     return NextResponse.json({
       id: user.id,
