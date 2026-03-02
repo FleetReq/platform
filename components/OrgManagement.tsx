@@ -40,9 +40,10 @@ export default function OrgManagement() {
   const loadOrg = useCallback(async () => {
     setFailedAvatars(new Set())
     try {
-      const [orgRes, membersRes] = await Promise.all([
+      const [orgRes, membersRes, profileRes] = await Promise.all([
         fetchWithTimeout('/api/org'),
         fetchWithTimeout('/api/org/members'),
+        fetchWithTimeout('/api/profile'),
       ])
 
       if (orgRes.ok) {
@@ -55,8 +56,29 @@ export default function OrgManagement() {
       }
 
       if (membersRes.ok) {
-        const data = await membersRes.json()
-        setMembers(data.members || [])
+        const membersData = await membersRes.json()
+        let members: OrgMember[] = membersData.members || []
+
+        // Patch current user's avatar from their auth profile when the members API
+        // couldn't resolve it (e.g. user_profiles.avatar_url is null for Google OAuth users
+        // and SUPABASE_SERVICE_ROLE_KEY is unavailable to fetch it via admin client).
+        if (profileRes.ok) {
+          const profileData = await profileRes.json()
+          const currentUserId: string | undefined = profileData.id
+          const googleAvatar: string | null =
+            profileData.user_metadata?.picture ||
+            profileData.user_metadata?.avatar_url ||
+            null
+          if (currentUserId && googleAvatar) {
+            members = members.map(m =>
+              m.user_id === currentUserId && !m.avatar_url
+                ? { ...m, avatar_url: googleAvatar }
+                : m
+            )
+          }
+        }
+
+        setMembers(members)
       } else {
         setLoadError(true)
       }
