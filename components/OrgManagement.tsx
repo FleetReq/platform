@@ -72,6 +72,14 @@ export default function OrgManagement() {
               (typeof picture === 'string' && picture) ||
               (typeof avatarUrl === 'string' && avatarUrl) ||
               null
+            // DEBUG — remove after confirming avatar fix
+            console.log('[OrgManagement] DEBUG profile:', {
+              currentUserId,
+              picture,
+              avatarUrl,
+              googleAvatar,
+              members: members.map(m => ({ id: m.id, user_id: m.user_id, avatar_url: m.avatar_url })),
+            })
             if (currentUserId && googleAvatar) {
               members = members.map(m =>
                 m.user_id === currentUserId && !m.avatar_url
@@ -82,6 +90,8 @@ export default function OrgManagement() {
           } catch {
             console.error('[OrgManagement] Profile fetch failed — avatar will use fallback')
           }
+        } else {
+          console.warn('[OrgManagement] DEBUG profileRes not ok:', profileRes.status)
         }
 
         setMembers(members)
