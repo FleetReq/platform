@@ -38,6 +38,7 @@ export default function OrgManagement() {
   const [failedAvatars, setFailedAvatars] = useState<Set<string>>(new Set())
 
   const loadOrg = useCallback(async () => {
+    setFailedAvatars(new Set())
     try {
       const [orgRes, membersRes] = await Promise.all([
         fetchWithTimeout('/api/org'),

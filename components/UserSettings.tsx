@@ -55,7 +55,10 @@ export default function UserSettings({ cars, onCarDeleted, initialSubscriptionPl
         // Verify token with server and get fresh data (may take 500ms–2s)
         const { data: { user }, error: authError } = await supabase.auth.getUser()
         if (authError || !user) {
-          if (!session?.user) {
+          const isNetworkError = !authError?.status || authError.status === 0 || authError.message?.includes('fetch')
+          if (isNetworkError && session?.user) {
+            setMessage({ type: 'error', text: 'Could not verify your session — some features may be unavailable. Please refresh.' })
+          } else {
             window.location.href = '/login'
           }
           return

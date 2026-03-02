@@ -60,8 +60,9 @@ export async function GET(request: NextRequest) {
         || (isCurrentUser ? user.email : null)
       const fullName = profile?.full_name
         || (isCurrentUser ? (user.user_metadata?.full_name || null) : null)
-      const avatarUrl = profile?.avatar_url
+      const rawAvatarUrl = profile?.avatar_url
         || (isCurrentUser ? (user.user_metadata?.avatar_url || null) : null)
+      const avatarUrl = rawAvatarUrl?.startsWith('https://') ? rawAvatarUrl : null
 
       return {
         id: member.id,
