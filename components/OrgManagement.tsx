@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
 
 interface OrgMember {
@@ -68,19 +69,19 @@ export default function OrgManagement() {
             const currentUserId: string | undefined = profileData.id
             const picture = profileData.user_metadata?.picture
             const avatarUrl = profileData.user_metadata?.avatar_url
-            const googleAvatar: string | null =
+            const resolvedAvatar: string | null =
               (typeof picture === 'string' && picture) ||
               (typeof avatarUrl === 'string' && avatarUrl) ||
               null
-            if (currentUserId && googleAvatar) {
+            if (currentUserId && resolvedAvatar) {
               members = members.map(m =>
                 m.user_id === currentUserId && !m.avatar_url
-                  ? { ...m, avatar_url: googleAvatar }
+                  ? { ...m, avatar_url: resolvedAvatar }
                   : m
               )
             }
-          } catch {
-            console.error('[OrgManagement] Profile fetch failed — avatar will use fallback')
+          } catch (err) {
+            console.error('[OrgManagement] Profile fetch failed — avatar will use fallback:', err)
           }
         }
 
@@ -307,10 +308,12 @@ export default function OrgManagement() {
           <div key={member.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-gray-50 dark:bg-gray-700/60">
             <div className="flex items-center gap-3 min-w-0">
               {member.avatar_url && !failedAvatars.has(member.id) ? (
-                <img
+                <Image
                   src={member.avatar_url}
                   alt=""
-                  className="w-8 h-8 rounded-full"
+                  width={32}
+                  height={32}
+                  className="w-8 h-8 rounded-full object-cover"
                   onError={() => setFailedAvatars(prev => { const s = new Set(prev); s.add(member.id); return s })}
                 />
               ) : (

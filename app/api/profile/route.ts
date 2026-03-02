@@ -19,12 +19,29 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       id: user.id,
-      aud: user.aud,
       email: user.email,
       created_at: user.created_at,
-      app_metadata: user.app_metadata,
-      user_metadata: user.user_metadata,
-      identities: user.identities ?? [],
+      // Return only the fields callers actually need — identity_data contains raw OAuth
+      // provider payloads (scopes, internal IDs) that should not be sent to the browser.
+      app_metadata: {
+        provider: user.app_metadata?.provider ?? null,
+        providers: user.app_metadata?.providers ?? [],
+      },
+      user_metadata: {
+        full_name: user.user_metadata?.full_name ?? null,
+        name: user.user_metadata?.name ?? null,
+        email: user.user_metadata?.email ?? null,
+        picture: user.user_metadata?.picture ?? null,
+        avatar_url: user.user_metadata?.avatar_url ?? null,
+      },
+      identities: (user.identities ?? []).map(i => ({
+        id: i.id,
+        user_id: i.user_id,
+        provider: i.provider,
+        created_at: i.created_at,
+        last_sign_in_at: i.last_sign_in_at,
+        updated_at: i.updated_at,
+      })),
       notifications: profile ? {
         email_notifications_enabled: profile.email_notifications_enabled,
         notification_frequency: profile.notification_frequency,
@@ -57,8 +74,9 @@ export async function PATCH(request: NextRequest) {
     }
 
     if ('notification_frequency' in body) {
-      if (!['daily', 'weekly', 'monthly'].includes(body.notification_frequency)) {
-        return errorResponse('Invalid notification_frequency', 400)
+      if (typeof body.notification_frequency !== 'string' ||
+          !['daily', 'weekly', 'monthly'].includes(body.notification_frequency)) {
+        return errorResponse('notification_frequency must be "daily", "weekly", or "monthly"', 400)
       }
       updates.notification_frequency = body.notification_frequency
     }

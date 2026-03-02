@@ -32,23 +32,33 @@ export async function GET(request: NextRequest) {
     // Query 3: For members missing email or avatar_url in user_profiles, look up
     // auth.users via admin client. Google OAuth users store their picture under
     // user_metadata.picture (not avatar_url), so we need auth metadata to get it.
+    // Current user is excluded — they have a direct fallback via user.user_metadata.
     const missingEmailIds = userIds.filter(id => {
       const p = profileMap.get(id)
       return !p?.email && id !== user.id
     })
-    const missingAvatarIds = userIds.filter(id => !profileMap.get(id)?.avatar_url)
+    const missingAvatarIds = userIds.filter(id => {
+      return !profileMap.get(id)?.avatar_url && id !== user.id
+    })
     const authEmailMap = new Map<string, string>()
     const authAvatarMap = new Map<string, string>()
-    if (missingEmailIds.length > 0 || missingAvatarIds.length > 0) {
+    const idsToLookUp = Array.from(new Set([...missingEmailIds, ...missingAvatarIds]))
+    if (idsToLookUp.length > 0) {
       const adminClient = createAdminClient()
       if (adminClient) {
-        const { data: authUsers } = await adminClient.auth.admin.listUsers()
-        if (authUsers) {
-          for (const u of authUsers.users) {
-            if (missingEmailIds.includes(u.id) && u.email) {
-              authEmailMap.set(u.id, u.email)
-            }
-            // Google OAuth stores photo as user_metadata.picture; other providers may use avatar_url
+        // Use targeted getUserById lookups instead of listUsers() to avoid pagination
+        // truncation (listUsers defaults to 50 per page, silently missing larger orgs).
+        const results = await Promise.all(
+          idsToLookUp.map(id => adminClient.auth.admin.getUserById(id))
+        )
+        for (const result of results) {
+          if (result.error || !result.data?.user) continue
+          const u = result.data.user
+          if (missingEmailIds.includes(u.id) && u.email) {
+            authEmailMap.set(u.id, u.email)
+          }
+          // Google OAuth stores photo as user_metadata.picture; other providers may use avatar_url
+          if (missingAvatarIds.includes(u.id)) {
             const picFromMeta = u.user_metadata?.picture || u.user_metadata?.avatar_url
             if (picFromMeta && typeof picFromMeta === 'string') {
               authAvatarMap.set(u.id, picFromMeta)
