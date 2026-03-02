@@ -63,18 +63,24 @@ export default function OrgManagement() {
         // couldn't resolve it (e.g. user_profiles.avatar_url is null for Google OAuth users
         // and SUPABASE_SERVICE_ROLE_KEY is unavailable to fetch it via admin client).
         if (profileRes.ok) {
-          const profileData = await profileRes.json()
-          const currentUserId: string | undefined = profileData.id
-          const googleAvatar: string | null =
-            profileData.user_metadata?.picture ||
-            profileData.user_metadata?.avatar_url ||
-            null
-          if (currentUserId && googleAvatar) {
-            members = members.map(m =>
-              m.user_id === currentUserId && !m.avatar_url
-                ? { ...m, avatar_url: googleAvatar }
-                : m
-            )
+          try {
+            const profileData = await profileRes.json()
+            const currentUserId: string | undefined = profileData.id
+            const picture = profileData.user_metadata?.picture
+            const avatarUrl = profileData.user_metadata?.avatar_url
+            const googleAvatar: string | null =
+              (typeof picture === 'string' && picture) ||
+              (typeof avatarUrl === 'string' && avatarUrl) ||
+              null
+            if (currentUserId && googleAvatar) {
+              members = members.map(m =>
+                m.user_id === currentUserId && !m.avatar_url
+                  ? { ...m, avatar_url: googleAvatar }
+                  : m
+              )
+            }
+          } catch {
+            console.error('[OrgManagement] Profile fetch failed — avatar will use fallback')
           }
         }
 
