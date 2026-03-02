@@ -29,13 +29,17 @@ export async function GET(request: NextRequest) {
     // Merge using a Map for O(1) lookups
     const profileMap = new Map((profiles || []).map(p => [p.id, p]))
 
-    // Query 3: For members whose user_profiles.email is null, look up auth.users via admin client
+    // Query 3: For members missing email or avatar_url in user_profiles, look up
+    // auth.users via admin client. Google OAuth users store their picture under
+    // user_metadata.picture (not avatar_url), so we need auth metadata to get it.
     const missingEmailIds = userIds.filter(id => {
       const p = profileMap.get(id)
       return !p?.email && id !== user.id
     })
+    const missingAvatarIds = userIds.filter(id => !profileMap.get(id)?.avatar_url)
     const authEmailMap = new Map<string, string>()
-    if (missingEmailIds.length > 0) {
+    const authAvatarMap = new Map<string, string>()
+    if (missingEmailIds.length > 0 || missingAvatarIds.length > 0) {
       const adminClient = createAdminClient()
       if (adminClient) {
         const { data: authUsers } = await adminClient.auth.admin.listUsers()
@@ -43,6 +47,11 @@ export async function GET(request: NextRequest) {
           for (const u of authUsers.users) {
             if (missingEmailIds.includes(u.id) && u.email) {
               authEmailMap.set(u.id, u.email)
+            }
+            // Google OAuth stores photo as user_metadata.picture; other providers may use avatar_url
+            const picFromMeta = u.user_metadata?.picture || u.user_metadata?.avatar_url
+            if (picFromMeta && typeof picFromMeta === 'string') {
+              authAvatarMap.set(u.id, picFromMeta)
             }
           }
         }
@@ -61,7 +70,8 @@ export async function GET(request: NextRequest) {
       const fullName = profile?.full_name
         || (isCurrentUser ? (user.user_metadata?.full_name || null) : null)
       const rawAvatarUrl = profile?.avatar_url
-        || (isCurrentUser ? (user.user_metadata?.avatar_url || null) : null)
+        || (member.user_id ? authAvatarMap.get(member.user_id) : null)
+        || (isCurrentUser ? (user.user_metadata?.picture || user.user_metadata?.avatar_url || null) : null)
       const avatarUrl = rawAvatarUrl?.startsWith('https://') ? rawAvatarUrl : null
 
       return {
