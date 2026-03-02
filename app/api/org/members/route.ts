@@ -42,6 +42,8 @@ export async function GET(request: NextRequest) {
     })
     const authEmailMap = new Map<string, string>()
     const authAvatarMap = new Map<string, string>()
+    const missingEmailSet = new Set(missingEmailIds)
+    const missingAvatarSet = new Set(missingAvatarIds)
     const idsToLookUp = Array.from(new Set([...missingEmailIds, ...missingAvatarIds]))
     if (idsToLookUp.length > 0) {
       const adminClient = createAdminClient()
@@ -54,11 +56,11 @@ export async function GET(request: NextRequest) {
         for (const result of results) {
           if (result.error || !result.data?.user) continue
           const u = result.data.user
-          if (missingEmailIds.includes(u.id) && u.email) {
+          if (missingEmailSet.has(u.id) && u.email) {
             authEmailMap.set(u.id, u.email)
           }
           // Google OAuth stores photo as user_metadata.picture; other providers may use avatar_url
-          if (missingAvatarIds.includes(u.id)) {
+          if (missingAvatarSet.has(u.id)) {
             const picFromMeta = u.user_metadata?.picture || u.user_metadata?.avatar_url
             if (picFromMeta && typeof picFromMeta === 'string') {
               authAvatarMap.set(u.id, picFromMeta)
