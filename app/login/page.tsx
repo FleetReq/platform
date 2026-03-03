@@ -3,6 +3,7 @@
 import { Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { PERSONAL_PRICE_USD, BUSINESS_PRICE_PER_VEHICLE_USD, PLAN_LIMITS } from '@/lib/constants'
 import BackgroundAnimation from '../components/BackgroundAnimation'
 import AuthComponent from '../../components/AuthComponent'
 import type { User } from '@supabase/supabase-js'
@@ -85,15 +86,15 @@ function LoginContent() {
               <div className="space-y-3">
                 <div className="flex justify-between items-center py-2 border-b border-white/10">
                   <span className="text-white font-medium">Free</span>
-                  <span className="text-blue-400">FREE (1 user, 1 vehicle)</span>
+                  <span className="text-blue-400">FREE ({PLAN_LIMITS.free.maxMembers} user, {PLAN_LIMITS.free.maxVehicles} vehicle)</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-white/10">
                   <span className="text-white font-medium">Family</span>
-                  <span className="text-blue-400">$4/month (3 members, 3 vehicles)</span>
+                  <span className="text-blue-400">${PERSONAL_PRICE_USD}/month ({PLAN_LIMITS.personal.maxMembers} members, {PLAN_LIMITS.personal.maxVehicles} vehicles)</span>
                 </div>
                 <div className="flex justify-between items-center py-2">
                   <span className="text-white font-medium">Business</span>
-                  <span className="text-blue-400">$12/vehicle/month (6 users, unlimited vehicles)</span>
+                  <span className="text-blue-400">${BUSINESS_PRICE_PER_VEHICLE_USD}/vehicle/month ({PLAN_LIMITS.business.maxMembers} users, unlimited vehicles)</span>
                 </div>
               </div>
               <p className="text-gray-400 text-xs mt-3 text-center">

@@ -34,6 +34,11 @@ export type OrgRole = 'owner' | 'editor' | 'viewer'
 /** Sentinel value meaning "no vehicle limit" for display purposes. */
 export const UNLIMITED_VEHICLES = 999
 
+/** Returns true if a maxVehicles count represents an unlimited plan. Use instead of raw equality checks against UNLIMITED_VEHICLES. */
+export function isUnlimited(maxVehicles: number): boolean {
+  return maxVehicles >= UNLIMITED_VEHICLES
+}
+
 /** Single source of truth for per-plan vehicle and member limits. */
 export const PLAN_LIMITS: Record<SubscriptionPlan, { maxVehicles: number; maxMembers: number }> = {
   free:     { maxVehicles: 1,   maxMembers: 1 },

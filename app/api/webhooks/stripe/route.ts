@@ -117,12 +117,16 @@ export async function POST(request: NextRequest) {
         if (subscription.metadata?.tier) {
           tier = subscription.metadata.tier as 'personal' | 'business'
         } else {
-          // Fallback: Infer from price amount
+          // Fallback: Infer from price amount — metadata tag is preferred.
+          // If this path fires, a subscription is missing the 'tier' metadata tag.
+          // A price mismatch (discount, legacy pricing) will silently leave tier='free'.
+          console.warn(`[Stripe Webhook] Subscription ${subscription.id} missing metadata.tier — falling back to price-based tier inference for customer ${subscription.customer}`)
           const price = subscription.items.data[0]?.price
           if (price) {
             const amount = price.unit_amount || 0
             if (amount === PERSONAL_PRICE_USD * 100) tier = 'personal'
             else if (amount === BUSINESS_PRICE_PER_VEHICLE_USD * 100) tier = 'business'
+            else console.error(`[Stripe Webhook] Price amount ${amount} did not match any known tier — org will be set to free tier`)
           }
         }
 

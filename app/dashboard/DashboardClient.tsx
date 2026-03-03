@@ -1345,7 +1345,7 @@ export default function DashboardClient({
   // Fetch stats on mount (stats aren't pre-loaded by the server component)
   useEffect(() => {
     loadData()
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- intentional: mount-only; supabase is a module singleton and React state setters are guaranteed stable
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- intentional: mount-only; supabase is a module singleton, React state setters are guaranteed stable, and Next.js useRouter() returns a stable singleton reference across renders
 
   // Show "All set!" briefly then auto-dismiss the onboarding card when all steps complete
   useEffect(() => {
@@ -1459,6 +1459,9 @@ export default function DashboardClient({
                     onChange={(e) => {
                       const newCarId = e.target.value || null
                       setSelectedCarId(newCarId)
+                      // Best-effort: persist the selection so it survives page reload.
+                      // The UI updates optimistically via setSelectedCarId above.
+                      // On failure the selection reverts on next load — acceptable UX tradeoff.
                       fetchWithTimeout('/api/profile', {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },

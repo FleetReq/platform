@@ -158,8 +158,8 @@ export async function POST(request: NextRequest) {
           })
 
           // Set effective date to end of current period
-          const subscriptionItem = subscription.items.data[0] as SubscriptionItemWithPeriod
-          const periodEnd = subscriptionItem.current_period_end
+          const subscriptionItem = (subscription.items.data[0] ?? null) as SubscriptionItemWithPeriod | null
+          const periodEnd = subscriptionItem?.current_period_end
           if (!periodEnd) {
             console.error('[downgrade] No current_period_end on subscription item or subscription — falling back to now')
             downgradeEffectiveDate = new Date()

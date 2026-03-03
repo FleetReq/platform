@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase, getUserSubscriptionPlan } from '@/lib/supabase-client'
-import { PLAN_LIMITS } from '@/lib/constants'
+import { PLAN_LIMITS, PERSONAL_PRICE_USD, BUSINESS_PRICE_PER_VEHICLE_USD } from '@/lib/constants'
 import { fetchWithTimeout } from '@/lib/fetch-with-timeout'
 
 interface PricingTier {
@@ -38,12 +38,12 @@ const pricingTiers: PricingTier[] = [
   },
   {
     name: "Family",
-    price: "$4",
+    price: `$${PERSONAL_PRICE_USD}`,
     period: "/month",
     description: "Ideal for families & small vehicle owners",
     features: [
-      "Up to 3 vehicles",
-      "Up to 3 members",
+      `Up to ${PLAN_LIMITS.personal.maxVehicles} vehicles`,
+      `Up to ${PLAN_LIMITS.personal.maxMembers} members`,
       "Everything in Free",
       "Full maintenance tracking & alerts",
       "Unlimited data history",
@@ -58,12 +58,12 @@ const pricingTiers: PricingTier[] = [
   },
   {
     name: "Business",
-    price: "$12",
+    price: `$${BUSINESS_PRICE_PER_VEHICLE_USD}`,
     period: "/vehicle/month",
     description: "For contractors & service businesses (4+ vehicles)",
     features: [
       "Unlimited vehicles",
-      "Up to 6 team members",
+      `Up to ${PLAN_LIMITS.business.maxMembers} team members`,
       "Everything in Personal",
       "Team collaboration",
       "Tax mileage tracking",
@@ -536,7 +536,7 @@ export default function PricingPage() {
                 How many vehicles do you need?
               </h3>
               <p className="text-gray-600 dark:text-gray-300 mb-6">
-                Business tier: <span className="font-bold text-blue-600 dark:text-blue-400">$12/vehicle/month</span>
+                Business tier: <span className="font-bold text-blue-600 dark:text-blue-400">${BUSINESS_PRICE_PER_VEHICLE_USD}/vehicle/month</span>
               </p>
 
               {/* Vehicle Count Input */}
@@ -574,11 +574,11 @@ export default function PricingPage() {
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-gray-700 dark:text-gray-300">Monthly cost:</span>
                   <span className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                    ${(vehicleCount * 12).toFixed(2)}
+                    ${(vehicleCount * BUSINESS_PRICE_PER_VEHICLE_USD).toFixed(2)}
                   </span>
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {vehicleCount} vehicle{vehicleCount !== 1 ? 's' : ''} × $12/month
+                  {vehicleCount} vehicle{vehicleCount !== 1 ? 's' : ''} × ${BUSINESS_PRICE_PER_VEHICLE_USD}/month
                 </p>
               </div>
 
