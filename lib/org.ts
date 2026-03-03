@@ -158,8 +158,8 @@ export async function getOrgMaxVehicles(
     .eq('id', membership.org_id)
     .single()
 
-  if (error || !data) return 1
-  return data.max_vehicles || 1
+  if (error || !data) return PLAN_LIMITS.free.maxVehicles
+  return data.max_vehicles ?? PLAN_LIMITS.free.maxVehicles
 }
 
 /**

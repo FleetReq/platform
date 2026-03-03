@@ -110,8 +110,9 @@ export default function InstallPrompt() {
       await deferredPrompt.prompt()
       const { outcome } = await deferredPrompt.userChoice
       if (outcome === 'accepted') suppressPermanently()
-    } catch {
-      // prompt() failed (non-gesture context, already consumed, install criteria not met)
+    } catch (e) {
+      // prompt() failed — already consumed, install criteria not met, or browser restriction
+      console.warn('[InstallPrompt] prompt() threw:', e)
     } finally {
       setDeferredPrompt(null)
       setVisible(false)

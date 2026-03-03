@@ -113,7 +113,7 @@ export function Navigation() {
     // cookies in case the network call timed out before Supabase cleared them.
     if (supabase) {
       await Promise.race([
-        supabase.auth.signOut().catch(console.error),
+        supabase.auth.signOut().catch((err) => console.error('[nav] signOut failed — session may still be active on server:', err)),
         new Promise(resolve => setTimeout(resolve, SIGN_OUT_TIMEOUT_MS)),
       ])
     }

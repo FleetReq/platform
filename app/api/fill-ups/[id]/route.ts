@@ -120,11 +120,13 @@ export async function DELETE(
       return errorResponse('Failed to delete fill-up', 500)
     }
 
-    // Clean up storage files (non-blocking)
+    // Clean up storage files (non-blocking, fire-and-forget).
+    // Trade-off: DB record is deleted and 200 returned before storage cleanup completes.
+    // If cleanup fails, receipt files become orphaned in Supabase Storage.
     const receiptUrls: string[] = (fillUp as FillUpWithReceipts).receipt_urls || []
     if (receiptUrls.length > 0) {
       supabase.storage.from(STORAGE_BUCKET_RECEIPTS).remove(receiptUrls).catch((err: unknown) => {
-        console.error('Error cleaning up receipt storage:', err)
+        console.error('[fill-ups/delete] Storage cleanup failed — files may be orphaned:', err)
       })
     }
 

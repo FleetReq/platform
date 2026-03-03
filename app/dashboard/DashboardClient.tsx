@@ -1262,12 +1262,12 @@ export default function DashboardClient({
         localStorage.setItem(onboardingStorageKey, 'true')
         return true
       }
-    } catch { /* ignore */ }
+    } catch { /* localStorage unavailable (private/sandboxed context) — onboarding will re-show; acceptable */ }
     // Already has all data on mount → skip onboarding, write key so loadData refresh
     // never triggers the completion animation for established users
     const allDataPresent = initialCars.length > 0 && initialFillUps.length > 0
     if (allDataPresent) {
-      try { localStorage.setItem(onboardingStorageKey, 'true') } catch { /* ignore */ }
+      try { localStorage.setItem(onboardingStorageKey, 'true') } catch { /* localStorage unavailable (private/sandboxed context) — onboarding will re-show; acceptable */ }
     }
     return allDataPresent
   })
@@ -1354,7 +1354,7 @@ export default function DashboardClient({
       setOnboardingJustCompleted(true)
       const timer = setTimeout(() => {
         setOnboardingDismissed(true)
-        try { localStorage.setItem(onboardingStorageKey, 'true') } catch { /* ignore */ }
+        try { localStorage.setItem(onboardingStorageKey, 'true') } catch { /* localStorage unavailable (private/sandboxed context) — onboarding will re-show; acceptable */ }
       }, 2500)
       return () => clearTimeout(timer)
     }
@@ -1514,7 +1514,7 @@ export default function DashboardClient({
                     <button
                       onClick={() => {
                         setOnboardingDismissed(true)
-                        try { localStorage.setItem(onboardingStorageKey, 'true') } catch { /* ignore */ }
+                        try { localStorage.setItem(onboardingStorageKey, 'true') } catch { /* localStorage unavailable (private/sandboxed context) — onboarding will re-show; acceptable */ }
                       }}
                       className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
                       aria-label="Dismiss getting started checklist"

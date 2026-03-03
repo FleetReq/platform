@@ -103,10 +103,13 @@ export async function DELETE(
       }, { status: 500 })
     }
 
-    // Clean up receipt storage files (non-blocking)
+    // Clean up receipt storage files (non-blocking, fire-and-forget).
+    // Trade-off: DB record is deleted and 200 returned before storage cleanup completes.
+    // If cleanup fails, receipt files become orphaned in Supabase Storage (storage cost leak,
+    // files still accessible via URL). Mitigation: server log line + periodic storage audit.
     if (receiptPaths.length > 0) {
       supabase.storage.from(STORAGE_BUCKET_RECEIPTS).remove(receiptPaths).catch((err: unknown) => {
-        console.error('Error cleaning up receipt storage for car delete:', err)
+        console.error('[cars/delete] Storage cleanup failed — files may be orphaned:', err)
       })
     }
 
