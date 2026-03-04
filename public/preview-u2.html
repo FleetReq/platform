@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FleetReq — Aqua Glass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.navwrap{position:sticky;top:0;z-index:100}
+.row1,.row2{background:rgba(8,8,8,0.97);padding:6px 14px;display:flex;align-items:center;flex-wrap:wrap;gap:2px;font-size:10px;font-family:system-ui,sans-serif;backdrop-filter:blur(8px)}
+.row1{border-bottom:1px solid rgba(255,255,255,0.04)}
+.row2{border-bottom:1px solid rgba(0,229,255,0.3)}
+.row1 .lbl,.row2 .lbl{color:#444;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;margin-right:2px}
+.row1 .sep,.row2 .sep{color:#252525;margin:0 4px;flex-shrink:0}
+.row1 .off,.row2 .off{color:#555;text-decoration:none;padding:2px 4px;border-radius:2px;transition:color .15s}
+.row1 .off:hover{color:#aaa}
+.row2 .off:hover{color:#00E5FF}
+.row2 .on{color:#000;background:#00E5FF;padding:2px 7px;border-radius:2px;font-weight:700;font-size:9px}
+.row1 .back{margin-left:auto;color:#444;text-decoration:none;padding:2px 6px;border:1px solid #252525;border-radius:2px;font-size:9px;transition:all .2s}
+.row1 .back:hover{color:#aaa;border-color:#555}
+
+body{font-family:'Poppins',sans-serif;min-height:100vh;background:linear-gradient(135deg,#006994 0%,#00B4D8 50%,#90E0EF 100%);color:#fff;overflow-x:hidden}
+
+.hero{padding:80px 24px 60px;text-align:center;position:relative}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(255,255,255,0.08),transparent 70%);pointer-events:none}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.15);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.25);border-radius:100px;padding:6px 18px;font-size:.75rem;font-weight:500;letter-spacing:.08em;margin-bottom:28px;color:rgba(255,255,255,0.9)}
+.hero-badge span{width:6px;height:6px;border-radius:50%;background:#00E5FF;display:inline-block;box-shadow:0 0 8px #00E5FF}
+.hero h1{font-size:clamp(2.8rem,7vw,5rem);font-weight:800;line-height:1.05;margin-bottom:20px;letter-spacing:-.02em}
+.hero h1 .accent{color:#00E5FF;text-shadow:0 0 30px rgba(0,229,255,0.5)}
+.hero p{font-size:1.05rem;font-weight:300;color:rgba(255,255,255,0.8);max-width:520px;margin:0 auto 40px;line-height:1.7}
+.hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn-glass{background:rgba(255,255,255,0.2);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.35);color:#fff;font-family:'Poppins',sans-serif;font-size:.875rem;font-weight:600;padding:13px 34px;text-decoration:none;border-radius:100px;transition:all .25s}
+.btn-glass:hover{background:rgba(255,255,255,0.3);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.15)}
+.btn-solid{background:#00E5FF;color:#003F5C;font-family:'Poppins',sans-serif;font-size:.875rem;font-weight:700;padding:13px 34px;text-decoration:none;border-radius:100px;border:1px solid transparent;transition:all .25s}
+.btn-solid:hover{background:#fff;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,229,255,0.35)}
+
+.hero-stats{display:flex;justify-content:center;gap:48px;margin-top:52px;flex-wrap:wrap}
+.stat{text-align:center}
+.stat-num{font-size:2rem;font-weight:800;color:#00E5FF;display:block;text-shadow:0 0 20px rgba(0,229,255,0.4)}
+.stat-lbl{font-size:.75rem;font-weight:400;color:rgba(255,255,255,0.65);letter-spacing:.08em;text-transform:uppercase}
+
+.features{padding:72px 24px;background:rgba(0,50,80,0.25);backdrop-filter:blur(4px)}
+.features h2{font-size:2rem;font-weight:700;text-align:center;margin-bottom:8px}
+.features .sub{text-align:center;color:rgba(255,255,255,0.65);font-size:.9rem;margin-bottom:48px;font-weight:300}
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:20px;max-width:1100px;margin:0 auto}
+.feat-card{background:rgba(255,255,255,0.12);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.2);border-radius:16px;padding:28px;transition:all .25s}
+.feat-card:hover{background:rgba(255,255,255,0.18);transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,0.15)}
+.feat-icon{font-size:2rem;margin-bottom:16px;display:block}
+.feat-card h3{font-size:1rem;font-weight:600;margin-bottom:8px;color:#fff}
+.feat-card p{font-size:.85rem;color:rgba(255,255,255,0.7);line-height:1.65;font-weight:300}
+.feat-tag{display:inline-block;background:rgba(0,229,255,0.2);border:1px solid rgba(0,229,255,0.35);color:#00E5FF;font-size:.68rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:4px;margin-bottom:10px}
+
+.pricing{padding:72px 24px;text-align:center}
+.pricing h2{font-size:2rem;font-weight:700;margin-bottom:8px}
+.pricing .sub{color:rgba(255,255,255,0.65);font-size:.9rem;margin-bottom:48px;font-weight:300}
+.price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;max-width:860px;margin:0 auto}
+.price-card{background:rgba(255,255,255,0.1);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.2);border-radius:20px;padding:36px 28px;transition:all .25s;position:relative}
+.price-card.featured{background:rgba(255,255,255,0.22);border:2px solid rgba(0,229,255,0.6);box-shadow:0 0 40px rgba(0,229,255,0.15)}
+.price-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#00E5FF;color:#003F5C;font-size:.7rem;font-weight:700;letter-spacing:.12em;padding:3px 14px;border-radius:100px;white-space:nowrap}
+.price-name{font-size:1rem;font-weight:600;margin-bottom:12px;color:rgba(255,255,255,0.8);text-transform:uppercase;letter-spacing:.1em}
+.price-amt{font-size:3rem;font-weight:800;color:#fff;line-height:1;margin-bottom:4px}
+.price-amt small{font-size:.95rem;font-weight:400;color:rgba(255,255,255,0.6)}
+.price-note{font-size:.75rem;color:rgba(255,255,255,0.5);margin-bottom:24px}
+.price-list{list-style:none;text-align:left;margin-bottom:28px}
+.price-list li{font-size:.82rem;color:rgba(255,255,255,0.75);padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.08);font-weight:300}
+.price-list li::before{content:'✓ ';color:#00E5FF;font-weight:700}
+.price-btn{display:block;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;font-family:'Poppins',sans-serif;font-size:.85rem;font-weight:600;padding:11px;border-radius:100px;text-decoration:none;transition:all .2s}
+.price-btn:hover{background:rgba(255,255,255,0.25)}
+.price-card.featured .price-btn{background:#00E5FF;border-color:#00E5FF;color:#003F5C}
+.price-card.featured .price-btn:hover{background:#fff}
+
+.cta{padding:72px 24px;text-align:center;background:rgba(0,50,80,0.3);backdrop-filter:blur(4px)}
+.cta h2{font-size:2.2rem;font-weight:800;margin-bottom:12px}
+.cta p{color:rgba(255,255,255,0.7);font-size:.95rem;margin-bottom:32px;font-weight:300}
+footer{background:rgba(0,30,50,0.5);backdrop-filter:blur(4px);color:rgba(255,255,255,0.4);text-align:center;padding:20px;font-size:.8rem}
+</style>
+</head>
+<body>
+<div class="navwrap">
+  <nav class="row1">
+    <span class="lbl">1</span><span class="sep">|</span>
+    <a href="/preview-a.html" class="off">A</a><a href="/preview-b.html" class="off">B</a><a href="/preview-c.html" class="off">C</a><a href="/preview-d.html" class="off">D</a><a href="/preview-e.html" class="off">E</a><a href="/preview-f.html" class="off">F</a><a href="/preview-g.html" class="off">G</a><a href="/preview-h.html" class="off">H</a><a href="/preview-i.html" class="off">I</a><a href="/preview-j.html" class="off">J</a><a href="/preview-k.html" class="off">K</a><a href="/preview-l.html" class="off">L</a><a href="/preview-m.html" class="off">M</a><a href="/preview-n.html" class="off">N</a><a href="/preview-o.html" class="off">O</a><a href="/preview-p.html" class="off">P</a><a href="/preview-q.html" class="off">Q</a><a href="/preview-r.html" class="off">R</a><a href="/preview-s.html" class="off">S</a><a href="/preview-t.html" class="off">T</a><a href="/preview-u.html" class="off">U</a><a href="/preview-v.html" class="off">V</a><a href="/preview-w.html" class="off">W</a><a href="/preview-x.html" class="off">X</a><a href="/preview-y.html" class="off">Y</a><a href="/preview-z.html" class="off">Z</a>
+    <a href="/" class="back">← Live</a>
+  </nav>
+  <nav class="row2">
+    <span class="lbl">2</span><span class="sep">|</span>
+    <a href="/preview-a2.html" class="off">A2</a><a href="/preview-b2.html" class="off">B2</a><a href="/preview-c2.html" class="off">C2</a><a href="/preview-d2.html" class="off">D2</a><a href="/preview-e2.html" class="off">E2</a><a href="/preview-f2.html" class="off">F2</a><a href="/preview-g2.html" class="off">G2</a><a href="/preview-h2.html" class="off">H2</a><a href="/preview-i2.html" class="off">I2</a><a href="/preview-j2.html" class="off">J2</a><a href="/preview-k2.html" class="off">K2</a><a href="/preview-l2.html" class="off">L2</a><a href="/preview-m2.html" class="off">M2</a><a href="/preview-n2.html" class="off">N2</a><a href="/preview-o2.html" class="off">O2</a><a href="/preview-p2.html" class="off">P2</a><a href="/preview-q2.html" class="off">Q2</a><a href="/preview-r2.html" class="off">R2</a><a href="/preview-s2.html" class="off">S2</a><a href="/preview-t2.html" class="off">T2</a><span class="on">U2: Aqua</span><a href="/preview-v2.html" class="off">V2</a><a href="/preview-w2.html" class="off">W2</a><a href="/preview-x2.html" class="off">X2</a><a href="/preview-y2.html" class="off">Y2</a><a href="/preview-z2.html" class="off">Z2</a>
+  </nav>
+</div>
+
+<header class="hero">
+  <div class="hero-badge"><span></span>Now in Open Beta</div>
+  <h1>Fleet Management<br><span class="accent">Crystal Clear.</span></h1>
+  <p>FleetReq brings transparency to every mile. Track fuel, schedule maintenance, and manage your entire fleet from one stunning dashboard.</p>
+  <div class="hero-btns">
+    <a href="/" class="btn-solid">Start Free Today</a>
+    <a href="/pricing" class="btn-glass">See Pricing</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><span class="stat-num">28%</span><span class="stat-lbl">Avg. Cost Savings</span></div>
+    <div class="stat"><span class="stat-num">5min</span><span class="stat-lbl">Setup Time</span></div>
+    <div class="stat"><span class="stat-num">100%</span><span class="stat-lbl">Web &amp; Mobile</span></div>
+  </div>
+</header>
+
+<section class="features">
+  <h2>Everything Your Fleet Needs</h2>
+  <p class="sub">Six powerful modules, beautifully unified.</p>
+  <div class="feat-grid">
+    <div class="feat-card">
+      <span class="feat-tag">Fuel</span>
+      <span class="feat-icon">⛽</span>
+      <h3>Fuel Tracking</h3>
+      <p>Automatic MPG calculations on every fill-up. Spot cost spikes and inefficiency trends before they drain your budget.</p>
+    </div>
+    <div class="feat-card">
+      <span class="feat-tag">Maintenance</span>
+      <span class="feat-icon">🔧</span>
+      <h3>Maintenance Scheduling</h3>
+      <p>Traffic-light status indicators keep every vehicle road-ready. Email digest alerts catch overdue services before breakdowns.</p>
+    </div>
+    <div class="feat-card">
+      <span class="feat-tag">Analytics</span>
+      <span class="feat-icon">📊</span>
+      <h3>Fleet Analytics</h3>
+      <p>Cost-per-mile, fuel efficiency charts, and annual spend breakdowns give you honest insight into fleet performance.</p>
+    </div>
+    <div class="feat-card">
+      <span class="feat-tag">Team</span>
+      <span class="feat-icon">👥</span>
+      <h3>Team Access</h3>
+      <p>Owner, Editor, and Viewer roles. Invite your team and control exactly who can see or change what.</p>
+    </div>
+    <div class="feat-card">
+      <span class="feat-tag">Mobile</span>
+      <span class="feat-icon">📱</span>
+      <h3>Mobile PWA</h3>
+      <p>Install on any device from the browser — no app store required. Offline-capable and always synced.</p>
+    </div>
+    <div class="feat-card">
+      <span class="feat-tag">Reports</span>
+      <span class="feat-icon">📄</span>
+      <h3>Export &amp; Reports</h3>
+      <p>CSV, PDF, and JSON exports on demand. IRS-compliant tax reports for business fleets at year-end.</p>
+    </div>
+  </div>
+</section>
+
+<section class="pricing">
+  <h2>Transparent Pricing</h2>
+  <p class="sub">65% below industry average. No surprises, ever.</p>
+  <div class="price-grid">
+    <div class="price-card">
+      <div class="price-name">Free</div>
+      <div class="price-amt">$0<small>/mo</small></div>
+      <div class="price-note">Forever free, no card needed</div>
+      <ul class="price-list">
+        <li>1 vehicle</li>
+        <li>Full fuel tracking</li>
+        <li>Maintenance status</li>
+        <li>Mobile PWA access</li>
+      </ul>
+      <a href="/" class="price-btn">Get Started</a>
+    </div>
+    <div class="price-card featured">
+      <div class="price-badge">Most Popular</div>
+      <div class="price-name">Family</div>
+      <div class="price-amt">$4<small>/mo</small></div>
+      <div class="price-note">Perfect for 2–3 car households</div>
+      <ul class="price-list">
+        <li>3 vehicles · 3 members</li>
+        <li>Email maintenance alerts</li>
+        <li>CSV &amp; PDF export</li>
+        <li>Custom service dates</li>
+      </ul>
+      <a href="/" class="price-btn">Start Family Plan</a>
+    </div>
+    <div class="price-card">
+      <div class="price-name">Business</div>
+      <div class="price-amt">$12<small>/vehicle</small></div>
+      <div class="price-note">For contractors &amp; fleets</div>
+      <ul class="price-list">
+        <li>Unlimited vehicles</li>
+        <li>6 team members</li>
+        <li>Custom maintenance intervals</li>
+        <li>IRS tax reports &amp; JSON export</li>
+      </ul>
+      <a href="/" class="price-btn">Start Business Plan</a>
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <h2>Dive In — It's Free</h2>
+  <p>Set up your first vehicle in under 5 minutes. No credit card required.</p>
+  <a href="/" class="btn-solid">Get Started Free</a>
+</section>
+
+<footer>&copy; 2024 FleetReq &mdash; Fleet management, crystal clear.</footer>
+</body>
+</html>

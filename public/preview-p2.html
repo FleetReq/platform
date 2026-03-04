@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FleetReq — Neon Jungle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+.navwrap{position:sticky;top:0;z-index:100}
+.row1,.row2{background:rgba(8,8,8,0.97);padding:6px 14px;display:flex;align-items:center;flex-wrap:wrap;gap:2px;font-size:10px;font-family:system-ui,sans-serif;backdrop-filter:blur(8px)}
+.row1{border-bottom:1px solid rgba(255,255,255,0.04)}
+.row2{border-bottom:1px solid rgba(127,255,0,0.3)}
+.row1 .lbl,.row2 .lbl{color:#444;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;margin-right:2px}
+.row1 .sep,.row2 .sep{color:#252525;margin:0 4px;flex-shrink:0}
+.row1 .off,.row2 .off{color:#555;text-decoration:none;padding:2px 4px;border-radius:2px;transition:color .15s}
+.row1 .off:hover{color:#aaa}
+.row2 .off:hover{color:#7FFF00}
+.row2 .on{color:#000;background:#7FFF00;padding:2px 7px;border-radius:2px;font-weight:700;font-size:9px}
+.row1 .back{margin-left:auto;color:#444;text-decoration:none;padding:2px 6px;border:1px solid #252525;border-radius:2px;font-size:9px;transition:all .2s}
+.row1 .back:hover{color:#aaa;border-color:#555}
+
+body{font-family:'DM Sans',sans-serif;background:#061A10;color:#E8FFE8;line-height:1.6;overflow-x:hidden}
+
+/* Hero */
+.hero{position:relative;padding:100px 40px 80px;text-align:center;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(127,255,0,.12) 0%,transparent 70%);pointer-events:none;animation:pulse 4s ease-in-out infinite}
+.hero::after{content:'';position:absolute;bottom:-100px;right:-100px;width:400px;height:400px;background:radial-gradient(circle,rgba(255,107,0,.07) 0%,transparent 70%);pointer-events:none}
+@keyframes pulse{0%,100%{transform:translateX(-50%) scale(1);opacity:1}50%{transform:translateX(-50%) scale(1.08);opacity:.8}}
+
+.hero-eyebrow{font-family:'Syne',sans-serif;font-size:11px;font-weight:600;letter-spacing:.25em;text-transform:uppercase;color:#7FFF00;margin-bottom:24px;display:inline-block;padding:4px 14px;border:1px solid rgba(127,255,0,.35);position:relative;z-index:1}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(48px,8vw,96px);font-weight:800;line-height:1;letter-spacing:-.03em;margin-bottom:16px;position:relative;z-index:1}
+.hero h1 .lime{color:#7FFF00;text-shadow:0 0 40px rgba(127,255,0,.5),0 0 80px rgba(127,255,0,.2)}
+.hero h1 .orange{color:#FF6B00;text-shadow:0 0 40px rgba(255,107,0,.4)}
+.hero-sub{font-size:18px;font-weight:300;color:rgba(232,255,232,.7);max-width:560px;margin:0 auto 40px;line-height:1.7;position:relative;z-index:1}
+.hero-cta{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;position:relative;z-index:1}
+.btn-lime{background:#7FFF00;color:#061A10;padding:15px 36px;text-decoration:none;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:2px;transition:all .2s;box-shadow:0 0 30px rgba(127,255,0,.3)}
+.btn-lime:hover{background:#9FFF30;box-shadow:0 0 50px rgba(127,255,0,.5);transform:translateY(-2px)}
+.btn-outline-lime{border:1.5px solid rgba(127,255,0,.5);color:#7FFF00;padding:14px 28px;text-decoration:none;font-family:'Syne',sans-serif;font-size:14px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;border-radius:2px;transition:all .2s}
+.btn-outline-lime:hover{background:rgba(127,255,0,.08);border-color:#7FFF00}
+.hero-note{font-size:12px;color:rgba(232,255,232,.4);margin-top:20px;position:relative;z-index:1}
+
+/* Stats */
+.stats{display:flex;justify-content:center;gap:0;border-top:1px solid rgba(127,255,0,.12);border-bottom:1px solid rgba(127,255,0,.12);flex-wrap:wrap}
+.stat-item{flex:1;min-width:160px;padding:28px 24px;text-align:center;border-right:1px solid rgba(127,255,0,.1)}
+.stat-item:last-child{border-right:none}
+.stat-num{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:#7FFF00;line-height:1;text-shadow:0 0 20px rgba(127,255,0,.4)}
+.stat-label{font-size:11px;font-weight:300;color:rgba(232,255,232,.5);margin-top:6px;letter-spacing:.1em;text-transform:uppercase}
+
+/* Features */
+.features{padding:80px 40px;max-width:1200px;margin:0 auto}
+.section-header{text-align:center;margin-bottom:56px}
+.section-tag{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;color:#7FFF00;margin-bottom:16px;display:inline-block;border-bottom:1px solid rgba(127,255,0,.3);padding-bottom:6px}
+.section-tag.orange{color:#FF6B00;border-bottom-color:rgba(255,107,0,.3)}
+.section-title{font-family:'Syne',sans-serif;font-size:clamp(28px,4vw,48px);font-weight:800;color:#E8FFE8;line-height:1.1;letter-spacing:-.02em}
+.section-title span{color:#7FFF00}
+
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:rgba(127,255,0,.06)}
+.feat-card{background:#061A10;padding:36px 32px;border:1px solid rgba(127,255,0,.12);transition:all .2s;position:relative;overflow:hidden}
+.feat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#7FFF00,transparent);transform:scaleX(0);transform-origin:left;transition:transform .3s}
+.feat-card:hover{background:#082010;border-color:rgba(127,255,0,.3)}
+.feat-card:hover::before{transform:scaleX(1)}
+.feat-icon{font-size:32px;margin-bottom:20px;display:block}
+.feat-card h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:#E8FFE8;margin-bottom:12px;letter-spacing:-.01em}
+.feat-card p{font-size:13.5px;font-weight:300;color:rgba(232,255,232,.6);line-height:1.7}
+.feat-badge{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#061A10;background:#7FFF00;padding:3px 8px;margin-top:16px}
+.feat-badge.orange{background:#FF6B00;color:#fff}
+
+/* Orange CTA strip */
+.orange-strip{background:#FF6B00;padding:24px 40px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.orange-strip-text{font-family:'Syne',sans-serif;font-size:clamp(16px,2.5vw,22px);font-weight:700;color:#fff;letter-spacing:-.01em}
+.orange-strip-text span{color:#061A10}
+.btn-dark{background:#061A10;color:#7FFF00;padding:12px 28px;text-decoration:none;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;transition:all .2s}
+.btn-dark:hover{background:#0A2818;box-shadow:0 0 20px rgba(127,255,0,.3)}
+
+/* Pricing */
+.pricing{padding:80px 40px;max-width:1200px;margin:0 auto}
+.plans-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1px;background:rgba(127,255,0,.08);margin-top:48px}
+.plan{background:#061A10;padding:36px 28px;border:1px solid rgba(127,255,0,.1);transition:border-color .2s}
+.plan:hover{border-color:rgba(127,255,0,.3)}
+.plan.featured{border-color:rgba(127,255,0,.4);background:#071E0E;position:relative}
+.plan-glow{position:absolute;top:-1px;left:-1px;right:-1px;height:2px;background:linear-gradient(90deg,transparent,#7FFF00,transparent)}
+.plan-name{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#E8FFE8;margin-bottom:4px;letter-spacing:-.01em}
+.plan-price{font-family:'Syne',sans-serif;font-size:44px;font-weight:800;color:#7FFF00;line-height:1;margin:16px 0 4px;text-shadow:0 0 20px rgba(127,255,0,.3)}
+.plan-price sub{font-size:14px;color:rgba(232,255,232,.4);font-family:'DM Sans',sans-serif;font-weight:300}
+.plan-desc{font-size:12px;font-weight:300;color:rgba(232,255,232,.5);margin-bottom:24px;line-height:1.65}
+.plan-feats{list-style:none;margin-bottom:28px}
+.plan-feats li{font-size:13px;font-weight:300;color:rgba(232,255,232,.75);padding:8px 0;border-bottom:1px solid rgba(127,255,0,.06);display:flex;gap:10px;align-items:flex-start}
+.plan-feats li::before{content:'▶';color:#7FFF00;flex-shrink:0;font-size:7px;margin-top:5px}
+.plan-btn{display:block;background:transparent;border:1.5px solid rgba(127,255,0,.4);color:#7FFF00;padding:12px;text-align:center;text-decoration:none;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;transition:all .2s}
+.plan-btn:hover,.plan-btn.solid{background:#7FFF00;color:#061A10;border-color:#7FFF00;box-shadow:0 0 20px rgba(127,255,0,.3)}
+.plan-btn.solid:hover{background:#9FFF30}
+
+/* Final CTA */
+.final-cta{padding:80px 40px;text-align:center;position:relative;overflow:hidden}
+.final-cta::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center bottom,rgba(127,255,0,.08) 0%,transparent 60%);pointer-events:none}
+.final-cta h2{font-family:'Syne',sans-serif;font-size:clamp(28px,5vw,56px);font-weight:800;color:#E8FFE8;line-height:1.1;letter-spacing:-.03em;margin-bottom:20px;position:relative;z-index:1}
+.final-cta h2 .lime{color:#7FFF00;text-shadow:0 0 30px rgba(127,255,0,.4)}
+.final-cta p{font-size:15px;font-weight:300;color:rgba(232,255,232,.6);max-width:440px;margin:0 auto 36px;line-height:1.8;position:relative;z-index:1}
+
+footer{background:#020D06;border-top:1px solid rgba(127,255,0,.1);color:rgba(232,255,232,.35);text-align:center;padding:28px;font-size:12px;font-weight:300}
+footer strong{color:#7FFF00}
+footer a{color:rgba(127,255,0,.6);text-decoration:none}
+</style>
+</head>
+<body>
+
+<div class="navwrap">
+  <nav class="row1">
+    <span class="lbl">1</span><span class="sep">|</span>
+    <a href="/preview-a.html" class="off">A</a><a href="/preview-b.html" class="off">B</a><a href="/preview-c.html" class="off">C</a><a href="/preview-d.html" class="off">D</a><a href="/preview-e.html" class="off">E</a><a href="/preview-f.html" class="off">F</a><a href="/preview-g.html" class="off">G</a><a href="/preview-h.html" class="off">H</a><a href="/preview-i.html" class="off">I</a><a href="/preview-j.html" class="off">J</a><a href="/preview-k.html" class="off">K</a><a href="/preview-l.html" class="off">L</a><a href="/preview-m.html" class="off">M</a><a href="/preview-n.html" class="off">N</a><a href="/preview-o.html" class="off">O</a><a href="/preview-p.html" class="off">P</a><a href="/preview-q.html" class="off">Q</a><a href="/preview-r.html" class="off">R</a><a href="/preview-s.html" class="off">S</a><a href="/preview-t.html" class="off">T</a><a href="/preview-u.html" class="off">U</a><a href="/preview-v.html" class="off">V</a><a href="/preview-w.html" class="off">W</a><a href="/preview-x.html" class="off">X</a><a href="/preview-y.html" class="off">Y</a><a href="/preview-z.html" class="off">Z</a>
+    <a href="/" class="back">← Live</a>
+  </nav>
+  <nav class="row2">
+    <span class="lbl">2</span><span class="sep">|</span>
+    <a href="/preview-a2.html" class="off">A2</a><a href="/preview-b2.html" class="off">B2</a><a href="/preview-c2.html" class="off">C2</a><a href="/preview-d2.html" class="off">D2</a><a href="/preview-e2.html" class="off">E2</a><a href="/preview-f2.html" class="off">F2</a><a href="/preview-g2.html" class="off">G2</a><a href="/preview-h2.html" class="off">H2</a><a href="/preview-i2.html" class="off">I2</a><a href="/preview-j2.html" class="off">J2</a><a href="/preview-k2.html" class="off">K2</a><a href="/preview-l2.html" class="off">L2</a><a href="/preview-m2.html" class="off">M2</a><a href="/preview-n2.html" class="off">N2</a><a href="/preview-o2.html" class="off">O2</a><span class="on">P2: Jungle</span><a href="/preview-q2.html" class="off">Q2</a><a href="/preview-r2.html" class="off">R2</a><a href="/preview-s2.html" class="off">S2</a><a href="/preview-t2.html" class="off">T2</a><a href="/preview-u2.html" class="off">U2</a><a href="/preview-v2.html" class="off">V2</a><a href="/preview-w2.html" class="off">W2</a><a href="/preview-x2.html" class="off">X2</a><a href="/preview-y2.html" class="off">Y2</a><a href="/preview-z2.html" class="off">Z2</a>
+  </nav>
+</div>
+
+<section class="hero">
+  <div class="hero-eyebrow">Fleet Management Software</div>
+  <h1><span class="lime">Dominate</span><br>Your <span class="orange">Fleet</span></h1>
+  <p class="hero-sub">Fuel tracking, maintenance alerts, and team management. Built for operators who move fast and waste nothing.</p>
+  <div class="hero-cta">
+    <a href="#" class="btn-lime">Start Free Now</a>
+    <a href="#" class="btn-outline-lime">See Demo</a>
+  </div>
+  <p class="hero-note">Free forever for 1 vehicle. No credit card required.</p>
+</section>
+
+<div class="stats">
+  <div class="stat-item"><div class="stat-num">3.2k</div><div class="stat-label">Fleets Active</div></div>
+  <div class="stat-item"><div class="stat-num">65%</div><div class="stat-label">Below Competition</div></div>
+  <div class="stat-item"><div class="stat-num">18m</div><div class="stat-label">Setup Time</div></div>
+  <div class="stat-item"><div class="stat-num">99.9%</div><div class="stat-label">Uptime</div></div>
+</div>
+
+<section class="features">
+  <div class="section-header">
+    <div class="section-tag">What FleetReq Packs</div>
+    <h2 class="section-title">Every tool your fleet<br><span>actually needs</span></h2>
+  </div>
+
+  <div class="feat-grid">
+    <div class="feat-card">
+      <span class="feat-icon">⛽</span>
+      <h3>Fuel Tracking</h3>
+      <p>Log every fill-up. Track gallons, cost, and odometer. Automatic MPG calculation — see efficiency trends over time.</p>
+      <div class="feat-badge">All Plans</div>
+    </div>
+    <div class="feat-card">
+      <span class="feat-icon">🔧</span>
+      <h3>Maintenance Alerts</h3>
+      <p>Service reminders by mileage and date. Weekly email digests. Custom intervals for Business fleets.</p>
+      <div class="feat-badge">Family+</div>
+    </div>
+    <div class="feat-card">
+      <span class="feat-icon">👥</span>
+      <h3>Team Roles</h3>
+      <p>Owner, Editor, Viewer permissions. Invite drivers, mechanics, and managers. Each sees only what they need.</p>
+      <div class="feat-badge orange">Business</div>
+    </div>
+    <div class="feat-card">
+      <span class="feat-icon">📊</span>
+      <h3>Cost Analytics</h3>
+      <p>Cost-per-mile per vehicle. Fleet-wide spend breakdown. Identify your least efficient assets before they drain you.</p>
+      <div class="feat-badge">Family+</div>
+    </div>
+    <div class="feat-card">
+      <span class="feat-icon">📤</span>
+      <h3>Data Export</h3>
+      <p>CSV, PDF, JSON. IRS-compliant mileage reports for business deductions. Tax season without the spreadsheets.</p>
+      <div class="feat-badge orange">Business</div>
+    </div>
+    <div class="feat-card">
+      <span class="feat-icon">🔄</span>
+      <h3>Multi-Fleet</h3>
+      <p>Run multiple organizations from one login. Switch active fleet instantly. Scale without friction.</p>
+      <div class="feat-badge orange">Business</div>
+    </div>
+  </div>
+</section>
+
+<div class="orange-strip">
+  <span class="orange-strip-text">65% cheaper than <span>the competition.</span> Same power, zero bloat.</span>
+  <a href="#" class="btn-dark">Compare Pricing →</a>
+</div>
+
+<section class="pricing">
+  <div class="section-header">
+    <div class="section-tag">Pricing</div>
+    <h2 class="section-title">Pay for what<br><span>you actually use</span></h2>
+  </div>
+
+  <div class="plans-grid">
+    <div class="plan">
+      <div class="plan-name">Free</div>
+      <div class="plan-price">$0<sub>/mo</sub></div>
+      <p class="plan-desc">Solo operators, one vehicle. Free forever — no catch.</p>
+      <ul class="plan-feats">
+        <li>1 vehicle</li>
+        <li>Full fuel tracking</li>
+        <li>Maintenance log</li>
+        <li>Mobile PWA</li>
+      </ul>
+      <a href="#" class="plan-btn">Get Started</a>
+    </div>
+    <div class="plan featured">
+      <div class="plan-glow"></div>
+      <div class="plan-name">Family</div>
+      <div class="plan-price">$4<sub>/mo</sub></div>
+      <p class="plan-desc">Up to 3 vehicles. Alerts, exports, and team access.</p>
+      <ul class="plan-feats">
+        <li>3 vehicles</li>
+        <li>Maintenance alerts + email</li>
+        <li>3 team members</li>
+        <li>CSV &amp; PDF export</li>
+        <li>50MB receipt storage</li>
+      </ul>
+      <a href="#" class="plan-btn solid">Start Free Trial</a>
+    </div>
+    <div class="plan">
+      <div class="plan-name">Business</div>
+      <div class="plan-price">$12<sub>/vehicle/mo</sub></div>
+      <p class="plan-desc">Full fleet operations. Unlimited everything that matters.</p>
+      <ul class="plan-feats">
+        <li>Unlimited vehicles</li>
+        <li>Custom intervals</li>
+        <li>6 team members</li>
+        <li>IRS tax reports</li>
+        <li>Unlimited receipts</li>
+      </ul>
+      <a href="#" class="plan-btn">Contact Sales</a>
+    </div>
+  </div>
+</section>
+
+<section class="final-cta">
+  <h2>Your fleet.<br><span class="lime">Fully under control.</span></h2>
+  <p>Start free. Scale when you're ready. No lock-in, no bloat, no excuses.</p>
+  <a href="#" class="btn-lime">Launch FleetReq Free</a>
+</section>
+
+<footer>
+  &copy; 2026 <strong>FleetReq</strong> &nbsp;·&nbsp; Fleet management for serious operators &nbsp;·&nbsp;
+  <a href="#">Privacy</a> &nbsp;·&nbsp; <a href="#">Terms</a>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preview A2: Art Deco — FleetReq</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0A0A0A;--bg2:#111;--bg3:#181818;--text:#F5E6C8;--muted:#9A8060;--gold:#C9A84C;--gold2:#E8C870;--bordeaux:#7B1A3A;--border:rgba(201,168,76,0.2)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);line-height:1.65;overflow-x:hidden}
+h1,h2,h3{font-family:'Playfair Display',serif}
+
+/* Two-row nav */
+.navwrap{position:sticky;top:0;z-index:100}
+.row1,.row2{background:rgba(8,8,8,0.96);padding:6px 14px;display:flex;align-items:center;flex-wrap:wrap;gap:2px;font-size:10px;font-family:system-ui,sans-serif;backdrop-filter:blur(8px)}
+.row1{border-bottom:1px solid rgba(255,255,255,0.04)}
+.row2{border-bottom:1px solid rgba(201,168,76,0.2)}
+.row1 .lbl,.row2 .lbl{color:#444;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;margin-right:2px}
+.row1 .sep,.row2 .sep{color:#252525;margin:0 4px;flex-shrink:0}
+.row1 .off{color:#555;text-decoration:none;padding:2px 4px;border-radius:2px;transition:color .15s}
+.row1 .off:hover{color:#aaa}
+.row2 .off{color:#555;text-decoration:none;padding:2px 4px;border-radius:2px;transition:color .15s}
+.row2 .off:hover{color:var(--gold)}
+.row2 .on{color:#000;background:var(--gold);padding:2px 7px;border-radius:2px;font-weight:700;font-size:9px}
+.row1 .back{margin-left:auto;color:#444;text-decoration:none;padding:2px 6px;border:1px solid #252525;border-radius:2px;font-size:9px;transition:all .2s}
+.row1 .back:hover{color:#aaa;border-color:#555}
+
+/* Art Deco geometric background */
+body::before{content:'';position:fixed;inset:0;
+  background:
+    repeating-linear-gradient(45deg, transparent 0px, transparent 20px, rgba(201,168,76,0.03) 20px, rgba(201,168,76,0.03) 21px),
+    repeating-linear-gradient(-45deg, transparent 0px, transparent 20px, rgba(201,168,76,0.02) 20px, rgba(201,168,76,0.02) 21px),
+    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(201,168,76,0.08) 0%, transparent 60%);
+  pointer-events:none;z-index:0}
+main{position:relative;z-index:1}
+
+/* Art Deco ornament */
+.deco-header{text-align:center;padding:60px 24px 0}
+.deco-rule{display:flex;align-items:center;gap:16px;justify-content:center;margin-bottom:12px}
+.deco-line{width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--gold))}
+.deco-line.r{background:linear-gradient(270deg,transparent,var(--gold))}
+.deco-diamond{width:8px;height:8px;background:var(--gold);transform:rotate(45deg)}
+.deco-sub-diamond{width:4px;height:4px;border:1px solid var(--gold);transform:rotate(45deg)}
+
+.hero{max-width:900px;margin:0 auto;padding:40px 24px 80px;text-align:center}
+.hero-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.35em;color:var(--gold);margin-bottom:24px}
+.hero h1{font-size:clamp(3rem,7vw,6rem);font-weight:900;line-height:.95;margin-bottom:12px;letter-spacing:-.01em}
+.hero h1 em{font-style:italic;color:var(--gold)}
+.hero-tagline{font-size:1rem;color:var(--muted);letter-spacing:.2em;text-transform:uppercase;margin-bottom:32px;font-weight:300}
+.deco-rule2{display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:32px}
+.d2-line{width:40px;height:1px;background:var(--border)}
+.d2-pip{width:4px;height:4px;background:var(--gold);transform:rotate(45deg)}
+.hero p{font-size:1.05rem;color:var(--muted);line-height:1.8;max-width:540px;margin:0 auto 36px;font-weight:300}
+.btn-gold{display:inline-block;background:transparent;border:1px solid var(--gold);color:var(--gold);padding:13px 36px;text-decoration:none;font-weight:500;font-size:0.85rem;letter-spacing:.2em;text-transform:uppercase;transition:all .3s;position:relative;overflow:hidden}
+.btn-gold::before{content:'';position:absolute;inset:0;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform .3s;z-index:-1}
+.btn-gold:hover{color:#000}
+.btn-gold:hover::before{transform:scaleX(1)}
+.btn-ghost{display:inline-block;border:1px solid rgba(201,168,76,0.25);color:var(--muted);padding:13px 36px;text-decoration:none;font-weight:300;font-size:0.85rem;letter-spacing:.15em;text-transform:uppercase;transition:all .3s;margin-left:16px}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
+
+/* Stats row — deco panel */
+.stats-panel{display:flex;border:1px solid var(--border);max-width:600px;margin:48px auto 0}
+.stat-box{flex:1;padding:20px;text-align:center;border-right:1px solid var(--border)}
+.stat-box:last-child{border-right:none}
+.stat-num{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--gold);line-height:1}
+.stat-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.15em;margin-top:4px;font-weight:300}
+
+/* Sections */
+section{padding:72px 24px;max-width:1100px;margin:0 auto}
+.section-deco{text-align:center;margin-bottom:48px}
+.section-overline{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.3em;color:var(--gold);margin-bottom:12px}
+.section-title{font-size:clamp(2rem,4vw,3rem);font-weight:700;line-height:1.1;letter-spacing:-.01em}
+.section-sub{font-size:0.9rem;color:var(--muted);margin-top:12px;max-width:480px;margin-left:auto;margin-right:auto;line-height:1.75;font-weight:300}
+
+/* Feature grid — art deco panels */
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);margin-top:40px}
+.feat{background:var(--bg2);padding:28px;position:relative;overflow:hidden;transition:background .3s}
+.feat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;transition:opacity .3s}
+.feat:hover{background:var(--bg3)}
+.feat:hover::before{opacity:1}
+.feat-num{font-family:'Playfair Display',serif;font-size:2.5rem;font-weight:900;color:rgba(201,168,76,0.12);line-height:1;margin-bottom:8px}
+.feat h3{font-size:0.95rem;font-weight:600;margin-bottom:8px;letter-spacing:.05em;text-transform:uppercase;color:var(--gold);font-family:'Jost',sans-serif}
+.feat p{font-size:0.875rem;color:var(--muted);line-height:1.7;font-weight:300}
+
+/* Pricing */
+.pricing-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);margin-top:40px}
+.plan{background:var(--bg2);padding:32px;position:relative;transition:background .3s}
+.plan:hover,.plan.feat-plan{background:var(--bg3)}
+.plan.feat-plan{border-top:2px solid var(--gold)}
+.plan-badge{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.2em;color:var(--gold);margin-bottom:12px;display:block}
+.plan-tier{font-size:9px;font-weight:400;text-transform:uppercase;letter-spacing:.2em;color:var(--muted);margin-bottom:8px}
+.plan-price{font-family:'Playfair Display',serif;font-size:2.5rem;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1}
+.plan-price span{font-size:.9rem;font-weight:300;color:var(--muted);font-family:'Jost',sans-serif}
+.plan-desc{font-size:0.8rem;color:var(--muted);margin-bottom:24px;font-weight:300}
+.plan-features{list-style:none;margin-bottom:24px}
+.plan-features li{font-size:0.85rem;color:var(--muted);padding:7px 0;border-bottom:1px solid rgba(201,168,76,0.07);display:flex;align-items:center;gap:8px;font-weight:300}
+.plan-features li::before{content:'◆';color:var(--gold);font-size:7px;flex-shrink:0}
+.plan-btn{display:block;text-align:center;padding:11px;text-decoration:none;font-weight:500;font-size:0.8rem;letter-spacing:.15em;text-transform:uppercase;transition:all .3s;border:1px solid var(--border);color:var(--muted)}
+.plan-btn:hover,.plan-btn.primary{border-color:var(--gold);color:var(--gold)}
+.plan-btn.primary{color:var(--gold)}
+
+/* CTA */
+.cta-section{padding:80px 24px;text-align:center;border-top:1px solid var(--border)}
+.cta-section h2{font-size:clamp(2.5rem,5vw,4.5rem);font-weight:900;margin-bottom:8px}
+.cta-section h2 em{font-style:italic;color:var(--gold)}
+.cta-section p{color:var(--muted);margin-bottom:32px;font-weight:300}
+
+footer{text-align:center;padding:28px;border-top:1px solid var(--border);font-size:0.75rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;font-weight:300}
+</style>
+</head>
+<body>
+<div class="navwrap">
+  <nav class="row1">
+    <span class="lbl">1</span><span class="sep">|</span>
+    <a href="/preview-a.html" class="off">A</a><a href="/preview-b.html" class="off">B</a><a href="/preview-c.html" class="off">C</a><a href="/preview-d.html" class="off">D</a><a href="/preview-e.html" class="off">E</a><a href="/preview-f.html" class="off">F</a><a href="/preview-g.html" class="off">G</a><a href="/preview-h.html" class="off">H</a><a href="/preview-i.html" class="off">I</a><a href="/preview-j.html" class="off">J</a><a href="/preview-k.html" class="off">K</a><a href="/preview-l.html" class="off">L</a><a href="/preview-m.html" class="off">M</a><a href="/preview-n.html" class="off">N</a><a href="/preview-o.html" class="off">O</a><a href="/preview-p.html" class="off">P</a><a href="/preview-q.html" class="off">Q</a><a href="/preview-r.html" class="off">R</a><a href="/preview-s.html" class="off">S</a><a href="/preview-t.html" class="off">T</a><a href="/preview-u.html" class="off">U</a><a href="/preview-v.html" class="off">V</a><a href="/preview-w.html" class="off">W</a><a href="/preview-x.html" class="off">X</a><a href="/preview-y.html" class="off">Y</a><a href="/preview-z.html" class="off">Z</a>
+    <a href="/" class="back">← Live</a>
+  </nav>
+  <nav class="row2">
+    <span class="lbl">2</span><span class="sep">|</span>
+    <span class="on">A2: Art Deco</span><a href="/preview-b2.html" class="off">B2</a><a href="/preview-c2.html" class="off">C2</a><a href="/preview-d2.html" class="off">D2</a><a href="/preview-e2.html" class="off">E2</a><a href="/preview-f2.html" class="off">F2</a><a href="/preview-g2.html" class="off">G2</a><a href="/preview-h2.html" class="off">H2</a><a href="/preview-i2.html" class="off">I2</a><a href="/preview-j2.html" class="off">J2</a><a href="/preview-k2.html" class="off">K2</a><a href="/preview-l2.html" class="off">L2</a><a href="/preview-m2.html" class="off">M2</a><a href="/preview-n2.html" class="off">N2</a><a href="/preview-o2.html" class="off">O2</a><a href="/preview-p2.html" class="off">P2</a><a href="/preview-q2.html" class="off">Q2</a><a href="/preview-r2.html" class="off">R2</a><a href="/preview-s2.html" class="off">S2</a><a href="/preview-t2.html" class="off">T2</a><a href="/preview-u2.html" class="off">U2</a><a href="/preview-v2.html" class="off">V2</a><a href="/preview-w2.html" class="off">W2</a><a href="/preview-x2.html" class="off">X2</a><a href="/preview-y2.html" class="off">Y2</a><a href="/preview-z2.html" class="off">Z2</a>
+  </nav>
+</div>
+<main>
+<div class="deco-header">
+  <div class="deco-rule">
+    <div class="deco-line"></div><div class="deco-sub-diamond"></div><div class="deco-diamond"></div><div class="deco-sub-diamond"></div><div class="deco-line r"></div>
+  </div>
+</div>
+<div class="hero">
+  <div class="hero-label">FleetReq · Fleet Management</div>
+  <h1>The <em>art</em> of fleet mastery</h1>
+  <div class="hero-tagline">Precision · Elegance · Control</div>
+  <div class="deco-rule2">
+    <div class="d2-line"></div><div class="d2-pip"></div><div class="d2-pip" style="background:transparent;border-color:var(--gold)"></div><div class="d2-pip"></div><div class="d2-line"></div>
+  </div>
+  <p>Manage your fleet with the refinement of a golden era. Every vehicle tracked, every service recorded, every mile accounted for — with timeless precision.</p>
+  <div>
+    <a href="#" class="btn-gold">Begin</a>
+    <a href="#" class="btn-ghost">Discover</a>
+  </div>
+  <div class="stats-panel">
+    <div class="stat-box"><div class="stat-num">1,200</div><div class="stat-label">Fleets Served</div></div>
+    <div class="stat-box"><div class="stat-num">$0</div><div class="stat-label">Entry Cost</div></div>
+    <div class="stat-box"><div class="stat-num">65%</div><div class="stat-label">Below Market</div></div>
+  </div>
+</div>
+
+<section>
+  <div class="section-deco">
+    <div class="section-overline">The Collection</div>
+    <div class="section-title">Six pillars of<br>fleet excellence</div>
+    <p class="section-sub">Each feature crafted with the precision of a master artisan. Nothing superfluous. Everything essential.</p>
+  </div>
+  <div class="feature-grid">
+    <div class="feat"><div class="feat-num">I</div><h3>Fuel Tracking</h3><p>Log every fill-up. Automatic MPG calculation, cost-per-mile analysis, and fuel trend reporting across your entire fleet.</p></div>
+    <div class="feat"><div class="feat-num">II</div><h3>Maintenance</h3><p>Comprehensive service records with intelligent interval tracking. Timely alerts before anything goes overdue.</p></div>
+    <div class="feat"><div class="feat-num">III</div><h3>Analytics</h3><p>Refined visual dashboards distill months of data into clear, actionable intelligence.</p></div>
+    <div class="feat"><div class="feat-num">IV</div><h3>Team Access</h3><p>Owner, Editor, Viewer — role-based access ensuring every member has exactly what they require.</p></div>
+    <div class="feat"><div class="feat-num">V</div><h3>Mobile PWA</h3><p>Installs to any device. Operates offline. Log from the field, sync when connected.</p></div>
+    <div class="feat"><div class="feat-num">VI</div><h3>Export & Reports</h3><p>CSV, PDF, JSON — every format. IRS-compliant mileage logs delivered with precision.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="section-deco">
+    <div class="section-overline">Membership</div>
+    <div class="section-title">Select your tier</div>
+  </div>
+  <div class="pricing-row">
+    <div class="plan">
+      <div class="plan-tier">Free</div>
+      <div class="plan-price">$0<span>/mo</span></div>
+      <div class="plan-desc">One vehicle, forever free.</div>
+      <ul class="plan-features"><li>1 vehicle</li><li>Fuel tracking</li><li>Maintenance log</li><li>Mobile app</li></ul>
+      <a href="#" class="plan-btn">Enter</a>
+    </div>
+    <div class="plan feat-plan">
+      <div class="plan-badge">Recommended</div>
+      <div class="plan-tier">Family</div>
+      <div class="plan-price">$4<span>/mo</span></div>
+      <div class="plan-desc">Up to 3 vehicles.</div>
+      <ul class="plan-features"><li>3 vehicles</li><li>Email alerts</li><li>CSV & PDF</li><li>3 members</li><li>Scheduling</li></ul>
+      <a href="#" class="plan-btn primary">Select</a>
+    </div>
+    <div class="plan">
+      <div class="plan-tier">Business</div>
+      <div class="plan-price">$12<span>/vehicle/mo</span></div>
+      <div class="plan-desc">Unlimited fleet.</div>
+      <ul class="plan-features"><li>Unlimited vehicles</li><li>Custom intervals</li><li>IRS reports</li><li>6 members</li></ul>
+      <a href="#" class="plan-btn">Commission</a>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section">
+  <div class="deco-rule"><div class="deco-line"></div><div class="deco-diamond"></div><div class="deco-line r"></div></div>
+  <h2>Begin your<br><em>golden era.</em></h2>
+  <p>No credit card. No contracts. Join fleets who know the difference.</p>
+  <a href="#" class="btn-gold">Start Free</a>
+</div>
+</main>
+<footer>© 2025 FleetReq · Crafted for operators of distinction</footer>
+</body>
+</html>

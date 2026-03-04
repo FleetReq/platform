@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FleetReq — Retro Sci-Fi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+/* NAV */
+.navwrap{position:sticky;top:0;z-index:100}
+.row1,.row2{background:rgba(8,8,8,0.97);padding:6px 14px;display:flex;align-items:center;flex-wrap:wrap;gap:2px;font-size:10px;font-family:system-ui,sans-serif;backdrop-filter:blur(8px)}
+.row1{border-bottom:1px solid rgba(255,255,255,0.04)}
+.row2{border-bottom:1px solid rgba(255,215,0,0.25)}
+.row1 .lbl,.row2 .lbl{color:#444;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;margin-right:2px}
+.row1 .sep,.row2 .sep{color:#252525;margin:0 4px;flex-shrink:0}
+.row1 .off,.row2 .off{color:#555;text-decoration:none;padding:2px 4px;border-radius:2px;transition:color .15s}
+.row1 .off:hover{color:#aaa}
+.row2 .off:hover{color:#FFD700}
+.row2 .on{color:#000;background:#FFD700;padding:2px 7px;border-radius:2px;font-weight:700;font-size:9px}
+.row1 .back{margin-left:auto;color:#444;text-decoration:none;padding:2px 6px;border:1px solid #252525;border-radius:2px;font-size:9px;transition:all .2s}
+.row1 .back:hover{color:#aaa;border-color:#555}
+/* THEME */
+:root{--bg:#0C0E1A;--text:#F5F0DC;--accent:#FFD700;--steel:#4A6FA5;--muted:#9A95A0}
+body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;line-height:1.6}
+.dashed{border:none;border-top:1px dashed #2A2E44;margin:0}
+/* HEADER */
+header{text-align:center;padding:72px 20px 60px;position:relative;overflow:hidden}
+header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(74,111,165,0.2) 0%,transparent 70%)}
+.mission-badge{display:inline-block;border:1px dashed var(--accent);color:var(--accent);font-size:10px;letter-spacing:.25em;text-transform:uppercase;padding:5px 16px;margin-bottom:32px}
+header h1{font-size:clamp(2.4rem,6vw,4.2rem);font-weight:700;line-height:1.1;letter-spacing:-.01em;margin-bottom:16px}
+header h1 span{color:var(--accent)}
+.tagline{font-size:13px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+.subline{font-size:12px;color:#5A5E7A;max-width:560px;margin:0 auto 40px;line-height:1.8}
+.cta-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.btn-primary{background:var(--accent);color:#0C0E1A;padding:12px 32px;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;text-decoration:none;border:2px solid var(--accent);transition:all .2s;cursor:pointer}
+.btn-primary:hover{background:transparent;color:var(--accent)}
+.btn-secondary{background:transparent;color:var(--accent);padding:12px 32px;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;text-decoration:none;border:2px dashed var(--steel);color:var(--text);transition:all .2s}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+/* STATS */
+.stats-strip{display:flex;justify-content:center;gap:0;flex-wrap:wrap;max-width:800px;margin:0 auto;padding:40px 20px}
+.stat{text-align:center;padding:24px 40px;border-right:1px dashed #2A2E44}
+.stat:last-child{border-right:none}
+.stat-num{font-size:2.4rem;font-weight:700;color:var(--accent);line-height:1}
+.stat-lbl{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+/* SECTION */
+section{padding:72px 20px;max-width:960px;margin:0 auto}
+.sec-label{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.sec-title{font-size:clamp(1.5rem,3vw,2.2rem);font-weight:700;margin-bottom:8px;line-height:1.2}
+.sec-title span{color:var(--steel)}
+.sec-sub{font-size:12px;color:var(--muted);max-width:520px;line-height:1.8;margin-bottom:48px}
+/* FEATURES */
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px}
+.feat{border:1px dashed #2A2E44;padding:28px;position:relative;transition:border-color .2s}
+.feat:hover{border-color:var(--steel)}
+.feat-num{font-size:10px;color:var(--accent);letter-spacing:.2em;margin-bottom:12px;display:block}
+.feat h3{font-size:14px;font-weight:700;margin-bottom:10px;letter-spacing:.05em}
+.feat p{font-size:11px;color:var(--muted);line-height:1.8}
+.feat-corner{position:absolute;top:-1px;left:-1px;width:12px;height:12px;border-top:2px solid var(--accent);border-left:2px solid var(--accent)}
+/* PRICING */
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;margin-top:48px}
+.plan{border:1px dashed #2A2E44;padding:36px 28px;position:relative}
+.plan.featured{border-color:var(--accent);border-style:solid}
+.plan-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--accent);color:#0C0E1A;font-size:8px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;padding:3px 12px}
+.plan-name{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.plan-price{font-size:3rem;font-weight:700;color:var(--accent);line-height:1;margin-bottom:4px}
+.plan-price span{font-size:12px;color:var(--muted);font-weight:400}
+.plan-vehicles{font-size:10px;color:var(--steel);letter-spacing:.1em;text-transform:uppercase;margin-bottom:24px;padding-bottom:16px;border-bottom:1px dashed #2A2E44}
+.plan-features{list-style:none;margin-bottom:32px}
+.plan-features li{font-size:11px;color:var(--muted);padding:6px 0;border-bottom:1px dashed #1E2038;display:flex;align-items:center;gap:8px}
+.plan-features li::before{content:'›';color:var(--accent);flex-shrink:0}
+.plan-btn{display:block;text-align:center;padding:10px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;text-decoration:none;border:2px solid #2A2E44;color:var(--text);transition:all .2s}
+.plan.featured .plan-btn{background:var(--accent);color:#0C0E1A;border-color:var(--accent)}
+.plan-btn:hover{border-color:var(--accent);color:var(--accent)}
+.plan.featured .plan-btn:hover{background:transparent;color:var(--accent)}
+/* CTA */
+.cta-section{text-align:center;padding:80px 20px;border-top:1px dashed #2A2E44;position:relative}
+.cta-section::before{content:'MISSION BRIEFING';position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:var(--bg);padding:0 16px;font-size:8px;letter-spacing:.3em;color:#2A2E44}
+.cta-section h2{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;margin-bottom:12px}
+.cta-section p{font-size:12px;color:var(--muted);max-width:480px;margin:0 auto 36px;line-height:1.8}
+footer{text-align:center;padding:32px 20px;font-size:10px;color:#2A2E44;letter-spacing:.1em;border-top:1px dashed #1A1E30}
+footer span{color:var(--steel)}
+</style>
+</head>
+<body>
+<div class="navwrap">
+  <nav class="row1">
+    <span class="lbl">1</span><span class="sep">|</span>
+    <a href="/preview-a.html" class="off">A</a><a href="/preview-b.html" class="off">B</a><a href="/preview-c.html" class="off">C</a><a href="/preview-d.html" class="off">D</a><a href="/preview-e.html" class="off">E</a><a href="/preview-f.html" class="off">F</a><a href="/preview-g.html" class="off">G</a><a href="/preview-h.html" class="off">H</a><a href="/preview-i.html" class="off">I</a><a href="/preview-j.html" class="off">J</a><a href="/preview-k.html" class="off">K</a><a href="/preview-l.html" class="off">L</a><a href="/preview-m.html" class="off">M</a><a href="/preview-n.html" class="off">N</a><a href="/preview-o.html" class="off">O</a><a href="/preview-p.html" class="off">P</a><a href="/preview-q.html" class="off">Q</a><a href="/preview-r.html" class="off">R</a><a href="/preview-s.html" class="off">S</a><a href="/preview-t.html" class="off">T</a><a href="/preview-u.html" class="off">U</a><a href="/preview-v.html" class="off">V</a><a href="/preview-w.html" class="off">W</a><a href="/preview-x.html" class="off">X</a><a href="/preview-y.html" class="off">Y</a><a href="/preview-z.html" class="off">Z</a>
+    <a href="/" class="back">← Live</a>
+  </nav>
+  <nav class="row2">
+    <span class="lbl">2</span><span class="sep">|</span>
+    <a href="/preview-a2.html" class="off">A2</a><a href="/preview-b2.html" class="off">B2</a><a href="/preview-c2.html" class="off">C2</a><a href="/preview-d2.html" class="off">D2</a><a href="/preview-e2.html" class="off">E2</a><a href="/preview-f2.html" class="off">F2</a><span class="on">G2: Retro Sci-Fi</span><a href="/preview-h2.html" class="off">H2</a><a href="/preview-i2.html" class="off">I2</a><a href="/preview-j2.html" class="off">J2</a><a href="/preview-k2.html" class="off">K2</a><a href="/preview-l2.html" class="off">L2</a><a href="/preview-m2.html" class="off">M2</a><a href="/preview-n2.html" class="off">N2</a><a href="/preview-o2.html" class="off">O2</a><a href="/preview-p2.html" class="off">P2</a><a href="/preview-q2.html" class="off">Q2</a><a href="/preview-r2.html" class="off">R2</a><a href="/preview-s2.html" class="off">S2</a><a href="/preview-t2.html" class="off">T2</a><a href="/preview-u2.html" class="off">U2</a><a href="/preview-v2.html" class="off">V2</a><a href="/preview-w2.html" class="off">W2</a><a href="/preview-x2.html" class="off">X2</a><a href="/preview-y2.html" class="off">Y2</a><a href="/preview-z2.html" class="off">Z2</a>
+  </nav>
+</div>
+
+<header>
+  <div class="mission-badge">MISSION: FLEET CONTROL ✦ ESTABLISHED 2024</div>
+  <h1>Your Fleet.<br><span>Command Center.</span></h1>
+  <p class="tagline">Precision tracking for every vehicle in your fleet</p>
+  <p class="subline">From solo contractors to enterprise fleets — FleetReq gives you the mission-critical data you need to keep every vehicle operational and every dollar accounted for.</p>
+  <div class="cta-row">
+    <a href="#pricing" class="btn-primary">LAUNCH FREE</a>
+    <a href="#features" class="btn-secondary">VIEW SPECS</a>
+  </div>
+</header>
+
+<hr class="dashed">
+
+<div class="stats-strip">
+  <div class="stat"><div class="stat-num">65%</div><div class="stat-lbl">Below competitors</div></div>
+  <div class="stat"><div class="stat-num">∞</div><div class="stat-lbl">Vehicles (Business)</div></div>
+  <div class="stat"><div class="stat-num">24/7</div><div class="stat-lbl">Access anywhere</div></div>
+  <div class="stat"><div class="stat-num">$0</div><div class="stat-lbl">To get started</div></div>
+</div>
+
+<hr class="dashed">
+
+<section id="features">
+  <p class="sec-label">OPERATIONAL SYSTEMS</p>
+  <h2 class="sec-title">All systems <span>nominal.</span></h2>
+  <p class="sec-sub">Every tool your fleet operation requires, engineered for reliability and speed.</p>
+  <div class="features-grid">
+    <div class="feat">
+      <div class="feat-corner"></div>
+      <span class="feat-num">SYSTEM I</span>
+      <h3>FUEL TELEMETRY</h3>
+      <p>Log every fill-up and watch FleetReq automatically compute MPG, cost-per-mile, and efficiency trends across your entire fleet in real time.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-corner"></div>
+      <span class="feat-num">SYSTEM II</span>
+      <h3>MAINTENANCE GRID</h3>
+      <p>Green, yellow, and red service indicators. Custom intervals for every vehicle type. Never miss an oil change, tire rotation, or inspection again.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-corner"></div>
+      <span class="feat-num">SYSTEM III</span>
+      <h3>COST ANALYTICS</h3>
+      <p>Full cost-per-mile breakdowns. Fuel versus maintenance spend analysis. Monthly trend charts that reveal where your money actually goes.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-corner"></div>
+      <span class="feat-num">SYSTEM IV</span>
+      <h3>CREW ACCESS</h3>
+      <p>Owner, Editor, and Viewer roles. Invite team members to your organization. Multi-org switching lets you manage multiple fleets from one login.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-corner"></div>
+      <span class="feat-num">SYSTEM V</span>
+      <h3>DATA EXPORT</h3>
+      <p>IRS-compliant tax reports for Business tier. CSV and PDF exports for Family tier. Your data, always accessible, always portable.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-corner"></div>
+      <span class="feat-num">SYSTEM VI</span>
+      <h3>ALERT DISPATCH</h3>
+      <p>Weekly email digests when maintenance is due. Automated reminders before service intervals expire. Stay mission-ready at all times.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="dashed">
+
+<section id="pricing">
+  <p class="sec-label">MISSION PARAMETERS</p>
+  <h2 class="sec-title">Select your <span>clearance level.</span></h2>
+  <p class="sec-sub">Priced for real operators — not enterprise procurement committees.</p>
+  <div class="pricing-grid">
+    <div class="plan">
+      <p class="plan-name">TIER ALPHA</p>
+      <div class="plan-price">$0<span>/forever</span></div>
+      <p class="plan-vehicles">1 VEHICLE · 1 CREW MEMBER</p>
+      <ul class="plan-features">
+        <li>Full fuel tracking</li>
+        <li>Maintenance status indicators</li>
+        <li>Maintenance log records</li>
+        <li>Cost-per-mile analytics</li>
+        <li>Mobile-ready interface</li>
+      </ul>
+      <a href="#" class="plan-btn">INITIATE FREE</a>
+    </div>
+    <div class="plan featured">
+      <div class="plan-badge">RECOMMENDED</div>
+      <p class="plan-name">TIER BETA</p>
+      <div class="plan-price">$4<span>/month</span></div>
+      <p class="plan-vehicles">3 VEHICLES · 3 CREW MEMBERS</p>
+      <ul class="plan-features">
+        <li>Everything in Alpha</li>
+        <li>Yellow warning indicators</li>
+        <li>Weekly email alerts</li>
+        <li>CSV + PDF data export</li>
+        <li>Custom next-service dates</li>
+        <li>50MB receipt storage</li>
+      </ul>
+      <a href="#" class="plan-btn">ENGAGE MISSION</a>
+    </div>
+    <div class="plan">
+      <p class="plan-name">TIER COMMAND</p>
+      <div class="plan-price">$12<span>/vehicle/mo</span></div>
+      <p class="plan-vehicles">UNLIMITED · 6 CREW MEMBERS</p>
+      <ul class="plan-features">
+        <li>Everything in Beta</li>
+        <li>Custom maintenance intervals</li>
+        <li>IRS-compliant tax reports</li>
+        <li>CSV + PDF + JSON export</li>
+        <li>Unlimited receipt storage</li>
+        <li>Full team management</li>
+      </ul>
+      <a href="#" class="plan-btn">COMMAND LEVEL</a>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section">
+  <h2>Ready to launch?</h2>
+  <p>Join operators who've moved beyond spreadsheets. Free forever for one vehicle — no credit card required for liftoff.</p>
+  <a href="#" class="btn-primary">BEGIN MISSION — FREE</a>
+</div>
+
+<footer>
+  <span>FLEETREQ</span> · FLEET MANAGEMENT COMMAND · ALL SYSTEMS OPERATIONAL · 2024
+</footer>
+</body>
+</html>

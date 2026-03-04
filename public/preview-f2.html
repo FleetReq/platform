@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preview F2: Concrete — FleetReq</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700;800&family=Barlow:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#1C1C1C;--bg2:#242424;--bg3:#2C2C2C;--text:#E8E4DC;--muted:#8A8A7A;--orange:#E85D04;--orange2:#F48C06;--concrete:#B0AFAB;--border:rgba(184,183,179,0.15)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+h1,h2,h3,.condensed{font-family:'Barlow Condensed',sans-serif;letter-spacing:.01em}
+
+.navwrap{position:sticky;top:0;z-index:100}
+.row1,.row2{background:rgba(18,18,18,0.97);padding:6px 14px;display:flex;align-items:center;flex-wrap:wrap;gap:2px;font-size:10px;font-family:system-ui,sans-serif;backdrop-filter:blur(4px)}
+.row1{border-bottom:1px solid rgba(255,255,255,0.04)}
+.row2{border-bottom:2px solid rgba(232,93,4,0.4)}
+.row1 .lbl,.row2 .lbl{color:#444;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;margin-right:2px}
+.row1 .sep,.row2 .sep{color:#252525;margin:0 4px;flex-shrink:0}
+.row1 .off,.row2 .off{color:#555;text-decoration:none;padding:2px 4px;transition:color .15s}
+.row1 .off:hover{color:#aaa}
+.row2 .off:hover{color:var(--orange)}
+.row2 .on{color:#fff;background:var(--orange);padding:2px 7px;font-weight:700;font-size:9px;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.05em}
+.row1 .back{margin-left:auto;color:#444;text-decoration:none;padding:2px 6px;border:1px solid #2a2a2a;font-size:9px;transition:all .2s}
+.row1 .back:hover{color:#aaa;border-color:#555}
+
+body::before{content:'';position:fixed;inset:0;
+  background:
+    repeating-linear-gradient(90deg, transparent 0px, transparent 59px, rgba(255,255,255,0.015) 59px, rgba(255,255,255,0.015) 60px),
+    repeating-linear-gradient(0deg, transparent 0px, transparent 59px, rgba(255,255,255,0.01) 59px, rgba(255,255,255,0.01) 60px);
+  pointer-events:none;z-index:0}
+main{position:relative;z-index:1}
+
+/* Industrial top bar */
+.top-stripe{height:5px;background:repeating-linear-gradient(90deg,var(--orange) 0px,var(--orange) 20px,var(--bg2) 20px,var(--bg2) 24px)}
+
+.hero{padding:72px 48px;max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;min-height:80vh}
+@media(max-width:768px){.hero{grid-template-columns:1fr;padding:48px 24px;gap:40px}}
+.hero-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.25em;color:var(--orange);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.hero-label::before{content:'';width:24px;height:2px;background:var(--orange);flex-shrink:0}
+.hero h1{font-size:clamp(3rem,6vw,5.5rem);font-weight:800;line-height:.92;margin-bottom:20px;text-transform:uppercase;letter-spacing:-.01em}
+.hero h1 span{color:var(--orange)}
+.hero-bar{width:60px;height:3px;background:var(--orange);margin-bottom:20px}
+.hero p{font-size:1rem;color:var(--muted);line-height:1.7;margin-bottom:32px;max-width:420px;font-weight:300}
+.btn-orange{background:var(--orange);color:#fff;padding:14px 28px;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1rem;letter-spacing:.1em;text-transform:uppercase;transition:all .2s;display:inline-block;clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,6px 100%,0 calc(100% - 6px))}
+.btn-orange:hover{background:var(--orange2)}
+.btn-concrete{border:1px solid var(--border);color:var(--concrete);padding:13px 28px;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:1rem;letter-spacing:.1em;text-transform:uppercase;margin-left:12px;transition:all .2s;display:inline-block}
+.btn-concrete:hover{border-color:var(--orange);color:var(--orange)}
+
+.hero-panel{background:var(--bg2);border:1px solid var(--border);border-top:3px solid var(--orange);padding:0}
+.panel-head{background:rgba(232,93,4,0.12);padding:10px 16px;font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:var(--orange);border-bottom:1px solid var(--border)}
+.stat-row{padding:16px;display:flex;flex-direction:column;gap:0}
+.stat-item{padding:12px 0;border-bottom:1px solid rgba(184,183,179,0.08)}
+.stat-item:last-child{border-bottom:none}
+.stat-num{font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:800;color:var(--orange);display:block;line-height:1}
+.stat-label{font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:var(--muted);margin-top:2px}
+
+section{padding:64px 24px;max-width:1100px;margin:0 auto}
+.section-head{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.25em;color:var(--orange);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.section-head::after{content:'';flex:1;height:1px;background:var(--border)}
+.section-title{font-size:clamp(2.2rem,4vw,3.5rem);font-weight:800;text-transform:uppercase;line-height:.95;margin-bottom:16px;letter-spacing:-.01em}
+.section-title span{color:var(--orange)}
+.section-sub{font-size:0.9rem;color:var(--muted);max-width:480px;line-height:1.65;font-weight:300}
+
+.feat-rows{display:flex;flex-direction:column;gap:1px;background:var(--border);border:1px solid var(--border);margin-top:36px}
+.feat-row{display:grid;grid-template-columns:80px 1fr;background:var(--bg2);transition:background .2s}
+.feat-row:hover{background:var(--bg3)}
+.feat-id{padding:20px 16px;background:rgba(232,93,4,0.08);border-right:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--orange)}
+.feat-body{padding:20px 24px}
+.feat-body h3{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.feat-body p{font-size:0.875rem;color:var(--muted);line-height:1.6;font-weight:300}
+
+.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-top:36px}
+.plan{background:var(--bg2);padding:28px;position:relative;border-top:3px solid transparent;transition:background .2s}
+.plan.feat{border-top-color:var(--orange)}
+.plan:hover{background:var(--bg3)}
+.plan-badge{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:var(--orange);margin-bottom:10px;display:block}
+.plan-name{font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.2em;color:var(--muted);margin-bottom:6px}
+.plan-price{font-family:'Barlow Condensed',sans-serif;font-size:2.8rem;font-weight:800;color:var(--text);margin-bottom:4px;line-height:1}
+.plan-price span{font-size:.9rem;font-weight:400;color:var(--muted);font-family:'Barlow',sans-serif}
+.plan-desc{font-size:0.8rem;color:var(--muted);margin-bottom:20px;font-weight:300}
+.plan-features{list-style:none;margin-bottom:24px}
+.plan-features li{font-size:0.85rem;color:var(--muted);padding:5px 0;border-bottom:1px solid rgba(184,183,179,0.06);display:flex;align-items:center;gap:8px;font-weight:300}
+.plan-features li::before{content:'▸';color:var(--orange);flex-shrink:0;font-size:10px}
+.plan-btn{display:block;text-align:center;padding:11px;text-decoration:none;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.9rem;text-transform:uppercase;letter-spacing:.08em;transition:all .2s;border:1px solid var(--border);color:var(--text)}
+.plan-btn.primary{background:var(--orange);color:#fff;border-color:var(--orange)}
+.plan-btn:hover{border-color:var(--orange);color:var(--orange)}
+.plan-btn.primary:hover{background:var(--orange2)}
+
+.cta-section{padding:72px 24px;background:var(--bg2);border-top:3px solid var(--orange);text-align:center}
+.cta-section h2{font-size:clamp(2.5rem,5vw,4.5rem);font-weight:800;text-transform:uppercase;margin-bottom:8px;letter-spacing:-.01em}
+.cta-section h2 span{color:var(--orange)}
+.cta-section p{color:var(--muted);margin-bottom:28px;font-weight:300}
+
+.bottom-stripe{height:5px;background:repeating-linear-gradient(90deg,var(--orange) 0px,var(--orange) 20px,var(--bg2) 20px,var(--bg2) 24px)}
+footer{text-align:center;padding:20px;font-family:'Barlow Condensed',sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--muted);background:var(--bg)}
+</style>
+</head>
+<body>
+<div class="top-stripe"></div>
+<div class="navwrap">
+  <nav class="row1">
+    <span class="lbl">1</span><span class="sep">|</span>
+    <a href="/preview-a.html" class="off">A</a><a href="/preview-b.html" class="off">B</a><a href="/preview-c.html" class="off">C</a><a href="/preview-d.html" class="off">D</a><a href="/preview-e.html" class="off">E</a><a href="/preview-f.html" class="off">F</a><a href="/preview-g.html" class="off">G</a><a href="/preview-h.html" class="off">H</a><a href="/preview-i.html" class="off">I</a><a href="/preview-j.html" class="off">J</a><a href="/preview-k.html" class="off">K</a><a href="/preview-l.html" class="off">L</a><a href="/preview-m.html" class="off">M</a><a href="/preview-n.html" class="off">N</a><a href="/preview-o.html" class="off">O</a><a href="/preview-p.html" class="off">P</a><a href="/preview-q.html" class="off">Q</a><a href="/preview-r.html" class="off">R</a><a href="/preview-s.html" class="off">S</a><a href="/preview-t.html" class="off">T</a><a href="/preview-u.html" class="off">U</a><a href="/preview-v.html" class="off">V</a><a href="/preview-w.html" class="off">W</a><a href="/preview-x.html" class="off">X</a><a href="/preview-y.html" class="off">Y</a><a href="/preview-z.html" class="off">Z</a>
+    <a href="/" class="back">← Live</a>
+  </nav>
+  <nav class="row2">
+    <span class="lbl">2</span><span class="sep">|</span>
+    <a href="/preview-a2.html" class="off">A2</a><a href="/preview-b2.html" class="off">B2</a><a href="/preview-c2.html" class="off">C2</a><a href="/preview-d2.html" class="off">D2</a><a href="/preview-e2.html" class="off">E2</a><span class="on">F2: Concrete</span><a href="/preview-g2.html" class="off">G2</a><a href="/preview-h2.html" class="off">H2</a><a href="/preview-i2.html" class="off">I2</a><a href="/preview-j2.html" class="off">J2</a><a href="/preview-k2.html" class="off">K2</a><a href="/preview-l2.html" class="off">L2</a><a href="/preview-m2.html" class="off">M2</a><a href="/preview-n2.html" class="off">N2</a><a href="/preview-o2.html" class="off">O2</a><a href="/preview-p2.html" class="off">P2</a><a href="/preview-q2.html" class="off">Q2</a><a href="/preview-r2.html" class="off">R2</a><a href="/preview-s2.html" class="off">S2</a><a href="/preview-t2.html" class="off">T2</a><a href="/preview-u2.html" class="off">U2</a><a href="/preview-v2.html" class="off">V2</a><a href="/preview-w2.html" class="off">W2</a><a href="/preview-x2.html" class="off">X2</a><a href="/preview-y2.html" class="off">Y2</a><a href="/preview-z2.html" class="off">Z2</a>
+  </nav>
+</div>
+<main>
+<div class="hero">
+  <div>
+    <div class="hero-label">Fleet Management Platform</div>
+    <h1>Built<br>to last.<br><span>Built<br>tough.</span></h1>
+    <div class="hero-bar"></div>
+    <p>Fleet tracking without the frills. Track every vehicle, every service, every mile — with the reliability of poured concrete and the clarity of raw steel.</p>
+    <div>
+      <a href="#" class="btn-orange">Get Started</a>
+      <a href="#" class="btn-concrete">Learn More</a>
+    </div>
+  </div>
+  <div class="hero-panel">
+    <div class="panel-head">Platform Status</div>
+    <div class="stat-row">
+      <div class="stat-item"><span class="stat-num">1.2K+</span><div class="stat-label">Active Fleets</div></div>
+      <div class="stat-item"><span class="stat-num">98%</span><div class="stat-label">System Uptime</div></div>
+      <div class="stat-item"><span class="stat-num">$0</span><div class="stat-label">Cost to Start</div></div>
+    </div>
+  </div>
+</div>
+
+<section>
+  <div class="section-head">Features</div>
+  <div class="section-title">No fluff.<br>Just <span>function.</span></div>
+  <div class="section-sub">Six core tools. Solid. Reliable. Everything your fleet operation actually needs.</div>
+  <div class="feat-rows">
+    <div class="feat-row"><div class="feat-id">Fuel</div><div class="feat-body"><h3>Fuel Tracking</h3><p>Log every fill-up. Auto MPG, cost-per-mile, fleet-wide fuel reporting.</p></div></div>
+    <div class="feat-row"><div class="feat-id">Maint</div><div class="feat-body"><h3>Maintenance Records</h3><p>Smart service intervals. Early alerts. Service history that actually stays organized.</p></div></div>
+    <div class="feat-row"><div class="feat-id">Data</div><div class="feat-body"><h3>Performance Analytics</h3><p>Dashboards built for decisions. Cost trends, efficiency analysis, fleet comparison.</p></div></div>
+    <div class="feat-row"><div class="feat-id">Access</div><div class="feat-body"><h3>Team Permissions</h3><p>Owner, Editor, Viewer roles. Set it once, trust it completely.</p></div></div>
+    <div class="feat-row"><div class="feat-id">Mobile</div><div class="feat-body"><h3>PWA + Offline</h3><p>Works in the field without signal. Install on any device. Built for the road.</p></div></div>
+    <div class="feat-row"><div class="feat-id">Export</div><div class="feat-body"><h3>Reports & Export</h3><p>CSV, PDF, JSON. IRS mileage logs. Whatever format the job requires.</p></div></div>
+  </div>
+</section>
+
+<section>
+  <div class="section-head">Pricing</div>
+  <div class="section-title">Straight <span>rates.</span></div>
+  <div class="section-sub">No contracts. No surprises. Start free.</div>
+  <div class="price-grid">
+    <div class="plan"><div class="plan-name">Free</div><div class="plan-price">$0<span>/mo</span></div><div class="plan-desc">Single vehicle, permanent.</div><ul class="plan-features"><li>1 vehicle</li><li>Fuel tracking</li><li>Maintenance log</li><li>Mobile app</li></ul><a href="#" class="plan-btn">Start</a></div>
+    <div class="plan feat"><div class="plan-badge">Recommended</div><div class="plan-name">Family</div><div class="plan-price">$4<span>/mo</span></div><div class="plan-desc">3 vehicles, full tools.</div><ul class="plan-features"><li>3 vehicles</li><li>Email alerts</li><li>CSV & PDF</li><li>3 members</li><li>Scheduling</li></ul><a href="#" class="plan-btn primary">Deploy</a></div>
+    <div class="plan"><div class="plan-name">Business</div><div class="plan-price">$12<span>/vehicle/mo</span></div><div class="plan-desc">Unlimited, no limits.</div><ul class="plan-features"><li>Unlimited vehicles</li><li>Custom intervals</li><li>IRS reports</li><li>6 members</li></ul><a href="#" class="plan-btn">Contact</a></div>
+  </div>
+</section>
+
+<div class="cta-section">
+  <h2>Ready to <span>build</span><br>something solid?</h2>
+  <p>Free account. No credit card. Operational in 2 minutes.</p>
+  <a href="#" class="btn-orange">Start Now</a>
+</div>
+</main>
+<div class="bottom-stripe"></div>
+<footer>© 2025 FleetReq — Fleet management built to last</footer>
+</body>
+</html>

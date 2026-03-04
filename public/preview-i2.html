@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FleetReq — Dark Botanical</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+/* NAV */
+.navwrap{position:sticky;top:0;z-index:100}
+.row1,.row2{background:rgba(8,8,8,0.97);padding:6px 14px;display:flex;align-items:center;flex-wrap:wrap;gap:2px;font-size:10px;font-family:system-ui,sans-serif;backdrop-filter:blur(8px)}
+.row1{border-bottom:1px solid rgba(255,255,255,0.04)}
+.row2{border-bottom:1px solid rgba(184,86,42,0.25)}
+.row1 .lbl,.row2 .lbl{color:#444;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;margin-right:2px}
+.row1 .sep,.row2 .sep{color:#252525;margin:0 4px;flex-shrink:0}
+.row1 .off,.row2 .off{color:#555;text-decoration:none;padding:2px 4px;border-radius:2px;transition:color .15s}
+.row1 .off:hover{color:#aaa}
+.row2 .off:hover{color:#B8562A}
+.row2 .on{color:#000;background:#B8562A;padding:2px 7px;border-radius:2px;font-weight:700;font-size:9px}
+.row1 .back{margin-left:auto;color:#444;text-decoration:none;padding:2px 6px;border:1px solid #252525;border-radius:2px;font-size:9px;transition:all .2s}
+.row1 .back:hover{color:#aaa;border-color:#555}
+/* THEME */
+:root{--bg:#0A1A0A;--text:#E8DCC8;--accent:#B8562A;--green:#4A7A3A;--muted:#8A8070;--card:#0F2010;--border:rgba(74,122,58,0.2)}
+body{background:var(--bg);color:var(--text);font-family:'Crimson Pro',serif;line-height:1.7;overflow-x:hidden}
+/* LEAF DECORATION CSS */
+.leaf-accent{position:absolute;opacity:0.06;font-size:180px;pointer-events:none;user-select:none;line-height:1}
+/* HEADER */
+header{position:relative;padding:80px 60px 80px;max-width:1200px;margin:0 auto;overflow:hidden}
+header::before{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent)}
+.leaf1{top:20px;right:-20px;color:var(--green);transform:rotate(20deg)}
+.leaf2{bottom:-30px;left:-40px;color:var(--green);transform:rotate(-15deg)}
+.hero-eyebrow{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.eyebrow-line{width:40px;height:1px;background:var(--accent)}
+.eyebrow-text{font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--accent);font-weight:400}
+header h1{font-size:clamp(3rem,7vw,5.5rem);font-weight:600;line-height:1.08;letter-spacing:-.02em;margin-bottom:28px;max-width:700px}
+header h1 em{font-style:italic;color:var(--accent)}
+.hero-body{max-width:520px;margin-left:60px}
+.hero-desc{font-size:19px;font-weight:400;line-height:1.7;color:var(--muted);margin-bottom:36px}
+.cta-row{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.btn-primary{background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:400;letter-spacing:.1em;text-transform:uppercase;padding:14px 36px;text-decoration:none;border-radius:2px;transition:all .25s;border:1px solid var(--accent)}
+.btn-primary:hover{background:transparent;color:var(--accent)}
+.btn-ghost{color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;display:flex;align-items:center;gap:8px;transition:color .2s}
+.btn-ghost:hover{color:var(--text)}
+.btn-ghost::after{content:'→';transition:transform .2s}
+.btn-ghost:hover::after{transform:translateX(4px)}
+/* BOTANICAL DIVIDER */
+.botanical-div{text-align:center;padding:40px 0;color:var(--green);font-size:22px;opacity:0.4;letter-spacing:16px}
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);max-width:900px;margin:0 auto;padding:48px 60px}
+.stat-item{text-align:center;padding:0 24px;border-right:1px solid var(--border)}
+.stat-item:last-child{border-right:none}
+.stat-num{font-size:3rem;font-weight:600;color:var(--text);line-height:1;margin-bottom:4px}
+.stat-num em{font-style:normal;color:var(--accent)}
+.stat-label{font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+/* FEATURES */
+.features-section{padding:80px 60px;max-width:1200px;margin:0 auto}
+.section-header{display:grid;grid-template-columns:280px 1fr;gap:60px;align-items:start;margin-bottom:64px}
+.sec-label{font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--green);margin-bottom:12px}
+.sec-title{font-size:clamp(2rem,3.5vw,2.8rem);font-weight:600;line-height:1.15;color:var(--text)}
+.sec-title em{font-style:italic;color:var(--accent)}
+.sec-desc{font-size:16px;color:var(--muted);line-height:1.8;padding-top:28px;border-top:1px solid var(--border)}
+.features-list{display:flex;flex-direction:column;gap:0}
+.feat{display:grid;grid-template-columns:48px 1fr;gap:24px;padding:32px 0;border-bottom:1px solid var(--border);align-items:start;transition:all .2s}
+.feat:hover .feat-title{color:var(--accent)}
+.feat-num{font-family:'DM Sans',sans-serif;font-size:10px;color:var(--green);letter-spacing:.15em;padding-top:6px}
+.feat-content{}
+.feat-title{font-size:22px;font-weight:600;color:var(--text);margin-bottom:8px;transition:color .2s}
+.feat-body{font-size:16px;color:var(--muted);line-height:1.7}
+/* PRICING */
+.pricing-section{padding:80px 60px;background:linear-gradient(180deg,var(--bg) 0%,#071207 100%);border-top:1px solid var(--border)}
+.pricing-inner{max-width:960px;margin:0 auto}
+.pricing-header{text-align:center;margin-bottom:64px}
+.pricing-header h2{font-size:clamp(2rem,4vw,3rem);font-weight:600;margin-bottom:12px}
+.pricing-header p{font-size:17px;color:var(--muted)}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.plan{background:var(--card);border:1px solid var(--border);padding:40px 32px;position:relative;transition:border-color .25s}
+.plan:hover{border-color:var(--green)}
+.plan.featured{border-color:var(--accent)}
+.plan-ribbon{position:absolute;top:-1px;right:28px;background:var(--accent);color:#fff;font-family:'DM Sans',sans-serif;font-size:9px;letter-spacing:.2em;text-transform:uppercase;padding:4px 14px}
+.plan-tier{font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--green);margin-bottom:20px}
+.plan-price{font-size:3.2rem;font-weight:600;line-height:1;color:var(--text);margin-bottom:4px}
+.plan-price small{font-size:15px;color:var(--muted);font-weight:400}
+.plan-vehicles{font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.plan-features{list-style:none;margin-bottom:36px}
+.plan-features li{font-size:16px;color:var(--muted);padding:8px 0;border-bottom:1px solid rgba(74,122,58,0.08);display:flex;align-items:center;gap:10px}
+.plan-features li::before{content:'✦';color:var(--accent);font-size:8px;flex-shrink:0}
+.plan-btn{display:block;text-align:center;padding:13px;font-family:'DM Sans',sans-serif;font-size:12px;letter-spacing:.15em;text-transform:uppercase;text-decoration:none;border:1px solid var(--green);color:var(--text);transition:all .2s}
+.plan.featured .plan-btn{background:var(--accent);border-color:var(--accent);color:#fff}
+.plan-btn:hover{background:var(--green);border-color:var(--green);color:#fff}
+.plan.featured .plan-btn:hover{background:#963d1a}
+/* CTA */
+.cta-block{text-align:center;padding:80px 60px;border-top:1px solid var(--border);position:relative}
+.cta-block h2{font-size:clamp(2rem,4vw,3rem);font-weight:600;margin-bottom:16px}
+.cta-block h2 em{font-style:italic;color:var(--green)}
+.cta-block p{font-size:18px;color:var(--muted);max-width:460px;margin:0 auto 36px}
+footer{text-align:center;padding:32px;font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#2A3A2A;border-top:1px solid rgba(74,122,58,0.1)}
+footer span{color:var(--accent)}
+@media(max-width:768px){header{padding:60px 24px}.hero-body{margin-left:0}.stats-row{grid-template-columns:repeat(2,1fr);padding:40px 24px}.features-section,.pricing-section,.cta-block{padding:60px 24px}.section-header{grid-template-columns:1fr}.pricing-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="navwrap">
+  <nav class="row1">
+    <span class="lbl">1</span><span class="sep">|</span>
+    <a href="/preview-a.html" class="off">A</a><a href="/preview-b.html" class="off">B</a><a href="/preview-c.html" class="off">C</a><a href="/preview-d.html" class="off">D</a><a href="/preview-e.html" class="off">E</a><a href="/preview-f.html" class="off">F</a><a href="/preview-g.html" class="off">G</a><a href="/preview-h.html" class="off">H</a><a href="/preview-i.html" class="off">I</a><a href="/preview-j.html" class="off">J</a><a href="/preview-k.html" class="off">K</a><a href="/preview-l.html" class="off">L</a><a href="/preview-m.html" class="off">M</a><a href="/preview-n.html" class="off">N</a><a href="/preview-o.html" class="off">O</a><a href="/preview-p.html" class="off">P</a><a href="/preview-q.html" class="off">Q</a><a href="/preview-r.html" class="off">R</a><a href="/preview-s.html" class="off">S</a><a href="/preview-t.html" class="off">T</a><a href="/preview-u.html" class="off">U</a><a href="/preview-v.html" class="off">V</a><a href="/preview-w.html" class="off">W</a><a href="/preview-x.html" class="off">X</a><a href="/preview-y.html" class="off">Y</a><a href="/preview-z.html" class="off">Z</a>
+    <a href="/" class="back">← Live</a>
+  </nav>
+  <nav class="row2">
+    <span class="lbl">2</span><span class="sep">|</span>
+    <a href="/preview-a2.html" class="off">A2</a><a href="/preview-b2.html" class="off">B2</a><a href="/preview-c2.html" class="off">C2</a><a href="/preview-d2.html" class="off">D2</a><a href="/preview-e2.html" class="off">E2</a><a href="/preview-f2.html" class="off">F2</a><a href="/preview-g2.html" class="off">G2</a><a href="/preview-h2.html" class="off">H2</a><span class="on">I2: Dark Botanical</span><a href="/preview-j2.html" class="off">J2</a><a href="/preview-k2.html" class="off">K2</a><a href="/preview-l2.html" class="off">L2</a><a href="/preview-m2.html" class="off">M2</a><a href="/preview-n2.html" class="off">N2</a><a href="/preview-o2.html" class="off">O2</a><a href="/preview-p2.html" class="off">P2</a><a href="/preview-q2.html" class="off">Q2</a><a href="/preview-r2.html" class="off">R2</a><a href="/preview-s2.html" class="off">S2</a><a href="/preview-t2.html" class="off">T2</a><a href="/preview-u2.html" class="off">U2</a><a href="/preview-v2.html" class="off">V2</a><a href="/preview-w2.html" class="off">W2</a><a href="/preview-x2.html" class="off">X2</a><a href="/preview-y2.html" class="off">Y2</a><a href="/preview-z2.html" class="off">Z2</a>
+  </nav>
+</div>
+
+<header>
+  <div class="leaf-accent leaf1">🌿</div>
+  <div class="leaf-accent leaf2">🍃</div>
+  <div class="hero-eyebrow">
+    <div class="eyebrow-line"></div>
+    <span class="eyebrow-text">Fleet Management</span>
+  </div>
+  <h1>Every mile,<br><em>accounted for.</em></h1>
+  <div class="hero-body">
+    <p class="hero-desc">FleetReq brings quiet, deliberate order to fleet operations. Fuel records, maintenance cadences, and cost analysis — cultivated into one clear view.</p>
+    <div class="cta-row">
+      <a href="#pricing" class="btn-primary">Begin for free</a>
+      <a href="#features" class="btn-ghost">Explore features</a>
+    </div>
+  </div>
+</header>
+
+<div class="botanical-div">✦ ❧ ✦ ❧ ✦</div>
+
+<div class="stats-row">
+  <div class="stat-item">
+    <div class="stat-num"><em>$0</em></div>
+    <div class="stat-label">To start</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">65<em>%</em></div>
+    <div class="stat-label">Below competitors</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num"><em>∞</em></div>
+    <div class="stat-label">Vehicles, Business</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">3<em>s</em></div>
+    <div class="stat-label">Avg. log time</div>
+  </div>
+</div>
+
+<section class="features-section" id="features">
+  <div class="section-header">
+    <div>
+      <p class="sec-label">What grows here</p>
+      <h2 class="sec-title">Tools that<br><em>take root</em></h2>
+    </div>
+    <p class="sec-desc">Six core systems working in harmony — each one tended with care so your fleet can thrive with less friction and more foresight.</p>
+  </div>
+  <div class="features-list">
+    <div class="feat">
+      <span class="feat-num">01</span>
+      <div class="feat-content">
+        <h3 class="feat-title">Fuel Log &amp; MPG Analysis</h3>
+        <p class="feat-body">Record every fill-up across your entire fleet. FleetReq automatically calculates MPG, cost-per-mile, and efficiency trends — no spreadsheets required.</p>
+      </div>
+    </div>
+    <div class="feat">
+      <span class="feat-num">02</span>
+      <div class="feat-content">
+        <h3 class="feat-title">Maintenance Tracking</h3>
+        <p class="feat-body">Green means healthy. Amber means watch. Red means act now. Scheduled service intervals with email alerts ensure nothing slips through the cracks.</p>
+      </div>
+    </div>
+    <div class="feat">
+      <span class="feat-num">03</span>
+      <div class="feat-content">
+        <h3 class="feat-title">Cost-Per-Mile Analytics</h3>
+        <p class="feat-body">Understand the true operating cost of each vehicle. Monthly breakdowns reveal where your fleet budget goes — fuel, maintenance, and everything in between.</p>
+      </div>
+    </div>
+    <div class="feat">
+      <span class="feat-num">04</span>
+      <div class="feat-content">
+        <h3 class="feat-title">Team &amp; Organization Access</h3>
+        <p class="feat-body">Owner, Editor, and Viewer roles. Invite team members. Switch between multiple organizations. One account to tend all your fleet relationships.</p>
+      </div>
+    </div>
+    <div class="feat">
+      <span class="feat-num">05</span>
+      <div class="feat-content">
+        <h3 class="feat-title">IRS-Ready Tax Reporting</h3>
+        <p class="feat-body">Business accounts get compliant mileage and expense reports ready for tax season. Export as CSV, PDF, or JSON — formatted for your accountant's needs.</p>
+      </div>
+    </div>
+    <div class="feat">
+      <span class="feat-num">06</span>
+      <div class="feat-content">
+        <h3 class="feat-title">Automated Email Digests</h3>
+        <p class="feat-body">Weekly summaries arrive in your inbox when maintenance windows approach. Quiet, unobtrusive, and always on time — like a well-run garden.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="pricing-section" id="pricing">
+  <div class="pricing-inner">
+    <div class="pricing-header">
+      <p class="sec-label">Pricing</p>
+      <h2>Grow at your own pace</h2>
+      <p>Three tiers, each one a natural step forward. Start free and scale as your fleet expands.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="plan">
+        <p class="plan-tier">Free</p>
+        <div class="plan-price">$0 <small>/ forever</small></div>
+        <p class="plan-vehicles">1 vehicle · 1 member</p>
+        <ul class="plan-features">
+          <li>Full fuel tracking</li>
+          <li>Maintenance status</li>
+          <li>Cost-per-mile stats</li>
+          <li>Maintenance log records</li>
+          <li>Mobile interface</li>
+        </ul>
+        <a href="#" class="plan-btn">Begin free</a>
+      </div>
+      <div class="plan featured">
+        <div class="plan-ribbon">Recommended</div>
+        <p class="plan-tier">Family</p>
+        <div class="plan-price">$4 <small>/ month</small></div>
+        <p class="plan-vehicles">3 vehicles · 3 members</p>
+        <ul class="plan-features">
+          <li>Everything in Free</li>
+          <li>Amber warning indicators</li>
+          <li>Weekly email alerts</li>
+          <li>CSV + PDF export</li>
+          <li>Custom service scheduling</li>
+          <li>50MB receipt storage</li>
+        </ul>
+        <a href="#" class="plan-btn">Cultivate Family</a>
+      </div>
+      <div class="plan">
+        <p class="plan-tier">Business</p>
+        <div class="plan-price">$12 <small>/ vehicle / mo</small></div>
+        <p class="plan-vehicles">Unlimited vehicles · 6 members</p>
+        <ul class="plan-features">
+          <li>Everything in Family</li>
+          <li>Custom maintenance intervals</li>
+          <li>IRS-compliant tax reports</li>
+          <li>CSV + PDF + JSON export</li>
+          <li>Unlimited receipt storage</li>
+          <li>Full team management</li>
+        </ul>
+        <a href="#" class="plan-btn">Grow Business</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-block">
+  <h2>Ready to let your fleet<br><em>flourish?</em></h2>
+  <p>No credit card. No commitment. One vehicle, tracked with care — starting today.</p>
+  <a href="#" class="btn-primary">Start for free</a>
+</div>
+
+<footer><span>FleetReq</span> · Fleet Management · Rooted in simplicity · 2024</footer>
+</body>
+</html>

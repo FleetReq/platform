@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FleetReq — Neo-Brutalism</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+/* NAV */
+.navwrap{position:sticky;top:0;z-index:100}
+.row1,.row2{background:rgba(8,8,8,0.97);padding:6px 14px;display:flex;align-items:center;flex-wrap:wrap;gap:2px;font-size:10px;font-family:system-ui,sans-serif;backdrop-filter:blur(8px)}
+.row1{border-bottom:1px solid rgba(255,255,255,0.04)}
+.row2{border-bottom:1px solid rgba(212,255,0,0.25)}
+.row1 .lbl,.row2 .lbl{color:#444;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;margin-right:2px}
+.row1 .sep,.row2 .sep{color:#252525;margin:0 4px;flex-shrink:0}
+.row1 .off,.row2 .off{color:#555;text-decoration:none;padding:2px 4px;border-radius:2px;transition:color .15s}
+.row1 .off:hover{color:#aaa}
+.row2 .off:hover{color:#D4FF00}
+.row2 .on{color:#000;background:#D4FF00;padding:2px 7px;border-radius:2px;font-weight:700;font-size:9px}
+.row1 .back{margin-left:auto;color:#444;text-decoration:none;padding:2px 6px;border:1px solid #252525;border-radius:2px;font-size:9px;transition:all .2s}
+.row1 .back:hover{color:#aaa;border-color:#555}
+/* THEME */
+:root{--bg:#FFFCF2;--text:#000;--accent:#D4FF00;--border:3px solid #000}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;line-height:1.5}
+/* HEADER */
+header{padding:60px 40px;display:grid;grid-template-columns:1fr 1fr;gap:0;max-width:1100px;margin:0 auto;align-items:stretch}
+.hero-left{padding:48px 48px 48px 0;border-right:var(--border)}
+.hero-right{background:#000;padding:48px;display:flex;flex-direction:column;justify-content:center}
+.hero-tag{display:inline-block;background:var(--accent);color:#000;font-family:'Archivo Black',sans-serif;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:4px 12px;margin-bottom:28px;border:var(--border);box-shadow:3px 3px 0 #000}
+header h1{font-family:'Archivo Black',sans-serif;font-size:clamp(2.6rem,5.5vw,4.4rem);line-height:1.0;text-transform:uppercase;margin-bottom:24px;letter-spacing:-.01em}
+header h1 em{font-style:normal;background:var(--accent);padding:0 4px;display:inline}
+.hero-desc{font-size:15px;font-weight:300;line-height:1.7;color:#333;max-width:460px;margin-bottom:36px}
+.cta-row{display:flex;gap:12px;flex-wrap:wrap}
+.btn-primary{background:var(--accent);color:#000;font-family:'Archivo Black',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:.06em;padding:14px 28px;text-decoration:none;border:var(--border);box-shadow:4px 4px 0 #000;transition:all .1s;display:inline-block}
+.btn-primary:hover{box-shadow:2px 2px 0 #000;transform:translate(2px,2px)}
+.btn-secondary{background:transparent;color:#fff;font-family:'Archivo Black',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:.06em;padding:14px 28px;text-decoration:none;border:3px solid #fff;box-shadow:4px 4px 0 var(--accent);transition:all .1s;display:inline-block}
+.btn-secondary:hover{box-shadow:2px 2px 0 var(--accent);transform:translate(2px,2px)}
+.hero-stat-block{color:#fff}
+.big-stat{font-family:'Archivo Black',sans-serif;font-size:3.8rem;line-height:1;color:var(--accent)}
+.stat-desc{font-size:12px;font-weight:300;color:#aaa;margin-top:6px;text-transform:uppercase;letter-spacing:.1em}
+.stat-divider{width:40px;height:3px;background:var(--accent);margin:24px 0}
+/* MARQUEE STRIP */
+.marquee-strip{background:#000;border-top:var(--border);border-bottom:var(--border);padding:14px 0;overflow:hidden;white-space:nowrap}
+.marquee-inner{display:inline-block;animation:marquee 18s linear infinite}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.marquee-inner span{font-family:'Archivo Black',sans-serif;font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);padding:0 32px}
+.marquee-inner span.dot{color:#333}
+/* FEATURES */
+.features-section{padding:72px 40px;max-width:1100px;margin:0 auto}
+.sec-head{display:flex;align-items:baseline;gap:24px;margin-bottom:48px;padding-bottom:16px;border-bottom:var(--border)}
+.sec-head h2{font-family:'Archivo Black',sans-serif;font-size:clamp(1.8rem,3.5vw,2.8rem);text-transform:uppercase}
+.sec-head .sec-num{font-family:'Archivo Black',sans-serif;font-size:4rem;color:#e0dcc8;line-height:1}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+.feat{border:var(--border);padding:32px 28px;margin:-1.5px;transition:all .1s;background:var(--bg);position:relative}
+.feat:hover{background:var(--accent);z-index:1;box-shadow:5px 5px 0 #000}
+.feat-icon{font-size:28px;margin-bottom:16px;display:block}
+.feat h3{font-family:'Archivo Black',sans-serif;font-size:15px;text-transform:uppercase;margin-bottom:10px;line-height:1.2}
+.feat p{font-size:13px;font-weight:300;line-height:1.7;color:#444}
+.feat:hover p{color:#111}
+/* PRICING */
+.pricing-section{padding:72px 40px;background:#000;border-top:var(--border);border-bottom:var(--border)}
+.pricing-inner{max-width:1100px;margin:0 auto}
+.pricing-head{margin-bottom:48px}
+.pricing-head h2{font-family:'Archivo Black',sans-serif;font-size:clamp(1.8rem,3.5vw,2.8rem);text-transform:uppercase;color:#fff}
+.pricing-head h2 em{font-style:normal;color:var(--accent)}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+.plan{border:3px solid #222;padding:40px 32px;margin:-1.5px;background:#000;position:relative}
+.plan.featured{border-color:var(--accent);background:#0D0D0D;z-index:1}
+.plan-badge{background:var(--accent);color:#000;font-family:'Archivo Black',sans-serif;font-size:9px;letter-spacing:.15em;text-transform:uppercase;padding:4px 12px;display:inline-block;margin-bottom:20px;border:2px solid #000;box-shadow:2px 2px 0 var(--accent)}
+.plan-name{font-family:'Archivo Black',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:.1em;color:#888;margin-bottom:16px}
+.plan-price{font-family:'Archivo Black',sans-serif;font-size:3.6rem;color:#fff;line-height:1;margin-bottom:4px}
+.plan-price sub{font-size:14px;color:#888;font-weight:300;font-family:'Inter',sans-serif;vertical-align:baseline}
+.plan-vehicles{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid #222}
+.plan-features{list-style:none;margin-bottom:36px}
+.plan-features li{font-size:13px;font-weight:300;color:#aaa;padding:7px 0;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;gap:10px}
+.plan-features li::before{content:'→';color:var(--accent);font-family:'Archivo Black',sans-serif;font-size:12px;flex-shrink:0}
+.plan-btn{display:block;text-align:center;padding:13px;font-family:'Archivo Black',sans-serif;font-size:12px;text-transform:uppercase;letter-spacing:.08em;text-decoration:none;border:3px solid #333;color:#fff;box-shadow:4px 4px 0 #333;transition:all .1s}
+.plan.featured .plan-btn{background:var(--accent);color:#000;border-color:var(--accent);box-shadow:4px 4px 0 var(--accent)}
+.plan-btn:hover{box-shadow:2px 2px 0 #333;transform:translate(2px,2px)}
+.plan.featured .plan-btn:hover{box-shadow:2px 2px 0 var(--accent)}
+/* CTA */
+.cta-section{padding:80px 40px;max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr auto;gap:40px;align-items:center}
+.cta-section h2{font-family:'Archivo Black',sans-serif;font-size:clamp(2rem,4vw,3.2rem);text-transform:uppercase;line-height:1.1}
+.cta-section h2 em{font-style:normal;background:var(--accent);padding:0 6px}
+footer{background:#000;border-top:var(--border);padding:28px 40px;display:flex;justify-content:space-between;align-items:center}
+footer span{font-family:'Archivo Black',sans-serif;font-size:13px;color:var(--accent);text-transform:uppercase;letter-spacing:.1em}
+footer p{font-size:11px;color:#555;font-weight:300}
+@media(max-width:768px){header{grid-template-columns:1fr}.hero-left{border-right:none;border-bottom:var(--border);padding:36px 24px}.hero-right{padding:36px 24px}.features-grid{grid-template-columns:1fr}.pricing-grid{grid-template-columns:1fr}.cta-section{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="navwrap">
+  <nav class="row1">
+    <span class="lbl">1</span><span class="sep">|</span>
+    <a href="/preview-a.html" class="off">A</a><a href="/preview-b.html" class="off">B</a><a href="/preview-c.html" class="off">C</a><a href="/preview-d.html" class="off">D</a><a href="/preview-e.html" class="off">E</a><a href="/preview-f.html" class="off">F</a><a href="/preview-g.html" class="off">G</a><a href="/preview-h.html" class="off">H</a><a href="/preview-i.html" class="off">I</a><a href="/preview-j.html" class="off">J</a><a href="/preview-k.html" class="off">K</a><a href="/preview-l.html" class="off">L</a><a href="/preview-m.html" class="off">M</a><a href="/preview-n.html" class="off">N</a><a href="/preview-o.html" class="off">O</a><a href="/preview-p.html" class="off">P</a><a href="/preview-q.html" class="off">Q</a><a href="/preview-r.html" class="off">R</a><a href="/preview-s.html" class="off">S</a><a href="/preview-t.html" class="off">T</a><a href="/preview-u.html" class="off">U</a><a href="/preview-v.html" class="off">V</a><a href="/preview-w.html" class="off">W</a><a href="/preview-x.html" class="off">X</a><a href="/preview-y.html" class="off">Y</a><a href="/preview-z.html" class="off">Z</a>
+    <a href="/" class="back">← Live</a>
+  </nav>
+  <nav class="row2">
+    <span class="lbl">2</span><span class="sep">|</span>
+    <a href="/preview-a2.html" class="off">A2</a><a href="/preview-b2.html" class="off">B2</a><a href="/preview-c2.html" class="off">C2</a><a href="/preview-d2.html" class="off">D2</a><a href="/preview-e2.html" class="off">E2</a><a href="/preview-f2.html" class="off">F2</a><a href="/preview-g2.html" class="off">G2</a><span class="on">H2: Neo-Brutalism</span><a href="/preview-i2.html" class="off">I2</a><a href="/preview-j2.html" class="off">J2</a><a href="/preview-k2.html" class="off">K2</a><a href="/preview-l2.html" class="off">L2</a><a href="/preview-m2.html" class="off">M2</a><a href="/preview-n2.html" class="off">N2</a><a href="/preview-o2.html" class="off">O2</a><a href="/preview-p2.html" class="off">P2</a><a href="/preview-q2.html" class="off">Q2</a><a href="/preview-r2.html" class="off">R2</a><a href="/preview-s2.html" class="off">S2</a><a href="/preview-t2.html" class="off">T2</a><a href="/preview-u2.html" class="off">U2</a><a href="/preview-v2.html" class="off">V2</a><a href="/preview-w2.html" class="off">W2</a><a href="/preview-x2.html" class="off">X2</a><a href="/preview-y2.html" class="off">Y2</a><a href="/preview-z2.html" class="off">Z2</a>
+  </nav>
+</div>
+
+<header>
+  <div class="hero-left">
+    <div class="hero-tag">Fleet Management Software</div>
+    <h1>Track<br><em>Every</em><br>Vehicle.</h1>
+    <p class="hero-desc">Stop losing money to untracked fuel costs and missed maintenance. FleetReq gives you brutal clarity over your entire fleet.</p>
+    <div class="cta-row">
+      <a href="#pricing" class="btn-primary">Start Free</a>
+      <a href="#features" class="btn-secondary">See Features</a>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="big-stat">65%</div>
+    <p class="stat-desc">cheaper than<br>the competition</p>
+    <div class="stat-divider"></div>
+    <div class="big-stat">$0</div>
+    <p class="stat-desc">to get started<br>no card required</p>
+    <div class="stat-divider"></div>
+    <div class="big-stat">∞</div>
+    <p class="stat-desc">vehicles on<br>business plan</p>
+  </div>
+</header>
+
+<div class="marquee-strip">
+  <div class="marquee-inner">
+    <span>Fuel Tracking</span><span class="dot">///</span><span>MPG Analytics</span><span class="dot">///</span><span>Maintenance Alerts</span><span class="dot">///</span><span>Cost Per Mile</span><span class="dot">///</span><span>Tax Reports</span><span class="dot">///</span><span>Team Access</span><span class="dot">///</span><span>Data Export</span><span class="dot">///</span><span>Email Digests</span><span class="dot">///</span>
+    <span>Fuel Tracking</span><span class="dot">///</span><span>MPG Analytics</span><span class="dot">///</span><span>Maintenance Alerts</span><span class="dot">///</span><span>Cost Per Mile</span><span class="dot">///</span><span>Tax Reports</span><span class="dot">///</span><span>Team Access</span><span class="dot">///</span><span>Data Export</span><span class="dot">///</span><span>Email Digests</span><span class="dot">///</span>
+  </div>
+</div>
+
+<section class="features-section" id="features">
+  <div class="sec-head">
+    <div class="sec-num">06</div>
+    <h2>Core Features</h2>
+  </div>
+  <div class="features-grid">
+    <div class="feat">
+      <span class="feat-icon">⛽</span>
+      <h3>Fuel Tracking</h3>
+      <p>Log every fill-up. Get automatic MPG calculations, cost-per-mile analysis, and historical trend data without lifting a finger.</p>
+    </div>
+    <div class="feat">
+      <span class="feat-icon">🔧</span>
+      <h3>Maintenance Grid</h3>
+      <p>Red, yellow, green status on every vehicle. Custom intervals. Scheduled alerts before service is due. Never miss critical maintenance again.</p>
+    </div>
+    <div class="feat">
+      <span class="feat-icon">📊</span>
+      <h3>Cost Analytics</h3>
+      <p>See exactly what each vehicle costs per mile to operate. Compare across your fleet. Find your money leaks and fix them fast.</p>
+    </div>
+    <div class="feat">
+      <span class="feat-icon">👥</span>
+      <h3>Team Management</h3>
+      <p>Invite your crew. Owner, Editor, Viewer roles. Multi-org support for managing separate fleet divisions from one account.</p>
+    </div>
+    <div class="feat">
+      <span class="feat-icon">📁</span>
+      <h3>Data Export</h3>
+      <p>IRS-compliant tax reports. CSV, PDF, and JSON export. Your data is yours — always portable, always accessible when you need it.</p>
+    </div>
+    <div class="feat">
+      <span class="feat-icon">🔔</span>
+      <h3>Smart Alerts</h3>
+      <p>Weekly email digests for maintenance due. Automated service reminders. Get notified before problems become expensive breakdowns.</p>
+    </div>
+  </div>
+</section>
+
+<section class="pricing-section" id="pricing">
+  <div class="pricing-inner">
+    <div class="pricing-head">
+      <h2>Pricing That<br><em>Doesn't</em> Hurt.</h2>
+    </div>
+    <div class="pricing-grid">
+      <div class="plan">
+        <p class="plan-name">Free</p>
+        <div class="plan-price">$0<sub>/forever</sub></div>
+        <p class="plan-vehicles">1 Vehicle · 1 Member</p>
+        <ul class="plan-features">
+          <li>Full fuel tracking + MPG</li>
+          <li>Maintenance status</li>
+          <li>Cost-per-mile analytics</li>
+          <li>Log maintenance records</li>
+          <li>Mobile-ready interface</li>
+        </ul>
+        <a href="#" class="plan-btn">Start Free</a>
+      </div>
+      <div class="plan featured">
+        <div class="plan-badge">Most Popular</div>
+        <p class="plan-name">Family</p>
+        <div class="plan-price">$4<sub>/month</sub></div>
+        <p class="plan-vehicles">3 Vehicles · 3 Members</p>
+        <ul class="plan-features">
+          <li>Everything in Free</li>
+          <li>Yellow warning alerts</li>
+          <li>Weekly email digests</li>
+          <li>CSV + PDF export</li>
+          <li>Custom service dates</li>
+          <li>50MB receipt storage</li>
+        </ul>
+        <a href="#" class="plan-btn">Get Family</a>
+      </div>
+      <div class="plan">
+        <p class="plan-name">Business</p>
+        <div class="plan-price">$12<sub>/vehicle/mo</sub></div>
+        <p class="plan-vehicles">Unlimited Vehicles · 6 Members</p>
+        <ul class="plan-features">
+          <li>Everything in Family</li>
+          <li>Custom maintenance intervals</li>
+          <li>IRS-compliant tax reports</li>
+          <li>CSV + PDF + JSON export</li>
+          <li>Unlimited receipt storage</li>
+          <li>Full team management</li>
+        </ul>
+        <a href="#" class="plan-btn">Get Business</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section">
+  <h2>Stop <em>guessing.</em><br>Start tracking.</h2>
+  <a href="#" class="btn-primary">Launch Free →</a>
+</div>
+
+<footer>
+  <span>FleetReq</span>
+  <p>Fleet management for real operators. No fluff. No BS. No expensive contracts.</p>
+</footer>
+</body>
+</html>

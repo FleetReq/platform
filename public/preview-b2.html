@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preview B2: Acid Yellow — FleetReq</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0D0D0D;--bg2:#141414;--bg3:#1A1A1A;--text:#F5F5F5;--muted:#888;--acid:#DFFF00;--pink:#FF00AA;--border:rgba(223,255,0,0.15)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+h1,h2,h3{font-family:'Rajdhani',sans-serif;letter-spacing:.02em}
+
+.navwrap{position:sticky;top:0;z-index:100}
+.row1,.row2{background:rgba(8,8,8,0.97);padding:6px 14px;display:flex;align-items:center;flex-wrap:wrap;gap:2px;font-size:10px;font-family:system-ui,sans-serif;backdrop-filter:blur(8px)}
+.row1{border-bottom:1px solid rgba(255,255,255,0.04)}
+.row2{border-bottom:1px solid rgba(223,255,0,0.18)}
+.row1 .lbl,.row2 .lbl{color:#444;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;margin-right:2px}
+.row1 .sep,.row2 .sep{color:#222;margin:0 4px;flex-shrink:0}
+.row1 .off,.row2 .off{color:#555;text-decoration:none;padding:2px 4px;border-radius:2px;transition:color .15s}
+.row1 .off:hover{color:#aaa}
+.row2 .off:hover{color:var(--acid)}
+.row2 .on{color:#000;background:var(--acid);padding:2px 7px;border-radius:2px;font-weight:700;font-size:9px;font-family:'Rajdhani',sans-serif}
+.row1 .back{margin-left:auto;color:#444;text-decoration:none;padding:2px 6px;border:1px solid #222;border-radius:2px;font-size:9px;transition:all .2s}
+.row1 .back:hover{color:#aaa;border-color:#555}
+
+body::before{content:'';position:fixed;inset:0;
+  background:radial-gradient(ellipse 60% 40% at 50% 0%, rgba(223,255,0,0.07) 0%,transparent 60%),
+  radial-gradient(ellipse 40% 30% at 80% 80%, rgba(255,0,170,0.06) 0%,transparent 50%);
+  pointer-events:none;z-index:0}
+main{position:relative;z-index:1}
+
+.hero{min-height:88vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px}
+.hero-tag{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.35em;color:var(--muted);margin-bottom:20px}
+.hero h1{font-size:clamp(3.5rem,9vw,7.5rem);font-weight:700;line-height:.9;margin-bottom:16px;letter-spacing:-.02em;text-transform:uppercase}
+.hero h1 .acid{color:var(--acid);text-shadow:0 0 40px rgba(223,255,0,0.4)}
+.hero h1 .pink{color:var(--pink);text-shadow:0 0 40px rgba(255,0,170,0.4)}
+.hero-line{width:100%;max-width:500px;height:1px;background:linear-gradient(90deg,transparent,var(--acid),var(--pink),transparent);margin:20px auto}
+.hero p{font-size:1rem;color:var(--muted);max-width:500px;line-height:1.7;margin-bottom:40px;font-weight:300}
+.btn-acid{background:var(--acid);color:#000;padding:14px 32px;text-decoration:none;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:0.9rem;letter-spacing:.1em;text-transform:uppercase;transition:all .2s;display:inline-block;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%)}
+.btn-acid:hover{background:var(--pink);color:#fff}
+.btn-outline{border:1px solid var(--border);color:var(--acid);padding:13px 32px;text-decoration:none;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:0.9rem;letter-spacing:.1em;text-transform:uppercase;margin-left:12px;transition:all .2s;display:inline-block}
+.btn-outline:hover{border-color:var(--acid);background:rgba(223,255,0,0.06)}
+
+.hud{display:flex;gap:0;border:1px solid var(--border);max-width:480px;margin:48px auto 0;overflow:hidden}
+.hud-cell{flex:1;padding:16px;text-align:center;border-right:1px solid var(--border)}
+.hud-cell:last-child{border-right:none}
+.hud-num{font-family:'Rajdhani',sans-serif;font-size:1.8rem;font-weight:700;color:var(--acid);display:block;line-height:1;text-shadow:0 0 15px rgba(223,255,0,0.4)}
+.hud-label{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-top:4px}
+
+section{padding:72px 24px;max-width:1100px;margin:0 auto}
+.section-header{display:flex;align-items:baseline;gap:16px;margin-bottom:40px}
+.section-tag{font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.2em;color:var(--acid)}
+.section-line{flex:1;height:1px;background:var(--border)}
+.section-title{font-size:clamp(2rem,4vw,3rem);font-weight:700;text-transform:uppercase;line-height:1;letter-spacing:-.01em}
+.section-title .acid{color:var(--acid)}
+.section-sub{font-size:0.9rem;color:var(--muted);max-width:480px;line-height:1.65;font-weight:300;margin-top:8px}
+
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:rgba(223,255,0,0.08);border:1px solid var(--border);margin-top:32px}
+.feat{background:var(--bg2);padding:24px;position:relative;overflow:hidden;transition:background .2s}
+.feat:hover{background:var(--bg3)}
+.feat-id{font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.2em;color:var(--acid);margin-bottom:8px}
+.feat h3{font-size:1rem;font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:.03em}
+.feat p{font-size:0.85rem;color:var(--muted);line-height:1.6;font-weight:300}
+
+.price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);margin-top:32px}
+.plan{background:var(--bg2);padding:28px;position:relative;border-top:2px solid transparent;transition:background .2s}
+.plan.feat{border-top-color:var(--acid)}
+.plan:hover{background:var(--bg3)}
+.plan-badge{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:var(--acid);margin-bottom:10px;display:block}
+.plan-name{font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.2em;color:var(--muted);margin-bottom:6px}
+.plan-price{font-family:'Rajdhani',sans-serif;font-size:2.8rem;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1}
+.plan-price span{font-size:0.85rem;font-weight:400;color:var(--muted);font-family:'Inter',sans-serif}
+.plan-desc{font-size:0.8rem;color:var(--muted);margin-bottom:20px;font-weight:300}
+.plan-features{list-style:none;margin-bottom:20px}
+.plan-features li{font-size:0.82rem;color:var(--muted);padding:5px 0;border-bottom:1px solid rgba(223,255,0,0.05);display:flex;align-items:center;gap:6px;font-weight:300}
+.plan-features li::before{content:'>';color:var(--acid);font-family:'Rajdhani',sans-serif;font-weight:700;flex-shrink:0}
+.plan-btn{display:block;text-align:center;padding:10px;text-decoration:none;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:0.85rem;letter-spacing:.1em;text-transform:uppercase;transition:all .2s;border:1px solid var(--border);color:var(--text)}
+.plan-btn.primary{background:var(--acid);color:#000;border-color:var(--acid)}
+.plan-btn:hover{border-color:var(--acid);color:var(--acid)}
+.plan-btn.primary:hover{background:var(--pink);border-color:var(--pink);color:#fff}
+
+.cta-section{padding:80px 24px;text-align:center;border-top:1px solid var(--border)}
+.cta-section h2{font-size:clamp(2.5rem,6vw,5rem);font-weight:700;text-transform:uppercase;margin-bottom:8px;letter-spacing:-.02em}
+.cta-section p{color:var(--muted);margin-bottom:32px;font-weight:300}
+
+footer{text-align:center;padding:24px;border-top:1px solid rgba(223,255,0,0.08);font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
+</style>
+</head>
+<body>
+<div class="navwrap">
+  <nav class="row1">
+    <span class="lbl">1</span><span class="sep">|</span>
+    <a href="/preview-a.html" class="off">A</a><a href="/preview-b.html" class="off">B</a><a href="/preview-c.html" class="off">C</a><a href="/preview-d.html" class="off">D</a><a href="/preview-e.html" class="off">E</a><a href="/preview-f.html" class="off">F</a><a href="/preview-g.html" class="off">G</a><a href="/preview-h.html" class="off">H</a><a href="/preview-i.html" class="off">I</a><a href="/preview-j.html" class="off">J</a><a href="/preview-k.html" class="off">K</a><a href="/preview-l.html" class="off">L</a><a href="/preview-m.html" class="off">M</a><a href="/preview-n.html" class="off">N</a><a href="/preview-o.html" class="off">O</a><a href="/preview-p.html" class="off">P</a><a href="/preview-q.html" class="off">Q</a><a href="/preview-r.html" class="off">R</a><a href="/preview-s.html" class="off">S</a><a href="/preview-t.html" class="off">T</a><a href="/preview-u.html" class="off">U</a><a href="/preview-v.html" class="off">V</a><a href="/preview-w.html" class="off">W</a><a href="/preview-x.html" class="off">X</a><a href="/preview-y.html" class="off">Y</a><a href="/preview-z.html" class="off">Z</a>
+    <a href="/" class="back">← Live</a>
+  </nav>
+  <nav class="row2">
+    <span class="lbl">2</span><span class="sep">|</span>
+    <a href="/preview-a2.html" class="off">A2</a><span class="on">B2: Acid</span><a href="/preview-c2.html" class="off">C2</a><a href="/preview-d2.html" class="off">D2</a><a href="/preview-e2.html" class="off">E2</a><a href="/preview-f2.html" class="off">F2</a><a href="/preview-g2.html" class="off">G2</a><a href="/preview-h2.html" class="off">H2</a><a href="/preview-i2.html" class="off">I2</a><a href="/preview-j2.html" class="off">J2</a><a href="/preview-k2.html" class="off">K2</a><a href="/preview-l2.html" class="off">L2</a><a href="/preview-m2.html" class="off">M2</a><a href="/preview-n2.html" class="off">N2</a><a href="/preview-o2.html" class="off">O2</a><a href="/preview-p2.html" class="off">P2</a><a href="/preview-q2.html" class="off">Q2</a><a href="/preview-r2.html" class="off">R2</a><a href="/preview-s2.html" class="off">S2</a><a href="/preview-t2.html" class="off">T2</a><a href="/preview-u2.html" class="off">U2</a><a href="/preview-v2.html" class="off">V2</a><a href="/preview-w2.html" class="off">W2</a><a href="/preview-x2.html" class="off">X2</a><a href="/preview-y2.html" class="off">Y2</a><a href="/preview-z2.html" class="off">Z2</a>
+  </nav>
+</div>
+<main>
+<section class="hero">
+  <div class="hero-tag">Fleet Management · Activate</div>
+  <h1><span class="acid">Fleet</span><br><span class="pink">Req</span></h1>
+  <div class="hero-line"></div>
+  <p>High-voltage fleet tracking. Every fill-up, every service, every mile — logged with the intensity of a live wire. No noise. Pure signal.</p>
+  <div>
+    <a href="#" class="btn-acid">Power On</a>
+    <a href="#" class="btn-outline">Signal Check</a>
+  </div>
+  <div class="hud">
+    <div class="hud-cell"><span class="hud-num">1.2K+</span><span class="hud-label">Active</span></div>
+    <div class="hud-cell"><span class="hud-num">98%</span><span class="hud-label">Uptime</span></div>
+    <div class="hud-cell"><span class="hud-num">$0</span><span class="hud-label">Start</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="section-header">
+    <span class="section-tag">Features</span><div class="section-line"></div>
+  </div>
+  <div class="section-title">Full <span class="acid">spectrum</span> control</div>
+  <div class="section-sub">Six modules. Zero compromise. Built for operators who need everything to work, all the time.</div>
+  <div class="feat-grid">
+    <div class="feat"><div class="feat-id">[FUEL]</div><h3>Fuel Tracking</h3><p>Log fill-ups instantly. Auto MPG, cost-per-mile analytics, fleet-wide efficiency reporting.</p></div>
+    <div class="feat"><div class="feat-id">[MAINT]</div><h3>Maintenance</h3><p>Smart intervals. Early alerts. Never get caught with overdue oil, tires, or brakes again.</p></div>
+    <div class="feat"><div class="feat-id">[DATA]</div><h3>Analytics</h3><p>Real-time dashboards. Cost trends, efficiency signals, fleet performance at a glance.</p></div>
+    <div class="feat"><div class="feat-id">[ACCESS]</div><h3>Team Roles</h3><p>Owner / Editor / Viewer. Assign access in seconds. Your crew sees exactly what they need.</p></div>
+    <div class="feat"><div class="feat-id">[MOBILE]</div><h3>PWA + Offline</h3><p>Home screen install. Works without signal. Log in the field, sync when back online.</p></div>
+    <div class="feat"><div class="feat-id">[EXPORT]</div><h3>Reports</h3><p>CSV, PDF, JSON. IRS mileage logs. Every format, on demand.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="section-header">
+    <span class="section-tag">Pricing</span><div class="section-line"></div>
+  </div>
+  <div class="section-title">Choose your <span class="acid">frequency</span></div>
+  <div class="section-sub">Flat rates. No contracts. No noise.</div>
+  <div class="price-grid">
+    <div class="plan"><div class="plan-name">Free</div><div class="plan-price">$0<span>/mo</span></div><div class="plan-desc">1 vehicle, forever free.</div><ul class="plan-features"><li>1 vehicle</li><li>Fuel tracking</li><li>Maintenance log</li><li>Mobile app</li></ul><a href="#" class="plan-btn">Activate</a></div>
+    <div class="plan feat"><div class="plan-badge">★ HOT</div><div class="plan-name">Family</div><div class="plan-price">$4<span>/mo</span></div><div class="plan-desc">3 vehicles, full power.</div><ul class="plan-features"><li>3 vehicles</li><li>Email alerts</li><li>CSV & PDF</li><li>3 members</li><li>Scheduling</li></ul><a href="#" class="plan-btn primary">Plug In</a></div>
+    <div class="plan"><div class="plan-name">Business</div><div class="plan-price">$12<span>/vehicle</span></div><div class="plan-desc">Unlimited fleet.</div><ul class="plan-features"><li>Unlimited vehicles</li><li>Custom intervals</li><li>IRS reports</li><li>6 members</li></ul><a href="#" class="plan-btn">Max Power</a></div>
+  </div>
+</section>
+
+<div class="cta-section">
+  <h2><span style="color:var(--acid)">Turn it</span><br>on.</h2>
+  <p>Free. No credit card. Start in under 2 minutes.</p>
+  <a href="#" class="btn-acid">Initialize</a>
+</div>
+</main>
+<footer>© 2025 FleetReq · High-voltage fleet management</footer>
+</body>
+</html>

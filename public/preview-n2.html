@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FleetReq — Technical Grid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+.navwrap{position:sticky;top:0;z-index:100}
+.row1,.row2{background:rgba(8,8,8,0.97);padding:6px 14px;display:flex;align-items:center;flex-wrap:wrap;gap:2px;font-size:10px;font-family:system-ui,sans-serif;backdrop-filter:blur(8px)}
+.row1{border-bottom:1px solid rgba(255,255,255,0.04)}
+.row2{border-bottom:1px solid rgba(0,85,255,0.4)}
+.row1 .lbl,.row2 .lbl{color:#444;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;margin-right:2px}
+.row1 .sep,.row2 .sep{color:#252525;margin:0 4px;flex-shrink:0}
+.row1 .off,.row2 .off{color:#555;text-decoration:none;padding:2px 4px;border-radius:2px;transition:color .15s}
+.row1 .off:hover{color:#aaa}
+.row2 .off:hover{color:#0055FF}
+.row2 .on{color:#fff;background:#0055FF;padding:2px 7px;border-radius:2px;font-weight:700;font-size:9px}
+.row1 .back{margin-left:auto;color:#444;text-decoration:none;padding:2px 6px;border:1px solid #252525;border-radius:2px;font-size:9px;transition:all .2s}
+.row1 .back:hover{color:#aaa;border-color:#555}
+
+body{font-family:'Inter',sans-serif;background:#FFFFFF;color:#000000;line-height:1.5}
+
+/* Grid system */
+.container{max-width:1200px;margin:0 auto;padding:0 40px}
+
+/* Hero — strict grid */
+.hero{padding:96px 40px 80px;max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.hero-left{}
+.hero-overline{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#0055FF;margin-bottom:24px;display:flex;align-items:center;gap:12px}
+.hero-overline::before{content:'';display:block;width:32px;height:2px;background:#0055FF;flex-shrink:0}
+.hero h1{font-size:clamp(48px,5.5vw,72px);font-weight:800;line-height:1;letter-spacing:-.03em;color:#000;margin-bottom:24px}
+.hero h1 span{color:#0055FF}
+.hero-body{font-size:16px;font-weight:300;color:#666;line-height:1.7;max-width:420px;margin-bottom:40px}
+.hero-actions{display:flex;gap:16px;align-items:center}
+.btn-blue{background:#0055FF;color:#fff;padding:14px 32px;text-decoration:none;font-size:14px;font-weight:600;letter-spacing:.02em;transition:background .15s}
+.btn-blue:hover{background:#0044CC}
+.btn-link{font-size:14px;font-weight:500;color:#000;text-decoration:none;display:flex;align-items:center;gap:6px;border-bottom:1px solid #000;padding-bottom:1px;transition:color .15s}
+.btn-link:hover{color:#0055FF;border-color:#0055FF}
+.hero-right{border-left:1px solid #000;padding-left:80px}
+.counter-grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.counter{padding:28px 0;border-bottom:1px solid #000}
+.counter:nth-child(odd){border-right:1px solid #000;padding-right:28px}
+.counter:nth-child(even){padding-left:28px}
+.counter:nth-last-child(-n+2){border-bottom:none}
+.counter-num{font-size:48px;font-weight:800;letter-spacing:-.04em;color:#0055FF;line-height:1}
+.counter-label{font-size:11px;font-weight:500;color:#666;letter-spacing:.08em;text-transform:uppercase;margin-top:6px}
+
+/* Thin rule */
+.rule{border:none;border-top:1px solid #000;margin:0}
+.rule-blue{border:none;border-top:2px solid #0055FF;margin:0}
+
+/* Features — flat list */
+.features-section{padding:80px 0;max-width:1200px;margin:0 auto}
+.features-header{display:grid;grid-template-columns:1fr 1fr;gap:80px;margin-bottom:48px;padding:0 40px}
+.feat-head-left h2{font-size:clamp(32px,4vw,52px);font-weight:800;letter-spacing:-.03em;line-height:1}
+.feat-head-right{padding-top:8px}
+.feat-head-right p{font-size:15px;font-weight:300;color:#666;line-height:1.7}
+.feat-overline{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#0055FF;margin-bottom:12px;display:flex;align-items:center;gap:12px}
+.feat-overline::before{content:'';display:block;width:32px;height:2px;background:#0055FF;flex-shrink:0}
+
+.feature-list{border-top:1px solid #000}
+.feature-row{display:grid;grid-template-columns:48px 280px 1fr 120px;gap:0;align-items:center;border-bottom:1px solid #eee;padding:20px 40px;transition:background .1s}
+.feature-row:hover{background:#F5F8FF}
+.feat-num{font-size:11px;font-weight:700;color:#ccc;letter-spacing:.05em}
+.feat-name{font-size:15px;font-weight:600;color:#000}
+.feat-desc{font-size:14px;font-weight:300;color:#666;padding:0 40px}
+.feat-tag{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#0055FF;text-align:right}
+
+/* Divider statement */
+.statement-bar{background:#000;padding:40px;display:flex;align-items:center;justify-content:space-between;gap:40px;flex-wrap:wrap}
+.statement-text{font-size:clamp(20px,3vw,32px);font-weight:700;color:#fff;letter-spacing:-.02em}
+.statement-text span{color:#0055FF}
+.statement-cta{background:#0055FF;color:#fff;padding:14px 28px;text-decoration:none;font-size:14px;font-weight:600;white-space:nowrap;transition:background .15s;flex-shrink:0}
+.statement-cta:hover{background:#0044CC}
+
+/* Pricing — strict table */
+.pricing-section{padding:80px 40px;max-width:1200px;margin:0 auto}
+.pricing-overline{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#0055FF;margin-bottom:24px;display:flex;align-items:center;gap:12px}
+.pricing-overline::before{content:'';display:block;width:32px;height:2px;background:#0055FF;flex-shrink:0}
+.pricing-section h2{font-size:clamp(32px,4vw,52px);font-weight:800;letter-spacing:-.03em;margin-bottom:48px}
+.price-table{width:100%;border-collapse:collapse;border:1px solid #000}
+.price-table th{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:16px 24px;text-align:left;border-bottom:2px solid #000;border-right:1px solid #eee}
+.price-table th.active{background:#0055FF;color:#fff}
+.price-table td{padding:14px 24px;border-bottom:1px solid #eee;border-right:1px solid #eee;font-size:14px;font-weight:300;color:#333}
+.price-table td.plan-price{font-size:22px;font-weight:800;color:#000;letter-spacing:-.02em}
+.price-table td.plan-price.active{color:#0055FF}
+.price-table td.check{text-align:center;color:#0055FF;font-size:16px}
+.price-table td.dash{text-align:center;color:#ccc}
+.price-table tr:hover td{background:#F5F8FF}
+.price-table tr:last-child td{border-bottom:none}
+.price-table td:first-child{font-weight:500;color:#000}
+
+/* CTA final */
+.cta-final{padding:80px 40px;max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr auto;gap:80px;align-items:center}
+.cta-final h2{font-size:clamp(28px,4vw,48px);font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.cta-final h2 span{color:#0055FF}
+.cta-right{display:flex;flex-direction:column;gap:12px;align-items:flex-start;flex-shrink:0}
+.cta-note{font-size:12px;font-weight:300;color:#999;margin-top:4px}
+
+footer{background:#000;color:#666;padding:28px 40px;display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:300}
+footer strong{color:#fff}
+footer a{color:#0055FF;text-decoration:none}
+</style>
+</head>
+<body>
+
+<div class="navwrap">
+  <nav class="row1">
+    <span class="lbl">1</span><span class="sep">|</span>
+    <a href="/preview-a.html" class="off">A</a><a href="/preview-b.html" class="off">B</a><a href="/preview-c.html" class="off">C</a><a href="/preview-d.html" class="off">D</a><a href="/preview-e.html" class="off">E</a><a href="/preview-f.html" class="off">F</a><a href="/preview-g.html" class="off">G</a><a href="/preview-h.html" class="off">H</a><a href="/preview-i.html" class="off">I</a><a href="/preview-j.html" class="off">J</a><a href="/preview-k.html" class="off">K</a><a href="/preview-l.html" class="off">L</a><a href="/preview-m.html" class="off">M</a><a href="/preview-n.html" class="off">N</a><a href="/preview-o.html" class="off">O</a><a href="/preview-p.html" class="off">P</a><a href="/preview-q.html" class="off">Q</a><a href="/preview-r.html" class="off">R</a><a href="/preview-s.html" class="off">S</a><a href="/preview-t.html" class="off">T</a><a href="/preview-u.html" class="off">U</a><a href="/preview-v.html" class="off">V</a><a href="/preview-w.html" class="off">W</a><a href="/preview-x.html" class="off">X</a><a href="/preview-y.html" class="off">Y</a><a href="/preview-z.html" class="off">Z</a>
+    <a href="/" class="back">← Live</a>
+  </nav>
+  <nav class="row2">
+    <span class="lbl">2</span><span class="sep">|</span>
+    <a href="/preview-a2.html" class="off">A2</a><a href="/preview-b2.html" class="off">B2</a><a href="/preview-c2.html" class="off">C2</a><a href="/preview-d2.html" class="off">D2</a><a href="/preview-e2.html" class="off">E2</a><a href="/preview-f2.html" class="off">F2</a><a href="/preview-g2.html" class="off">G2</a><a href="/preview-h2.html" class="off">H2</a><a href="/preview-i2.html" class="off">I2</a><a href="/preview-j2.html" class="off">J2</a><a href="/preview-k2.html" class="off">K2</a><a href="/preview-l2.html" class="off">L2</a><a href="/preview-m2.html" class="off">M2</a><span class="on">N2: Grid</span><a href="/preview-o2.html" class="off">O2</a><a href="/preview-p2.html" class="off">P2</a><a href="/preview-q2.html" class="off">Q2</a><a href="/preview-r2.html" class="off">R2</a><a href="/preview-s2.html" class="off">S2</a><a href="/preview-t2.html" class="off">T2</a><a href="/preview-u2.html" class="off">U2</a><a href="/preview-v2.html" class="off">V2</a><a href="/preview-w2.html" class="off">W2</a><a href="/preview-x2.html" class="off">X2</a><a href="/preview-y2.html" class="off">Y2</a><a href="/preview-z2.html" class="off">Z2</a>
+  </nav>
+</div>
+
+<hr class="rule-blue">
+
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-overline">Fleet Management Software</div>
+    <h1>Fleet ops.<br><span>Without</span><br>the chaos.</h1>
+    <p class="hero-body">FleetReq is a precision tool for tracking fuel, maintenance, and costs across your entire vehicle fleet. Built for speed. Designed to scale.</p>
+    <div class="hero-actions">
+      <a href="#" class="btn-blue">Start Free</a>
+      <a href="#" class="btn-link">View demo →</a>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="counter-grid">
+      <div class="counter"><div class="counter-num">3.2k</div><div class="counter-label">Active Fleets</div></div>
+      <div class="counter"><div class="counter-num">65%</div><div class="counter-label">Below Market</div></div>
+      <div class="counter"><div class="counter-num">18m</div><div class="counter-label">Setup Time</div></div>
+      <div class="counter"><div class="counter-num">99.9%</div><div class="counter-label">Uptime SLA</div></div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<section class="features-section">
+  <div class="features-header">
+    <div class="feat-head-left">
+      <div class="feat-overline">Capabilities</div>
+      <h2>Everything<br>you need.</h2>
+    </div>
+    <div class="feat-head-right">
+      <p>From individual contractors to multi-vehicle business fleets. FleetReq delivers the tools that matter — no bloat, no subscriptions for features you don't use.</p>
+    </div>
+  </div>
+
+  <div class="feature-list">
+    <div class="feature-row">
+      <span class="feat-num">01</span>
+      <span class="feat-name">Fuel Tracking</span>
+      <span class="feat-desc">Log fill-ups with odometer, gallons, and cost. Automatic MPG calculation on every entry.</span>
+      <span class="feat-tag">All Plans</span>
+    </div>
+    <div class="feature-row">
+      <span class="feat-num">02</span>
+      <span class="feat-name">Maintenance Alerts</span>
+      <span class="feat-desc">Mileage and date-based service reminders. Email notifications before deadlines are missed.</span>
+      <span class="feat-tag">Family+</span>
+    </div>
+    <div class="feature-row">
+      <span class="feat-num">03</span>
+      <span class="feat-name">Team Access Control</span>
+      <span class="feat-desc">Owner / Editor / Viewer roles. Invite mechanics, drivers, and managers with fine-grained permissions.</span>
+      <span class="feat-tag">Business</span>
+    </div>
+    <div class="feature-row">
+      <span class="feat-num">04</span>
+      <span class="feat-name">Cost Analytics</span>
+      <span class="feat-desc">Per-vehicle and fleet-wide cost-per-mile. Monthly trends, efficiency benchmarks, outlier detection.</span>
+      <span class="feat-tag">Family+</span>
+    </div>
+    <div class="feature-row">
+      <span class="feat-num">05</span>
+      <span class="feat-name">Data Export</span>
+      <span class="feat-desc">CSV, PDF, and JSON exports. IRS-compliant mileage and expense reports for business tax filing.</span>
+      <span class="feat-tag">Business</span>
+    </div>
+    <div class="feature-row">
+      <span class="feat-num">06</span>
+      <span class="feat-name">Multi-Org Support</span>
+      <span class="feat-desc">Belong to multiple organizations simultaneously. Switch active fleet with a single click.</span>
+      <span class="feat-tag">Business</span>
+    </div>
+  </div>
+</section>
+
+<div class="statement-bar">
+  <span class="statement-text">Fleet management at <span>65% below</span> the cost of competitors.</span>
+  <a href="#" class="statement-cta">Compare Plans →</a>
+</div>
+
+<section class="pricing-section">
+  <div class="pricing-overline">Pricing</div>
+  <h2>Transparent pricing.<br>No surprises.</h2>
+  <table class="price-table">
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th>Free</th>
+        <th class="active">Family — $4/mo</th>
+        <th>Business — $12/vehicle/mo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Vehicles</td><td>1</td><td class="active plan-price">3</td><td class="plan-price">Unlimited</td></tr>
+      <tr><td>Team Members</td><td>1</td><td>3</td><td>6</td></tr>
+      <tr><td>Fuel Tracking</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>Maintenance Log</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>Email Alerts</td><td class="dash">—</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>CSV / PDF Export</td><td class="dash">—</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>Custom Intervals</td><td class="dash">—</td><td class="dash">—</td><td class="check">✓</td></tr>
+      <tr><td>IRS Tax Reports</td><td class="dash">—</td><td class="dash">—</td><td class="check">✓</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<hr class="rule">
+
+<section class="cta-final">
+  <h2>Start tracking your fleet <span>today.</span></h2>
+  <div class="cta-right">
+    <a href="#" class="btn-blue">Create Free Account</a>
+    <span class="cta-note">No credit card. No commitment.</span>
+  </div>
+</section>
+
+<hr class="rule">
+
+<footer>
+  <strong>FleetReq</strong> &nbsp;·&nbsp; &copy; 2026 All rights reserved
+  <span>
+    <a href="#">Privacy Policy</a> &nbsp;·&nbsp;
+    <a href="#">Terms of Service</a> &nbsp;·&nbsp;
+    <a href="#">Contact</a>
+  </span>
+</footer>
+
+</body>
+</html>

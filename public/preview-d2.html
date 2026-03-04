@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preview D2: Miami Vice — FleetReq</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FAFAFE;--bg2:#F0F4FF;--bg3:#E6EEFF;--text:#0A0A1A;--muted:#666688;--pink:#FF2E63;--teal:#08D9D6;--navy:#252A34;--border-pink:rgba(255,46,99,0.18);--border-teal:rgba(8,217,214,0.2)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+
+.navwrap{position:sticky;top:0;z-index:100}
+.row1,.row2{background:rgba(10,10,26,0.95);padding:6px 14px;display:flex;align-items:center;flex-wrap:wrap;gap:2px;font-size:10px;font-family:system-ui,sans-serif;backdrop-filter:blur(8px)}
+.row1{border-bottom:1px solid rgba(255,255,255,0.06)}
+.row2{border-bottom:1px solid rgba(255,46,99,0.25)}
+.row1 .lbl,.row2 .lbl{color:#444;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;margin-right:2px}
+.row1 .sep,.row2 .sep{color:#252525;margin:0 4px;flex-shrink:0}
+.row1 .off,.row2 .off{color:#555;text-decoration:none;padding:2px 4px;border-radius:2px;transition:color .15s}
+.row1 .off:hover{color:#aaa}
+.row2 .off:hover{color:var(--pink)}
+.row2 .on{color:#fff;background:linear-gradient(135deg,var(--pink),var(--teal));padding:2px 7px;border-radius:2px;font-weight:700;font-size:9px}
+.row1 .back{margin-left:auto;color:#444;text-decoration:none;padding:2px 6px;border:1px solid #2a2a2a;border-radius:2px;font-size:9px;transition:all .2s}
+.row1 .back:hover{color:#aaa;border-color:#555}
+
+body::before{content:'';position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 60% 50% at 10% 20%, rgba(255,46,99,0.06) 0%,transparent 50%),
+    radial-gradient(ellipse 60% 50% at 90% 80%, rgba(8,217,214,0.06) 0%,transparent 50%),
+    repeating-linear-gradient(45deg, transparent 0px, transparent 40px, rgba(255,46,99,0.02) 40px, rgba(255,46,99,0.02) 41px);
+  pointer-events:none;z-index:0}
+main{position:relative;z-index:1}
+
+/* Gradient text */
+.grad{background:linear-gradient(135deg,var(--pink),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+/* Hero */
+.hero{min-height:88vh;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;padding:80px 48px;max-width:1200px;margin:0 auto}
+@media(max-width:768px){.hero{grid-template-columns:1fr;padding:48px 24px}}
+.hero-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.2em;color:var(--muted);margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.hero-label::before{content:'';width:20px;height:2px;background:linear-gradient(90deg,var(--pink),var(--teal))}
+.hero h1{font-size:clamp(2.8rem,5vw,4.5rem);font-weight:800;line-height:1.05;margin-bottom:20px;letter-spacing:-.04em}
+.hero p{font-size:1rem;color:var(--muted);line-height:1.75;margin-bottom:32px;font-weight:300;max-width:440px}
+.btn-pink{background:var(--pink);color:#fff;padding:13px 28px;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.875rem;transition:all .3s;display:inline-block;box-shadow:0 8px 24px rgba(255,46,99,0.3)}
+.btn-pink:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(255,46,99,0.4)}
+.btn-teal{background:transparent;border:2px solid var(--teal);color:var(--teal);padding:12px 28px;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.875rem;margin-left:12px;transition:all .3s;display:inline-block}
+.btn-teal:hover{background:rgba(8,217,214,0.08)}
+
+/* Hero visual */
+.hero-card{background:var(--navy);border-radius:20px;padding:32px;box-shadow:0 24px 80px rgba(10,10,26,0.15)}
+.card-row{display:flex;gap:16px;margin-bottom:16px}
+.mini-card{flex:1;background:rgba(255,255,255,0.06);border-radius:12px;padding:16px;text-align:center}
+.mini-num{font-size:1.6rem;font-weight:700;line-height:1;display:block;margin-bottom:4px}
+.mini-label{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,0.4)}
+.progress-block{background:rgba(255,255,255,0.04);border-radius:12px;padding:16px}
+.prog-label{font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:8px;display:flex;justify-content:space-between}
+.prog-bar{height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;border-radius:2px}
+
+/* Sections */
+section{padding:72px 24px;max-width:1100px;margin:0 auto}
+.section-pill{display:inline-flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--border-teal);border-radius:50px;padding:4px 14px;font-size:10px;font-weight:600;color:var(--teal);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px}
+.section-title{font-size:clamp(2rem,4vw,3rem);font-weight:700;line-height:1.1;margin-bottom:12px;letter-spacing:-.03em}
+.section-sub{font-size:0.95rem;color:var(--muted);max-width:480px;line-height:1.7;font-weight:300}
+
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-top:40px}
+.feat{background:#fff;border:1px solid rgba(10,10,26,0.08);border-radius:16px;padding:28px;transition:all .3s;position:relative;overflow:hidden}
+.feat::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--pink),var(--teal));transform:scaleX(0);transform-origin:left;transition:transform .3s}
+.feat:hover{box-shadow:0 8px 32px rgba(10,10,26,0.1);transform:translateY(-2px)}
+.feat:hover::before{transform:scaleX(1)}
+.feat-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:14px}
+.feat-icon.pink{background:rgba(255,46,99,0.1)}
+.feat-icon.teal{background:rgba(8,217,214,0.1)}
+.feat h3{font-size:0.95rem;font-weight:600;margin-bottom:8px;letter-spacing:-.01em}
+.feat p{font-size:0.85rem;color:var(--muted);line-height:1.65;font-weight:300}
+
+.price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;margin-top:40px}
+.plan{background:#fff;border:1px solid rgba(10,10,26,0.08);border-radius:20px;padding:32px;position:relative;transition:all .3s}
+.plan:hover{box-shadow:0 8px 32px rgba(10,10,26,0.1)}
+.plan.feat-plan{border:2px solid transparent;background:linear-gradient(#fff,#fff) padding-box, linear-gradient(135deg,var(--pink),var(--teal)) border-box}
+.plan-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--pink),var(--teal));color:#fff;padding:3px 16px;border-radius:50px;font-size:10px;font-weight:600;white-space:nowrap}
+.plan-name{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.15em;color:var(--muted);margin-bottom:8px}
+.plan-price{font-size:2.5rem;font-weight:700;color:var(--text);margin-bottom:4px;letter-spacing:-.04em}
+.plan-price span{font-size:.9rem;font-weight:300;color:var(--muted)}
+.plan-desc{font-size:0.8rem;color:var(--muted);margin-bottom:20px;font-weight:300}
+.plan-features{list-style:none;margin-bottom:24px}
+.plan-features li{font-size:0.85rem;color:var(--muted);padding:6px 0;border-bottom:1px solid rgba(10,10,26,0.06);display:flex;align-items:center;gap:8px;font-weight:300}
+.plan-features li::before{content:'✓';color:var(--teal);font-size:11px;font-weight:600;flex-shrink:0}
+.plan-btn{display:block;text-align:center;padding:12px;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.875rem;transition:all .3s}
+.plan-btn-grad{background:linear-gradient(135deg,var(--pink),var(--teal));color:#fff}
+.plan-btn-grad:hover{box-shadow:0 8px 24px rgba(255,46,99,0.3)}
+.plan-btn-outline{border:1px solid rgba(10,10,26,0.15);color:var(--text)}
+.plan-btn-outline:hover{border-color:var(--pink);color:var(--pink)}
+
+.cta-section{margin:0 24px 80px;max-width:1052px;margin-left:auto;margin-right:auto;background:var(--navy);border-radius:24px;padding:72px 48px;text-align:center;color:#fff}
+.cta-section h2{font-size:clamp(2rem,4vw,3.2rem);font-weight:700;margin-bottom:12px;letter-spacing:-.03em}
+.cta-section p{color:rgba(255,255,255,0.5);margin-bottom:32px;font-weight:300}
+.btn-cta{background:linear-gradient(135deg,var(--pink),var(--teal));color:#fff;padding:14px 32px;border-radius:50px;text-decoration:none;font-weight:600;font-size:0.95rem;display:inline-block;transition:all .3s}
+.btn-cta:hover{box-shadow:0 8px 32px rgba(255,46,99,0.4);transform:translateY(-2px)}
+
+footer{text-align:center;padding:32px;color:var(--muted);font-size:0.8rem}
+</style>
+</head>
+<body>
+<div class="navwrap">
+  <nav class="row1">
+    <span class="lbl">1</span><span class="sep">|</span>
+    <a href="/preview-a.html" class="off">A</a><a href="/preview-b.html" class="off">B</a><a href="/preview-c.html" class="off">C</a><a href="/preview-d.html" class="off">D</a><a href="/preview-e.html" class="off">E</a><a href="/preview-f.html" class="off">F</a><a href="/preview-g.html" class="off">G</a><a href="/preview-h.html" class="off">H</a><a href="/preview-i.html" class="off">I</a><a href="/preview-j.html" class="off">J</a><a href="/preview-k.html" class="off">K</a><a href="/preview-l.html" class="off">L</a><a href="/preview-m.html" class="off">M</a><a href="/preview-n.html" class="off">N</a><a href="/preview-o.html" class="off">O</a><a href="/preview-p.html" class="off">P</a><a href="/preview-q.html" class="off">Q</a><a href="/preview-r.html" class="off">R</a><a href="/preview-s.html" class="off">S</a><a href="/preview-t.html" class="off">T</a><a href="/preview-u.html" class="off">U</a><a href="/preview-v.html" class="off">V</a><a href="/preview-w.html" class="off">W</a><a href="/preview-x.html" class="off">X</a><a href="/preview-y.html" class="off">Y</a><a href="/preview-z.html" class="off">Z</a>
+    <a href="/" class="back">← Live</a>
+  </nav>
+  <nav class="row2">
+    <span class="lbl">2</span><span class="sep">|</span>
+    <a href="/preview-a2.html" class="off">A2</a><a href="/preview-b2.html" class="off">B2</a><a href="/preview-c2.html" class="off">C2</a><span class="on">D2: Miami</span><a href="/preview-e2.html" class="off">E2</a><a href="/preview-f2.html" class="off">F2</a><a href="/preview-g2.html" class="off">G2</a><a href="/preview-h2.html" class="off">H2</a><a href="/preview-i2.html" class="off">I2</a><a href="/preview-j2.html" class="off">J2</a><a href="/preview-k2.html" class="off">K2</a><a href="/preview-l2.html" class="off">L2</a><a href="/preview-m2.html" class="off">M2</a><a href="/preview-n2.html" class="off">N2</a><a href="/preview-o2.html" class="off">O2</a><a href="/preview-p2.html" class="off">P2</a><a href="/preview-q2.html" class="off">Q2</a><a href="/preview-r2.html" class="off">R2</a><a href="/preview-s2.html" class="off">S2</a><a href="/preview-t2.html" class="off">T2</a><a href="/preview-u2.html" class="off">U2</a><a href="/preview-v2.html" class="off">V2</a><a href="/preview-w2.html" class="off">W2</a><a href="/preview-x2.html" class="off">X2</a><a href="/preview-y2.html" class="off">Y2</a><a href="/preview-z2.html" class="off">Z2</a>
+  </nav>
+</div>
+<main>
+<div class="hero">
+  <div>
+    <div class="hero-label">Fleet Management</div>
+    <h1>Your fleet,<br><span class="grad">on fire.</span></h1>
+    <p>Vibrant, fast, and easy on the eyes. Track every vehicle with the energy of a Miami sunset — bold color, crisp data, zero friction.</p>
+    <div>
+      <a href="#" class="btn-pink">Start Free</a>
+      <a href="#" class="btn-teal">See Demo</a>
+    </div>
+  </div>
+  <div class="hero-card">
+    <div class="card-row">
+      <div class="mini-card"><span class="mini-num" style="background:linear-gradient(135deg,#FF2E63,#08D9D6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">1.2K+</span><span class="mini-label">Fleets</span></div>
+      <div class="mini-card"><span class="mini-num" style="color:#08D9D6">$0</span><span class="mini-label">Free Start</span></div>
+    </div>
+    <div class="progress-block">
+      <div class="prog-label"><span style="color:rgba(255,255,255,0.7)">Fleet Health</span><span style="color:#FF2E63">94%</span></div>
+      <div class="prog-bar"><div class="prog-fill" style="width:94%;background:linear-gradient(90deg,#FF2E63,#08D9D6)"></div></div>
+    </div>
+    <div class="progress-block" style="margin-top:12px">
+      <div class="prog-label"><span style="color:rgba(255,255,255,0.7)">Services On Time</span><span style="color:#08D9D6">87%</span></div>
+      <div class="prog-bar"><div class="prog-fill" style="width:87%;background:linear-gradient(90deg,#08D9D6,#FF2E63)"></div></div>
+    </div>
+  </div>
+</div>
+
+<section>
+  <div class="section-pill">⚡ Features</div>
+  <div class="section-title">Everything you need<br>to <span class="grad">run the city.</span></div>
+  <div class="section-sub">Six tools that work as hard as your fleet does — beautiful on screen, powerful underneath.</div>
+  <div class="feat-grid">
+    <div class="feat"><div class="feat-icon pink">⛽</div><h3>Fuel Tracking</h3><p>Log fill-ups in seconds. Auto MPG, cost-per-mile, and fleet-wide fuel trend dashboards.</p></div>
+    <div class="feat"><div class="feat-icon teal">🔧</div><h3>Maintenance</h3><p>Smart service intervals + email alerts. Never get blindsided by an overdue oil change again.</p></div>
+    <div class="feat"><div class="feat-icon pink">📊</div><h3>Analytics</h3><p>Eye-catching dashboards that surface what matters: cost trends, efficiency, fleet performance.</p></div>
+    <div class="feat"><div class="feat-icon teal">👥</div><h3>Team Access</h3><p>Owner, Editor, Viewer. Add your crew instantly — each person sees their view.</p></div>
+    <div class="feat"><div class="feat-icon pink">📱</div><h3>Mobile + Offline</h3><p>Install to your home screen. Log fuel offline. Your phone is your fleet HQ.</p></div>
+    <div class="feat"><div class="feat-icon teal">📤</div><h3>Reports</h3><p>CSV, PDF, JSON. IRS mileage logs. Export anything in the format you need.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="section-pill">💰 Pricing</div>
+  <div class="section-title">Pick your vibe.<br><span class="grad">Start free.</span></div>
+  <div class="section-sub">No contracts, no hidden fees. Upgrade when you're ready.</div>
+  <div class="price-grid">
+    <div class="plan"><div class="plan-name">Free</div><div class="plan-price">$0<span>/mo</span></div><div class="plan-desc">One vehicle, always free.</div><ul class="plan-features"><li>1 vehicle</li><li>Fuel tracking</li><li>Maintenance log</li><li>Mobile app</li></ul><a href="#" class="plan-btn plan-btn-outline">Start Free</a></div>
+    <div class="plan feat-plan"><div class="plan-badge">Most Popular</div><div class="plan-name">Family</div><div class="plan-price">$4<span>/mo</span></div><div class="plan-desc">Up to 3 vehicles.</div><ul class="plan-features"><li>3 vehicles</li><li>Email alerts</li><li>CSV & PDF</li><li>3 members</li><li>Scheduling</li></ul><a href="#" class="plan-btn plan-btn-grad">Get Started</a></div>
+    <div class="plan"><div class="plan-name">Business</div><div class="plan-price">$12<span>/vehicle/mo</span></div><div class="plan-desc">Unlimited fleet.</div><ul class="plan-features"><li>Unlimited vehicles</li><li>Custom intervals</li><li>IRS reports</li><li>6 members</li></ul><a href="#" class="plan-btn plan-btn-outline">Contact Sales</a></div>
+  </div>
+</section>
+
+<div class="cta-section">
+  <h2>Ready to <span class="grad">light it up?</span></h2>
+  <p>No credit card. Free forever on one vehicle. Upgrade when you need more.</p>
+  <a href="#" class="btn-cta">Start for Free</a>
+</div>
+</main>
+<footer>© 2025 FleetReq — Fleet management that doesn't bore you.</footer>
+</body>
+</html>
