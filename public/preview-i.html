@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FleetReq — Preview I (Synthwave)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@200;300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0D0014;--surface:rgba(255,255,255,.04);--pink:#FF2D78;--cyan:#00E5FF;--purple:#9B59B6;--text:#F0E8FF;--muted:#B0A8C8;--dim:#6A5880;--border:rgba(255,45,120,.15)}
+    body{font-family:'Exo 2',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.65}
+    a{text-decoration:none;color:inherit}
+    h1,h2,h3{font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:1px}
+    @keyframes gridScroll{0%{background-position:0 0}100%{background-position:0 80px}}
+    @keyframes glow{0%,100%{text-shadow:0 0 20px rgba(255,45,120,.6),0 0 40px rgba(255,45,120,.3)}50%{text-shadow:0 0 40px rgba(255,45,120,.9),0 0 80px rgba(255,45,120,.5)}}
+    @keyframes cyanGlow{0%,100%{text-shadow:0 0 20px rgba(0,229,255,.6)}50%{text-shadow:0 0 40px rgba(0,229,255,.9)}}
+    .pbar{background:rgba(0,0,0,.5);border-bottom:1px solid var(--border);padding:9px 24px;display:flex;align-items:center;gap:14px;font-size:11px;flex-wrap:wrap;font-family:'Rajdhani',sans-serif;letter-spacing:1px}
+    .pbar .lbl{color:var(--dim);text-transform:uppercase}
+    .pbar .on{color:var(--pink);font-weight:700}
+    .pbar .off{color:var(--dim);transition:color .2s}.pbar .off:hover{color:var(--text)}
+    .pbar .back{color:var(--dim);margin-left:auto}.pbar .back:hover{color:var(--text)}
+    .pbar .sep{color:rgba(255,255,255,.08)}
+    .site-nav{padding:20px 56px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);position:relative;z-index:10}
+    .logo{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;letter-spacing:4px;text-transform:uppercase}
+    .logo .p{color:var(--pink);text-shadow:0 0 16px rgba(255,45,120,.5)}
+    .logo .c{color:var(--cyan)}
+    .nav-links{display:flex;gap:36px;font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--dim)}.nav-links a:hover{color:var(--pink);transition:color .2s}
+    .nav-cta{border:1px solid var(--pink);color:var(--pink);padding:9px 22px;font-size:12px;font-weight:700;font-family:'Rajdhani',sans-serif;letter-spacing:2px;text-transform:uppercase;transition:all .3s}.nav-cta:hover{background:var(--pink);color:#0D0014;box-shadow:0 0 24px rgba(255,45,120,.4)}
+    .hero-bg{position:relative;padding:96px 56px 80px;overflow:hidden}
+    .hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,45,120,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.06) 1px,transparent 1px);background-size:60px 60px;animation:gridScroll 4s linear infinite;pointer-events:none}
+    .hero-vignette{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%,rgba(255,45,120,.15) 0%,transparent 60%);pointer-events:none}
+    .hero{max-width:1100px;margin:0 auto;position:relative;z-index:2}
+    .hero-label{font-size:11px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--cyan);margin-bottom:24px;animation:cyanGlow 3s ease-in-out infinite}
+    .hero h1{font-size:88px;line-height:1;letter-spacing:2px;text-transform:uppercase;margin-bottom:24px}
+    .hero h1 .pk{color:var(--pink);animation:glow 2.5s ease-in-out infinite}
+    .hero h1 .cy{color:var(--cyan)}
+    .hero p{font-size:18px;color:var(--muted);max-width:520px;line-height:1.75;margin-bottom:48px;font-weight:300}
+    .btn-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:64px}
+    .btn-pink{background:var(--pink);color:#fff;padding:15px 36px;font-weight:700;font-size:14px;font-family:'Rajdhani',sans-serif;letter-spacing:2px;text-transform:uppercase;transition:all .3s;display:inline-block}.btn-pink:hover{box-shadow:0 0 40px rgba(255,45,120,.5),0 0 80px rgba(255,45,120,.2);transform:translateY(-2px)}
+    .btn-glass{background:rgba(255,255,255,.06);color:var(--text);padding:14px 36px;font-weight:600;font-size:14px;font-family:'Rajdhani',sans-serif;letter-spacing:2px;text-transform:uppercase;border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(8px);transition:all .3s;display:inline-block}.btn-glass:hover{border-color:var(--cyan);color:var(--cyan)}
+    .stats{display:flex;gap:16px;flex-wrap:wrap}
+    .stat{border:1px solid var(--border);border-top:2px solid var(--pink);padding:16px 24px;min-width:120px;text-align:center;background:rgba(255,45,120,.04)}
+    .stat-val{font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:var(--pink);text-shadow:0 0 12px rgba(255,45,120,.4)}
+    .stat-lbl{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-top:4px}
+    .ps{background:rgba(0,0,0,.3);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:80px 56px}
+    .ps-inner{display:grid;grid-template-columns:1fr 1fr;gap:64px;max-width:1100px;margin:0 auto}
+    .ps-col h2{font-size:32px;text-transform:uppercase;margin-bottom:8px}
+    .ps-col h2 .pk{color:var(--pink)}.ps-col h2 .cy{color:var(--cyan)}
+    .ps-sub{font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--dim);margin-bottom:28px}
+    .ps-list{list-style:none}
+    .ps-list li{padding:11px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:15px;display:flex;align-items:center;gap:10px;color:var(--muted);font-weight:300}
+    .ps-list li:last-child{border-bottom:none}
+    .ri{color:var(--pink);font-weight:700}.gi{color:var(--cyan);font-weight:700}
+    .feats{padding:80px 56px;max-width:1100px;margin:0 auto}
+    .feats-label{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--pink);margin-bottom:16px}
+    .feats h2{font-size:44px;text-transform:uppercase;letter-spacing:2px;margin-bottom:48px}
+    .feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+    .feat{background:rgba(255,45,120,.04);border:1px solid var(--border);padding:28px;transition:all .3s}
+    .feat:hover{border-color:var(--pink);box-shadow:0 0 32px rgba(255,45,120,.1),inset 0 0 32px rgba(255,45,120,.03);transform:translateY(-3px)}
+    .feat-icon{font-size:26px;margin-bottom:14px}
+    .feat h3{font-size:18px;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;color:var(--text)}
+    .feat p{font-size:14px;color:var(--muted);line-height:1.7;font-weight:300}
+    .pricing{background:rgba(0,0,0,.3);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:80px 56px}
+    .pricing .inner{max-width:1000px;margin:0 auto}
+    .pricing h2{font-size:44px;text-transform:uppercase;letter-spacing:2px;margin-bottom:48px}
+    .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+    .pc{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);padding:32px 24px;position:relative}
+    .pc.hot{background:rgba(255,45,120,.07);border-color:rgba(255,45,120,.4)}
+    .pbadge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:4px 14px;white-space:nowrap;font-family:'Rajdhani',sans-serif}
+    .pname{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+    .pamt{font-family:'Rajdhani',sans-serif;font-size:44px;font-weight:700;color:var(--text);line-height:1;margin-bottom:8px;letter-spacing:1px}
+    .pc.hot .pamt{color:var(--pink);text-shadow:0 0 16px rgba(255,45,120,.4)}
+    .psub{font-size:13px;color:var(--dim);margin-bottom:24px;font-weight:300}
+    .pfeats{list-style:none;font-size:14px}
+    .pfeats li{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:8px;color:var(--muted);font-weight:300}
+    .pfeats li:last-child{border-bottom:none}
+    .ck{color:var(--cyan);font-weight:700}
+    .cta{padding:100px 56px;text-align:center;position:relative;overflow:hidden}
+    .cta::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%,rgba(255,45,120,.15) 0%,transparent 60%);pointer-events:none}
+    .cta h2{font-size:64px;text-transform:uppercase;letter-spacing:3px;line-height:1.05;margin-bottom:16px;position:relative}
+    .cta h2 .pk{color:var(--pink);animation:glow 2.5s ease-in-out infinite}
+    .cta .sub{font-size:17px;color:var(--muted);margin-bottom:40px;font-weight:300;position:relative}
+    .cta .fine{font-size:12px;color:var(--dim);margin-top:20px;letter-spacing:1px;font-weight:600;text-transform:uppercase;position:relative}
+    @media(max-width:768px){.hero h1{font-size:56px}.ps-inner,.pgrid{grid-template-columns:1fr}.hero-bg,.ps,.feats,.pricing,.cta,.site-nav{padding-left:24px;padding-right:24px}}
+  
+    .pbar2{background:rgba(8,8,8,0.97);padding:6px 14px;display:flex;align-items:center;flex-wrap:wrap;gap:2px;font-size:10px;font-family:system-ui,sans-serif;border-bottom:1px solid rgba(255,255,255,0.08)}
+    .pbar2 .lbl2{color:#444;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;margin-right:2px}
+    .pbar2 .sep2{color:#252525;margin:0 4px;flex-shrink:0}
+    .pbar2 .off2{color:#555;text-decoration:none;padding:2px 4px;border-radius:2px;transition:color .15s}
+    .pbar2 .off2:hover{color:#aaa}
+  </style>
+</head>
+<body>
+<nav class="pbar">
+  <span class="lbl">Preview</span><span class="sep">|</span>
+  <a href="/preview-a.html" class="off">A</a><a href="/preview-b.html" class="off">B</a><a href="/preview-c.html" class="off">C</a><a href="/preview-d.html" class="off">D</a><a href="/preview-e.html" class="off">E</a><a href="/preview-f.html" class="off">F</a><a href="/preview-g.html" class="off">G</a><a href="/preview-h.html" class="off">H</a>
+  <span class="on">I: Synthwave</span>
+  <a href="/preview-j.html" class="off">J</a><a href="/preview-k.html" class="off">K</a><a href="/preview-l.html" class="off">L</a><a href="/preview-m.html" class="off">M</a><a href="/preview-n.html" class="off">N</a><a href="/preview-o.html" class="off">O</a><a href="/preview-p.html" class="off">P</a><a href="/preview-q.html" class="off">Q</a><a href="/preview-r.html" class="off">R</a><a href="/preview-s.html" class="off">S</a><a href="/preview-t.html" class="off">T</a><a href="/preview-u.html" class="off">U</a><a href="/preview-v.html" class="off">V</a><a href="/preview-w.html" class="off">W</a><a href="/preview-x.html" class="off">X</a><a href="/preview-y.html" class="off">Y</a><a href="/preview-z.html" class="off">Z</a>
+  <a href="/" class="back">← Live</a>
+</nav>
+<nav class="pbar2">
+  <span class="lbl2">2</span><span class="sep2">|</span>
+  <a href="/preview-a2.html" class="off2">A2</a><a href="/preview-b2.html" class="off2">B2</a><a href="/preview-c2.html" class="off2">C2</a><a href="/preview-d2.html" class="off2">D2</a><a href="/preview-e2.html" class="off2">E2</a><a href="/preview-f2.html" class="off2">F2</a><a href="/preview-g2.html" class="off2">G2</a><a href="/preview-h2.html" class="off2">H2</a><a href="/preview-i2.html" class="off2">I2</a><a href="/preview-j2.html" class="off2">J2</a><a href="/preview-k2.html" class="off2">K2</a><a href="/preview-l2.html" class="off2">L2</a><a href="/preview-m2.html" class="off2">M2</a><a href="/preview-n2.html" class="off2">N2</a><a href="/preview-o2.html" class="off2">O2</a><a href="/preview-p2.html" class="off2">P2</a><a href="/preview-q2.html" class="off2">Q2</a><a href="/preview-r2.html" class="off2">R2</a><a href="/preview-s2.html" class="off2">S2</a><a href="/preview-t2.html" class="off2">T2</a><a href="/preview-u2.html" class="off2">U2</a><a href="/preview-v2.html" class="off2">V2</a><a href="/preview-w2.html" class="off2">W2</a><a href="/preview-x2.html" class="off2">X2</a><a href="/preview-y2.html" class="off2">Y2</a><a href="/preview-z2.html" class="off2">Z2</a>
+</nav>
+<nav class="site-nav">
+  <div class="logo">FLEET<span class="p">R</span><span class="c">EQ</span></div>
+  <div class="nav-links"><a href="#">Features</a><a href="#">Pricing</a><a href="/login">Sign In</a></div>
+  <a href="/login" class="nav-cta">Start Free</a>
+</nav>
+<div class="hero-bg">
+  <div class="hero-grid"></div>
+  <div class="hero-vignette"></div>
+  <div class="hero">
+    <div class="hero-label">Fleet Intelligence Platform</div>
+    <h1>ACCELERATE<br>YOUR <span class="pk">FLEET</span><br><span class="cy">MANAGEMENT</span></h1>
+    <p>Real-time maintenance tracking, fuel analytics, and tax compliance for contractors running at full throttle.</p>
+    <div class="btn-row">
+      <a href="/login" class="btn-pink">Start Free →</a>
+      <a href="/pricing" class="btn-glass">View Pricing</a>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-val">15m</div><div class="stat-lbl">Setup</div></div>
+      <div class="stat"><div class="stat-val">$0</div><div class="stat-lbl">To Start</div></div>
+      <div class="stat"><div class="stat-val">24/7</div><div class="stat-lbl">Online</div></div>
+    </div>
+  </div>
+</div>
+<section class="ps">
+  <div class="ps-inner">
+    <div class="ps-col"><h2>WHY SPREADSHEETS <span class="pk">FAIL</span></h2><div class="ps-sub">System errors detected</div>
+      <ul class="ps-list">
+        <li><span class="ri">✗</span> Collaboration causes data corruption</li>
+        <li><span class="ri">✗</span> No alerts = expensive repair surprises</li>
+        <li><span class="ri">✗</span> Tax exports require manual compilation</li>
+        <li><span class="ri">✗</span> No mobile access from the field</li>
+        <li><span class="ri">✗</span> Single point of failure on local disk</li>
+      </ul>
+    </div>
+    <div class="ps-col"><h2>FLEETREQ <span class="cy">SOLUTION</span></h2><div class="ps-sub">System upgrades loaded</div>
+      <ul class="ps-list">
+        <li><span class="gi">✓</span> Real-time team collaboration</li>
+        <li><span class="gi">✓</span> Proactive maintenance alerts</li>
+        <li><span class="gi">✓</span> IRS-ready exports in one click</li>
+        <li><span class="gi">✓</span> Mobile access on any device</li>
+        <li><span class="gi">✓</span> Automatic cloud backup</li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="feats">
+  <div class="feats-label">Platform Modules</div>
+  <h2>FULL FEATURE SET</h2>
+  <div class="feat-grid">
+    <div class="feat"><div class="feat-icon">⛽</div><h3>Fuel Tracking</h3><p>Log fill-ups and monitor MPG trends. Know exactly which vehicles are draining your margins.</p></div>
+    <div class="feat"><div class="feat-icon">🔧</div><h3>Maintenance Alerts</h3><p>Color-coded alerts before breakdowns. Oil changes, inspections — nothing missed.</p></div>
+    <div class="feat"><div class="feat-icon">📋</div><h3>Tax Compliance</h3><p>IRS-ready mileage logs and reports. Export what your accountant needs automatically.</p></div>
+    <div class="feat"><div class="feat-icon">👥</div><h3>Team Access</h3><p>Role-based access for your whole crew. Real-time sync from field to office.</p></div>
+    <div class="feat"><div class="feat-icon">📱</div><h3>Mobile Ready</h3><p>Works on any device, any browser. No download required.</p></div>
+    <div class="feat"><div class="feat-icon">☁️</div><h3>Cloud Backup</h3><p>Encrypted automatic backups. Your data is always protected.</p></div>
+  </div>
+</section>
+<section class="pricing">
+  <div class="inner">
+    <h2>CHOOSE YOUR TIER</h2>
+    <div class="pgrid">
+      <div class="pc"><div class="pname">Free</div><div class="pamt">$0</div><div class="psub">No card required</div><ul class="pfeats"><li><span class="ck">✓</span> 1 vehicle</li><li><span class="ck">✓</span> Fuel tracking</li><li><span class="ck">✓</span> Unlimited logs</li></ul></div>
+      <div class="pc hot"><div class="pbadge">RECOMMENDED</div><div class="pname">Family</div><div class="pamt">$4<span style="font-size:20px;font-weight:400">/mo</span></div><div class="psub">Small fleets</div><ul class="pfeats"><li><span class="ck">✓</span> 3 vehicles</li><li><span class="ck">✓</span> Maintenance alerts</li><li><span class="ck">✓</span> Email reports</li><li><span class="ck">✓</span> Mobile access</li></ul></div>
+      <div class="pc"><div class="pname">Business</div><div class="pamt">$12<span style="font-size:20px;font-weight:400">/veh</span></div><div class="psub">Unlimited scale</div><ul class="pfeats"><li><span class="ck">✓</span> Unlimited vehicles</li><li><span class="ck">✓</span> Team management</li><li><span class="ck">✓</span> Tax exports</li><li><span class="ck">✓</span> Priority support</li></ul></div>
+    </div>
+  </div>
+</section>
+<section class="cta">
+  <h2>READY TO <span class="pk">LEVEL UP</span>?</h2>
+  <p class="sub">15 minutes to set up. Years of headaches saved.</p>
+  <a href="/login" class="btn-pink" style="font-size:15px;padding:17px 52px">START FREE →</a>
+  <p class="fine">No credit card · Cancel anytime · 15-min setup</p>
+</section>
+</body></html>

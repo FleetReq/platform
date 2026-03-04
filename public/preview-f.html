@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FleetReq — Preview F (Midnight Gold)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0C0C0F;--surface:#14141A;--gold:#C9A84C;--gold-dim:rgba(201,168,76,.1);--text:#F5F0E8;--muted:#8A7B6A;--dim:#5A4E42;--border:#2A2520}
+    body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.7;letter-spacing:.2px}
+    a{text-decoration:none;color:inherit}
+    h1,h2,h3{font-family:'Cormorant Garamond',serif;font-weight:400}
+    .pbar{background:#0A0A0D;border-bottom:1px solid var(--border);padding:9px 24px;display:flex;align-items:center;gap:14px;font-size:11px;flex-wrap:wrap}
+    .pbar .lbl{color:var(--dim);letter-spacing:1.5px;text-transform:uppercase}
+    .pbar .on{color:var(--gold)}
+    .pbar .off{color:var(--dim);transition:color .2s}.pbar .off:hover{color:var(--text)}
+    .pbar .back{color:var(--dim);margin-left:auto}.pbar .back:hover{color:var(--text)}
+    .pbar .sep{color:var(--border)}
+    .site-nav{padding:28px 72px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+    .logo{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:var(--text)}
+    .logo span{color:var(--gold)}
+    .nav-links{display:flex;gap:40px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}.nav-links a:hover{color:var(--gold);transition:color .2s}
+    .gold-rule{height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin-bottom:32px}
+    .hero{padding:112px 72px 96px;max-width:1100px;margin:0 auto}
+    .eyebrow{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:32px;font-family:'Jost',sans-serif;font-weight:300}
+    .hero h1{font-size:78px;font-weight:300;line-height:1.08;letter-spacing:-1px;margin-bottom:32px}
+    .hero h1 em{font-style:italic;color:var(--gold)}
+    .hero p{font-size:17px;color:var(--muted);max-width:480px;line-height:1.85;margin-bottom:56px;font-weight:300}
+    .btn-row{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:72px;align-items:center}
+    .btn-gold{border:1px solid var(--gold);color:var(--gold);padding:15px 40px;border-radius:1px;font-size:13px;font-weight:400;letter-spacing:2px;text-transform:uppercase;font-family:'Jost',sans-serif;transition:all .3s;display:inline-block}
+    .btn-gold:hover{background:var(--gold);color:#0C0C0F;box-shadow:0 0 40px rgba(201,168,76,.25)}
+    .btn-text{font-size:13px;color:var(--muted);font-weight:300;letter-spacing:1px;transition:color .2s}.btn-text:hover{color:var(--gold)}
+    .trust{display:flex;gap:40px;flex-wrap:wrap}
+    .trust-i{font-size:12px;color:var(--dim);letter-spacing:1px;display:flex;align-items:center;gap:8px}
+    .trust-i::before{content:'—';color:var(--gold)}
+    .divider{height:1px;background:var(--border);margin:0}
+    .ps{padding:88px 72px}
+    .ps-inner{display:grid;grid-template-columns:1fr 1fr;gap:80px;max-width:1100px;margin:0 auto}
+    .ps-col h2{font-size:34px;font-weight:400;color:var(--text);margin-bottom:8px}
+    .ps-col h2 em{font-style:italic;color:var(--gold)}
+    .ps-sub{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:32px;font-family:'Jost',sans-serif}
+    .ps-list{list-style:none}
+    .ps-list li{padding:14px 0;border-bottom:1px solid var(--border);font-size:15px;display:flex;align-items:center;gap:14px;color:var(--muted);font-weight:300}
+    .ps-list li:last-child{border-bottom:none}
+    .ri{color:#C97070;font-size:12px}.gi{color:var(--gold);font-size:12px}
+    .feats{padding:88px 72px;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+    .feats h2{font-size:42px;font-weight:300;color:var(--text);margin-bottom:64px}
+    .feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:var(--border)}
+    .feat{background:var(--surface);padding:36px;transition:background .3s}
+    .feat:hover{background:#1A1A22}
+    .feat-icon{font-size:22px;margin-bottom:20px;opacity:.7}
+    .feat h3{font-size:20px;font-weight:400;color:var(--text);margin-bottom:12px}
+    .feat h3 em{font-style:italic;color:var(--gold)}
+    .feat p{font-size:14px;color:var(--muted);line-height:1.75;font-weight:300}
+    .pricing{padding:88px 72px}
+    .pricing h2{font-size:42px;font-weight:300;margin-bottom:64px}
+    .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border)}
+    .pc{background:var(--bg);padding:44px 36px;position:relative}
+    .pc.hot{background:var(--gold-dim)}
+    .pbadge{position:absolute;top:0;right:0;background:var(--gold);color:#0C0C0F;font-size:9px;font-weight:500;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;font-family:'Jost',sans-serif}
+    .pname{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--dim);margin-bottom:16px;font-family:'Jost',sans-serif}
+    .pamt{font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:300;color:var(--text);line-height:1;margin-bottom:8px}
+    .pc.hot .pamt{color:var(--gold)}
+    .psub{font-size:13px;color:var(--dim);margin-bottom:32px;font-weight:300}
+    .pfeats{list-style:none;font-size:14px}
+    .pfeats li{padding:10px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;color:var(--muted);font-weight:300}
+    .pfeats li:last-child{border-bottom:none}
+    .ck{color:var(--gold);font-size:11px}
+    .cta{padding:112px 72px;text-align:center}
+    .cta h2{font-size:58px;font-weight:300;line-height:1.12;margin-bottom:16px}
+    .cta h2 em{font-style:italic;color:var(--gold)}
+    .cta .sub{font-size:16px;color:var(--muted);margin-bottom:48px;font-weight:300;letter-spacing:.5px}
+    .cta .fine{font-size:12px;color:var(--dim);margin-top:24px;letter-spacing:1px;text-transform:uppercase}
+    @media(max-width:768px){.hero h1{font-size:48px}.ps-inner,.pgrid,.feat-grid{grid-template-columns:1fr}.hero,.ps,.feats,.pricing,.cta,.site-nav{padding-left:24px;padding-right:24px}.cta h2{font-size:38px}}
+  
+    .pbar2{background:rgba(8,8,8,0.97);padding:6px 14px;display:flex;align-items:center;flex-wrap:wrap;gap:2px;font-size:10px;font-family:system-ui,sans-serif;border-bottom:1px solid rgba(255,255,255,0.08)}
+    .pbar2 .lbl2{color:#444;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;margin-right:2px}
+    .pbar2 .sep2{color:#252525;margin:0 4px;flex-shrink:0}
+    .pbar2 .off2{color:#555;text-decoration:none;padding:2px 4px;border-radius:2px;transition:color .15s}
+    .pbar2 .off2:hover{color:#aaa}
+  </style>
+</head>
+<body>
+<nav class="pbar">
+  <span class="lbl">Preview</span><span class="sep">|</span>
+  <a href="/preview-a.html" class="off">A</a><a href="/preview-b.html" class="off">B</a><a href="/preview-c.html" class="off">C</a><a href="/preview-d.html" class="off">D</a><a href="/preview-e.html" class="off">E</a>
+  <span class="on">F: Midnight Gold</span>
+  <a href="/preview-g.html" class="off">G</a><a href="/preview-h.html" class="off">H</a><a href="/preview-i.html" class="off">I</a><a href="/preview-j.html" class="off">J</a><a href="/preview-k.html" class="off">K</a><a href="/preview-l.html" class="off">L</a><a href="/preview-m.html" class="off">M</a><a href="/preview-n.html" class="off">N</a><a href="/preview-o.html" class="off">O</a><a href="/preview-p.html" class="off">P</a><a href="/preview-q.html" class="off">Q</a><a href="/preview-r.html" class="off">R</a><a href="/preview-s.html" class="off">S</a><a href="/preview-t.html" class="off">T</a><a href="/preview-u.html" class="off">U</a><a href="/preview-v.html" class="off">V</a><a href="/preview-w.html" class="off">W</a><a href="/preview-x.html" class="off">X</a><a href="/preview-y.html" class="off">Y</a><a href="/preview-z.html" class="off">Z</a>
+  <a href="/" class="back">← Live</a>
+</nav>
+<nav class="pbar2">
+  <span class="lbl2">2</span><span class="sep2">|</span>
+  <a href="/preview-a2.html" class="off2">A2</a><a href="/preview-b2.html" class="off2">B2</a><a href="/preview-c2.html" class="off2">C2</a><a href="/preview-d2.html" class="off2">D2</a><a href="/preview-e2.html" class="off2">E2</a><a href="/preview-f2.html" class="off2">F2</a><a href="/preview-g2.html" class="off2">G2</a><a href="/preview-h2.html" class="off2">H2</a><a href="/preview-i2.html" class="off2">I2</a><a href="/preview-j2.html" class="off2">J2</a><a href="/preview-k2.html" class="off2">K2</a><a href="/preview-l2.html" class="off2">L2</a><a href="/preview-m2.html" class="off2">M2</a><a href="/preview-n2.html" class="off2">N2</a><a href="/preview-o2.html" class="off2">O2</a><a href="/preview-p2.html" class="off2">P2</a><a href="/preview-q2.html" class="off2">Q2</a><a href="/preview-r2.html" class="off2">R2</a><a href="/preview-s2.html" class="off2">S2</a><a href="/preview-t2.html" class="off2">T2</a><a href="/preview-u2.html" class="off2">U2</a><a href="/preview-v2.html" class="off2">V2</a><a href="/preview-w2.html" class="off2">W2</a><a href="/preview-x2.html" class="off2">X2</a><a href="/preview-y2.html" class="off2">Y2</a><a href="/preview-z2.html" class="off2">Z2</a>
+</nav>
+<nav class="site-nav">
+  <div class="logo">Fleet<span>Req</span></div>
+  <div class="nav-links"><a href="#">Features</a><a href="#">Pricing</a><a href="/login">Sign In</a></div>
+</nav>
+<div class="hero">
+  <div class="eyebrow">Professional Fleet Management</div>
+  <div class="gold-rule"></div>
+  <h1>Precision fleet management<br>for contractors who<br><em>demand more.</em></h1>
+  <p>Stop relying on spreadsheets. FleetReq delivers real-time maintenance tracking, fuel analytics, and tax-ready reporting — with the precision your business deserves.</p>
+  <div class="btn-row">
+    <a href="/login" class="btn-gold">Begin Free Trial</a>
+    <a href="/pricing" class="btn-text">View Pricing →</a>
+  </div>
+  <div class="trust">
+    <span class="trust-i">15-minute setup</span>
+    <span class="trust-i">No credit card required</span>
+    <span class="trust-i">Cancel anytime</span>
+  </div>
+</div>
+<div class="divider"></div>
+<section class="ps">
+  <div class="ps-inner">
+    <div class="ps-col">
+      <h2>The cost of <em>improvisation</em></h2>
+      <div class="ps-sub">Why spreadsheets fail</div>
+      <ul class="ps-list">
+        <li><span class="ri">×</span> Collaboration breaks under multiple editors</li>
+        <li><span class="ri">×</span> No alerts means expensive, avoidable repairs</li>
+        <li><span class="ri">×</span> Tax season requires days of manual work</li>
+        <li><span class="ri">×</span> No access from the field</li>
+        <li><span class="ri">×</span> One hardware failure ends everything</li>
+      </ul>
+    </div>
+    <div class="ps-col">
+      <h2>The value of <em>precision</em></h2>
+      <div class="ps-sub">The FleetReq standard</div>
+      <ul class="ps-list">
+        <li><span class="gi">✦</span> Real-time collaboration across your team</li>
+        <li><span class="gi">✦</span> Proactive alerts prevent costly breakdowns</li>
+        <li><span class="gi">✦</span> IRS-ready reports generated automatically</li>
+        <li><span class="gi">✦</span> Full access on any device, anywhere</li>
+        <li><span class="gi">✦</span> Secure, automatic cloud backup</li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="feats">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="gold-rule"></div>
+    <h2>A complete platform for your fleet</h2>
+    <div class="feat-grid">
+      <div class="feat"><div class="feat-icon">⛽</div><h3>Fuel <em>Analytics</em></h3><p>Monitor MPG trends and fuel costs across every vehicle. Know exactly where your money goes.</p></div>
+      <div class="feat"><div class="feat-icon">🔧</div><h3>Maintenance <em>Precision</em></h3><p>Proactive alerts for every service interval. Protect your fleet before problems arise.</p></div>
+      <div class="feat"><div class="feat-icon">📋</div><h3>Tax <em>Compliance</em></h3><p>IRS-ready mileage and expense reports. Everything your accountant needs, automatically.</p></div>
+      <div class="feat"><div class="feat-icon">👥</div><h3>Team <em>Management</em></h3><p>Role-based access for your entire operation. Field and office, fully synchronized.</p></div>
+      <div class="feat"><div class="feat-icon">📱</div><h3>Mobile <em>Access</em></h3><p>Every feature available on any device. No download required, always current.</p></div>
+      <div class="feat"><div class="feat-icon">☁️</div><h3>Secure <em>Storage</em></h3><p>Encrypted cloud backup, always running. Your records are protected absolutely.</p></div>
+    </div>
+  </div>
+</section>
+<section class="pricing">
+  <div class="gold-rule"></div>
+  <h2>Investment, not expense</h2>
+  <div class="pgrid">
+    <div class="pc"><div class="pname">Free</div><div class="pamt">$0</div><div class="psub">Begin without commitment</div><ul class="pfeats"><li><span class="ck">✦</span> 1 vehicle</li><li><span class="ck">✦</span> Fuel tracking</li><li><span class="ck">✦</span> Unlimited history</li></ul></div>
+    <div class="pc hot"><div class="pbadge">Recommended</div><div class="pname">Family</div><div class="pamt">$4<span style="font-size:20px;font-weight:300;font-family:'Jost',sans-serif">/mo</span></div><div class="psub">Families &amp; small fleets</div><ul class="pfeats"><li><span class="ck">✦</span> 3 vehicles</li><li><span class="ck">✦</span> Full maintenance</li><li><span class="ck">✦</span> Email alerts</li><li><span class="ck">✦</span> Mobile access</li></ul></div>
+    <div class="pc"><div class="pname">Business</div><div class="pamt">$12<span style="font-size:20px;font-weight:300;font-family:'Jost',sans-serif">/vehicle</span></div><div class="psub">Professional fleets</div><ul class="pfeats"><li><span class="ck">✦</span> Unlimited vehicles</li><li><span class="ck">✦</span> Team management</li><li><span class="ck">✦</span> Tax reports</li><li><span class="ck">✦</span> Priority support</li></ul></div>
+  </div>
+</section>
+<section class="cta">
+  <div class="gold-rule" style="max-width:200px;margin:0 auto 48px"></div>
+  <h2>Take control of<br>your fleet <em>today.</em></h2>
+  <p class="sub">Precision management. Honest pricing. Built for contractors.</p>
+  <a href="/login" class="btn-gold" style="font-size:14px;padding:17px 52px">Begin Free Trial</a>
+  <p class="fine">15-minute setup · No credit card · Cancel anytime</p>
+</section>
+</body></html>

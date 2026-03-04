@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FleetReq — Preview E (Terminal)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#0A0A0A;--surface:#111;--green:#00FF41;--green-dim:rgba(0,255,65,.1);--text:#C8C8C8;--muted:#6A9955;--dim:#4A6A4A;--border:#1E2A1E}
+    body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.7}
+    a{text-decoration:none;color:inherit}
+    body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,255,65,.012) 3px,rgba(0,255,65,.012) 4px);pointer-events:none;z-index:9999}
+    .pbar{background:#0D0D0D;border-bottom:1px solid var(--border);padding:9px 24px;display:flex;align-items:center;gap:14px;font-size:11px;flex-wrap:wrap}
+    .pbar .lbl{color:var(--dim);letter-spacing:1px;text-transform:uppercase}
+    .pbar .on{color:var(--green);font-weight:700}
+    .pbar .off{color:var(--dim);transition:color .2s}.pbar .off:hover{color:var(--text)}
+    .pbar .back{color:var(--dim);margin-left:auto}.pbar .back:hover{color:var(--text)}
+    .pbar .sep{color:#1A1A1A}
+    .site-nav{padding:20px 48px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+    .logo{font-size:20px;font-weight:700;letter-spacing:2px}
+    .logo .g{color:var(--green)}
+    .logo .cursor{display:inline-block;width:10px;height:18px;background:var(--green);margin-left:3px;animation:blink 1s step-end infinite;vertical-align:text-bottom}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+    .nav-links{display:flex;gap:32px;font-size:12px;color:var(--muted)}.nav-links a:before{content:'> '}.nav-links a:hover{color:var(--green);transition:color .2s}
+    .hero{padding:80px 48px;max-width:1100px;margin:0 auto}
+    .prompt{font-size:13px;color:var(--muted);margin-bottom:24px}
+    .prompt::before{content:'$ ';color:var(--green);font-weight:700}
+    .hero h1{font-size:62px;font-weight:700;line-height:1.08;margin-bottom:8px;letter-spacing:-1px;color:#E8E8E8}
+    .hero h1 .g{color:var(--green);text-shadow:0 0 20px rgba(0,255,65,.4)}
+    .hero .comment{font-size:14px;color:var(--muted);margin-bottom:32px}
+    .hero .comment::before{content:'// ';color:var(--dim)}
+    .hero p{font-size:16px;color:var(--muted);max-width:520px;line-height:1.8;margin-bottom:48px;font-weight:300}
+    .btn-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:56px}
+    .btn-green{background:var(--green);color:#0A0A0A;padding:14px 32px;border-radius:2px;font-weight:700;font-size:14px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;transition:all .2s;display:inline-block}
+    .btn-green:hover{box-shadow:0 0 30px rgba(0,255,65,.4);transform:translateY(-1px)}
+    .btn-ghost{border:1px solid rgba(0,255,65,.35);color:var(--green);padding:13px 32px;border-radius:2px;font-size:14px;font-weight:500;font-family:'JetBrains Mono',monospace;letter-spacing:1px;transition:all .2s;display:inline-block}
+    .btn-ghost:hover{background:var(--green-dim);border-color:var(--green)}
+    .stats{display:flex;gap:16px;flex-wrap:wrap}
+    .stat{border:1px solid var(--border);border-left:3px solid var(--green);padding:16px 24px;font-size:12px}
+    .stat-val{font-size:24px;font-weight:700;color:var(--green);text-shadow:0 0 12px rgba(0,255,65,.3)}
+    .stat-lbl{color:var(--muted);margin-top:4px}
+    .ps{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:72px 48px}
+    .ps-inner{display:grid;grid-template-columns:1fr 1fr;gap:56px;max-width:1100px;margin:0 auto}
+    .ps-col .hdr{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--dim);margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:12px}
+    .ps-col h2{font-size:22px;font-weight:700;color:#E0E0E0;margin-bottom:24px}
+    .ps-list{list-style:none}
+    .ps-list li{padding:9px 0;border-bottom:1px solid var(--border);font-size:14px;display:flex;align-items:center;gap:10px;color:var(--muted)}
+    .ps-list li:last-child{border-bottom:none}
+    .ri{color:#E06C75;font-weight:700}.gi{color:var(--green);font-weight:700}
+    .feats{padding:72px 48px;max-width:1100px;margin:0 auto}
+    .feats-hdr{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--dim);margin-bottom:16px}
+    .feats h2{font-size:28px;font-weight:700;color:#E0E0E0;margin-bottom:40px}
+    .feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+    .feat{background:var(--surface);border:1px solid var(--border);border-radius:2px;padding:24px;transition:all .2s}
+    .feat:hover{border-color:rgba(0,255,65,.25);box-shadow:0 0 24px rgba(0,255,65,.06)}
+    .feat .fname{font-size:13px;font-weight:700;color:#E0E0E0;margin-bottom:8px}
+    .feat .fname::before{content:'> ';color:var(--green)}
+    .feat p{font-size:13px;color:var(--muted);line-height:1.7;font-weight:300}
+    .pricing{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:72px 48px}
+    .pricing .inner{max-width:1000px;margin:0 auto}
+    .pricing h2{font-size:28px;font-weight:700;color:#E0E0E0;margin-bottom:40px}
+    .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .pc{background:var(--bg);border:1px solid var(--border);border-radius:2px;padding:28px;position:relative}
+    .pc.hot{background:var(--green-dim);border-color:rgba(0,255,65,.35)}
+    .pbadge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--green);color:#0A0A0A;font-size:10px;font-weight:700;letter-spacing:2px;padding:3px 12px;border-radius:1px;white-space:nowrap}
+    .pname{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
+    .pamt{font-size:36px;font-weight:700;color:#E0E0E0;line-height:1;margin-bottom:6px}
+    .pc.hot .pamt{color:var(--green);text-shadow:0 0 16px rgba(0,255,65,.3)}
+    .psub{font-size:12px;color:var(--dim);margin-bottom:20px}
+    .pfeats{list-style:none;font-size:13px}
+    .pfeats li{padding:7px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;color:var(--muted)}
+    .pfeats li:last-child{border-bottom:none}
+    .ck{color:var(--green);font-weight:700}
+    .cta{padding:88px 48px;text-align:center}
+    .cta .cmd{font-size:13px;color:var(--muted);margin-bottom:32px}.cta .cmd::before{content:'$ ';color:var(--green);font-weight:700}
+    .cta h2{font-size:42px;font-weight:700;color:#E0E0E0;margin-bottom:16px;letter-spacing:-1px}
+    .cta h2 .g{color:var(--green);text-shadow:0 0 20px rgba(0,255,65,.3)}
+    .cta .sub{font-size:15px;color:var(--muted);margin-bottom:36px;font-weight:300}
+    .cta .fine{font-size:12px;color:var(--dim);margin-top:20px}
+    @media(max-width:768px){.hero h1{font-size:38px}.ps-inner,.pgrid{grid-template-columns:1fr}.hero,.ps,.feats,.pricing,.cta,.site-nav{padding-left:24px;padding-right:24px}}
+  
+    .pbar2{background:rgba(8,8,8,0.97);padding:6px 14px;display:flex;align-items:center;flex-wrap:wrap;gap:2px;font-size:10px;font-family:system-ui,sans-serif;border-bottom:1px solid rgba(255,255,255,0.08)}
+    .pbar2 .lbl2{color:#444;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;margin-right:2px}
+    .pbar2 .sep2{color:#252525;margin:0 4px;flex-shrink:0}
+    .pbar2 .off2{color:#555;text-decoration:none;padding:2px 4px;border-radius:2px;transition:color .15s}
+    .pbar2 .off2:hover{color:#aaa}
+  </style>
+</head>
+<body>
+<nav class="pbar">
+  <span class="lbl">Preview</span><span class="sep">|</span>
+  <a href="/preview-a.html" class="off">A</a><a href="/preview-b.html" class="off">B</a><a href="/preview-c.html" class="off">C</a><a href="/preview-d.html" class="off">D</a>
+  <span class="on">E: Terminal</span>
+  <a href="/preview-f.html" class="off">F</a><a href="/preview-g.html" class="off">G</a><a href="/preview-h.html" class="off">H</a><a href="/preview-i.html" class="off">I</a><a href="/preview-j.html" class="off">J</a><a href="/preview-k.html" class="off">K</a><a href="/preview-l.html" class="off">L</a><a href="/preview-m.html" class="off">M</a><a href="/preview-n.html" class="off">N</a><a href="/preview-o.html" class="off">O</a><a href="/preview-p.html" class="off">P</a><a href="/preview-q.html" class="off">Q</a><a href="/preview-r.html" class="off">R</a><a href="/preview-s.html" class="off">S</a><a href="/preview-t.html" class="off">T</a><a href="/preview-u.html" class="off">U</a><a href="/preview-v.html" class="off">V</a><a href="/preview-w.html" class="off">W</a><a href="/preview-x.html" class="off">X</a><a href="/preview-y.html" class="off">Y</a><a href="/preview-z.html" class="off">Z</a>
+  <a href="/" class="back">← Live</a>
+</nav>
+<nav class="pbar2">
+  <span class="lbl2">2</span><span class="sep2">|</span>
+  <a href="/preview-a2.html" class="off2">A2</a><a href="/preview-b2.html" class="off2">B2</a><a href="/preview-c2.html" class="off2">C2</a><a href="/preview-d2.html" class="off2">D2</a><a href="/preview-e2.html" class="off2">E2</a><a href="/preview-f2.html" class="off2">F2</a><a href="/preview-g2.html" class="off2">G2</a><a href="/preview-h2.html" class="off2">H2</a><a href="/preview-i2.html" class="off2">I2</a><a href="/preview-j2.html" class="off2">J2</a><a href="/preview-k2.html" class="off2">K2</a><a href="/preview-l2.html" class="off2">L2</a><a href="/preview-m2.html" class="off2">M2</a><a href="/preview-n2.html" class="off2">N2</a><a href="/preview-o2.html" class="off2">O2</a><a href="/preview-p2.html" class="off2">P2</a><a href="/preview-q2.html" class="off2">Q2</a><a href="/preview-r2.html" class="off2">R2</a><a href="/preview-s2.html" class="off2">S2</a><a href="/preview-t2.html" class="off2">T2</a><a href="/preview-u2.html" class="off2">U2</a><a href="/preview-v2.html" class="off2">V2</a><a href="/preview-w2.html" class="off2">W2</a><a href="/preview-x2.html" class="off2">X2</a><a href="/preview-y2.html" class="off2">Y2</a><a href="/preview-z2.html" class="off2">Z2</a>
+</nav>
+<nav class="site-nav">
+  <div class="logo">FLEET<span class="g">REQ</span><span class="cursor"></span></div>
+  <div class="nav-links"><a href="#">features</a><a href="#">pricing</a><a href="/login">login</a></div>
+</nav>
+<div class="hero">
+  <div class="prompt">fleetreq --status</div>
+  <h1>Fleet Status:<br><span class="g">Optimized.</span></h1>
+  <div class="comment">real-time tracking for contractors who demand reliability</div>
+  <p>Stop managing your fleet with spreadsheets. FleetReq gives you fuel analytics, maintenance alerts, and tax compliance — set up in under 15 minutes.</p>
+  <div class="btn-row">
+    <a href="/login" class="btn-green">./start-free.sh</a>
+    <a href="/pricing" class="btn-ghost">view pricing</a>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="stat-val">15m</div><div class="stat-lbl">setup_time</div></div>
+    <div class="stat"><div class="stat-val">$0</div><div class="stat-lbl">starting_cost</div></div>
+    <div class="stat"><div class="stat-val">24/7</div><div class="stat-lbl">uptime</div></div>
+  </div>
+</div>
+<section class="ps">
+  <div class="ps-inner">
+    <div class="ps-col"><div class="hdr">// problems.log</div><h2>Spreadsheet failures</h2>
+      <ul class="ps-list">
+        <li><span class="ri">ERR</span> Multiple editors cause data corruption</li>
+        <li><span class="ri">ERR</span> No alerts → unexpected repair costs</li>
+        <li><span class="ri">ERR</span> Tax exports require manual compilation</li>
+        <li><span class="ri">ERR</span> No mobile access from the field</li>
+        <li><span class="ri">ERR</span> Single point of failure on local disk</li>
+      </ul>
+    </div>
+    <div class="ps-col"><div class="hdr">// fleetreq.log</div><h2>FleetReq fixes</h2>
+      <ul class="ps-list">
+        <li><span class="gi">OK</span> Real-time collaboration, zero conflicts</li>
+        <li><span class="gi">OK</span> Proactive maintenance alerts</li>
+        <li><span class="gi">OK</span> IRS-ready exports in one click</li>
+        <li><span class="gi">OK</span> Mobile access on any browser</li>
+        <li><span class="gi">OK</span> Automatic cloud backup</li>
+      </ul>
+    </div>
+  </div>
+</section>
+<section class="feats">
+  <div class="feats-hdr">// modules</div>
+  <h2>Core features</h2>
+  <div class="feat-grid">
+    <div class="feat"><div class="fname">fuel_tracking</div><p>Log fill-ups, monitor MPG trends. Identify which vehicles are draining your budget.</p></div>
+    <div class="feat"><div class="fname">maintenance_alerts</div><p>Proactive color-coded alerts. Oil changes, inspections — never miss a service event.</p></div>
+    <div class="feat"><div class="fname">tax_compliance</div><p>IRS-compliant mileage logs. Export everything your accountant needs automatically.</p></div>
+    <div class="feat"><div class="fname">team_access</div><p>Role-based access for drivers and managers. Real-time sync, field to office.</p></div>
+    <div class="feat"><div class="fname">mobile_client</div><p>Browser-based, no install required. Works on any device, any OS.</p></div>
+    <div class="feat"><div class="fname">cloud_backup</div><p>Encrypted, automatic backups. Your data is always available and protected.</p></div>
+  </div>
+</section>
+<section class="pricing">
+  <div class="inner">
+    <h2>Pricing tiers</h2>
+    <div class="pgrid">
+      <div class="pc"><div class="pname">free_tier</div><div class="pamt">$0</div><div class="psub">// no card required</div><ul class="pfeats"><li><span class="ck">✓</span> 1 vehicle</li><li><span class="ck">✓</span> fuel_tracking</li><li><span class="ck">✓</span> unlimited_logs</li></ul></div>
+      <div class="pc hot"><div class="pbadge">RECOMMENDED</div><div class="pname">family_tier</div><div class="pamt">$4<span style="font-size:18px;font-weight:400">/mo</span></div><div class="psub">// for small fleets</div><ul class="pfeats"><li><span class="ck">✓</span> 3 vehicles</li><li><span class="ck">✓</span> maintenance_alerts</li><li><span class="ck">✓</span> email_reports</li><li><span class="ck">✓</span> mobile_access</li></ul></div>
+      <div class="pc"><div class="pname">business_tier</div><div class="pamt">$12<span style="font-size:18px;font-weight:400">/veh</span></div><div class="psub">// unlimited scale</div><ul class="pfeats"><li><span class="ck">✓</span> unlimited_vehicles</li><li><span class="ck">✓</span> team_management</li><li><span class="ck">✓</span> tax_exports</li><li><span class="ck">✓</span> priority_support</li></ul></div>
+    </div>
+  </div>
+</section>
+<section class="cta">
+  <div class="cmd">fleetreq init --free</div>
+  <h2>Ready to run your fleet<br><span class="g">the right way?</span></h2>
+  <p class="sub">15-minute setup. No spreadsheets. No surprises.</p>
+  <a href="/login" class="btn-green" style="font-size:15px;padding:16px 48px">./start-free.sh</a>
+  <p class="fine">15-min setup · no credit card · cancel anytime</p>
+</section>
+</body></html>

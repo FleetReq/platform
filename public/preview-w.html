@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preview W: Blueprint — FleetReq</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0A1628;
+  --bg2: #0D1F3C;
+  --bg3: #112448;
+  --bg4: #162D58;
+  --text: #E8F4FF;
+  --muted: #7096B8;
+  --accent: #4A9FD4;
+  --accent2: #6AB8F0;
+  --grid-line: rgba(74,159,212,0.12);
+  --border: rgba(74,159,212,0.2);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'IBM Plex Mono',monospace;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+p,.body-text{font-family:'IBM Plex Sans',sans-serif}
+
+/* Nav */
+.pbar{background:rgba(10,22,40,0.97);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;align-items:center;flex-wrap:wrap;gap:4px;font-size:11px;position:sticky;top:0;z-index:100}
+.pbar .lbl{color:var(--muted);font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:10px}
+.pbar .sep{color:rgba(74,159,212,0.3);margin:0 6px}
+.pbar .off{color:var(--muted);text-decoration:none;padding:3px 6px;transition:all .15s;font-weight:400}
+.pbar .off:hover{color:var(--accent)}
+.pbar .on{color:var(--bg);background:var(--accent);padding:3px 8px;font-weight:700;font-size:10px}
+.pbar .back{margin-left:auto;color:var(--muted);text-decoration:none;font-weight:400;padding:3px 8px;border:1px solid var(--border);transition:all .2s}
+.pbar .back:hover{color:var(--accent);border-color:var(--accent)}
+
+/* Blueprint grid background */
+body::before{content:'';position:fixed;inset:0;
+  background:
+    repeating-linear-gradient(0deg, transparent 0px, transparent 39px, var(--grid-line) 39px, var(--grid-line) 40px),
+    repeating-linear-gradient(90deg, transparent 0px, transparent 39px, var(--grid-line) 39px, var(--grid-line) 40px),
+    repeating-linear-gradient(0deg, transparent 0px, transparent 199px, rgba(74,159,212,0.06) 199px, rgba(74,159,212,0.06) 200px),
+    repeating-linear-gradient(90deg, transparent 0px, transparent 199px, rgba(74,159,212,0.06) 199px, rgba(74,159,212,0.06) 200px);
+  pointer-events:none;z-index:0}
+main{position:relative;z-index:1}
+
+/* Blueprint corner marks */
+.corner-mark{position:fixed;width:20px;height:20px;z-index:2}
+.corner-mark.tl{top:44px;left:8px;border-top:1px solid var(--accent);border-left:1px solid var(--accent)}
+.corner-mark.tr{top:44px;right:8px;border-top:1px solid var(--accent);border-right:1px solid var(--accent)}
+
+/* Doc header */
+.doc-header{padding:20px 32px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--muted)}
+.doc-title{color:var(--accent);font-weight:600;font-size:12px;letter-spacing:.05em}
+.doc-meta{display:flex;gap:32px}
+.doc-field{display:flex;gap:8px}
+.doc-field .label{color:var(--muted)}
+.doc-field .value{color:var(--text)}
+
+/* Hero */
+.hero{padding:80px 32px;max-width:1100px;margin:0 auto}
+.section-num{font-size:10px;color:var(--accent);letter-spacing:.15em;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.section-num::after{content:'';flex:1;height:1px;background:var(--border)}
+.hero h1{font-size:clamp(2.2rem,5vw,4rem);font-weight:700;line-height:1.05;margin-bottom:24px;letter-spacing:-.02em}
+.hero h1 .accent{color:var(--accent)}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:64px;margin-top:48px;align-items:start}
+@media(max-width:768px){.hero-grid{grid-template-columns:1fr;gap:40px}}
+.spec-block{background:var(--bg2);border:1px solid var(--border);padding:0}
+.spec-header{background:rgba(74,159,212,0.1);padding:10px 16px;border-bottom:1px solid var(--border);font-size:10px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.15em;display:flex;justify-content:space-between}
+.spec-body{padding:16px}
+.spec-row{display:flex;gap:16px;padding:8px 0;border-bottom:1px solid rgba(74,159,212,0.08)}
+.spec-row:last-child{border-bottom:none}
+.spec-key{color:var(--muted);font-size:0.8rem;flex-shrink:0;width:120px}
+.spec-val{color:var(--text);font-size:0.875rem;font-weight:500}
+.hero-desc{font-family:'IBM Plex Sans',sans-serif;font-size:0.95rem;color:var(--muted);line-height:1.75;margin-bottom:28px;font-weight:300}
+.annotation{font-size:11px;color:var(--muted);border-left:2px solid var(--accent);padding-left:12px;margin-bottom:24px;font-style:italic;font-family:'IBM Plex Sans',sans-serif}
+.btn-primary{background:var(--accent);color:var(--bg);padding:12px 24px;text-decoration:none;font-weight:600;font-size:0.85rem;letter-spacing:.04em;transition:all .2s;display:inline-block;font-family:'IBM Plex Mono',monospace}
+.btn-primary:hover{background:var(--accent2)}
+.btn-ghost{border:1px solid var(--border);color:var(--text);padding:12px 24px;text-decoration:none;font-weight:400;font-size:0.85rem;margin-left:12px;transition:all .2s;display:inline-block;font-family:'IBM Plex Mono',monospace}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+
+/* Technical section */
+section{padding:64px 32px;max-width:1100px;margin:0 auto}
+.section-label{font-size:10px;color:var(--accent);letter-spacing:.15em;text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.section-title{font-size:clamp(1.6rem,3vw,2.4rem);font-weight:700;line-height:1.15;margin-bottom:12px;letter-spacing:-.02em}
+.section-sub{font-family:'IBM Plex Sans',sans-serif;font-size:0.9rem;color:var(--muted);max-width:500px;line-height:1.7;font-weight:300}
+
+/* Module grid */
+.module-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);margin-top:40px}
+.module{background:var(--bg2);padding:24px;transition:background .2s;position:relative}
+.module:hover{background:var(--bg3)}
+.mod-id{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.2em;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.mod-id::after{content:'';flex:1;height:1px;background:var(--border)}
+.module h3{font-size:0.9rem;font-weight:600;margin-bottom:8px;letter-spacing:-.01em}
+.module p{font-family:'IBM Plex Sans',sans-serif;font-size:0.85rem;color:var(--muted);line-height:1.65;font-weight:300}
+
+/* Pricing table — blueprint spec format */
+.spec-table{margin-top:40px;border:1px solid var(--border)}
+.spec-table-header{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;background:rgba(74,159,212,0.1);border-bottom:1px solid var(--border)}
+.th{padding:12px 20px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.15em;color:var(--accent)}
+.spec-table-body{}
+.spec-tr{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;border-bottom:1px solid rgba(74,159,212,0.06);transition:background .2s}
+.spec-tr:last-child{border-bottom:none}
+.spec-tr:hover{background:var(--bg2)}
+.td{padding:14px 20px;font-size:0.85rem;color:var(--muted);font-family:'IBM Plex Sans',sans-serif;font-weight:300}
+.td.feature-name{color:var(--text);font-weight:400;font-family:'IBM Plex Mono',monospace;font-size:0.8rem}
+.td.yes{color:var(--accent)}
+.td.no{color:rgba(74,159,212,0.25)}
+.pricing-plans{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-top:40px}
+.plan{background:var(--bg2);padding:28px;position:relative;transition:background .2s}
+.plan:hover,.plan.featured{background:var(--bg3)}
+.plan.featured{border-top:2px solid var(--accent)}
+.plan-badge{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.15em;color:var(--accent);margin-bottom:12px;display:block}
+.plan-name{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.15em;color:var(--muted);margin-bottom:6px}
+.plan-price{font-size:2.2rem;font-weight:700;color:var(--text);letter-spacing:-.03em;margin-bottom:4px}
+.plan-price span{font-size:0.85rem;font-weight:400;color:var(--muted)}
+.plan-desc{font-family:'IBM Plex Sans',sans-serif;font-size:0.8rem;color:var(--muted);margin-bottom:20px;font-weight:300}
+.plan-features{list-style:none;margin-bottom:20px}
+.plan-features li{font-family:'IBM Plex Sans',sans-serif;font-size:0.8rem;color:var(--muted);padding:5px 0;border-bottom:1px solid rgba(74,159,212,0.06);display:flex;align-items:center;gap:6px;font-weight:300}
+.plan-features li::before{content:'+';color:var(--accent);flex-shrink:0;font-weight:600}
+.plan-btn{display:block;text-align:center;padding:10px;text-decoration:none;font-weight:600;font-size:0.8rem;transition:all .2s;letter-spacing:.04em;border:1px solid var(--border);color:var(--text)}
+.plan-btn:hover{border-color:var(--accent);color:var(--accent)}
+.plan-btn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.plan-btn.primary:hover{background:var(--accent2)}
+
+/* CTA */
+.cta-section{padding:80px 32px;text-align:center;border-top:1px solid var(--border);background:var(--bg2);position:relative}
+.cta-num{font-size:10px;color:var(--accent);letter-spacing:.15em;margin-bottom:20px;display:block;text-transform:uppercase}
+.cta-section h2{font-size:clamp(1.8rem,4vw,3rem);font-weight:700;margin-bottom:12px;letter-spacing:-.02em}
+.cta-section h2 .accent{color:var(--accent)}
+.cta-section .body-text{font-family:'IBM Plex Sans',sans-serif;color:var(--muted);margin-bottom:32px;font-weight:300}
+
+footer{padding:20px 32px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);font-size:10px;color:var(--muted)}
+footer .doc-ref{color:var(--accent)}
+
+    .pbar2{background:rgba(8,8,8,0.97);padding:6px 14px;display:flex;align-items:center;flex-wrap:wrap;gap:2px;font-size:10px;font-family:system-ui,sans-serif;border-bottom:1px solid rgba(255,255,255,0.08)}
+    .pbar2 .lbl2{color:#444;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;margin-right:2px}
+    .pbar2 .sep2{color:#252525;margin:0 4px;flex-shrink:0}
+    .pbar2 .off2{color:#555;text-decoration:none;padding:2px 4px;border-radius:2px;transition:color .15s}
+    .pbar2 .off2:hover{color:#aaa}
+  </style>
+</head>
+<body>
+<div class="corner-mark tl"></div>
+<div class="corner-mark tr"></div>
+<nav class="pbar">
+  <span class="lbl">Preview</span><span class="sep">|</span>
+  <a href="/preview-a.html" class="off">A</a><a href="/preview-b.html" class="off">B</a><a href="/preview-c.html" class="off">C</a><a href="/preview-d.html" class="off">D</a><a href="/preview-e.html" class="off">E</a><a href="/preview-f.html" class="off">F</a><a href="/preview-g.html" class="off">G</a><a href="/preview-h.html" class="off">H</a><a href="/preview-i.html" class="off">I</a><a href="/preview-j.html" class="off">J</a><a href="/preview-k.html" class="off">K</a><a href="/preview-l.html" class="off">L</a><a href="/preview-m.html" class="off">M</a><a href="/preview-n.html" class="off">N</a><a href="/preview-o.html" class="off">O</a><a href="/preview-p.html" class="off">P</a><a href="/preview-q.html" class="off">Q</a><a href="/preview-r.html" class="off">R</a><a href="/preview-s.html" class="off">S</a><a href="/preview-t.html" class="off">T</a><a href="/preview-u.html" class="off">U</a><a href="/preview-v.html" class="off">V</a><span class="on">W: Blueprint</span><a href="/preview-x.html" class="off">X</a><a href="/preview-y.html" class="off">Y</a><a href="/preview-z.html" class="off">Z</a>
+  <a href="/" class="back">← Live</a>
+</nav>
+<nav class="pbar2">
+  <span class="lbl2">2</span><span class="sep2">|</span>
+  <a href="/preview-a2.html" class="off2">A2</a><a href="/preview-b2.html" class="off2">B2</a><a href="/preview-c2.html" class="off2">C2</a><a href="/preview-d2.html" class="off2">D2</a><a href="/preview-e2.html" class="off2">E2</a><a href="/preview-f2.html" class="off2">F2</a><a href="/preview-g2.html" class="off2">G2</a><a href="/preview-h2.html" class="off2">H2</a><a href="/preview-i2.html" class="off2">I2</a><a href="/preview-j2.html" class="off2">J2</a><a href="/preview-k2.html" class="off2">K2</a><a href="/preview-l2.html" class="off2">L2</a><a href="/preview-m2.html" class="off2">M2</a><a href="/preview-n2.html" class="off2">N2</a><a href="/preview-o2.html" class="off2">O2</a><a href="/preview-p2.html" class="off2">P2</a><a href="/preview-q2.html" class="off2">Q2</a><a href="/preview-r2.html" class="off2">R2</a><a href="/preview-s2.html" class="off2">S2</a><a href="/preview-t2.html" class="off2">T2</a><a href="/preview-u2.html" class="off2">U2</a><a href="/preview-v2.html" class="off2">V2</a><a href="/preview-w2.html" class="off2">W2</a><a href="/preview-x2.html" class="off2">X2</a><a href="/preview-y2.html" class="off2">Y2</a><a href="/preview-z2.html" class="off2">Z2</a>
+</nav>
+<div class="doc-header">
+  <div class="doc-title">FLEETREQ PLATFORM — PRODUCT SPECIFICATION v2.4</div>
+  <div class="doc-meta">
+    <div class="doc-field"><span class="label">DOC:</span><span class="value">FRQ-2025-001</span></div>
+    <div class="doc-field"><span class="label">REV:</span><span class="value">C</span></div>
+    <div class="doc-field"><span class="label">STATUS:</span><span class="value" style="color:#4A9FD4">RELEASED</span></div>
+  </div>
+</div>
+
+<main>
+<section class="hero">
+  <div class="section-num">§ 1.0 — OVERVIEW</div>
+  <h1>Fleet management,<br><span class="accent">precisely engineered.</span></h1>
+  <div class="hero-grid">
+    <div>
+      <p class="annotation">// System description for operators, contractors, and fleet managers requiring full-spectrum vehicle tracking and maintenance compliance.</p>
+      <p class="hero-desc">FleetReq is a precision-built fleet management platform. Every feature is spec'd for real-world use: fuel logging with automatic MPG calculation, maintenance interval tracking, role-based team access, and offline-capable mobile deployment.</p>
+      <div>
+        <a href="#" class="btn-primary">DEPLOY FREE</a>
+        <a href="#" class="btn-ghost">SPEC SHEET</a>
+      </div>
+    </div>
+    <div class="spec-block">
+      <div class="spec-header"><span>SYSTEM PARAMETERS</span><span style="color:var(--muted)">v2.4</span></div>
+      <div class="spec-body">
+        <div class="spec-row"><span class="spec-key">fleets_active</span><span class="spec-val">1,200+</span></div>
+        <div class="spec-row"><span class="spec-key">uptime_sla</span><span class="spec-val">99.8%</span></div>
+        <div class="spec-row"><span class="spec-key">entry_cost</span><span class="spec-val">$0.00 USD</span></div>
+        <div class="spec-row"><span class="spec-key">vs_competitors</span><span class="spec-val">-65% cost</span></div>
+        <div class="spec-row"><span class="spec-key">mobile_support</span><span class="spec-val">PWA + offline</span></div>
+        <div class="spec-row"><span class="spec-key">auth_type</span><span class="spec-val">SSO / Email</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-label">§ 2.0 — MODULE SPECIFICATIONS</div>
+  <div class="section-title">Core modules</div>
+  <div class="section-sub">Six integrated modules covering the full lifecycle of fleet operation and compliance.</div>
+  <div class="module-grid">
+    <div class="module"><div class="mod-id">MOD-01 · FUEL</div><h3>Fuel Tracking</h3><p>Fill-up logging with auto-calculated MPG, cost-per-mile, and fleet-wide fuel trend analysis.</p></div>
+    <div class="module"><div class="mod-id">MOD-02 · MAINT</div><h3>Maintenance Records</h3><p>Service history with mileage + time-based interval engine. Proactive alerts before overdue status.</p></div>
+    <div class="module"><div class="mod-id">MOD-03 · ANALYTICS</div><h3>Performance Analytics</h3><p>Visual dashboards for cost tracking, efficiency trends, and cross-vehicle comparisons.</p></div>
+    <div class="module"><div class="mod-id">MOD-04 · ACCESS</div><h3>Access Management</h3><p>Role-based permissions: Owner / Editor / Viewer. Multi-org support with org-scoped data isolation.</p></div>
+    <div class="module"><div class="mod-id">MOD-05 · MOBILE</div><h3>PWA Deployment</h3><p>Progressive web app with offline capability. Home screen install, background sync, service worker caching.</p></div>
+    <div class="module"><div class="mod-id">MOD-06 · EXPORT</div><h3>Report Generation</h3><p>CSV, PDF, JSON output. IRS-compliant mileage logs. Business and per-vehicle breakdowns.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="section-label">§ 3.0 — PRICING SCHEDULE</div>
+  <div class="section-title">License tiers</div>
+  <div class="section-sub">Three tiers. No contracts. Cancel anytime.</div>
+  <div class="pricing-plans">
+    <div class="plan">
+      <div class="plan-name">TIER-00 · FREE</div>
+      <div class="plan-price">$0<span>/mo</span></div>
+      <div class="plan-desc">Single vehicle, permanent license.</div>
+      <ul class="plan-features">
+        <li>1 vehicle</li><li>Fuel tracking</li><li>Maintenance log</li><li>Mobile app</li>
+      </ul>
+      <a href="#" class="plan-btn">ACTIVATE</a>
+    </div>
+    <div class="plan featured">
+      <span class="plan-badge">★ RECOMMENDED</span>
+      <div class="plan-name">TIER-01 · FAMILY</div>
+      <div class="plan-price">$4<span>/mo</span></div>
+      <div class="plan-desc">3 vehicles. Full feature set.</div>
+      <ul class="plan-features">
+        <li>3 vehicles</li><li>Email alerts</li><li>CSV & PDF export</li><li>3 members</li><li>Service scheduling</li>
+      </ul>
+      <a href="#" class="plan-btn primary">LICENSE NOW</a>
+    </div>
+    <div class="plan">
+      <div class="plan-name">TIER-02 · BUSINESS</div>
+      <div class="plan-price">$12<span>/vehicle/mo</span></div>
+      <div class="plan-desc">Unlimited vehicles. Full access.</div>
+      <ul class="plan-features">
+        <li>Unlimited vehicles</li><li>Custom intervals</li><li>IRS tax reports</li><li>6 members</li>
+      </ul>
+      <a href="#" class="plan-btn">CONTACT SALES</a>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section">
+  <span class="cta-num">§ 4.0 — DEPLOYMENT</span>
+  <h2>Ready to <span class="accent">initialize</span>?</h2>
+  <p class="body-text">Free deployment. No credit card. Operational in under 2 minutes.</p>
+  <a href="#" class="btn-primary">BEGIN DEPLOYMENT</a>
+</div>
+</main>
+
+<footer>
+  <span>FLEETREQ PLATFORM © 2025 · CONFIDENTIAL & PROPRIETARY</span>
+  <span class="doc-ref">DOC: FRQ-2025-001 REV-C · APPROVED FOR RELEASE</span>
+</footer>
+</body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preview Y: Dusty Sage — FleetReq</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F7F4EF;
+  --bg2: #EFEBE3;
+  --bg3: #E6E0D4;
+  --text: #2A2520;
+  --text2: #4A4038;
+  --muted: #8A7B6A;
+  --sage: #5A7A5C;
+  --sage2: #4A6A4C;
+  --rose: #C47A8A;
+  --rose2: #B4687A;
+  --border: rgba(90,122,92,0.2);
+  --rose-border: rgba(196,122,138,0.2);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;overflow-x:hidden}
+h1,h2,h3,.serif{font-family:'Lora',serif}
+
+/* Nav */
+.pbar{background:rgba(247,244,239,0.96);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;align-items:center;flex-wrap:wrap;gap:4px;font-size:11px;position:sticky;top:0;z-index:100;backdrop-filter:blur(8px)}
+.pbar .lbl{color:var(--muted);font-weight:500;letter-spacing:.06em;text-transform:uppercase;font-size:10px}
+.pbar .sep{color:rgba(90,122,92,0.3);margin:0 6px}
+.pbar .off{color:var(--muted);text-decoration:none;padding:3px 6px;border-radius:3px;transition:all .2s;font-weight:500}
+.pbar .off:hover{color:var(--sage);background:rgba(90,122,92,0.07)}
+.pbar .on{color:#fff;background:var(--sage);padding:3px 8px;border-radius:3px;font-weight:600;font-size:10px}
+.pbar .back{margin-left:auto;color:var(--muted);text-decoration:none;font-weight:500;padding:3px 8px;border:1px solid var(--border);border-radius:3px;transition:all .2s}
+.pbar .back:hover{color:var(--sage);border-color:var(--sage)}
+
+/* Botanical background */
+body::before{content:'';position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 90% 10%, rgba(90,122,92,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 50% at 10% 90%, rgba(196,122,138,0.05) 0%, transparent 50%);
+  pointer-events:none;z-index:0}
+main{position:relative;z-index:1}
+
+/* Site nav */
+.site-nav{max-width:1100px;margin:0 auto;padding:24px;display:flex;align-items:center;justify-content:space-between}
+.nav-brand{font-family:'Lora',serif;font-size:1.2rem;font-weight:700;color:var(--text);font-style:italic}
+.nav-brand span{color:var(--sage);font-style:normal}
+.nav-links{display:flex;gap:28px;list-style:none}
+.nav-links a{text-decoration:none;color:var(--muted);font-size:0.875rem;font-weight:400;transition:color .2s}
+.nav-links a:hover{color:var(--sage)}
+.nav-cta{background:var(--sage);color:#fff;padding:9px 22px;border-radius:100px;text-decoration:none;font-size:0.875rem;font-weight:500;transition:background .2s}
+.nav-cta:hover{background:var(--sage2)}
+
+/* Hero */
+.hero{padding:80px 24px 64px;max-width:900px;margin:0 auto;text-align:center}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(90,122,92,0.08);border:1px solid rgba(90,122,92,0.2);border-radius:100px;padding:6px 18px;font-size:12px;color:var(--sage);font-weight:500;margin-bottom:32px;letter-spacing:.02em}
+.leaf{width:14px;height:14px;background:var(--sage);border-radius:50% 50% 50% 0;transform:rotate(-45deg);flex-shrink:0;opacity:0.7}
+.hero h1{font-size:clamp(2.8rem,6vw,5rem);font-weight:700;line-height:1.1;margin-bottom:24px;letter-spacing:-.02em}
+.hero h1 em{color:var(--sage);font-style:italic}
+.hero-rule{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:24px}
+.rule-dot{width:5px;height:5px;border-radius:50%;background:var(--rose)}
+.rule-line{height:1px;width:40px;background:linear-gradient(90deg,var(--rose),transparent)}
+.rule-line.r{background:linear-gradient(270deg,var(--rose),transparent)}
+.hero p{font-size:1.05rem;color:var(--muted);line-height:1.8;margin-bottom:40px;max-width:560px;margin-left:auto;margin-right:auto;font-weight:300}
+.btn-sage{background:var(--sage);color:#fff;padding:14px 32px;border-radius:100px;text-decoration:none;font-weight:500;font-size:0.9rem;letter-spacing:.01em;transition:all .3s;display:inline-block}
+.btn-sage:hover{background:var(--sage2);transform:translateY(-1px)}
+.btn-rose{border:1.5px solid var(--rose-border);color:var(--rose);padding:13px 32px;border-radius:100px;text-decoration:none;font-weight:500;font-size:0.9rem;margin-left:12px;transition:all .3s;display:inline-block}
+.btn-rose:hover{border-color:var(--rose);background:rgba(196,122,138,0.06)}
+
+/* Stats */
+.hero-stats{display:flex;justify-content:center;gap:48px;margin-top:56px;flex-wrap:wrap}
+.hero-stat{text-align:center}
+.hs-num{font-family:'Lora',serif;font-size:2rem;font-weight:700;color:var(--sage)}
+.hs-label{font-size:0.75rem;color:var(--muted);margin-top:4px;font-weight:300;text-transform:uppercase;letter-spacing:.1em}
+
+/* Divider */
+.sprig-divider{display:flex;align-items:center;gap:16px;max-width:800px;margin:0 auto;padding:0 24px}
+.sprig-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--border))}
+.sprig-line.r{background:linear-gradient(270deg,transparent,var(--border))}
+.sprig-center{display:flex;gap:6px;align-items:center}
+.sprig-dot{width:4px;height:4px;border-radius:50%}
+.sprig-dot.s{background:var(--sage);opacity:.5}
+.sprig-dot.r{background:var(--rose);opacity:.5}
+
+/* Section */
+section{padding:72px 24px;max-width:1100px;margin:0 auto}
+.section-kicker{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.15em;color:var(--rose);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.section-kicker::before{content:'';width:20px;height:1px;background:var(--rose);flex-shrink:0}
+.section-title{font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:700;line-height:1.2;margin-bottom:16px;letter-spacing:-.02em}
+.section-title em{color:var(--sage)}
+.section-sub{font-size:0.95rem;color:var(--muted);max-width:500px;line-height:1.8;font-weight:300}
+
+/* Features — botanical cards */
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-top:48px}
+.feature-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;transition:all .3s;position:relative;overflow:hidden}
+.feature-card::before{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(90,122,92,0.06);transition:transform .3s}
+.feature-card:nth-child(even)::before{background:rgba(196,122,138,0.05)}
+.feature-card:hover{background:var(--bg3);transform:translateY(-2px);box-shadow:0 8px 32px rgba(90,122,92,0.1)}
+.feature-card:hover::before{transform:scale(1.5)}
+.feature-icon{width:40px;height:40px;border-radius:12px;background:rgba(90,122,92,0.1);border:1px solid rgba(90,122,92,0.2);display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:16px}
+.feature-card:nth-child(even) .feature-icon{background:rgba(196,122,138,0.1);border-color:rgba(196,122,138,0.2)}
+.feature-card h3{font-size:1rem;font-weight:700;margin-bottom:8px;letter-spacing:-.01em;font-family:'Lora',serif}
+.feature-card p{font-size:0.875rem;color:var(--muted);line-height:1.7;font-weight:300}
+
+/* Pricing */
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;margin-top:48px}
+.plan{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:32px;position:relative;transition:all .3s}
+.plan:hover{border-color:var(--sage);box-shadow:0 8px 32px rgba(90,122,92,0.08)}
+.plan.featured{border-color:var(--sage);border-width:2px;background:var(--bg)}
+.plan-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--sage);color:#fff;padding:4px 18px;border-radius:100px;font-size:11px;font-weight:500;white-space:nowrap;letter-spacing:.03em}
+.plan-name{font-size:0.7rem;font-weight:500;text-transform:uppercase;letter-spacing:.15em;color:var(--rose);margin-bottom:8px}
+.plan-price{font-family:'Lora',serif;font-size:2.5rem;font-weight:700;color:var(--text);margin-bottom:4px}
+.plan-price span{font-size:0.9rem;font-weight:400;color:var(--muted);font-family:'DM Sans',sans-serif}
+.plan-desc{font-size:0.8rem;color:var(--muted);margin-bottom:24px;font-weight:300}
+.plan-features{list-style:none;margin-bottom:28px}
+.plan-features li{font-size:0.875rem;color:var(--text2);padding:7px 0;border-bottom:1px solid rgba(90,122,92,0.1);display:flex;align-items:center;gap:8px;font-weight:300}
+.plan-features li::before{content:'✦';color:var(--sage);font-size:9px;flex-shrink:0}
+.plan-btn{display:block;text-align:center;padding:12px;border-radius:100px;text-decoration:none;font-weight:500;font-size:0.875rem;transition:all .3s}
+.plan-btn-primary{background:var(--sage);color:#fff}
+.plan-btn-primary:hover{background:var(--sage2)}
+.plan-btn-outline{border:1px solid var(--border);color:var(--text2)}
+.plan-btn-outline:hover{border-color:var(--sage);color:var(--sage)}
+
+/* CTA */
+.cta-section{max-width:1052px;margin:0 auto 80px;padding:72px 48px;text-align:center;background:var(--bg2);border-radius:24px;border:1px solid var(--border);position:relative;overflow:hidden}
+.cta-section::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(90,122,92,0.06)}
+.cta-section::after{content:'';position:absolute;bottom:-40px;left:-40px;width:120px;height:120px;border-radius:50%;background:rgba(196,122,138,0.06)}
+.cta-section h2{font-size:clamp(2rem,4vw,3rem);font-weight:700;margin-bottom:12px;position:relative}
+.cta-section h2 em{color:var(--sage)}
+.cta-section p{color:var(--muted);margin-bottom:32px;font-weight:300;position:relative}
+
+footer{text-align:center;padding:32px 24px;color:var(--muted);font-size:0.8rem;border-top:1px solid var(--border)}
+
+    .pbar2{background:rgba(8,8,8,0.97);padding:6px 14px;display:flex;align-items:center;flex-wrap:wrap;gap:2px;font-size:10px;font-family:system-ui,sans-serif;border-bottom:1px solid rgba(255,255,255,0.08)}
+    .pbar2 .lbl2{color:#444;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;margin-right:2px}
+    .pbar2 .sep2{color:#252525;margin:0 4px;flex-shrink:0}
+    .pbar2 .off2{color:#555;text-decoration:none;padding:2px 4px;border-radius:2px;transition:color .15s}
+    .pbar2 .off2:hover{color:#aaa}
+  </style>
+</head>
+<body>
+<nav class="pbar">
+  <span class="lbl">Preview</span><span class="sep">|</span>
+  <a href="/preview-a.html" class="off">A</a><a href="/preview-b.html" class="off">B</a><a href="/preview-c.html" class="off">C</a><a href="/preview-d.html" class="off">D</a><a href="/preview-e.html" class="off">E</a><a href="/preview-f.html" class="off">F</a><a href="/preview-g.html" class="off">G</a><a href="/preview-h.html" class="off">H</a><a href="/preview-i.html" class="off">I</a><a href="/preview-j.html" class="off">J</a><a href="/preview-k.html" class="off">K</a><a href="/preview-l.html" class="off">L</a><a href="/preview-m.html" class="off">M</a><a href="/preview-n.html" class="off">N</a><a href="/preview-o.html" class="off">O</a><a href="/preview-p.html" class="off">P</a><a href="/preview-q.html" class="off">Q</a><a href="/preview-r.html" class="off">R</a><a href="/preview-s.html" class="off">S</a><a href="/preview-t.html" class="off">T</a><a href="/preview-u.html" class="off">U</a><a href="/preview-v.html" class="off">V</a><a href="/preview-w.html" class="off">W</a><a href="/preview-x.html" class="off">X</a><span class="on">Y: Dusty Sage</span><a href="/preview-z.html" class="off">Z</a>
+  <a href="/" class="back">← Live</a>
+</nav>
+<nav class="pbar2">
+  <span class="lbl2">2</span><span class="sep2">|</span>
+  <a href="/preview-a2.html" class="off2">A2</a><a href="/preview-b2.html" class="off2">B2</a><a href="/preview-c2.html" class="off2">C2</a><a href="/preview-d2.html" class="off2">D2</a><a href="/preview-e2.html" class="off2">E2</a><a href="/preview-f2.html" class="off2">F2</a><a href="/preview-g2.html" class="off2">G2</a><a href="/preview-h2.html" class="off2">H2</a><a href="/preview-i2.html" class="off2">I2</a><a href="/preview-j2.html" class="off2">J2</a><a href="/preview-k2.html" class="off2">K2</a><a href="/preview-l2.html" class="off2">L2</a><a href="/preview-m2.html" class="off2">M2</a><a href="/preview-n2.html" class="off2">N2</a><a href="/preview-o2.html" class="off2">O2</a><a href="/preview-p2.html" class="off2">P2</a><a href="/preview-q2.html" class="off2">Q2</a><a href="/preview-r2.html" class="off2">R2</a><a href="/preview-s2.html" class="off2">S2</a><a href="/preview-t2.html" class="off2">T2</a><a href="/preview-u2.html" class="off2">U2</a><a href="/preview-v2.html" class="off2">V2</a><a href="/preview-w2.html" class="off2">W2</a><a href="/preview-x2.html" class="off2">X2</a><a href="/preview-y2.html" class="off2">Y2</a><a href="/preview-z2.html" class="off2">Z2</a>
+</nav>
+
+<main>
+<nav class="site-nav">
+  <div class="nav-brand"><em>Fleet</em><span>Req</span></div>
+  <ul class="nav-links">
+    <li><a href="#">Features</a></li>
+    <li><a href="#">Pricing</a></li>
+    <li><a href="#">About</a></li>
+  </ul>
+  <a href="#" class="nav-cta">Get Started</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge"><div class="leaf"></div>Thoughtful Fleet Management</div>
+  <h1>Care for your fleet<br>like it <em>matters.</em></h1>
+  <div class="hero-rule">
+    <div class="rule-line"></div>
+    <div class="rule-dot"></div>
+    <div class="rule-line r"></div>
+  </div>
+  <p>Track fuel, maintenance, and performance across every vehicle — with calm clarity and the gentle reminder that good things grow when you pay attention.</p>
+  <div>
+    <a href="#" class="btn-sage">Start for Free</a>
+    <a href="#" class="btn-rose">See How It Works</a>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="hs-num">1,200+</div><div class="hs-label">Fleets Tended</div></div>
+    <div class="hero-stat"><div class="hs-num">$0</div><div class="hs-label">Free Forever</div></div>
+    <div class="hero-stat"><div class="hs-num">65%</div><div class="hs-label">Below Market</div></div>
+  </div>
+</div>
+
+<div class="sprig-divider">
+  <div class="sprig-line"></div>
+  <div class="sprig-center">
+    <div class="sprig-dot s"></div><div class="sprig-dot r"></div><div class="sprig-dot s"></div>
+  </div>
+  <div class="sprig-line r"></div>
+</div>
+
+<section>
+  <div class="section-kicker">What We Offer</div>
+  <div class="section-title">Everything your fleet<br><em>needs to flourish</em></div>
+  <div class="section-sub">Simple, thoughtful tools that grow with your fleet — from a single car to a full operation.</div>
+  <div class="feature-grid">
+    <div class="feature-card"><div class="feature-icon">⛽</div><h3>Fuel Tracking</h3><p>Log every fill-up with care. Automatic MPG calculation, cost-per-mile trends, and fuel summaries that make sense at a glance.</p></div>
+    <div class="feature-card"><div class="feature-icon">🔧</div><h3>Maintenance Records</h3><p>Tend to your vehicles before they need you to. Smart intervals and gentle reminders — never miss an oil change again.</p></div>
+    <div class="feature-card"><div class="feature-icon">📊</div><h3>Performance Analytics</h3><p>Calm, clear dashboards. See cost trends, efficiency patterns, and how each vehicle is truly doing — all in one place.</p></div>
+    <div class="feature-card"><div class="feature-icon">👥</div><h3>Team Access</h3><p>Invite the people who need to know. Owner, Editor, Viewer roles — everyone has exactly the right view.</p></div>
+    <div class="feature-card"><div class="feature-icon">📱</div><h3>Mobile + Offline</h3><p>Works wherever you are, even without signal. Log from the road, sync when you return. Simple as that.</p></div>
+    <div class="feature-card"><div class="feature-icon">📤</div><h3>Export & Reports</h3><p>When you need to share the story of your fleet — CSV, PDF, JSON. IRS mileage logs, ready when tax season comes.</p></div>
+  </div>
+</section>
+
+<div class="sprig-divider">
+  <div class="sprig-line"></div>
+  <div class="sprig-center">
+    <div class="sprig-dot r"></div><div class="sprig-dot s"></div><div class="sprig-dot r"></div>
+  </div>
+  <div class="sprig-line r"></div>
+</div>
+
+<section>
+  <div class="section-kicker">Pricing</div>
+  <div class="section-title">Grow at<br><em>your own pace</em></div>
+  <div class="section-sub">Start free. Upgrade gently, when you're ready. No pressure, no contracts.</div>
+  <div class="pricing-grid">
+    <div class="plan">
+      <div class="plan-name">Free</div>
+      <div class="plan-price">$0<span>/mo</span></div>
+      <div class="plan-desc">One vehicle, tended forever.</div>
+      <ul class="plan-features">
+        <li>1 vehicle</li><li>Fuel tracking</li><li>Maintenance log</li><li>Mobile app</li>
+      </ul>
+      <a href="#" class="plan-btn plan-btn-outline">Begin</a>
+    </div>
+    <div class="plan featured">
+      <div class="plan-badge">Most Loved</div>
+      <div class="plan-name">Family</div>
+      <div class="plan-price">$4<span>/mo</span></div>
+      <div class="plan-desc">Up to 3 vehicles for families.</div>
+      <ul class="plan-features">
+        <li>3 vehicles</li><li>Service email reminders</li><li>CSV & PDF export</li><li>3 members</li><li>Next service scheduling</li>
+      </ul>
+      <a href="#" class="plan-btn plan-btn-primary">Start Free Trial</a>
+    </div>
+    <div class="plan">
+      <div class="plan-name">Business</div>
+      <div class="plan-price">$12<span>/vehicle/mo</span></div>
+      <div class="plan-desc">Unlimited fleet, full tools.</div>
+      <ul class="plan-features">
+        <li>Unlimited vehicles</li><li>Custom intervals</li><li>IRS tax reports</li><li>6 members</li>
+      </ul>
+      <a href="#" class="plan-btn plan-btn-outline">Talk to Us</a>
+    </div>
+  </div>
+</section>
+
+<div class="cta-section">
+  <h2>Ready to <em>tend</em><br>to your fleet?</h2>
+  <p>No credit card. No rush. Just start, and see what grows.</p>
+  <a href="#" class="btn-sage">Start for Free</a>
+</div>
+</main>
+
+<footer>© 2025 FleetReq — Built with care, for people who take care of their vehicles.</footer>
+</body>
+</html>

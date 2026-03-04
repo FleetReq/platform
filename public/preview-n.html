@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FleetReq — Preview N (Brutalist)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#F0EDE6;--white:#F8F5EF;--black:#0A0A0A;--red:#D42B1C;--text:#0A0A0A;--muted:#444;--dim:#777}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.55}
+    a{text-decoration:none;color:inherit}
+    h1,h2,h3{font-family:'Anton',sans-serif;text-transform:uppercase;letter-spacing:.5px}
+    .pbar{background:var(--black);padding:9px 24px;display:flex;align-items:center;gap:12px;font-size:11px;flex-wrap:wrap;font-family:'DM Sans',sans-serif}
+    .pbar .lbl{color:#555;letter-spacing:1px;text-transform:uppercase}
+    .pbar .on{color:#FF6B55;font-weight:700}
+    .pbar .off{color:#555;transition:color .2s}.pbar .off:hover{color:#fff}
+    .pbar .back{color:#555;margin-left:auto}.pbar .back:hover{color:#fff}
+    .pbar .sep{color:#222}
+    .site-nav{border-bottom:3px solid var(--black);padding:14px 48px;display:flex;justify-content:space-between;align-items:center;background:var(--white)}
+    .logo{font-family:'Anton',sans-serif;font-size:26px;letter-spacing:3px}
+    .logo span{color:var(--red)}
+    .nav-links{display:flex;gap:28px;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim)}.nav-links a:hover{color:var(--black);transition:color .2s}
+    .nav-cta{background:var(--black);color:var(--bg);padding:10px 22px;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;transition:all .15s}.nav-cta:hover{background:var(--red);color:#fff}
+    .hero{border-bottom:3px solid var(--black);display:grid;grid-template-columns:1fr 380px}
+    .hero-l{padding:72px 48px;border-right:3px solid var(--black)}
+    .hero-tag{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--dim);margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid var(--black)}
+    .hero-l h1{font-size:80px;line-height:.95;letter-spacing:1px;margin-bottom:24px}
+    .hero-l h1 .r{color:var(--red)}
+    .hero-l p{font-size:17px;color:var(--muted);max-width:480px;line-height:1.7;margin-bottom:40px;font-weight:300}
+    .btn-row{display:flex;gap:12px;flex-wrap:wrap}
+    .btn-solid{background:var(--black);color:var(--bg);padding:14px 32px;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;transition:all .15s;display:inline-block}.btn-solid:hover{background:var(--red);color:#fff}
+    .btn-ghost{border:2px solid var(--black);color:var(--black);padding:12px 32px;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;transition:all .15s;display:inline-block}.btn-ghost:hover{background:var(--black);color:var(--bg)}
+    .hero-r{padding:48px 36px;display:flex;flex-direction:column;justify-content:center;background:var(--white)}
+    .stat-block{border:2px solid var(--black);margin-bottom:16px;padding:24px}
+    .stat-block:last-child{margin-bottom:0}
+    .stat-val{font-family:'Anton',sans-serif;font-size:48px;letter-spacing:1px;color:var(--black);line-height:1}
+    .stat-val.r{color:var(--red)}
+    .stat-lbl{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--dim);margin-top:6px}
+    .ps{border-bottom:3px solid var(--black);display:grid;grid-template-columns:1fr 1fr}
+    .ps-col{padding:64px 48px;border-right:3px solid var(--black)}.ps-col:last-child{border-right:none}
+    .ps-col h2{font-size:40px;margin-bottom:8px}
+    .ps-col h2 .r{color:var(--red)}
+    .ps-sub{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--dim);margin-bottom:28px;padding-bottom:12px;border-bottom:2px solid var(--black)}
+    .ps-list{list-style:none}
+    .ps-list li{padding:11px 0;border-bottom:1px solid var(--black);font-size:15px;display:flex;align-items:flex-start;gap:10px;color:var(--muted)}
+    .ps-list li:last-child{border-bottom:none}
+    .ri{color:var(--red);font-weight:800;font-size:17px;line-height:1.3}.gi{color:#228B22;font-weight:800;font-size:17px;line-height:1.3}
+    .feats{border-bottom:3px solid var(--black)}
+    .feats-hdr{padding:40px 48px;border-bottom:2px solid var(--black);display:flex;align-items:baseline;gap:24px}
+    .feats-hdr h2{font-size:56px}
+    .feats-grid{display:grid;grid-template-columns:repeat(3,1fr)}
+    .feat{padding:36px 32px;border-right:2px solid var(--black);border-bottom:2px solid var(--black);transition:background .15s}
+    .feat:hover{background:var(--black);color:var(--bg)}
+    .feat:hover .fp{color:rgba(240,237,230,.65)}
+    .feat:nth-child(3),.feat:nth-child(6){border-right:none}
+    .feat:nth-child(4),.feat:nth-child(5),.feat:nth-child(6){border-bottom:none}
+    .fn{font-family:'Anton',sans-serif;font-size:20px;letter-spacing:1px;margin-bottom:10px}
+    .fp{font-size:14px;color:var(--muted);line-height:1.7;font-weight:300;transition:color .15s}
+    .pricing{border-bottom:3px solid var(--black)}
+    .pricing-hdr{padding:40px 48px;border-bottom:2px solid var(--black)}
+    .pricing-hdr h2{font-size:56px}
+    .pgrid{display:grid;grid-template-columns:repeat(3,1fr)}
+    .pc{padding:40px 32px;border-right:2px solid var(--black);position:relative}.pc:last-child{border-right:none}
+    .pc.hot{background:var(--black);color:var(--bg)}
+    .pbadge{background:var(--red);color:#fff;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;display:inline-block;margin-bottom:16px}
+    .pname{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+    .pc.hot .pname{color:rgba(240,237,230,.5)}
+    .pamt{font-family:'Anton',sans-serif;font-size:52px;letter-spacing:1px;line-height:1;margin-bottom:8px}
+    .pc.hot .pamt{color:var(--bg)}
+    .psub{font-size:13px;color:var(--dim);margin-bottom:24px;font-weight:300}
+    .pc.hot .psub{color:rgba(240,237,230,.5)}
+    .pfeats{list-style:none;font-size:14px}
+    .pfeats li{padding:8px 0;border-bottom:1px solid var(--black);display:flex;gap:8px;color:var(--muted)}
+    .pc.hot .pfeats li{border-color:rgba(240,237,230,.15);color:rgba(240,237,230,.75)}
+    .pfeats li:last-child{border-bottom:none}
+    .ck{color:var(--red);font-weight:800}.pc.hot .ck{color:#FF6B55}
+    .cta{padding:80px 48px;text-align:center;border-top:3px solid var(--black)}
+    .cta h2{font-size:72px;line-height:.95;margin-bottom:20px}
+    .cta h2 .r{color:var(--red)}
+    .cta .sub{font-size:17px;color:var(--muted);margin-bottom:36px;font-weight:300}
+    .cta .fine{font-size:12px;color:var(--dim);margin-top:16px;font-weight:600;letter-spacing:1px;text-transform:uppercase}
+    @media(max-width:768px){.hero,.ps,.pgrid,.feats-grid{grid-template-columns:1fr}.hero-l,.hero-r,.ps-col,.feats-hdr,.pricing-hdr,.cta,.feats .feat,.site-nav{padding-left:24px;padding-right:24px}.hero-l h1{font-size:52px}.cta h2{font-size:48px}}
+  
+    .pbar2{background:rgba(8,8,8,0.97);padding:6px 14px;display:flex;align-items:center;flex-wrap:wrap;gap:2px;font-size:10px;font-family:system-ui,sans-serif;border-bottom:1px solid rgba(255,255,255,0.08)}
+    .pbar2 .lbl2{color:#444;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;margin-right:2px}
+    .pbar2 .sep2{color:#252525;margin:0 4px;flex-shrink:0}
+    .pbar2 .off2{color:#555;text-decoration:none;padding:2px 4px;border-radius:2px;transition:color .15s}
+    .pbar2 .off2:hover{color:#aaa}
+  </style>
+</head>
+<body>
+<nav class="pbar">
+  <span class="lbl">Preview</span><span class="sep">|</span>
+  <a href="/preview-a.html" class="off">A</a><a href="/preview-b.html" class="off">B</a><a href="/preview-c.html" class="off">C</a><a href="/preview-d.html" class="off">D</a><a href="/preview-e.html" class="off">E</a><a href="/preview-f.html" class="off">F</a><a href="/preview-g.html" class="off">G</a><a href="/preview-h.html" class="off">H</a><a href="/preview-i.html" class="off">I</a><a href="/preview-j.html" class="off">J</a><a href="/preview-k.html" class="off">K</a><a href="/preview-l.html" class="off">L</a><a href="/preview-m.html" class="off">M</a>
+  <span class="on">N: Brutalist</span>
+  <a href="/preview-o.html" class="off">O</a><a href="/preview-p.html" class="off">P</a><a href="/preview-q.html" class="off">Q</a><a href="/preview-r.html" class="off">R</a><a href="/preview-s.html" class="off">S</a><a href="/preview-t.html" class="off">T</a><a href="/preview-u.html" class="off">U</a><a href="/preview-v.html" class="off">V</a><a href="/preview-w.html" class="off">W</a><a href="/preview-x.html" class="off">X</a><a href="/preview-y.html" class="off">Y</a><a href="/preview-z.html" class="off">Z</a>
+  <a href="/" class="back">← Live</a>
+</nav>
+<nav class="pbar2">
+  <span class="lbl2">2</span><span class="sep2">|</span>
+  <a href="/preview-a2.html" class="off2">A2</a><a href="/preview-b2.html" class="off2">B2</a><a href="/preview-c2.html" class="off2">C2</a><a href="/preview-d2.html" class="off2">D2</a><a href="/preview-e2.html" class="off2">E2</a><a href="/preview-f2.html" class="off2">F2</a><a href="/preview-g2.html" class="off2">G2</a><a href="/preview-h2.html" class="off2">H2</a><a href="/preview-i2.html" class="off2">I2</a><a href="/preview-j2.html" class="off2">J2</a><a href="/preview-k2.html" class="off2">K2</a><a href="/preview-l2.html" class="off2">L2</a><a href="/preview-m2.html" class="off2">M2</a><a href="/preview-n2.html" class="off2">N2</a><a href="/preview-o2.html" class="off2">O2</a><a href="/preview-p2.html" class="off2">P2</a><a href="/preview-q2.html" class="off2">Q2</a><a href="/preview-r2.html" class="off2">R2</a><a href="/preview-s2.html" class="off2">S2</a><a href="/preview-t2.html" class="off2">T2</a><a href="/preview-u2.html" class="off2">U2</a><a href="/preview-v2.html" class="off2">V2</a><a href="/preview-w2.html" class="off2">W2</a><a href="/preview-x2.html" class="off2">X2</a><a href="/preview-y2.html" class="off2">Y2</a><a href="/preview-z2.html" class="off2">Z2</a>
+</nav>
+<nav class="site-nav">
+  <div class="logo">FLEET<span>REQ</span></div>
+  <div class="nav-links"><a href="#">Features</a><a href="#">Pricing</a><a href="/login">Sign In</a></div>
+  <a href="/login" class="nav-cta">Start Free</a>
+</nav>
+<section class="hero">
+  <div class="hero-l">
+    <div class="hero-tag">Fleet Management Platform</div>
+    <h1>Stop<br>Losing<br>Money<br>On Your<br><span class="r">Fleet.</span></h1>
+    <p>Maintenance alerts, fuel analytics, and tax compliance — no bloat, no fluff. Just what contractors need to run a tighter operation.</p>
+    <div class="btn-row">
+      <a href="/login" class="btn-solid">Start Free</a>
+      <a href="/pricing" class="btn-ghost">View Pricing</a>
+    </div>
+  </div>
+  <div class="hero-r">
+    <div class="stat-block"><div class="stat-val r">15 min</div><div class="stat-lbl">Setup Time</div></div>
+    <div class="stat-block"><div class="stat-val">$0</div><div class="stat-lbl">To Start</div></div>
+    <div class="stat-block"><div class="stat-val">24/7</div><div class="stat-lbl">Cloud Access</div></div>
+  </div>
+</section>
+<section class="ps">
+  <div class="ps-col">
+    <h2>The <span class="r">Problem</span></h2>
+    <div class="ps-sub">Why spreadsheets fail</div>
+    <ul class="ps-list">
+      <li><span class="ri">✗</span> Multiple editors destroy data integrity</li>
+      <li><span class="ri">✗</span> No alerts = expensive repairs</li>
+      <li><span class="ri">✗</span> Tax reporting wastes days</li>
+      <li><span class="ri">✗</span> No mobile access in the field</li>
+      <li><span class="ri">✗</span> One crash and it's all gone</li>
+    </ul>
+  </div>
+  <div class="ps-col">
+    <h2>The <span class="r">Fix</span></h2>
+    <div class="ps-sub">The FleetReq way</div>
+    <ul class="ps-list">
+      <li><span class="gi">✓</span> Real-time team collaboration</li>
+      <li><span class="gi">✓</span> Proactive maintenance alerts</li>
+      <li><span class="gi">✓</span> IRS reports in one click</li>
+      <li><span class="gi">✓</span> Mobile access anywhere</li>
+      <li><span class="gi">✓</span> Automatic cloud backup</li>
+    </ul>
+  </div>
+</section>
+<section class="feats">
+  <div class="feats-hdr"><h2>SIX MODULES. ONE PLATFORM.</h2></div>
+  <div class="feats-grid">
+    <div class="feat"><div class="fn">Fuel Tracking</div><p class="fp">Log fill-ups, monitor MPG. Know which vehicles bleed your margins.</p></div>
+    <div class="feat"><div class="fn">Maintenance Alerts</div><p class="fp">Color-coded alerts before breakdowns. Nothing slips through.</p></div>
+    <div class="feat"><div class="fn">Tax Compliance</div><p class="fp">IRS-ready exports automatically. Tax season in minutes.</p></div>
+    <div class="feat"><div class="fn">Team Access</div><p class="fp">Drivers log from the field. You see everything in real-time.</p></div>
+    <div class="feat"><div class="fn">Mobile Ready</div><p class="fp">No download. Any device. Always on.</p></div>
+    <div class="feat"><div class="fn">Cloud Backup</div><p class="fp">Encrypted, automatic. Survives any hardware failure.</p></div>
+  </div>
+</section>
+<section class="pricing">
+  <div class="pricing-hdr"><h2>THREE TIERS. ZERO SURPRISES.</h2></div>
+  <div class="pgrid">
+    <div class="pc"><div class="pname">Free</div><div class="pamt">$0</div><div class="psub">No card needed</div><ul class="pfeats"><li><span class="ck">✓</span> 1 vehicle</li><li><span class="ck">✓</span> Fuel tracking</li><li><span class="ck">✓</span> Unlimited logs</li></ul></div>
+    <div class="pc hot"><div class="pbadge">Most Popular</div><div class="pname">Family</div><div class="pamt">$4<span style="font-size:22px;font-family:'DM Sans',sans-serif;font-weight:400">/mo</span></div><div class="psub">Small fleets</div><ul class="pfeats"><li><span class="ck">✓</span> 3 vehicles</li><li><span class="ck">✓</span> Maintenance alerts</li><li><span class="ck">✓</span> Email reports</li><li><span class="ck">✓</span> Mobile access</li></ul></div>
+    <div class="pc"><div class="pname">Business</div><div class="pamt">$12<span style="font-size:22px;font-weight:400">/veh</span></div><div class="psub">Unlimited scale</div><ul class="pfeats"><li><span class="ck">✓</span> Unlimited vehicles</li><li><span class="ck">✓</span> Team management</li><li><span class="ck">✓</span> Tax reports</li><li><span class="ck">✓</span> Priority support</li></ul></div>
+  </div>
+</section>
+<section class="cta">
+  <h2>DONE WITH<br><span class="r">SPREADSHEETS?</span></h2>
+  <p class="sub">Setup takes 15 minutes. You'll wish you'd done it sooner.</p>
+  <a href="/login" class="btn-solid" style="font-size:14px;padding:16px 48px">START FREE NOW</a>
+  <p class="fine">No credit card · Cancel anytime · 15-min setup</p>
+</section>
+</body></html>
