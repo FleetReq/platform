@@ -33,29 +33,25 @@ function labelPos(x: number, y: number) {
   return { lx: x, ly: y + dy }
 }
 
-// Use whichever axis (horizontal vs vertical) has the larger component toward center.
-// This prevents adjacent-seat collisions (e.g. CO goes west, BTN goes west — no overlap).
+// Top half of table → cards south (below seat, toward center).
+// Bottom half → cards north. Pure left/right → east/west.
 function cardPair(sx: number, sy: number): [{ cx: number; cy: number }, { cx: number; cy: number }] {
   const GAP = 4
-  const dx = CX - sx   // positive = center is to the right
-  const dy = CY - sy   // positive = center is below
-
-  if (Math.abs(dy) > Math.abs(dx)) {
-    // vertical dominates
-    if (dy > 0) {
-      const cy = sy + R_SEAT + GAP + CH / 2
-      return [{ cx: sx - 11, cy }, { cx: sx + 11, cy }]   // south
-    }
-    const cy = sy - R_SEAT - GAP - CH / 2
-    return [{ cx: sx - 11, cy }, { cx: sx + 11, cy }]     // north
+  if (sy < CY) {
+    const cy = sy + R_SEAT + GAP + CH / 2
+    return [{ cx: sx - 11, cy }, { cx: sx + 11, cy }]   // south
   }
-  // horizontal dominates
-  if (dx > 0) {
+  if (sy > CY) {
+    const cy = sy - R_SEAT - GAP - CH / 2
+    return [{ cx: sx - 11, cy }, { cx: sx + 11, cy }]   // north
+  }
+  // exactly at CY (BTN, UTG+1)
+  if (sx < CX) {
     const cx = sx + R_SEAT + GAP + CW / 2
-    return [{ cx, cy: sy - 14 }, { cx, cy: sy + 14 }]     // east
+    return [{ cx, cy: sy - 14 }, { cx, cy: sy + 14 }]   // east
   }
   const cx = sx - R_SEAT - GAP - CW / 2
-  return [{ cx, cy: sy - 14 }, { cx, cy: sy + 14 }]       // west
+  return [{ cx, cy: sy - 14 }, { cx, cy: sy + 14 }]     // west
 }
 
 function SvgCardFace({ card, cx, cy }: { card: string; cx: number; cy: number }) {
@@ -211,7 +207,7 @@ export function PokerTable({ heroPosition, villainPosition, villainName, activeP
         )
       })}
 
-      {/* Villain face-down cards */}
+      {/* Villain face-down cards — rendered before hero so hero cards sit on top if they overlap */}
       {villainIdx >= 0 && (() => {
         const { x, y } = seatCoord(villainIdx)
         const [p1, p2] = cardPair(x, y)
