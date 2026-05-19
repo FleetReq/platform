@@ -512,9 +512,9 @@ const STEP_CONFIG: Record<Step, { label: string; prompt: string; inputType: 'rat
 }
 
 const CATEGORY_STYLE: Record<StepCategory, string> = {
-  GTO:          'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
-  Exploitative: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-  Decision:     'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  GTO:          'bg-teal-500/15 text-teal-400',
+  Exploitative: 'bg-amber-500/15 text-amber-400',
+  Decision:     'bg-blue-500/15 text-blue-400',
 }
 
 function getPrompt(step: Step, s: Scenario, results: (StepResult | undefined)[]): string {
@@ -613,14 +613,22 @@ function getStepGuide(step: Step, s: Scenario, prevResults: (StepResult | undefi
 
 
 const LEVEL_COLORS: Record<number, string> = {
-  1: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-  2: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  3: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  1: 'bg-emerald-500/15 text-emerald-400',
+  2: 'bg-amber-500/15 text-amber-400',
+  3: 'bg-red-500/15 text-red-400',
+}
+
+const PLAYER_TYPE_BADGE: Record<string, { style: string; label: string }> = {
+  nit:     { style: 'bg-red-500/20 text-red-400 border border-red-500/40',         label: 'NIT'     },
+  tag:     { style: 'bg-blue-500/20 text-blue-400 border border-blue-500/40',       label: 'TAG'     },
+  lag:     { style: 'bg-orange-500/20 text-orange-400 border border-orange-500/40', label: 'LAG'     },
+  station: { style: 'bg-teal-500/20 text-teal-400 border border-teal-500/40',       label: 'STATION' },
+  maniac:  { style: 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40', label: 'MANIAC'  },
 }
 
 function ExplanationBody({ text, correct }: { text: string | undefined; correct: boolean }) {
   return (
-    <p className={`text-sm leading-relaxed ${correct ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'}`}>
+    <p className={`text-sm leading-relaxed ${correct ? 'text-emerald-300' : 'text-red-400'}`}>
       {text || (correct ? 'Correct!' : '')}
     </p>
   )
@@ -689,7 +697,11 @@ export default function PokerTrainer() {
             if (fetchToken.current === token)
               setScenarios(prev => [...prev, ...s2])
           })
-          .catch(() => { /* silent */ })
+          .catch((err: unknown) => {
+            if (fetchToken.current !== token) return
+            setUsedFallback(true)
+            setFallbackReason(err instanceof Error ? err.message : 'unavailable')
+          })
       })
       .catch((err: unknown) => {
         if (fetchToken.current !== token) return
@@ -705,10 +717,10 @@ export default function PokerTrainer() {
 
   if (!scenario) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="h-screen flex items-center justify-center bg-[#0c0e14]">
         <div className="text-center">
-          <p className="text-gray-500 dark:text-gray-400 font-medium mb-3">No scenarios for this difficulty level.</p>
-          <button onClick={() => changeFilter(1)} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-colors">
+          <p className="text-white/40 font-medium mb-3">No scenarios for this difficulty level.</p>
+          <button onClick={() => changeFilter(1)} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
             Show Rookie
           </button>
         </div>
@@ -724,6 +736,10 @@ export default function PokerTrainer() {
   const isLastStep = stepIdx === steps.length - 1
   const scenarioDone = isChecked && isLastStep
   const config = STEP_CONFIG[currentStep]
+
+  const villainPtIdx = scenario.steps.indexOf('playerType')
+  const villainTypeRevealed = scenario.level === 1 || (villainPtIdx >= 0 && !!results[villainPtIdx])
+  const villainBadge = villainTypeRevealed ? PLAYER_TYPE_BADGE[scenario.villainPlayerType] : null
 
   useLayoutEffect(() => {
     if (!isChecked) {
@@ -894,7 +910,11 @@ export default function PokerTrainer() {
             if (fetchToken.current === token)
               setScenarios(prev => [...prev, ...s2])
           })
-          .catch(() => { /* silent */ })
+          .catch((err: unknown) => {
+            if (fetchToken.current !== token) return
+            setUsedFallback(true)
+            setFallbackReason(err instanceof Error ? err.message : 'unavailable')
+          })
       })
       .catch((err: unknown) => {
         if (fetchToken.current !== token) return
@@ -908,24 +928,24 @@ export default function PokerTrainer() {
   if (done) {
     const pct = score.total > 0 ? Math.round((score.correct / score.total) * 100) : 0
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="card-professional max-w-sm w-full text-center p-8">
+      <div className="min-h-screen flex items-center justify-center p-6 bg-[#0c0e14]">
+        <div className="bg-[#13151f] border border-white/8 rounded-2xl shadow-2xl max-w-sm w-full text-center p-8">
           <div className="text-5xl mb-4">🃏</div>
-          <h1 className="text-2xl font-bold mb-1">Session Complete</h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
+          <h1 className="text-2xl font-bold mb-1 text-white">Session Complete</h1>
+          <p className="text-white/40 text-sm mb-6">
             {score.correct} / {score.total} steps correct ({pct}%)
           </p>
-          <div className={`text-3xl font-bold mb-2 ${pct >= 80 ? 'text-green-500' : pct >= 60 ? 'text-yellow-500' : 'text-red-500'}`}>
+          <div className={`text-3xl font-bold mb-2 ${pct >= 80 ? 'text-emerald-400' : pct >= 60 ? 'text-amber-400' : 'text-red-400'}`}>
             {pct >= 80 ? '🏆 Shark' : pct >= 60 ? '📈 Improving' : '📚 Keep Studying'}
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
+          <p className="text-sm text-white/40 mb-8">
             {pct >= 80
               ? 'You make +EV decisions. Table image: dangerous.'
               : pct >= 60
               ? 'Solid foundation. Work on the tricky spots.'
               : 'Review the Rule of 2/4 and pot odds math.'}
           </p>
-          <button onClick={restart} className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-colors">
+          <button onClick={restart} className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
             Play Again
           </button>
         </div>
@@ -934,23 +954,31 @@ export default function PokerTrainer() {
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
+    <div className="h-screen flex flex-col overflow-hidden bg-[#0c0e14]">
+      {/* Accessible live region for step feedback */}
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {currentResult
+          ? currentResult.correct
+            ? `Correct. ${currentExplanation ?? ''}`
+            : `Incorrect. Correct answer: ${expectedAnswer(currentStep, scenario)}.`
+          : ''}
+      </div>
 
       {/* ── Header ──────────────────────────────────────────────── */}
-      <header className="flex-shrink-0 border-b border-gray-200 dark:border-gray-700/60 bg-white dark:bg-gray-900">
+      <header className="flex-shrink-0 border-b border-white/8 bg-[#0c0e14]">
         <div className="flex items-center gap-4 px-5 sm:px-8 py-3">
           <div className="flex-1">
             <div className="flex items-center gap-2.5">
               <span className="text-2xl" aria-hidden="true">🃏</span>
               <div>
-                <h1 className="text-base sm:text-lg font-bold leading-tight">Poker Trainer</h1>
-                <p className="text-xs text-gray-400 hidden sm:block">Pot odds · Outs · Equity</p>
+                <h1 className="text-base sm:text-lg font-bold leading-tight text-white">Poker Trainer</h1>
+                <p className="text-xs text-white/30 hidden sm:block">Pot odds · Outs · Equity</p>
               </div>
             </div>
           </div>
 
           {/* Progress pips */}
-          <div className="flex gap-1.5 items-center" role="list" aria-label="Scenario progress">
+          <div className="flex gap-1.5 items-center" role="list" aria-label={`Scenario progress: ${sIdx + 1} of ${activeScenarios.length}`}>
             {activeScenarios.map((s, i) => {
               const sr = scenarioResults[i]
               let pipClass: string
@@ -960,9 +988,9 @@ export default function PokerTrainer() {
                 else if (sr.correct === 0) pipClass = 'w-2.5 h-2.5 bg-red-400'
                 else pipClass = 'w-2.5 h-2.5 bg-yellow-400'
               } else if (i === sIdx) {
-                pipClass = 'w-3 h-3 bg-blue-500 ring-2 ring-blue-300 dark:ring-blue-700'
+                pipClass = 'w-3 h-3 bg-blue-500 ring-2 ring-blue-500/40'
               } else {
-                pipClass = 'w-2 h-2 bg-gray-200 dark:bg-gray-700'
+                pipClass = 'w-2 h-2 bg-white/15'
               }
               const status = i < sIdx
                 ? sr ? (sr.correct === sr.total ? 'perfect' : `${sr.correct}/${sr.total} correct`) : 'complete'
@@ -979,62 +1007,66 @@ export default function PokerTrainer() {
           </div>
 
           <div
-            className="text-right pl-2 border-l border-gray-200 dark:border-gray-700"
+            className="text-right pl-2 border-l border-white/8"
             aria-label={`Score: ${score.correct} of ${score.total} steps correct`}
           >
-            <div className="text-lg font-bold text-blue-600 dark:text-blue-400 tabular-nums">{score.correct}/{score.total}</div>
-            <div className="text-xs text-gray-400 leading-none" aria-hidden="true">steps</div>
+            <div className="text-lg font-bold text-blue-400 tabular-nums">{score.correct}/{score.total}</div>
+            <div className="text-[10px] font-bold uppercase tracking-wider text-white/30 leading-none" aria-hidden="true">steps</div>
           </div>
         </div>
 
         {/* Difficulty tabs */}
-        <div className="flex gap-1 px-5 sm:px-8 pb-2.5" role="tablist" aria-label="Difficulty level">
+        <div className="flex gap-2 px-5 sm:px-8 pb-3" role="tablist" aria-label="Difficulty level">
           {([1, 2, 3] as (1 | 2 | 3)[]).map(lvl => (
             <button
               key={lvl}
+              id={`tab-${lvl}`}
               role="tab"
               aria-selected={filterLevel === lvl}
+              aria-controls="main-tabpanel"
               onClick={() => changeFilter(lvl)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors min-h-[36px] ${
+              className={`flex-1 py-2 rounded-lg font-bold text-sm tracking-wide transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-1 focus-visible:ring-offset-[#0c0e14] ${
                 filterLevel === lvl
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-800 dark:hover:text-gray-200'
+                  ? lvl === 1 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
+                    : lvl === 2 ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30'
+                    : 'bg-red-500 text-white shadow-lg shadow-red-500/30'
+                  : 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/70'
               }`}
             >
-              {lvl === 1 ? 'Rookie' : lvl === 2 ? 'Regular' : 'Shark'}
+              {lvl === 1 ? '● Rookie' : lvl === 2 ? '●● Regular' : '●●● Shark'}
             </button>
           ))}
         </div>
 
         {usedFallback && (
-          <p className="text-xs text-amber-700 dark:text-amber-400 text-center py-1 px-4 bg-amber-50 dark:bg-amber-900/20 border-t border-amber-100 dark:border-amber-800/30">
+          <p className="text-xs text-amber-400 text-center py-1 px-4 bg-amber-500/10 border-t border-amber-500/20">
             Using practice scenarios — live generation unavailable
-            {fallbackReason && <span className="ml-1 opacity-70">· {fallbackReason}</span>}
+            {fallbackReason && <span className="ml-1 opacity-50">· {fallbackReason}</span>}
           </p>
         )}
       </header>
 
       {/* ── Body: 2-col on lg, stacked on mobile ────────────────── */}
-      <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
+      <div id="main-tabpanel" role="tabpanel" aria-labelledby={`tab-${filterLevel}`} className="flex-1 overflow-hidden flex flex-col lg:flex-row bg-[#0c0e14]">
 
         {/* LEFT — scenario context */}
-        <div className="lg:w-[42%] lg:flex-shrink-0 overflow-y-auto p-5 sm:p-7 lg:border-r border-gray-200 dark:border-gray-700/60 bg-gray-50/60 dark:bg-gray-800/30">
+        <div className="lg:w-[42%] lg:flex-shrink-0 overflow-y-auto p-5 sm:p-7 lg:border-r border-white/8 bg-[#0c0e14]">
 
           {/* Level + meta */}
           <div className="flex items-center gap-2 mb-4">
             <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${LEVEL_COLORS[scenario.level]}`}>
               {scenario.levelName}
             </span>
-            <span className="text-xs text-gray-400">Scenario {sIdx + 1}/{activeScenarios.length}</span>
-            <span className="text-xs text-gray-400">· {scenario.street}</span>
+            <span className="text-xs text-white/40">Scenario {sIdx + 1}/{activeScenarios.length}</span>
+            <span className="text-xs text-white/40">· {scenario.street}</span>
           </div>
 
           {/* Quick Reference */}
-          <div className="rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/40 px-4 py-3 space-y-1 mb-4">
-            <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider mb-1">Quick Reference</p>
-            <p className="text-xs text-amber-800 dark:text-amber-300">Rule of 4 — outs × 4 when <strong>2 cards</strong> to come (Flop)</p>
-            <p className="text-xs text-amber-800 dark:text-amber-300">Rule of 2 — outs × 2 when <strong>1 card</strong> to come (Turn)</p>
-            <p className="text-xs text-amber-800 dark:text-amber-300 pt-0.5 border-t border-amber-100 dark:border-amber-800/30 mt-0.5">Breakeven: 2:1 → 33% · 3:1 → 25% · 4:1 → 20% · 5:1 → 17%</p>
+          <div className="rounded-xl bg-[#13151f] border border-white/8 border-l-4 border-l-teal-400 px-4 py-3 space-y-1 mb-4">
+            <p className="text-[10px] font-bold text-teal-400 uppercase tracking-[0.15em] mb-1">Quick Reference</p>
+            <p className="text-xs text-white/60">Rule of 4 — outs × 4 when <strong className="text-white/90">2 cards</strong> to come (Flop)</p>
+            <p className="text-xs text-white/60">Rule of 2 — outs × 2 when <strong className="text-white/90">1 card</strong> to come (Turn)</p>
+            <p className="text-xs text-white/40 pt-1 border-t border-white/8 mt-1">Breakeven: 2:1 → 33% · 3:1 → 25% · 4:1 → 20% · 5:1 → 17%</p>
           </div>
 
           {/* Poker Table with cards */}
@@ -1047,38 +1079,45 @@ export default function PokerTrainer() {
               heroCards={scenario.hand}
               boardCards={scenario.board}
             />
-            <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-1.5">
-              You: <strong className="text-blue-500">{scenario.heroPosition}</strong>
+            <p className="text-xs text-white/40 text-center mt-1.5">
+              You: <strong className="text-blue-400">{scenario.heroPosition}</strong>
               {' · '}
-              {scenario.villainName}: <strong className="text-amber-500">{scenario.villainPosition}</strong>
+              {scenario.villainName}: <strong className="text-amber-400">{scenario.villainPosition}</strong>
               {' · '}
-              <span className="text-gray-400">{scenario.tableSize}-handed</span>
+              <span className="text-white/30">{scenario.tableSize}-handed</span>
             </p>
           </div>
 
           {/* Villain Profile */}
-          <div className="rounded-xl bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800/40 px-4 py-3 mb-4">
-            <p className="text-xs font-semibold text-orange-700 dark:text-orange-400 uppercase tracking-wider mb-1">
-              Villain: {scenario.villainName}
-            </p>
-            <p className="text-sm text-orange-800 dark:text-orange-300 leading-snug">{scenario.villainDescription}</p>
+          <div className="rounded-xl bg-[#13151f] border border-white/8 border-l-4 border-l-amber-400 px-4 py-3 mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[10px] font-bold text-amber-400 uppercase tracking-[0.15em]">
+                Villain: {scenario.villainName}
+              </p>
+              {villainBadge && (
+                <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider ${villainBadge.style}`}>
+                  {villainBadge.label}
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-white/70 leading-snug">{scenario.villainDescription}</p>
           </div>
 
           {/* Hand description */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/40 rounded-xl px-4 py-3 text-sm text-blue-800 dark:text-blue-300 mb-4 leading-snug">
+          <div className="bg-[#13151f] border border-white/8 border-l-4 border-l-blue-400 rounded-xl px-4 py-3 text-sm text-white/70 mb-4 leading-snug">
             {scenario.handDesc}
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-3">
             {[
-              { label: 'Pot', value: `$${scenario.pot}`, color: 'text-green-600 dark:text-green-400' },
-              { label: 'To Call', value: `$${scenario.callAmount}`, color: 'text-orange-500 dark:text-orange-400' },
-              { label: 'Cards Left', value: `${scenario.cardsToCome}`, color: 'text-gray-800 dark:text-gray-100' },
+              { label: 'Pot', value: `$${scenario.pot}`, color: 'text-emerald-400' },
+              { label: 'To Call', value: `$${scenario.callAmount}`, color: 'text-orange-400' },
+              { label: 'Cards Left', value: `${scenario.cardsToCome}`, color: 'text-white' },
             ].map(({ label, value, color }) => (
-              <div key={label} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 py-3 text-center shadow-sm">
-                <div className="text-xs text-gray-400 mb-1">{label}</div>
-                <div className={`text-xl font-bold ${color}`}>{value}</div>
+              <div key={label} className="bg-[#13151f] rounded-xl border border-white/8 py-4 text-center">
+                <div className={`text-4xl font-black tabular-nums tracking-tight ${color}`}>{value}</div>
+                <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 mt-1">{label}</div>
               </div>
             ))}
           </div>
@@ -1086,7 +1125,7 @@ export default function PokerTrainer() {
         </div>
 
         {/* RIGHT — steps */}
-        <div className="flex-1 overflow-y-auto p-5 sm:p-7">
+        <div className="flex-1 overflow-y-auto p-5 sm:p-7 bg-[#0c0e14]">
 
           {/* Completed steps */}
           {stepIdx > 0 && (
@@ -1097,26 +1136,26 @@ export default function PokerTrainer() {
                 return (
                   <div key={step} className={`rounded-xl border px-4 py-3 ${
                     r.correct
-                      ? 'border-green-200 dark:border-green-800/60 bg-green-50 dark:bg-green-900/10'
-                      : 'border-red-200 dark:border-red-800/60 bg-red-50 dark:bg-red-900/10'
+                      ? 'border-emerald-500/30 bg-emerald-500/10'
+                      : 'border-red-500/30 bg-red-500/10'
                   }`}>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0 ${r.correct ? 'bg-green-500' : 'bg-red-500'}`}>
+                      <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0 ${r.correct ? 'bg-emerald-500' : 'bg-red-500'}`}>
                         {r.correct ? '✓' : '✗'}
                       </span>
-                      <span className={`text-xs font-semibold ${r.correct ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
+                      <span className={`text-xs font-semibold ${r.correct ? 'text-emerald-400' : 'text-red-400'}`}>
                         {STEP_CONFIG[step].label}
                       </span>
                       <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${CATEGORY_STYLE[STEP_CONFIG[step].category]}`}>
                         {STEP_CONFIG[step].category}
                       </span>
                       {!r.correct && (
-                        <span className="text-xs text-gray-400 ml-auto">
-                          was <strong>{expectedAnswer(step, scenario)}</strong>
+                        <span className="text-xs text-white/30 ml-auto">
+                          was <strong className="text-white/60">{expectedAnswer(step, scenario)}</strong>
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed pl-6">
+                    <p className="text-xs text-white/40 leading-relaxed pl-6">
                       {explanations[i] || scenario.explanations[step]}
                     </p>
                   </div>
@@ -1127,24 +1166,28 @@ export default function PokerTrainer() {
 
           {/* Active step */}
           <div ref={activeRef}>
-            <div className={`rounded-xl border bg-white dark:bg-gray-800/60 shadow-sm p-5 ${
+            <div className={`rounded-xl border p-5 ${
               !isChecked
-                ? 'border-blue-400 dark:border-blue-500 shadow-blue-100 dark:shadow-none ring-1 ring-blue-300 dark:ring-blue-700'
+                ? 'bg-[#13151f] border-blue-500/60 shadow-xl shadow-blue-500/10'
                 : currentResult!.correct
-                  ? 'border-green-300 dark:border-green-700'
-                  : 'border-red-300 dark:border-red-700'
+                  ? 'bg-[#13151f] border-emerald-500/40'
+                  : 'bg-[#13151f] border-red-500/40'
             }`}>
               {/* Step header */}
               <div className="flex items-center gap-2.5 mb-4">
-                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 ${
-                  isChecked ? (currentResult!.correct ? 'bg-green-500' : 'bg-red-500') : 'bg-blue-500'
+                <span className={`w-9 h-9 rounded-full flex items-center justify-center font-black flex-shrink-0 ${
+                  isChecked
+                    ? currentResult!.correct
+                      ? 'bg-emerald-500 text-white text-sm shadow-lg shadow-emerald-500/40'
+                      : 'bg-red-500 text-white text-sm shadow-lg shadow-red-500/40'
+                    : 'bg-blue-500 text-white text-base shadow-lg shadow-blue-500/40'
                 }`}>
                   {isChecked ? (currentResult!.correct ? '✓' : '✗') : stepIdx + 1}
                 </span>
                 <div>
-                  <p className="text-xs text-gray-400 leading-none mb-0.5">Step {stepIdx + 1} of {steps.length}</p>
+                  <p className="text-[10px] text-white/30 leading-none mb-0.5 uppercase tracking-wider">Step {stepIdx + 1} of {steps.length}</p>
                   <div className="flex items-center gap-2">
-                    <p className="font-semibold text-sm leading-tight">{config.label}</p>
+                    <p className="font-bold text-sm leading-tight text-white">{config.label}</p>
                     <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${CATEGORY_STYLE[config.category]}`}>
                       {config.category}
                     </span>
@@ -1154,10 +1197,10 @@ export default function PokerTrainer() {
 
               {isChecked ? (
                 <div className={`rounded-lg px-4 py-3 ${
-                  currentResult!.correct ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'
+                  currentResult!.correct ? 'bg-emerald-500/10' : 'bg-red-500/10'
                 }`}>
                   {!currentResult!.correct && (
-                    <p className="text-xs font-semibold text-red-600 dark:text-red-400 mb-1.5">
+                    <p className="text-xs font-semibold text-red-400 mb-1.5">
                       Correct answer: {expectedAnswer(currentStep, scenario)}
                     </p>
                   )}
@@ -1168,17 +1211,17 @@ export default function PokerTrainer() {
                 </div>
               ) : (
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{getPrompt(currentStep, scenario, results)}</p>
+                  <p className="text-sm text-white/60 mb-3">{getPrompt(currentStep, scenario, results)}</p>
 
                   {/* Formula guide */}
                   {(() => {
                     const guide = getStepGuide(currentStep, scenario, results)
                     return guide ? (
-                      <div className="bg-gray-50 dark:bg-gray-700/40 rounded-lg px-4 py-3 mb-4 border border-gray-200 dark:border-gray-600/50">
-                        <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1">{guide.formula}</p>
-                        <p className="text-base font-mono font-bold text-gray-800 dark:text-gray-100">{guide.worked}</p>
+                      <div className="bg-black/30 rounded-lg px-4 py-3 mb-4 border border-white/8">
+                        <p className="text-[10px] text-white/30 font-bold uppercase tracking-[0.15em] mb-1">{guide.formula}</p>
+                        <p className="text-base font-mono font-bold text-white">{guide.worked}</p>
                         {guide.tip && (
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5 pt-1.5 border-t border-gray-200 dark:border-gray-600/50">{guide.tip}</p>
+                          <p className="text-xs text-white/40 mt-1.5 pt-1.5 border-t border-white/8">{guide.tip}</p>
                         )}
                       </div>
                     ) : null
@@ -1194,26 +1237,44 @@ export default function PokerTrainer() {
                       <button
                         onClick={handleCheck}
                         disabled={!selected}
-                        className="mt-3 w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-semibold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                        className="mt-3 w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-bold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#13151f]"
                       >
                         Confirm Read
                       </button>
                     </div>
                   ) : config.inputType === 'decision' ? (
                     <div className="space-y-3">
-                      <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Decision">
+                      <div
+                        className="grid grid-cols-3 gap-2"
+                        role="radiogroup"
+                        aria-label="Decision"
+                        onKeyDown={(e) => {
+                          const options: Decision[] = ['call', 'fold', 'raise']
+                          if (!['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'].includes(e.key)) return
+                          e.preventDefault()
+                          e.stopPropagation()
+                          const currentIdx = selected ? options.indexOf(selected as Decision) : 0
+                          const nextIdx = (e.key === 'ArrowRight' || e.key === 'ArrowDown')
+                            ? (currentIdx + 1) % options.length
+                            : (currentIdx - 1 + options.length) % options.length
+                          setSelected(options[nextIdx])
+                          const buttons = (e.currentTarget as HTMLDivElement).querySelectorAll('[role="radio"]')
+                          ;(buttons[nextIdx] as HTMLElement)?.focus()
+                        }}
+                      >
                         {(['call', 'fold', 'raise'] as Decision[]).map(d => (
                           <button
                             key={d}
                             role="radio"
                             aria-checked={selected === d}
+                            tabIndex={selected === d || (!selected && d === 'call') ? 0 : -1}
                             onClick={() => setSelected(d)}
-                            className={`py-3 rounded-xl font-semibold text-sm capitalize transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 ${
+                            className={`py-3 rounded-xl font-bold text-sm capitalize transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-1 focus-visible:ring-offset-[#13151f] ${
                               selected === d
-                                ? d === 'call' ? 'bg-green-600 text-white shadow-md'
-                                  : d === 'fold' ? 'bg-red-600 text-white shadow-md'
-                                  : 'bg-purple-600 text-white shadow-md'
-                                : 'bg-gray-100 dark:bg-gray-700/60 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600'
+                                ? d === 'call' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
+                                  : d === 'fold' ? 'bg-red-500 text-white shadow-lg shadow-red-500/30'
+                                  : 'bg-purple-500 text-white shadow-lg shadow-purple-500/30'
+                                : 'bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/80 border border-white/10'
                             }`}
                           >
                             <span aria-hidden="true">{d === 'call' ? '📞 ' : d === 'fold' ? '🗑️ ' : '⬆️ '}</span>
@@ -1223,26 +1284,27 @@ export default function PokerTrainer() {
                       </div>
                       {/* Reasoning textarea — shown for all decision steps */}
                       <div>
-                        <p className="text-xs text-gray-400 font-medium mb-1.5">
+                        <label htmlFor="reasoning-input" className="text-xs text-white/40 font-medium mb-1.5 block">
                           {scenario.level === 3 ? 'Optional: explain your reasoning — AI coach will evaluate it' : 'Optional: explain your thinking'}
-                        </p>
+                        </label>
                         <div className="relative">
                           <textarea
+                            id="reasoning-input"
                             value={reasoning}
                             onChange={e => setReasoning(e.target.value)}
                             placeholder="e.g. I'm calling because my equity beats the breakeven, and this player bets wide..."
                             rows={3}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none pr-12"
+                            className="w-full px-4 py-3 rounded-xl border border-white/15 bg-white/5 text-white text-sm placeholder-white/25 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none pr-12"
                           />
                           {micSupported && (
                             <button
                               onClick={isListening ? stopMic : startMic}
                               type="button"
                               aria-label={isListening ? 'Stop recording' : 'Start voice input'}
-                              className={`absolute bottom-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-all text-base ${
+                              className={`absolute bottom-3 right-3 w-11 h-11 rounded-full flex items-center justify-center transition-all text-base ${
                                 isListening
-                                  ? 'bg-red-500 text-white shadow-md ring-2 ring-red-300'
-                                  : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                  ? 'bg-red-500 text-white shadow-md ring-2 ring-red-500/40'
+                                  : 'bg-white/8 text-white/40 hover:bg-white/15 hover:text-white/70'
                               }`}
                             >
                               🎙️
@@ -1252,7 +1314,7 @@ export default function PokerTrainer() {
                       </div>
                       <button
                         onClick={handleCheck}
-                        disabled={!selected}
+                        disabled={!selected || loadingEvaluation}
                         className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-semibold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                       >
                         Confirm Decision
@@ -1271,9 +1333,9 @@ export default function PokerTrainer() {
                         min={0}
                         autoFocus
                         autoComplete="off"
-                        className="flex-1 px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="flex-1 px-4 py-3 rounded-xl border border-white/15 bg-white/5 text-white text-sm placeholder-white/25 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
-                      {config.inputType === 'number' && <span className="text-sm text-gray-400 font-medium" aria-hidden="true">%</span>}
+                      {config.inputType === 'number' && <span className="text-sm text-white/30 font-medium" aria-hidden="true">%</span>}
                       <button
                         onClick={handleCheck}
                         disabled={!input.trim()}
@@ -1291,16 +1353,16 @@ export default function PokerTrainer() {
             {isChecked && currentStep === 'decision' && (loadingEvaluation || evaluation) && (
               <div className={`mt-3 rounded-xl px-4 py-3 border ${
                 loadingEvaluation
-                  ? 'bg-gray-50 dark:bg-gray-800/40 border-gray-200 dark:border-gray-700'
-                  : 'bg-purple-50 dark:bg-purple-900/20 border-purple-100 dark:border-purple-800/40'
+                  ? 'bg-white/5 border-white/8'
+                  : 'bg-purple-500/10 border-purple-500/30'
               }`}>
-                <p className="text-xs font-semibold text-purple-700 dark:text-purple-400 uppercase tracking-wider mb-1.5">
+                <p className="text-[10px] font-bold text-purple-400 uppercase tracking-[0.15em] mb-1.5">
                   Coach Evaluation
                 </p>
                 {loadingEvaluation ? (
-                  <p className="text-sm text-gray-400 italic">Analyzing your reasoning...</p>
+                  <p className="text-sm text-white/30 italic">Analyzing your reasoning...</p>
                 ) : (
-                  <p className="text-sm text-purple-800 dark:text-purple-300 leading-relaxed">{evaluation}</p>
+                  <p className="text-sm text-purple-300 leading-relaxed">{evaluation}</p>
                 )}
               </div>
             )}
@@ -1308,15 +1370,23 @@ export default function PokerTrainer() {
 
           {/* Navigation buttons */}
           {isChecked && !scenarioDone && (
-            <button onClick={nextStep} className="mt-4 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 flex items-center justify-center gap-2">
+            <button
+              onClick={nextStep}
+              aria-label={`Next step: ${steps[stepIdx + 1] ? STEP_CONFIG[steps[stepIdx + 1]].label : ''} (step ${stepIdx + 2} of ${steps.length})`}
+              className="mt-4 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 flex items-center justify-center gap-2"
+            >
               <span>Next Step</span>
-              <span className="opacity-60 text-xs font-normal">↵ or →</span>
+              <span className="opacity-60 text-xs font-normal" aria-hidden="true">↵ or →</span>
             </button>
           )}
           {scenarioDone && (
-            <button onClick={nextScenario} className="mt-4 w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 flex items-center justify-center gap-2">
+            <button
+              onClick={nextScenario}
+              aria-label={sIdx + 1 >= activeScenarios.length ? 'See final results' : `Next scenario (${sIdx + 2} of ${activeScenarios.length})`}
+              className="mt-4 w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 flex items-center justify-center gap-2"
+            >
               <span>{sIdx + 1 >= activeScenarios.length ? 'See Results 🏆' : 'Next Scenario'}</span>
-              {sIdx + 1 < activeScenarios.length && <span className="opacity-60 text-xs font-normal">↵ or →</span>}
+              {sIdx + 1 < activeScenarios.length && <span className="opacity-60 text-xs font-normal" aria-hidden="true">↵ or →</span>}
             </button>
           )}
         </div>

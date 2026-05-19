@@ -50,6 +50,22 @@ const PLAYER_TYPES: PlayerTypeOption[] = [
   },
 ]
 
+const TYPE_SELECTED: Record<PlayerType, string> = {
+  nit:     'bg-red-500/25 border-red-500/60 text-red-300 shadow-lg shadow-red-500/20',
+  tag:     'bg-blue-500/25 border-blue-500/60 text-blue-300 shadow-lg shadow-blue-500/20',
+  lag:     'bg-orange-500/25 border-orange-500/60 text-orange-300 shadow-lg shadow-orange-500/20',
+  station: 'bg-teal-500/25 border-teal-500/60 text-teal-300 shadow-lg shadow-teal-500/20',
+  maniac:  'bg-yellow-500/25 border-yellow-500/60 text-yellow-300 shadow-lg shadow-yellow-500/20',
+}
+
+const TYPE_DESC_BG: Record<PlayerType, string> = {
+  nit:     'bg-red-500/10 border-red-500/30 text-red-200',
+  tag:     'bg-blue-500/10 border-blue-500/30 text-blue-200',
+  lag:     'bg-orange-500/10 border-orange-500/30 text-orange-200',
+  station: 'bg-teal-500/10 border-teal-500/30 text-teal-200',
+  maniac:  'bg-yellow-500/10 border-yellow-500/30 text-yellow-200',
+}
+
 interface PlayerTypeStepProps {
   selected: PlayerType | ''
   onSelect: (type: PlayerType) => void
@@ -75,14 +91,12 @@ export function PlayerTypeStep({ selected, onSelect, disabled }: PlayerTypeStepP
             disabled={disabled}
             aria-pressed={selected === type.value}
             aria-label={`${type.label}: ${type.short}`}
-            className={`flex flex-col items-center gap-1 py-3 px-1 rounded-xl text-xs font-semibold transition-all border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 ${
-              disabled
-                ? 'cursor-default opacity-80'
-                : 'cursor-pointer'
+            className={`flex flex-col items-center gap-1 py-3 px-1 rounded-xl text-xs font-semibold transition-all border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-1 focus-visible:ring-offset-[#13151f] ${
+              disabled ? 'cursor-default opacity-80' : 'cursor-pointer'
             } ${
               selected === type.value
-                ? 'bg-blue-600 border-blue-500 text-white shadow-md'
-                : 'bg-gray-100 dark:bg-gray-700/60 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                ? TYPE_SELECTED[type.value]
+                : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white/80 hover:border-white/20'
             }`}
           >
             <span className="text-lg" aria-hidden="true">{type.emoji}</span>
@@ -91,11 +105,10 @@ export function PlayerTypeStep({ selected, onSelect, disabled }: PlayerTypeStepP
         ))}
       </div>
 
-      {/* Tooltip / description */}
       <div className={`rounded-lg px-4 py-3 text-sm transition-all border min-h-[60px] ${
         activeInfo
-          ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800/40 text-blue-800 dark:text-blue-300'
-          : 'bg-gray-50 dark:bg-gray-800/40 border-gray-200 dark:border-gray-700 text-gray-400'
+          ? TYPE_DESC_BG[activeInfo.value]
+          : 'bg-white/5 border-white/10 text-white/30'
       }`}>
         {activeInfo ? (
           <>

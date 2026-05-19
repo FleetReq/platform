@@ -13,7 +13,7 @@ interface PokerTableProps {
 const NINE_MAX: string[] = ['BTN', 'SB', 'BB', 'UTG', 'UTG+1', 'UTG+2', 'LJ', 'HJ', 'CO']
 
 const SUIT_COLOR: Record<string, string> = {
-  '♥': '#dc2626', '♦': '#d97706', '♣': '#2563eb', '♠': '#374151',
+  '♥': '#dc2626', '♦': '#b45309', '♣': '#2563eb', '♠': '#374151',
 }
 
 const CX = 200, CY = 108
@@ -95,7 +95,8 @@ export function PokerTable({ heroPosition, villainPosition, villainName, activeP
   )
 
   return (
-    <svg viewBox="0 0 400 220" className="w-full h-auto select-none" aria-label="Poker table diagram">
+    <svg viewBox="0 0 400 220" className="w-full h-auto select-none" role="img" aria-label={`Poker table: you at ${heroPosition}, ${villainName} at ${villainPosition}`}>
+      <title>{`Poker table: you at ${heroPosition}, ${villainName} at ${villainPosition}`}</title>
       <defs>
         <radialGradient id="pt-felt" cx="50%" cy="42%" r="58%">
           <stop offset="0%"   stopColor="#1e7a50" />
