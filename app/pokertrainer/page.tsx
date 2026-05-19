@@ -583,22 +583,27 @@ function ShuffleAnimation() {
   )
 }
 
-async function fetchScenarios(): Promise<Scenario[]> {
+async function fetchBatch(batch: 1 | 2): Promise<Scenario[]> {
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 25000)
+  const timeout = setTimeout(() => controller.abort(), 15000)
   try {
-    const res = await fetch('/api/pokertrainer/scenarios', { signal: controller.signal })
+    const res = await fetch(`/api/pokertrainer/scenarios?batch=${batch}`, { signal: controller.signal })
     if (!res.ok) {
       let detail = ''
       try { const body = await res.json(); detail = body.error ?? '' } catch { /* ignore */ }
       throw new Error(detail ? `${detail} (${res.status})` : `HTTP ${res.status}`)
     }
     const data = await res.json()
-    if (!Array.isArray(data.scenarios) || data.scenarios.length !== 6) throw new Error('bad shape')
+    if (!Array.isArray(data.scenarios) || data.scenarios.length !== 3) throw new Error('bad shape')
     return data.scenarios as Scenario[]
   } finally {
     clearTimeout(timeout)
   }
+}
+
+async function fetchScenarios(): Promise<Scenario[]> {
+  const [batch1, batch2] = await Promise.all([fetchBatch(1), fetchBatch(2)])
+  return [...batch1, ...batch2]
 }
 
 export default function PokerTrainer() {

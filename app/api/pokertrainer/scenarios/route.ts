@@ -2,7 +2,6 @@ import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
-export const maxDuration = 30
 
 const client = new Anthropic()
 
@@ -192,48 +191,58 @@ STRICT RULES:
     - Level 3: genuinely ambiguous — multiple types are plausible, any reasonable read is defensible
 12. Return ONLY raw JSON — no markdown, no code blocks, no explanation`
 
-const USER_PROMPT = `Generate exactly 6 Texas Hold'em scenarios.
+const EXAMPLE_SCENARIO = `{
+  "level": 1,
+  "street": "Flop",
+  "hand": ["A♥", "7♥"],
+  "board": ["K♥", "9♥", "2♣"],
+  "handDesc": "Nut flush draw — any heart gives you the best possible flush",
+  "pot": 60,
+  "callAmount": 20,
+  "cardsToCome": 2,
+  "outs": 9,
+  "outDesc": "13 hearts total − 4 visible (A♥ 7♥ K♥ 9♥) = 9 outs remaining",
+  "tableSize": 6,
+  "heroPosition": "CO",
+  "villainPosition": "BTN",
+  "otherPlayers": ["SB", "BB"],
+  "villainName": "Old Timer",
+  "villainDescription": "An older gentleman who has folded almost every hand tonight. He finally raised big preflop for the first time and seems very sure of himself.",
+  "villainPlayerType": "nit"
+}`
+
+const BATCH_PROMPTS: Record<1 | 2, string> = {
+  1: `Generate exactly 3 Texas Hold'em scenarios.
 
 Level assignment:
-- scenarios[0] and [1]: level 1 (Rookie)
-- scenarios[2] and [3]: level 2 (Regular)
-- scenarios[4] and [5]: level 3 (Shark)
+- scenarios[0]: level 1 (Rookie)
+- scenarios[1]: level 1 (Rookie)
+- scenarios[2]: level 2 (Regular)
 
-Variety requirements:
-- Include flush draws, open-ended straight draws, gutshots, and at least one combo draw
-- Mix Flop and Turn scenarios
-- At least 2 scenarios result in fold decisions (equity < breakeven) and at least 2 in call/raise
-- Use a variety of table sizes (4–8 players) and positions
+Variety: mix Flop and Turn, include flush draw and straight draw, at least 1 fold decision.
 
-Return this exact structure:
-{
-  "scenarios": [
-    {
-      "level": 1,
-      "street": "Flop",
-      "hand": ["A♥", "7♥"],
-      "board": ["K♥", "9♥", "2♣"],
-      "handDesc": "Nut flush draw — any heart gives you the best possible flush",
-      "pot": 60,
-      "callAmount": 20,
-      "cardsToCome": 2,
-      "outs": 9,
-      "outDesc": "13 hearts total − 4 visible (A♥ 7♥ K♥ 9♥) = 9 outs remaining",
-      "tableSize": 6,
-      "heroPosition": "CO",
-      "villainPosition": "BTN",
-      "otherPlayers": ["SB", "BB"],
-      "villainName": "Old Timer",
-      "villainDescription": "An older gentleman who has folded almost every hand tonight. He finally raised big preflop for the first time and seems very sure of himself.",
-      "villainPlayerType": "nit"
-    }
-  ]
-}`
+Return this exact structure: { "scenarios": [ ${EXAMPLE_SCENARIO}, ... ] }`,
+
+  2: `Generate exactly 3 Texas Hold'em scenarios.
+
+Level assignment:
+- scenarios[0]: level 2 (Regular)
+- scenarios[1]: level 3 (Shark)
+- scenarios[2]: level 3 (Shark)
+
+Variety: include at least 1 combo draw, mix Flop and Turn, at least 1 raise decision (equity > 1.5× breakeven).
+
+Return this exact structure: { "scenarios": [ ${EXAMPLE_SCENARIO}, ... ] }`,
+}
 
 export async function GET(request: NextRequest) {
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json({ error: 'API not configured' }, { status: 503 })
   }
+
+  const batchParam = request.nextUrl.searchParams.get('batch')
+  const batch = batchParam === '2' ? 2 : 1
+  const idxOffset = batch === 2 ? 3 : 0
 
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
   const limited = rateLimit(`pokertrainer:${ip}`, RATE_LIMITS.EXPENSIVE)
@@ -245,34 +254,34 @@ export async function GET(request: NextRequest) {
   try {
     const response = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 3000,
+      max_tokens: 1500,
       system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: USER_PROMPT }],
+      messages: [{ role: 'user', content: BATCH_PROMPTS[batch] }],
     })
 
     if (!response.content.length) {
-      console.error('[pokertrainer/scenarios] empty content array, stop_reason:', response.stop_reason)
+      console.error('[pokertrainer/scenarios] empty content, stop_reason:', response.stop_reason)
       throw new Error(`empty content (stop_reason: ${response.stop_reason})`)
     }
     const text = response.content[0].type === 'text' ? response.content[0].text : ''
     const cleaned = text.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim()
     raw = JSON.parse(cleaned)
   } catch (err) {
-    console.error('[pokertrainer/scenarios] generation failed:', err)
+    console.error(`[pokertrainer/scenarios] batch ${batch} failed:`, err)
     return NextResponse.json({ error: 'Generation failed' }, { status: 503 })
   }
 
   const rawScenarios = (raw as { scenarios?: unknown[] })?.scenarios
-  if (!Array.isArray(rawScenarios) || rawScenarios.length !== 6) {
+  if (!Array.isArray(rawScenarios) || rawScenarios.length !== 3) {
     return NextResponse.json({ error: 'Invalid response shape' }, { status: 503 })
   }
 
   const valid = rawScenarios.every(validate)
   if (!valid) {
-    console.warn('[pokertrainer/scenarios] validation failed for one or more scenarios')
+    console.warn(`[pokertrainer/scenarios] batch ${batch} validation failed`)
     return NextResponse.json({ error: 'Scenario validation failed' }, { status: 503 })
   }
 
-  const scenarios = rawScenarios.map((s, i) => processScenario(s as RawScenario, i))
+  const scenarios = rawScenarios.map((s, i) => processScenario(s as RawScenario, idxOffset + i))
   return NextResponse.json({ scenarios })
 }
