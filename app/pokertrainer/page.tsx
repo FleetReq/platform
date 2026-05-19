@@ -492,246 +492,270 @@ export default function PokerTrainer() {
     )
   }
 
-  /* ── shared sub-sections ─────────────────────────────────────── */
-  const scenarioPanel = (
-    <>
-      {/* Level + scenario label */}
-      <div className="flex items-center gap-2 mb-4">
-        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${LEVEL_COLORS[scenario.level]}`}>
-          {scenario.levelName}
-        </span>
-        <span className="text-xs text-gray-400">Scenario {sIdx + 1} of {SCENARIOS.length}</span>
-        <span className="text-xs text-gray-400">· {scenario.street}</span>
-      </div>
-
-      {/* Scenario card */}
-      <div className="card-professional p-5 mb-4">
-        <div className="mb-4">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Your Hand</p>
-          <div className="flex gap-2">
-            {scenario.hand.map((c, i) => <PokerCard key={i} value={c} />)}
-          </div>
+  /* ── explanation text (never blank) ─────────────────────────── */
+  function ExplanationBody({ text, loading, correct }: { text: string | undefined; loading: boolean; correct: boolean }) {
+    const body = text || ''
+    if (loading && !body) {
+      return (
+        <div className="flex items-center gap-1.5 py-0.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce [animation-delay:0ms]" />
+          <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce [animation-delay:120ms]" />
+          <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce [animation-delay:240ms]" />
         </div>
-        <div className="mb-4">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Board</p>
-          <div className="flex gap-2">
-            {scenario.board.map((c, i) => <PokerCard key={i} value={c} />)}
-          </div>
-        </div>
-        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg px-3 py-2 text-sm text-blue-800 dark:text-blue-300 mb-4">
-          {scenario.handDesc}
-        </div>
-        <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg py-3">
-            <div className="text-xs text-gray-400 mb-0.5">Pot</div>
-            <div className="font-bold text-lg text-green-600 dark:text-green-400">${scenario.pot}</div>
-          </div>
-          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg py-3">
-            <div className="text-xs text-gray-400 mb-0.5">To Call</div>
-            <div className="font-bold text-lg text-orange-600 dark:text-orange-400">${scenario.callAmount}</div>
-          </div>
-          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg py-3">
-            <div className="text-xs text-gray-400 mb-0.5">Cards Left</div>
-            <div className="font-bold text-lg">{scenario.cardsTocome}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Rule of 2/4 reference */}
-      <div className="text-xs text-gray-400 dark:text-gray-500 space-y-0.5">
-        <p>💡 <strong>Rule of 4:</strong> outs × 4 when 2 cards to come</p>
-        <p>💡 <strong>Rule of 2:</strong> outs × 2 when 1 card to come</p>
-      </div>
-    </>
-  )
-
-  const stepsPanel = (
-    <>
-      {/* Completed steps */}
-      <div className="space-y-2 mb-3">
-        {steps.slice(0, stepIdx).map((step, i) => {
-          const r = results[i]
-          if (!r) return null
-          return (
-            <div
-              key={step}
-              className={`rounded-lg border px-4 py-3 text-sm ${
-                r.correct
-                  ? 'border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/10'
-                  : 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/10'
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <span className={`text-xs font-bold ${r.correct ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                  {r.correct ? '✓' : '✗'} {STEP_CONFIG[step].label}
-                </span>
-                {!r.correct && (
-                  <span className="text-xs text-gray-400">
-                    answer: <strong>{expectedAnswer(step, scenario)}</strong>
-                  </span>
-                )}
-              </div>
-              <p className="text-gray-600 dark:text-gray-400 text-xs leading-relaxed">
-                {explanations[i] ?? scenario.explanations[step]}
-              </p>
-            </div>
-          )
-        })}
-      </div>
-
-      {/* Active step */}
-      <div ref={activeRef}>
-        <div className={`card-professional p-5 ${!isChecked ? 'ring-2 ring-blue-500 dark:ring-blue-400' : ''}`}>
-          <div className="flex items-center gap-2 mb-3">
-            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${
-              isChecked
-                ? currentResult!.correct ? 'bg-green-500' : 'bg-red-500'
-                : 'bg-blue-500'
-            }`}>
-              {isChecked ? (currentResult!.correct ? '✓' : '✗') : stepIdx + 1}
-            </span>
-            <span className="font-semibold text-sm">Step {stepIdx + 1}: {config.label}</span>
-          </div>
-
-          {isChecked ? (
-            <div className={`rounded-lg px-3 py-2.5 text-sm ${
-              currentResult!.correct ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'
-            }`}>
-              {!currentResult!.correct && (
-                <p className="font-semibold text-red-700 dark:text-red-400 mb-1 text-xs">
-                  Answer: {expectedAnswer(currentStep, scenario)}
-                </p>
-              )}
-              {loadingExplanation && !currentExplanation ? (
-                <div className="flex items-center gap-2 text-gray-400 text-xs">
-                  <span className="inline-block w-1 h-1 bg-current rounded-full animate-bounce [animation-delay:0ms]" />
-                  <span className="inline-block w-1 h-1 bg-current rounded-full animate-bounce [animation-delay:150ms]" />
-                  <span className="inline-block w-1 h-1 bg-current rounded-full animate-bounce [animation-delay:300ms]" />
-                </div>
-              ) : (
-                <p className={`text-sm leading-relaxed ${
-                  currentResult!.correct ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'
-                }`}>
-                  {currentExplanation ?? scenario.explanations[currentStep]}
-                </p>
-              )}
-            </div>
-          ) : (
-            <>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{config.prompt}</p>
-
-              {(() => {
-                const guide = getStepGuide(currentStep, scenario, results)
-                return guide ? (
-                  <div className="bg-gray-50 dark:bg-gray-800/60 rounded-lg px-3 py-2.5 mb-3 space-y-1">
-                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Formula</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">{guide.formula}</p>
-                    <p className="text-sm font-mono font-semibold text-gray-700 dark:text-gray-200">{guide.worked}</p>
-                  </div>
-                ) : null
-              })()}
-
-              {config.inputType === 'decision' ? (
-                <div className="space-y-3">
-                  <div className="flex gap-2">
-                    {(['call', 'fold', 'raise'] as Decision[]).map(d => (
-                      <button
-                        key={d}
-                        onClick={() => setSelected(d)}
-                        className={`flex-1 py-2.5 rounded-lg font-semibold text-sm capitalize transition-all ${
-                          selected === d
-                            ? d === 'call' ? 'bg-green-600 text-white shadow'
-                              : d === 'fold' ? 'bg-red-600 text-white shadow'
-                              : 'bg-purple-600 text-white shadow'
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                        }`}
-                      >
-                        {d === 'call' ? '📞 Call' : d === 'fold' ? '🗑️ Fold' : '⬆️ Raise'}
-                      </button>
-                    ))}
-                  </div>
-                  <button
-                    onClick={handleCheck}
-                    disabled={!selected}
-                    className="w-full py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg font-semibold text-sm transition-colors"
-                  >
-                    Confirm
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <input
-                    ref={inputRef}
-                    type={config.inputType === 'number' ? 'number' : 'text'}
-                    value={input}
-                    onChange={e => setInput(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && handleCheck()}
-                    placeholder={config.inputType === 'ratio' ? 'e.g. 3:1' : 'e.g. 25'}
-                    min={0}
-                    autoFocus
-                    className="flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  {config.inputType === 'number' && <span className="text-sm text-gray-400">%</span>}
-                  <button
-                    onClick={handleCheck}
-                    disabled={!input.trim()}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg font-semibold text-sm transition-colors"
-                  >
-                    Check ↵
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Next buttons */}
-      {isChecked && !scenarioDone && (
-        <button onClick={nextStep} className="mt-3 w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-colors">
-          Next Step →
-        </button>
-      )}
-      {scenarioDone && (
-        <button onClick={nextScenario} className="mt-3 w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold text-sm transition-colors">
-          {sIdx + 1 >= SCENARIOS.length ? 'See Results 🏆' : 'Next Scenario →'}
-        </button>
-      )}
-    </>
-  )
+      )
+    }
+    return (
+      <p className={`text-sm leading-relaxed ${correct ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'}`}>
+        {body || (correct ? 'Correct!' : `Answer: ${expectedAnswer(currentStep, scenario)}`)}
+      </p>
+    )
+  }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-4 sm:px-8 py-4 border-b border-gray-200/60 dark:border-gray-700/40">
-        <div>
-          <h1 className="text-lg sm:text-2xl font-bold tracking-tight">🃏 Poker Trainer</h1>
-          <p className="text-xs text-gray-500 dark:text-gray-400">Pot odds · Outs · Equity decisions</p>
-        </div>
-        <div className="text-right">
-          <div className="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400">{score.correct}/{score.total}</div>
-          <div className="text-xs text-gray-400">correct</div>
-        </div>
-      </div>
+    <div className="h-screen flex flex-col overflow-hidden">
 
-      {/* Scenario progress bar */}
-      <div className="flex gap-1 px-4 sm:px-8 py-2">
-        {SCENARIOS.map((s, i) => (
-          <div key={s.id} className={`h-1.5 flex-1 rounded-full transition-colors ${
-            i < sIdx ? 'bg-green-500' : i === sIdx ? 'bg-blue-500' : 'bg-gray-200 dark:bg-gray-700'
-          }`} />
-        ))}
-      </div>
-
-      {/* Main content — 2 columns on lg+, stacked on mobile */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 p-4 sm:p-8 max-w-6xl w-full mx-auto">
-        {/* Left: scenario */}
-        <div className="lg:sticky lg:top-6 lg:self-start">
-          {scenarioPanel}
+      {/* ── Header ──────────────────────────────────────────────── */}
+      <header className="flex-shrink-0 flex items-center gap-4 px-5 sm:px-8 py-3 border-b border-gray-200 dark:border-gray-700/60 bg-white dark:bg-gray-900">
+        <div className="flex-1">
+          <div className="flex items-center gap-2.5">
+            <span className="text-2xl">🃏</span>
+            <div>
+              <h1 className="text-base sm:text-lg font-bold leading-tight">Poker Trainer</h1>
+              <p className="text-xs text-gray-400 hidden sm:block">Pot odds · Outs · Equity</p>
+            </div>
+          </div>
         </div>
-        {/* Right: steps */}
-        <div>
-          {stepsPanel}
+
+        {/* Progress pips */}
+        <div className="flex gap-1.5 items-center">
+          {SCENARIOS.map((s, i) => (
+            <div key={s.id} className={`rounded-full transition-all ${
+              i < sIdx
+                ? 'w-2.5 h-2.5 bg-green-500'
+                : i === sIdx
+                  ? 'w-3 h-3 bg-blue-500 ring-2 ring-blue-300 dark:ring-blue-700'
+                  : 'w-2 h-2 bg-gray-200 dark:bg-gray-700'
+            }`} />
+          ))}
+        </div>
+
+        <div className="text-right pl-2 border-l border-gray-200 dark:border-gray-700">
+          <div className="text-lg font-bold text-blue-600 dark:text-blue-400 tabular-nums">{score.correct}/{score.total}</div>
+          <div className="text-xs text-gray-400 leading-none">correct</div>
+        </div>
+      </header>
+
+      {/* ── Body: 2-col on lg, stacked on mobile ────────────────── */}
+      <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
+
+        {/* LEFT — scenario (scrolls on mobile, fixed on desktop) */}
+        <div className="lg:w-[42%] lg:flex-shrink-0 overflow-y-auto p-5 sm:p-7 lg:border-r border-gray-200 dark:border-gray-700/60 bg-gray-50/60 dark:bg-gray-800/30">
+
+          {/* Level + meta */}
+          <div className="flex items-center gap-2 mb-5">
+            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${LEVEL_COLORS[scenario.level]}`}>
+              {scenario.levelName}
+            </span>
+            <span className="text-xs text-gray-400">Scenario {sIdx + 1}/{SCENARIOS.length}</span>
+            <span className="text-xs text-gray-400">· {scenario.street}</span>
+          </div>
+
+          {/* Cards */}
+          <div className="mb-5">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2.5">Your Hand</p>
+            <div className="flex gap-2.5">
+              {scenario.hand.map((c, i) => <PokerCard key={i} value={c} />)}
+            </div>
+          </div>
+          <div className="mb-5">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2.5">Board ({scenario.street})</p>
+            <div className="flex gap-2.5">
+              {scenario.board.map((c, i) => <PokerCard key={i} value={c} />)}
+            </div>
+          </div>
+
+          {/* Hand description */}
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/40 rounded-xl px-4 py-3 text-sm text-blue-800 dark:text-blue-300 mb-5 leading-snug">
+            {scenario.handDesc}
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-2 mb-6">
+            {[
+              { label: 'Pot', value: `$${scenario.pot}`, color: 'text-green-600 dark:text-green-400' },
+              { label: 'To Call', value: `$${scenario.callAmount}`, color: 'text-orange-500 dark:text-orange-400' },
+              { label: 'Cards Left', value: `${scenario.cardsTocome}`, color: 'text-gray-800 dark:text-gray-100' },
+            ].map(({ label, value, color }) => (
+              <div key={label} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 py-3 text-center shadow-sm">
+                <div className="text-xs text-gray-400 mb-1">{label}</div>
+                <div className={`text-xl font-bold ${color}`}>{value}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Reference */}
+          <div className="rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/40 px-4 py-3 space-y-1">
+            <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider mb-1">Quick Reference</p>
+            <p className="text-xs text-amber-800 dark:text-amber-300">Rule of 4 — outs × 4 when <strong>2 cards</strong> to come</p>
+            <p className="text-xs text-amber-800 dark:text-amber-300">Rule of 2 — outs × 2 when <strong>1 card</strong> to come</p>
+          </div>
+        </div>
+
+        {/* RIGHT — steps */}
+        <div className="flex-1 overflow-y-auto p-5 sm:p-7">
+
+          {/* Completed steps */}
+          {stepIdx > 0 && (
+            <div className="space-y-2 mb-4">
+              {steps.slice(0, stepIdx).map((step, i) => {
+                const r = results[i]
+                if (!r) return null
+                return (
+                  <div key={step} className={`rounded-xl border px-4 py-3 ${
+                    r.correct
+                      ? 'border-green-200 dark:border-green-800/60 bg-green-50 dark:bg-green-900/10'
+                      : 'border-red-200 dark:border-red-800/60 bg-red-50 dark:bg-red-900/10'
+                  }`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0 ${r.correct ? 'bg-green-500' : 'bg-red-500'}`}>
+                        {r.correct ? '✓' : '✗'}
+                      </span>
+                      <span className={`text-xs font-semibold ${r.correct ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
+                        {STEP_CONFIG[step].label}
+                      </span>
+                      {!r.correct && (
+                        <span className="text-xs text-gray-400 ml-auto">
+                          was <strong>{expectedAnswer(step, scenario)}</strong>
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed pl-6">
+                      {explanations[i] || scenario.explanations[step]}
+                    </p>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Active step */}
+          <div ref={activeRef}>
+            <div className={`rounded-xl border bg-white dark:bg-gray-800/60 shadow-sm p-5 ${
+              !isChecked
+                ? 'border-blue-400 dark:border-blue-500 shadow-blue-100 dark:shadow-none ring-1 ring-blue-300 dark:ring-blue-700'
+                : currentResult!.correct
+                  ? 'border-green-300 dark:border-green-700'
+                  : 'border-red-300 dark:border-red-700'
+            }`}>
+              {/* Step header */}
+              <div className="flex items-center gap-2.5 mb-4">
+                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 ${
+                  isChecked ? (currentResult!.correct ? 'bg-green-500' : 'bg-red-500') : 'bg-blue-500'
+                }`}>
+                  {isChecked ? (currentResult!.correct ? '✓' : '✗') : stepIdx + 1}
+                </span>
+                <div>
+                  <p className="text-xs text-gray-400 leading-none mb-0.5">Step {stepIdx + 1} of {steps.length}</p>
+                  <p className="font-semibold text-sm leading-tight">{config.label}</p>
+                </div>
+              </div>
+
+              {isChecked ? (
+                <div className={`rounded-lg px-4 py-3 ${
+                  currentResult!.correct ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'
+                }`}>
+                  {!currentResult!.correct && (
+                    <p className="text-xs font-semibold text-red-600 dark:text-red-400 mb-1.5">
+                      Correct answer: {expectedAnswer(currentStep, scenario)}
+                    </p>
+                  )}
+                  <ExplanationBody
+                    text={currentExplanation}
+                    loading={loadingExplanation}
+                    correct={currentResult!.correct}
+                  />
+                </div>
+              ) : (
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{config.prompt}</p>
+
+                  {/* Formula guide */}
+                  {(() => {
+                    const guide = getStepGuide(currentStep, scenario, results)
+                    return guide ? (
+                      <div className="bg-gray-50 dark:bg-gray-700/40 rounded-lg px-4 py-3 mb-4 border border-gray-200 dark:border-gray-600/50">
+                        <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1">{guide.formula}</p>
+                        <p className="text-base font-mono font-bold text-gray-800 dark:text-gray-100">{guide.worked}</p>
+                      </div>
+                    ) : null
+                  })()}
+
+                  {config.inputType === 'decision' ? (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-3 gap-2">
+                        {(['call', 'fold', 'raise'] as Decision[]).map(d => (
+                          <button
+                            key={d}
+                            onClick={() => setSelected(d)}
+                            className={`py-3 rounded-xl font-semibold text-sm capitalize transition-all ${
+                              selected === d
+                                ? d === 'call' ? 'bg-green-600 text-white shadow-md'
+                                  : d === 'fold' ? 'bg-red-600 text-white shadow-md'
+                                  : 'bg-purple-600 text-white shadow-md'
+                                : 'bg-gray-100 dark:bg-gray-700/60 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600'
+                            }`}
+                          >
+                            {d === 'call' ? '📞 Call' : d === 'fold' ? '🗑️ Fold' : '⬆️ Raise'}
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        onClick={handleCheck}
+                        disabled={!selected}
+                        className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-semibold text-sm transition-colors"
+                      >
+                        Confirm Decision
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <input
+                        ref={inputRef}
+                        type={config.inputType === 'number' ? 'number' : 'text'}
+                        value={input}
+                        onChange={e => setInput(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && handleCheck()}
+                        placeholder={config.inputType === 'ratio' ? 'e.g. 3:1' : 'e.g. 25'}
+                        min={0}
+                        autoFocus
+                        className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      {config.inputType === 'number' && <span className="text-sm text-gray-400 font-medium">%</span>}
+                      <button
+                        onClick={handleCheck}
+                        disabled={!input.trim()}
+                        className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-semibold text-sm transition-colors"
+                      >
+                        Check ↵
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Navigation buttons */}
+          {isChecked && !scenarioDone && (
+            <button onClick={nextStep} className="mt-4 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-sm transition-colors">
+              Next Step →
+            </button>
+          )}
+          {scenarioDone && (
+            <button onClick={nextScenario} className="mt-4 w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition-colors">
+              {sIdx + 1 >= SCENARIOS.length ? 'See Results 🏆' : 'Next Scenario →'}
+            </button>
+          )}
         </div>
       </div>
     </div>
