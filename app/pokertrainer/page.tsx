@@ -738,7 +738,7 @@ function ExplanationBody({ text, correct }: { text: string | undefined; correct:
 
 async function fetchBatchOnce(batch: 1 | 2): Promise<Scenario[]> {
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 12000)
+  const timeout = setTimeout(() => controller.abort(), 25000)
   try {
     const res = await fetch(`/api/pokertrainer/scenarios?batch=${batch}`, { signal: controller.signal })
     if (!res.ok) {
