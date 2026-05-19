@@ -611,19 +611,6 @@ function getStepGuide(step: Step, s: Scenario, prevResults: (StepResult | undefi
   }
 }
 
-function PokerCard({ value }: { value: string }) {
-  const suit = value.slice(-1)
-  let colorClass: string
-  if (suit === '♥') colorClass = 'text-red-600 dark:text-red-400 border-red-200 dark:border-red-800'
-  else if (suit === '♦') colorClass = 'text-yellow-600 dark:text-yellow-400 border-yellow-200 dark:border-yellow-700'
-  else if (suit === '♣') colorClass = 'text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800'
-  else colorClass = 'text-gray-900 dark:text-white border-gray-300 dark:border-gray-600'
-  return (
-    <span className={`inline-flex items-center justify-center w-11 h-16 rounded-lg border-2 shadow font-bold text-sm select-none bg-white dark:bg-gray-800 ${colorClass}`}>
-      {value}
-    </span>
-  )
-}
 
 const LEVEL_COLORS: Record<number, string> = {
   1: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
@@ -660,7 +647,7 @@ async function fetchBatch(batch: 1 | 2): Promise<Scenario[]> {
 export default function PokerTrainer() {
   const [scenarios, setScenarios] = useState<Scenario[]>(shuffleStatic)
   const [usedFallback, setUsedFallback] = useState(false)
-  const [filterLevel, setFilterLevel] = useState<1 | 2 | 3 | null>(null)
+  const [filterLevel, setFilterLevel] = useState<1 | 2 | 3>(1)
   const [sIdx, setSIdx] = useState(0)
   const [stepIdx, setStepIdx] = useState(0)
   const [results, setResults] = useState<(StepResult | undefined)[]>([])
@@ -713,7 +700,7 @@ export default function PokerTrainer() {
       })
   }, [])
 
-  const activeScenarios = filterLevel ? scenarios.filter(s => s.level === filterLevel) : scenarios
+  const activeScenarios = scenarios.filter(s => s.level === filterLevel)
   const scenario = activeScenarios[sIdx]
 
   if (!scenario) {
@@ -721,8 +708,8 @@ export default function PokerTrainer() {
       <div className="h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <p className="text-gray-500 dark:text-gray-400 font-medium mb-3">No scenarios for this difficulty level.</p>
-          <button onClick={() => changeFilter(null)} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-colors">
-            Show All
+          <button onClick={() => changeFilter(1)} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-colors">
+            Show Rookie
           </button>
         </div>
       </div>
@@ -887,14 +874,14 @@ export default function PokerTrainer() {
     setLoadingEvaluation(false)
   }
 
-  function changeFilter(lvl: 1 | 2 | 3 | null) {
+  function changeFilter(lvl: 1 | 2 | 3) {
     setFilterLevel(lvl)
     resetSession()
   }
 
   function restart() {
     resetSession()
-    setFilterLevel(null)
+    setFilterLevel(1)
     setUsedFallback(false)
     setScenarios(shuffleStatic())
     const token = ++fetchToken.current
@@ -1002,9 +989,9 @@ export default function PokerTrainer() {
 
         {/* Difficulty tabs */}
         <div className="flex gap-1 px-5 sm:px-8 pb-2.5" role="tablist" aria-label="Difficulty level">
-          {([null, 1, 2, 3] as (1 | 2 | 3 | null)[]).map(lvl => (
+          {([1, 2, 3] as (1 | 2 | 3)[]).map(lvl => (
             <button
-              key={lvl ?? 'all'}
+              key={lvl}
               role="tab"
               aria-selected={filterLevel === lvl}
               onClick={() => changeFilter(lvl)}
@@ -1014,7 +1001,7 @@ export default function PokerTrainer() {
                   : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-800 dark:hover:text-gray-200'
               }`}
             >
-              {lvl === null ? 'All' : lvl === 1 ? 'Rookie' : lvl === 2 ? 'Regular' : 'Shark'}
+              {lvl === 1 ? 'Rookie' : lvl === 2 ? 'Regular' : 'Shark'}
             </button>
           ))}
         </div>
@@ -1050,7 +1037,7 @@ export default function PokerTrainer() {
             <p className="text-xs text-amber-800 dark:text-amber-300 pt-0.5 border-t border-amber-100 dark:border-amber-800/30 mt-0.5">Breakeven: 2:1 → 33% · 3:1 → 25% · 4:1 → 20% · 5:1 → 17%</p>
           </div>
 
-          {/* Poker Table */}
+          {/* Poker Table with cards */}
           <div className="mb-3">
             <PokerTable
               tableSize={scenario.tableSize}
@@ -1058,6 +1045,8 @@ export default function PokerTrainer() {
               villainPosition={scenario.villainPosition}
               villainName={scenario.villainName}
               activePositions={[scenario.heroPosition, scenario.villainPosition, ...scenario.otherPlayers]}
+              heroCards={scenario.hand}
+              boardCards={scenario.board}
             />
             <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-1.5">
               You: <strong className="text-blue-500">{scenario.heroPosition}</strong>
@@ -1074,20 +1063,6 @@ export default function PokerTrainer() {
               Villain: {scenario.villainName}
             </p>
             <p className="text-sm text-orange-800 dark:text-orange-300 leading-snug">{scenario.villainDescription}</p>
-          </div>
-
-          {/* Cards */}
-          <div className="mb-4">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2.5">Your Hand</p>
-            <div className="flex gap-2.5">
-              {scenario.hand.map((c, i) => <PokerCard key={i} value={c} />)}
-            </div>
-          </div>
-          <div className="mb-4">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2.5">Board ({scenario.street})</p>
-            <div className="flex gap-2.5">
-              {scenario.board.map((c, i) => <PokerCard key={i} value={c} />)}
-            </div>
           </div>
 
           {/* Hand description */}
