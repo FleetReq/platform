@@ -422,57 +422,164 @@ function ExplanationBody({ text, correct }: { text: string | undefined; correct:
 }
 
 const SHUFFLE_CARDS = [
-  { rank: 'A', suit: '♥', c: 'heart' }, { rank: 'K', suit: '♦', c: 'diamond' },
-  { rank: 'Q', suit: '♣', c: 'club' },  { rank: 'J', suit: '♠', c: 'spade' },
-  { rank: 'T', suit: '♥', c: 'heart' }, { rank: '9', suit: '♦', c: 'diamond' },
-  { rank: '8', suit: '♣', c: 'club' },  { rank: '7', suit: '♠', c: 'spade' },
-  { rank: '6', suit: '♥', c: 'heart' }, { rank: '5', suit: '♦', c: 'diamond' },
-  { rank: '4', suit: '♣', c: 'club' },  { rank: '3', suit: '♠', c: 'spade' },
-  { rank: '2', suit: '♥', c: 'heart' }, { rank: 'A', suit: '♣', c: 'club' },
-  { rank: 'K', suit: '♠', c: 'spade' }, { rank: 'Q', suit: '♦', c: 'diamond' },
-  { rank: 'J', suit: '♥', c: 'heart' }, { rank: 'T', suit: '♠', c: 'spade' },
+  { rank: 'A', suit: '♥' }, { rank: 'K', suit: '♦' },
+  { rank: 'Q', suit: '♣' }, { rank: 'J', suit: '♠' },
+  { rank: 'T', suit: '♥' }, { rank: '9', suit: '♦' },
+  { rank: '8', suit: '♣' }, { rank: '7', suit: '♠' },
+  { rank: '6', suit: '♥' }, { rank: '5', suit: '♦' },
+  { rank: '4', suit: '♣' }, { rank: '3', suit: '♠' },
+  { rank: '2', suit: '♥' }, { rank: 'A', suit: '♣' },
+  { rank: 'K', suit: '♠' }, { rank: 'Q', suit: '♦' },
+  { rank: 'J', suit: '♥' }, { rank: 'T', suit: '♠' },
 ] as const
 
-function ShuffleAnimation() {
-  const [frame, setFrame] = useState(0)
-  useEffect(() => {
-    const id = setInterval(() => setFrame(f => f + 1), 480)
-    return () => clearInterval(id)
-  }, [])
-  const cards = [0, 6, 13].map(off => SHUFFLE_CARDS[(frame + off) % SHUFFLE_CARDS.length])
+// Fan spread positions for 5 cards (transform-origin: bottom center)
+const FAN_TRANSFORMS = [
+  'rotate(-28deg) translateX(-38px) translateY(5px)',
+  'rotate(-14deg) translateX(-19px) translateY(1px)',
+  'rotate(0deg)   translateX(0px)   translateY(0px)',
+  'rotate(14deg)  translateX(19px)  translateY(1px)',
+  'rotate(28deg)  translateX(38px)  translateY(5px)',
+]
+
+const SUIT_COLORS: Record<string, string> = {
+  '♥': '#dc2626', '♦': '#b45309', '♣': '#1d4ed8', '♠': '#111827',
+}
+
+function CardBack() {
   return (
-    <>
-      <style>{`
-        @keyframes ptFanCard {
-          0%, 15%, 82%, 100% { transform: rotate(0deg) translateX(0) translateY(0); box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
-          42%, 58%           { transform: rotate(var(--fan-r)) translateX(var(--fan-x)) translateY(var(--fan-y)); box-shadow: 0 10px 28px rgba(0,0,0,0.22); }
+    <div style={{
+      width: '100%', height: '100%', borderRadius: 8,
+      border: '1.5px solid #0e4d2a',
+      background: 'linear-gradient(145deg, #1e7a50 0%, #0f4a2c 100%)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      boxShadow: '0 3px 10px rgba(0,0,0,0.35)',
+    }}>
+      <div style={{
+        width: '72%', height: '80%',
+        border: '1.5px solid rgba(255,255,255,0.22)',
+        borderRadius: 4,
+        backgroundImage: 'repeating-linear-gradient(45deg, rgba(255,255,255,0.055) 0, rgba(255,255,255,0.055) 1px, transparent 0, transparent 50%)',
+        backgroundSize: '7px 7px',
+      }} />
+    </div>
+  )
+}
+
+function CardFace({ rank, suit }: { rank: string; suit: string }) {
+  const color = SUIT_COLORS[suit] ?? '#111827'
+  return (
+    <div style={{
+      width: '100%', height: '100%', borderRadius: 8,
+      border: '1.5px solid #d1d5db', background: '#ffffff',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'flex-start', justifyContent: 'space-between',
+      padding: '3px 5px', boxSizing: 'border-box',
+      boxShadow: '0 3px 10px rgba(0,0,0,0.18)',
+    }}>
+      <div style={{ color, fontSize: 12, fontWeight: 800, lineHeight: 1 }}>{rank}</div>
+      <div style={{ color, fontSize: 22, lineHeight: 1, alignSelf: 'center' }}>{suit}</div>
+      <div style={{ color, fontSize: 12, fontWeight: 800, lineHeight: 1, transform: 'rotate(180deg)' }}>{rank}</div>
+    </div>
+  )
+}
+
+function ShuffleAnimation() {
+  const [phase, setPhase] = useState<'stacked' | 'fanning' | 'fanned' | 'collapsing' | 'flipping'>('stacked')
+  const [showFaces, setShowFaces] = useState(false)
+  const [cardOffset, setCardOffset] = useState(0)
+
+  useEffect(() => {
+    const timers: ReturnType<typeof setTimeout>[] = []
+    let alive = true
+
+    function go(ms: number, fn: () => void) {
+      const id = setTimeout(() => { if (alive) fn() }, ms)
+      timers.push(id)
+    }
+
+    function runCycle() {
+      if (!alive) return
+      go(650, () => {                          // pause — backs showing
+        setShowFaces(true)
+        setPhase('fanning')
+        go(580, () => {                        // fanning complete
+          setPhase('fanned')
+          go(1400, () => {                     // hold fanned
+            setPhase('collapsing')
+            go(480, () => {                    // collapse complete
+              setPhase('flipping')             // scaleX → 0
+              go(270, () => {                  // mid-flip: swap content
+                setShowFaces(false)
+                setCardOffset(o => (o + 5) % SHUFFLE_CARDS.length)
+                go(270, () => {               // scaleX → 1
+                  setPhase('stacked')
+                  runCycle()
+                })
+              })
+            })
+          })
+        })
+      })
+    }
+
+    runCycle()
+    return () => { alive = false; timers.forEach(clearTimeout) }
+  }, [])
+
+  const cards = Array.from({ length: 5 }, (_, i) =>
+    SHUFFLE_CARDS[(cardOffset + i) % SHUFFLE_CARDS.length]
+  )
+
+  const isFanning    = phase === 'fanning'
+  const isFanned     = phase === 'fanned'
+  const isCollapsing = phase === 'collapsing'
+  const isFlipping   = phase === 'flipping'
+
+  return (
+    <div
+      style={{
+        transform: isFlipping ? 'scaleX(0)' : 'scaleX(1)',
+        transition: isFlipping
+          ? 'transform 0.27s ease-in'
+          : phase === 'stacked' ? 'transform 0.27s ease-out' : 'none',
+        width: 56, height: 78, position: 'relative', margin: '0 auto',
+      }}
+      aria-hidden="true"
+    >
+      {cards.map((card, i) => {
+        let transform = 'rotate(0deg) translateX(0px) translateY(0px)'
+        let transition = 'none'
+
+        if (isFanned) {
+          transform = FAN_TRANSFORMS[i]
+        } else if (isFanning) {
+          transform = FAN_TRANSFORMS[i]
+          // Stagger fan-out: leftmost card leads slightly
+          transition = `transform 0.38s ease-out ${i * 0.05}s`
+        } else if (isCollapsing) {
+          // Reverse stagger: rightmost card collapses first
+          transition = `transform 0.34s ease-in ${(4 - i) * 0.04}s`
         }
-        .ptfc {
-          position: absolute; inset: 0; border-radius: 10px;
-          border: 1.5px solid #e5e7eb; background: #fff;
-          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
-          font-weight: 800; font-size: 16px; line-height: 1;
-          transform-origin: bottom center;
-          animation: ptFanCard 2.2s ease-in-out infinite;
-        }
-        .dark .ptfc { background: #1e293b; border-color: #334155; }
-        .ptfc.l { --fan-r: -27deg; --fan-x: -46px; --fan-y: 7px; animation-delay: 0.07s; }
-        .ptfc.r { --fan-r:  27deg; --fan-x:  46px; --fan-y: 7px; animation-delay: 0.07s; }
-        .ptfc.m { --fan-r: 0deg; --fan-x: 0; --fan-y: -5px; z-index: 2; }
-        .ptfc .heart    { color: #dc2626; } .dark .ptfc .heart    { color: #f87171; }
-        .ptfc .diamond  { color: #ca8a04; } .dark .ptfc .diamond  { color: #fbbf24; }
-        .ptfc .club     { color: #2563eb; } .dark .ptfc .club     { color: #60a5fa; }
-        .ptfc .spade    { color: #374151; } .dark .ptfc .spade    { color: #e2e8f0; }
-      `}</style>
-      <div style={{ position: 'relative', width: 52, height: 76 }} aria-hidden="true">
-        {(['l', 'm', 'r'] as const).map((slot, i) => (
-          <div key={slot} className={`ptfc ${slot}`}>
-            <span className={cards[i].c}>{cards[i].rank}</span>
-            <span className={cards[i].c}>{cards[i].suit}</span>
+
+        return (
+          <div
+            key={i}
+            style={{
+              position: 'absolute', inset: 0,
+              transform, transition,
+              zIndex: i,
+              transformOrigin: 'bottom center',
+            }}
+          >
+            {showFaces
+              ? <CardFace rank={card.rank} suit={card.suit} />
+              : <CardBack />
+            }
           </div>
-        ))}
-      </div>
-    </>
+        )
+      })}
+    </div>
   )
 }
 
@@ -481,7 +588,11 @@ async function fetchScenarios(): Promise<Scenario[]> {
   const timeout = setTimeout(() => controller.abort(), 9000)
   try {
     const res = await fetch('/api/pokertrainer/scenarios', { signal: controller.signal })
-    if (!res.ok) throw new Error(`fetch failed: ${res.status}`)
+    if (!res.ok) {
+      let detail = ''
+      try { const body = await res.json(); detail = body.error ?? '' } catch { /* ignore */ }
+      throw new Error(detail ? `${detail} (${res.status})` : `HTTP ${res.status}`)
+    }
     const data = await res.json()
     if (!Array.isArray(data.scenarios) || data.scenarios.length !== 6) throw new Error('bad shape')
     return data.scenarios as Scenario[]
@@ -503,6 +614,7 @@ export default function PokerTrainer() {
   const [selected, setSelected] = useState('')
   const [score, setScore] = useState({ correct: 0, total: 0 })
   const [scenarioResults, setScenarioResults] = useState<{ correct: number; total: number }[]>([])
+  const [fallbackReason, setFallbackReason] = useState<string | null>(null)
   const [done, setDone] = useState(false)
   const [reasoning, setReasoning] = useState('')
   const [usedMic, setUsedMic] = useState(false)
@@ -526,10 +638,12 @@ export default function PokerTrainer() {
     const token = ++fetchToken.current
     fetchScenarios()
       .then(s => { if (fetchToken.current === token) setScenarios(s) })
-      .catch((err) => {
+      .catch((err: unknown) => {
         if (fetchToken.current === token) {
-          console.error('[PokerTrainer] scenario fetch failed, using static fallback:', err)
+          const msg = err instanceof Error ? err.message : 'unknown error'
+          console.error('[PokerTrainer] scenario fetch failed:', msg)
           setUsedFallback(true)
+          setFallbackReason(msg)
         }
       })
       .finally(() => { if (fetchToken.current === token) setLoadingScenarios(false) })
@@ -722,10 +836,12 @@ export default function PokerTrainer() {
     const token = ++fetchToken.current
     fetchScenarios()
       .then(s => { if (fetchToken.current === token) setScenarios(s) })
-      .catch((err) => {
+      .catch((err: unknown) => {
         if (fetchToken.current === token) {
-          console.error('[PokerTrainer] scenario fetch failed, using static fallback:', err)
+          const msg = err instanceof Error ? err.message : 'unknown error'
+          console.error('[PokerTrainer] scenario fetch failed:', msg)
           setUsedFallback(true)
+          setFallbackReason(msg)
         }
       })
       .finally(() => { if (fetchToken.current === token) setLoadingScenarios(false) })
@@ -854,6 +970,7 @@ export default function PokerTrainer() {
         {usedFallback && (
           <p className="text-xs text-amber-700 dark:text-amber-400 text-center py-1 px-4 bg-amber-50 dark:bg-amber-900/20 border-t border-amber-100 dark:border-amber-800/30">
             Using practice scenarios — live generation unavailable
+            {fallbackReason && <span className="ml-1 opacity-70">· {fallbackReason}</span>}
           </p>
         )}
       </header>
