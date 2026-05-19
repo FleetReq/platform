@@ -176,7 +176,7 @@ export function Navigation() {
     return normalizedPathname === normalizedHref;
   };
 
-  if ((CHROMELESS_ROUTES as readonly string[]).includes(pathname)) return null;
+  if (pathname?.startsWith('/pokertrainer')) return null;
 
   // Get navigation items based on auth state
   const navigationItems = user ? authenticatedNavigationItems : baseNavigationItems;
