@@ -421,168 +421,6 @@ function ExplanationBody({ text, correct }: { text: string | undefined; correct:
   )
 }
 
-const SHUFFLE_CARDS = [
-  { rank: 'A', suit: '♥' }, { rank: 'K', suit: '♦' },
-  { rank: 'Q', suit: '♣' }, { rank: 'J', suit: '♠' },
-  { rank: 'T', suit: '♥' }, { rank: '9', suit: '♦' },
-  { rank: '8', suit: '♣' }, { rank: '7', suit: '♠' },
-  { rank: '6', suit: '♥' }, { rank: '5', suit: '♦' },
-  { rank: '4', suit: '♣' }, { rank: '3', suit: '♠' },
-  { rank: '2', suit: '♥' }, { rank: 'A', suit: '♣' },
-  { rank: 'K', suit: '♠' }, { rank: 'Q', suit: '♦' },
-  { rank: 'J', suit: '♥' }, { rank: 'T', suit: '♠' },
-] as const
-
-// Fan spread positions for 5 cards (transform-origin: bottom center)
-const FAN_TRANSFORMS = [
-  'rotate(-28deg) translateX(-38px) translateY(5px)',
-  'rotate(-14deg) translateX(-19px) translateY(1px)',
-  'rotate(0deg)   translateX(0px)   translateY(0px)',
-  'rotate(14deg)  translateX(19px)  translateY(1px)',
-  'rotate(28deg)  translateX(38px)  translateY(5px)',
-]
-
-const SUIT_COLORS: Record<string, string> = {
-  '♥': '#dc2626', '♦': '#b45309', '♣': '#1d4ed8', '♠': '#111827',
-}
-
-function CardBack() {
-  return (
-    <div style={{
-      width: '100%', height: '100%', borderRadius: 8,
-      border: '1.5px solid #0e4d2a',
-      background: 'linear-gradient(145deg, #1e7a50 0%, #0f4a2c 100%)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      boxShadow: '0 3px 10px rgba(0,0,0,0.35)',
-    }}>
-      <div style={{
-        width: '72%', height: '80%',
-        border: '1.5px solid rgba(255,255,255,0.22)',
-        borderRadius: 4,
-        backgroundImage: 'repeating-linear-gradient(45deg, rgba(255,255,255,0.055) 0, rgba(255,255,255,0.055) 1px, transparent 0, transparent 50%)',
-        backgroundSize: '7px 7px',
-      }} />
-    </div>
-  )
-}
-
-function CardFace({ rank, suit }: { rank: string; suit: string }) {
-  const color = SUIT_COLORS[suit] ?? '#111827'
-  return (
-    <div style={{
-      width: '100%', height: '100%', borderRadius: 8,
-      border: '1.5px solid #d1d5db', background: '#ffffff',
-      display: 'flex', flexDirection: 'column',
-      alignItems: 'flex-start', justifyContent: 'space-between',
-      padding: '3px 5px', boxSizing: 'border-box',
-      boxShadow: '0 3px 10px rgba(0,0,0,0.18)',
-    }}>
-      <div style={{ color, fontSize: 12, fontWeight: 800, lineHeight: 1 }}>{rank}</div>
-      <div style={{ color, fontSize: 22, lineHeight: 1, alignSelf: 'center' }}>{suit}</div>
-      <div style={{ color, fontSize: 12, fontWeight: 800, lineHeight: 1, transform: 'rotate(180deg)' }}>{rank}</div>
-    </div>
-  )
-}
-
-function ShuffleAnimation() {
-  const [phase, setPhase] = useState<'stacked' | 'fanning' | 'fanned' | 'collapsing' | 'flipping'>('stacked')
-  const [showFaces, setShowFaces] = useState(false)
-  const [cardOffset, setCardOffset] = useState(0)
-
-  useEffect(() => {
-    const timers: ReturnType<typeof setTimeout>[] = []
-    let alive = true
-
-    function go(ms: number, fn: () => void) {
-      const id = setTimeout(() => { if (alive) fn() }, ms)
-      timers.push(id)
-    }
-
-    function runCycle() {
-      if (!alive) return
-      go(650, () => {                          // pause — backs showing
-        setShowFaces(true)
-        setPhase('fanning')
-        go(580, () => {                        // fanning complete
-          setPhase('fanned')
-          go(1400, () => {                     // hold fanned
-            setPhase('collapsing')
-            go(480, () => {                    // collapse complete
-              setPhase('flipping')             // scaleX → 0
-              go(270, () => {                  // mid-flip: swap content
-                setShowFaces(false)
-                setCardOffset(o => (o + 5) % SHUFFLE_CARDS.length)
-                go(270, () => {               // scaleX → 1
-                  setPhase('stacked')
-                  runCycle()
-                })
-              })
-            })
-          })
-        })
-      })
-    }
-
-    runCycle()
-    return () => { alive = false; timers.forEach(clearTimeout) }
-  }, [])
-
-  const cards = Array.from({ length: 5 }, (_, i) =>
-    SHUFFLE_CARDS[(cardOffset + i) % SHUFFLE_CARDS.length]
-  )
-
-  const isFanning    = phase === 'fanning'
-  const isFanned     = phase === 'fanned'
-  const isCollapsing = phase === 'collapsing'
-  const isFlipping   = phase === 'flipping'
-
-  return (
-    <div
-      style={{
-        transform: isFlipping ? 'scaleX(0)' : 'scaleX(1)',
-        transition: isFlipping
-          ? 'transform 0.27s ease-in'
-          : phase === 'stacked' ? 'transform 0.27s ease-out' : 'none',
-        width: 56, height: 78, position: 'relative', margin: '0 auto',
-      }}
-      aria-hidden="true"
-    >
-      {cards.map((card, i) => {
-        let transform = 'rotate(0deg) translateX(0px) translateY(0px)'
-        let transition = 'none'
-
-        if (isFanned) {
-          transform = FAN_TRANSFORMS[i]
-        } else if (isFanning) {
-          transform = FAN_TRANSFORMS[i]
-          // Stagger fan-out: leftmost card leads slightly
-          transition = `transform 0.38s ease-out ${i * 0.05}s`
-        } else if (isCollapsing) {
-          // Reverse stagger: rightmost card collapses first
-          transition = `transform 0.34s ease-in ${(4 - i) * 0.04}s`
-        }
-
-        return (
-          <div
-            key={i}
-            style={{
-              position: 'absolute', inset: 0,
-              transform, transition,
-              zIndex: i,
-              transformOrigin: 'bottom center',
-            }}
-          >
-            {showFaces
-              ? <CardFace rank={card.rank} suit={card.suit} />
-              : <CardBack />
-            }
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
 async function fetchBatch(batch: 1 | 2): Promise<Scenario[]> {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 12000)
@@ -603,7 +441,6 @@ async function fetchBatch(batch: 1 | 2): Promise<Scenario[]> {
 
 export default function PokerTrainer() {
   const [scenarios, setScenarios] = useState<Scenario[]>(STATIC_SCENARIOS)
-  const [loadingScenarios, setLoadingScenarios] = useState(true)
   const [usedFallback, setUsedFallback] = useState(false)
   const [filterLevel, setFilterLevel] = useState<1 | 2 | 3 | null>(null)
   const [sIdx, setSIdx] = useState(0)
@@ -637,19 +474,17 @@ export default function PokerTrainer() {
   useEffect(() => {
     const token = ++fetchToken.current
 
-    // Batch 1 (2 scenarios): dismisses loading screen as soon as it arrives
+    // Silently append AI scenarios while user plays static ones immediately
     fetchBatch(1)
       .then(s => {
         if (fetchToken.current !== token) return
-        setScenarios(s)
-        setLoadingScenarios(false)
-        // Batch 2 (4 scenarios): silently appends while user plays batch 1
+        setScenarios(prev => [...prev, ...s])
         fetchBatch(2)
           .then(s2 => {
             if (fetchToken.current === token)
-              setScenarios(prev => (prev === STATIC_SCENARIOS ? s2 : [...prev, ...s2]))
+              setScenarios(prev => [...prev, ...s2])
           })
-          .catch(() => { /* batch 2 failure is silent — batch 1 is enough to play */ })
+          .catch(() => { /* silent */ })
       })
       .catch((err: unknown) => {
         if (fetchToken.current !== token) return
@@ -657,7 +492,6 @@ export default function PokerTrainer() {
         console.error('[PokerTrainer] batch 1 failed:', msg)
         setUsedFallback(true)
         setFallbackReason(msg)
-        setLoadingScenarios(false)
       })
   }, [])
 
@@ -844,17 +678,16 @@ export default function PokerTrainer() {
     resetSession()
     setFilterLevel(null)
     setUsedFallback(false)
-    setLoadingScenarios(true)
+    setScenarios(STATIC_SCENARIOS)
     const token = ++fetchToken.current
     fetchBatch(1)
       .then(s => {
         if (fetchToken.current !== token) return
-        setScenarios(s)
-        setLoadingScenarios(false)
+        setScenarios(prev => [...prev, ...s])
         fetchBatch(2)
           .then(s2 => {
             if (fetchToken.current === token)
-              setScenarios(prev => (prev === STATIC_SCENARIOS ? s2 : [...prev, ...s2]))
+              setScenarios(prev => [...prev, ...s2])
           })
           .catch(() => { /* silent */ })
       })
@@ -864,27 +697,7 @@ export default function PokerTrainer() {
         console.error('[PokerTrainer] batch 1 failed:', msg)
         setUsedFallback(true)
         setFallbackReason(msg)
-        setLoadingScenarios(false)
       })
-  }
-
-  if (loadingScenarios) {
-    return (
-      <div
-        className="h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900"
-        role="status"
-        aria-live="polite"
-        aria-label="Loading scenarios"
-      >
-        <div className="text-center">
-          <div className="mx-auto mb-10">
-            <ShuffleAnimation />
-          </div>
-          <p className="text-lg font-semibold text-gray-800 dark:text-gray-100">Shuffling the deck...</p>
-          <p className="text-sm text-gray-400 mt-1">Generating fresh scenarios</p>
-        </div>
-      </div>
-    )
   }
 
   if (done) {
