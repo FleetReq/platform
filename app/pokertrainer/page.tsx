@@ -654,7 +654,6 @@ async function fetchBatch(batch: 1 | 2): Promise<Scenario[]> {
 
 export default function PokerTrainer() {
   const [scenarios, setScenarios] = useState<Scenario[]>(shuffleStatic)
-  const [usedFallback, setUsedFallback] = useState(false)
   const [filterLevel, setFilterLevel] = useState<1 | 2 | 3>(1)
   const [sIdx, setSIdx] = useState(0)
   const [stepIdx, setStepIdx] = useState(0)
@@ -664,7 +663,6 @@ export default function PokerTrainer() {
   const [selected, setSelected] = useState('')
   const [score, setScore] = useState({ correct: 0, total: 0 })
   const [scenarioResults, setScenarioResults] = useState<{ correct: number; total: number }[]>([])
-  const [fallbackReason, setFallbackReason] = useState<string | null>(null)
   const [done, setDone] = useState(false)
   const [reasoning, setReasoning] = useState('')
   const [usedMic, setUsedMic] = useState(false)
@@ -699,16 +697,12 @@ export default function PokerTrainer() {
           })
           .catch((err: unknown) => {
             if (fetchToken.current !== token) return
-            setUsedFallback(true)
-            setFallbackReason(err instanceof Error ? err.message : 'unavailable')
+            console.error('[PokerTrainer] batch 2 failed:', err instanceof Error ? err.message : err)
           })
       })
       .catch((err: unknown) => {
         if (fetchToken.current !== token) return
-        const msg = err instanceof Error ? err.message : 'unknown error'
-        console.error('[PokerTrainer] batch 1 failed:', msg)
-        setUsedFallback(true)
-        setFallbackReason(msg)
+        console.error('[PokerTrainer] batch 1 failed:', err instanceof Error ? err.message : err)
       })
   }, [])
 
@@ -898,7 +892,6 @@ export default function PokerTrainer() {
   function restart() {
     resetSession()
     setFilterLevel(1)
-    setUsedFallback(false)
     setScenarios(shuffleStatic())
     const token = ++fetchToken.current
     fetchBatch(1)
@@ -912,16 +905,12 @@ export default function PokerTrainer() {
           })
           .catch((err: unknown) => {
             if (fetchToken.current !== token) return
-            setUsedFallback(true)
-            setFallbackReason(err instanceof Error ? err.message : 'unavailable')
+            console.error('[PokerTrainer] batch 2 failed:', err instanceof Error ? err.message : err)
           })
       })
       .catch((err: unknown) => {
         if (fetchToken.current !== token) return
-        const msg = err instanceof Error ? err.message : 'unknown error'
-        console.error('[PokerTrainer] batch 1 failed:', msg)
-        setUsedFallback(true)
-        setFallbackReason(msg)
+        console.error('[PokerTrainer] batch 1 failed:', err instanceof Error ? err.message : err)
       })
   }
 
@@ -1038,12 +1027,6 @@ export default function PokerTrainer() {
           ))}
         </div>
 
-        {usedFallback && (
-          <p className="text-xs text-amber-400 text-center py-1 px-4 bg-amber-500/10 border-t border-amber-500/20">
-            Using practice scenarios — live generation unavailable
-            {fallbackReason && <span className="ml-1 opacity-50">· {fallbackReason}</span>}
-          </p>
-        )}
       </header>
 
       {/* ── Body: 2-col on lg, stacked on mobile ────────────────── */}
