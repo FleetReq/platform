@@ -521,6 +521,19 @@ export default function PokerTrainer() {
     }
   }, [stepIdx, sIdx, isChecked])
 
+  // Keyboard navigation: Enter or → advances after an answer is checked
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.target instanceof HTMLTextAreaElement) return  // let reasoning field type normally
+      if (e.key !== 'Enter' && e.key !== 'ArrowRight') return
+      if (isChecked && !scenarioDone) { e.preventDefault(); nextStep() }
+      else if (scenarioDone) { e.preventDefault(); nextScenario() }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isChecked, scenarioDone])
+
   function startMic() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const w = window as any
@@ -1099,13 +1112,15 @@ export default function PokerTrainer() {
 
           {/* Navigation buttons */}
           {isChecked && !scenarioDone && (
-            <button onClick={nextStep} className="mt-4 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
-              Next Step →
+            <button onClick={nextStep} className="mt-4 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 flex items-center justify-center gap-2">
+              <span>Next Step</span>
+              <span className="opacity-60 text-xs font-normal">↵ or →</span>
             </button>
           )}
           {scenarioDone && (
-            <button onClick={nextScenario} className="mt-4 w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2">
-              {sIdx + 1 >= activeScenarios.length ? 'See Results 🏆' : 'Next Scenario →'}
+            <button onClick={nextScenario} className="mt-4 w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 flex items-center justify-center gap-2">
+              <span>{sIdx + 1 >= activeScenarios.length ? 'See Results 🏆' : 'Next Scenario'}</span>
+              {sIdx + 1 < activeScenarios.length && <span className="opacity-60 text-xs font-normal">↵ or →</span>}
             </button>
           )}
         </div>
