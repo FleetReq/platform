@@ -66,6 +66,8 @@ function buildExplanations(
   breakevenPct: number,
   equityPct: number,
   decision: Decision,
+  villainName: string,
+  villainPlayerType: PlayerType,
 ): Partial<Record<Step, string>> {
   const total = raw.pot + raw.callAmount
   const rule = raw.cardsToCome === 2 ? 4 : 2
@@ -85,7 +87,7 @@ function buildExplanations(
     breakeven: `Your ${potOddsNum}:1 pot odds = risking $${raw.callAmount} for a $${total} pot. $${raw.callAmount} ÷ $${total} ≈ ${breakevenPct}%. You need at least ${breakevenPct}% equity to break even — now go find out if you have it.`,
     outs: raw.outDesc,
     equity: `${cardsStr} → Rule of ${rule}: ${raw.outs} × ${rule} = ${equityPct}%. Your equity (${equityPct}%) ${compareStr}.${equityPct < breakevenPct ? ' Fold.' : ''}`.trimEnd(),
-    playerType: `${raw.villainName} is a ${raw.villainPlayerType.toUpperCase()}. ${PLAYER_TYPE_EXPLAINS[raw.villainPlayerType]}`,
+    playerType: `${villainName} is a ${villainPlayerType.toUpperCase()}. ${PLAYER_TYPE_EXPLAINS[villainPlayerType]}`,
     decision: decisionText[decision],
   }
 }
@@ -133,7 +135,7 @@ function processScenario(raw: RawScenario, idx: number) {
     equityPct,
     decision,
     steps: STEPS_BY_LEVEL[raw.level],
-    explanations: buildExplanations(raw, potOddsNum, breakevenPct, equityPct, decision),
+    explanations: buildExplanations(raw, potOddsNum, breakevenPct, equityPct, decision, villainName, villainPlayerType),
   }
 }
 
