@@ -102,6 +102,9 @@ export const FETCH_TIMEOUT_MS = 8000
 /** Canonical site URL. Single source of truth — used in emails, sitemaps, and structured data. */
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://fleetreq.vercel.app'
 
+/** Routes that suppress the site nav and footer. */
+export const CHROMELESS_ROUTES = ['/pokertrainer'] as const
+
 // ---------------------------------------------------------------------------
 // IRS Mileage Rates
 // ---------------------------------------------------------------------------

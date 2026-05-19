@@ -1,12 +1,11 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-
-const FOOTERLESS = ['/pokertrainer']
+import { CHROMELESS_ROUTES } from '@/lib/constants'
 
 export function SiteFooter() {
   const pathname = usePathname()
-  if (FOOTERLESS.includes(pathname)) return null
+  if ((CHROMELESS_ROUTES as readonly string[]).includes(pathname)) return null
 
   return (
     <footer className="border-t border-gray-200/60 dark:border-gray-700/40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl">

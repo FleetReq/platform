@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import { ThemeToggle } from "../theme-toggle";
 import { SubscriptionBadge } from "./SubscriptionBadge";
 import { supabase, getUserSubscriptionPlan } from "@/lib/supabase-client";
-import { PLAN_DISPLAY_NAMES, SIGN_OUT_TIMEOUT_MS } from "@/lib/constants";
+import { PLAN_DISPLAY_NAMES, SIGN_OUT_TIMEOUT_MS, CHROMELESS_ROUTES } from "@/lib/constants";
 const planColors: Record<string, string> = {
   free: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300',
   personal: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
@@ -176,7 +176,7 @@ export function Navigation() {
     return normalizedPathname === normalizedHref;
   };
 
-  if (pathname === '/pokertrainer') return null;
+  if ((CHROMELESS_ROUTES as readonly string[]).includes(pathname)) return null;
 
   // Get navigation items based on auth state
   const navigationItems = user ? authenticatedNavigationItems : baseNavigationItems;

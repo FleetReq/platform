@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 
 type Step = 'potOdds' | 'breakeven' | 'outs' | 'equity' | 'decision'
 type Decision = 'call' | 'fold' | 'raise'
@@ -15,7 +15,7 @@ interface Scenario {
   handDesc: string
   pot: number
   callAmount: number
-  cardsTocome: 1 | 2
+  cardsToCome: 1 | 2
   outs: number
   outDesc: string
   potOddsNum: number
@@ -43,7 +43,7 @@ const SCENARIOS: Scenario[] = [
     handDesc: 'Nut flush draw — any heart gives you the best possible flush',
     pot: 60,
     callAmount: 20,
-    cardsTocome: 2,
+    cardsToCome: 2,
     outs: 9,
     outDesc: '13 hearts total − 4 visible (A♥ 7♥ K♥ 9♥) = 9 outs remaining',
     potOddsNum: 3,
@@ -70,7 +70,7 @@ const SCENARIOS: Scenario[] = [
     handDesc: 'Open-ended straight draw — K completes from above (K Q J T 9), 8 completes from below (Q J T 9 8)',
     pot: 90,
     callAmount: 45,
-    cardsTocome: 1,
+    cardsToCome: 1,
     outs: 8,
     outDesc: '4 Kings + 4 Eights = 8 straight outs',
     potOddsNum: 2,
@@ -97,7 +97,7 @@ const SCENARIOS: Scenario[] = [
     handDesc: 'Flush draw (spades) — one card to come on the river',
     pot: 120,
     callAmount: 60,
-    cardsTocome: 1,
+    cardsToCome: 1,
     outs: 9,
     outDesc: '13 spades − 4 visible (8♠ 7♠ 6♠ J♠) = 9 remaining spade outs',
     potOddsNum: 2,
@@ -123,7 +123,7 @@ const SCENARIOS: Scenario[] = [
     handDesc: 'Open-ended straight draw — J completes from above (J T 9 8 7), 6 completes from below (T 9 8 7 6)',
     pot: 50,
     callAmount: 10,
-    cardsTocome: 2,
+    cardsToCome: 2,
     outs: 8,
     outDesc: '4 Jacks + 4 Sixes = 8 straight outs',
     potOddsNum: 5,
@@ -149,7 +149,7 @@ const SCENARIOS: Scenario[] = [
     handDesc: 'Flush draw (clubs) + open-ended straight draw — a monster combo draw with one card to come',
     pot: 90,
     callAmount: 30,
-    cardsTocome: 1,
+    cardsToCome: 1,
     outs: 15,
     outDesc: '9 remaining clubs (flush) + 3 non-club Fives (5♠ 5♥ 5♦) + 3 non-club Tens (T♠ T♥ T♦) = 15 unique outs. 5♣ and T♣ are already in the flush count.',
     potOddsNum: 3,
@@ -176,7 +176,7 @@ const SCENARIOS: Scenario[] = [
     handDesc: 'Nut flush draw + gutshot to broadway — A♣K♣ on a two-club board is an elite semi-bluff hand',
     pot: 120,
     callAmount: 40,
-    cardsTocome: 2,
+    cardsToCome: 2,
     outs: 12,
     outDesc: '9 remaining clubs for the nut flush (T♣ already counted below) + T♦ T♥ T♠ for the broadway straight = 12 unique outs',
     potOddsNum: 3,
@@ -280,17 +280,17 @@ function getStepGuide(step: Step, s: Scenario, prevResults: (StepResult | undefi
         worked: s.outDesc,
       }
     case 'equity': {
-      const rule = s.cardsTocome === 2 ? 4 : 2
+      const rule = s.cardsToCome === 2 ? 4 : 2
       return {
         formula: `Rule of ${rule}: Outs × ${rule} = equity %`,
         worked: `${s.outs} outs × ${rule} = ?%`,
       }
     }
     case 'decision': {
-      const equityResult = prevResults[3] // equity is step index 3
-      const breakevenResult = prevResults[1] // breakeven is step index 1
-      const equity = equityResult ? s.equityPct : '?'
-      const breakeven = breakevenResult ? s.breakevenPct : '?'
+      const equityIdx = s.steps.indexOf('equity')
+      const breakevenIdx = s.steps.indexOf('breakeven')
+      const equity = equityIdx >= 0 && prevResults[equityIdx] ? s.equityPct : '?'
+      const breakeven = breakevenIdx >= 0 && prevResults[breakevenIdx] ? s.breakevenPct : '?'
       return {
         formula: 'If equity % > break-even % → call or raise   |   If lower → fold',
         worked: `Your equity: ~${equity}%   vs   Break-even: ${breakeven}%`,
@@ -319,12 +319,19 @@ const LEVEL_COLORS: Record<number, string> = {
   3: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
 }
 
+function ExplanationBody({ text, correct }: { text: string | undefined; correct: boolean }) {
+  return (
+    <p className={`text-sm leading-relaxed ${correct ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'}`}>
+      {text || (correct ? 'Correct!' : '')}
+    </p>
+  )
+}
+
 export default function PokerTrainer() {
   const [sIdx, setSIdx] = useState(0)
   const [stepIdx, setStepIdx] = useState(0)
   const [results, setResults] = useState<(StepResult | undefined)[]>([])
   const [explanations, setExplanations] = useState<(string | undefined)[]>([])
-  const [loadingExplanation, setLoadingExplanation] = useState(false)
   const [input, setInput] = useState('')
   const [selected, setSelected] = useState<Decision | ''>('')
   const [score, setScore] = useState({ correct: 0, total: 0 })
@@ -342,79 +349,15 @@ export default function PokerTrainer() {
   const scenarioDone = isChecked && isLastStep
   const config = STEP_CONFIG[currentStep]
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isChecked) {
-      setTimeout(() => {
-        activeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-        inputRef.current?.focus()
-      }, 80)
+      activeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      inputRef.current?.focus()
     }
   }, [stepIdx, sIdx, isChecked])
 
-  const streamExplanation = useCallback(async (
-    step: Step,
-    userAnswer: string,
-    expected: string,
-    idx: number
-  ) => {
-    setLoadingExplanation(true)
-    setExplanations(prev => {
-      const next = [...prev]
-      next[idx] = ''
-      return next
-    })
-
-    try {
-      const res = await fetch('/api/pokertrainer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          step,
-          userAnswer,
-          expectedAnswer: expected,
-          scenarioContext: {
-            pot: scenario.pot,
-            callAmount: scenario.callAmount,
-            cardsTocome: scenario.cardsTocome,
-            outs: scenario.outs,
-            handDesc: scenario.handDesc,
-            decision: scenario.decision,
-            breakevenPct: scenario.breakevenPct,
-            equityPct: scenario.equityPct,
-            potOddsNum: scenario.potOddsNum,
-          },
-        }),
-      })
-
-      if (!res.ok || !res.body) throw new Error('API error')
-
-      const reader = res.body.getReader()
-      const decoder = new TextDecoder()
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        const chunk = decoder.decode(value, { stream: true })
-        setExplanations(prev => {
-          const next = [...prev]
-          next[idx] = (next[idx] ?? '') + chunk
-          return next
-        })
-      }
-    } catch {
-      setExplanations(prev => {
-        const next = [...prev]
-        next[idx] = scenario.explanations[step]
-        return next
-      })
-    } finally {
-      setLoadingExplanation(false)
-    }
-  }, [scenario])
-
   function submit(value: string) {
     const correct = checkAnswer(currentStep, value, scenario)
-    const expected = expectedAnswer(currentStep, scenario)
     const idx = stepIdx
 
     setResults(prev => {
@@ -423,15 +366,11 @@ export default function PokerTrainer() {
       return next
     })
     setScore(prev => ({ correct: prev.correct + (correct ? 1 : 0), total: prev.total + 1 }))
-    if (correct) {
-      setExplanations(prev => {
-        const next = [...prev]
-        next[idx] = scenario.explanations[currentStep] ?? ''
-        return next
-      })
-    } else {
-      streamExplanation(currentStep, value, expected, idx)
-    }
+    setExplanations(prev => {
+      const next = [...prev]
+      next[idx] = scenario.explanations[currentStep] ?? expectedAnswer(currentStep, scenario)
+      return next
+    })
   }
 
   function handleCheck() {
@@ -495,25 +434,6 @@ export default function PokerTrainer() {
           </button>
         </div>
       </div>
-    )
-  }
-
-  /* ── explanation text (never blank) ─────────────────────────── */
-  function ExplanationBody({ text, loading, correct }: { text: string | undefined; loading: boolean; correct: boolean }) {
-    const body = text || ''
-    if (loading && !body) {
-      return (
-        <div className="flex items-center gap-1.5 py-0.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce [animation-delay:0ms]" />
-          <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce [animation-delay:120ms]" />
-          <span className="w-1.5 h-1.5 rounded-full bg-current animate-bounce [animation-delay:240ms]" />
-        </div>
-      )
-    }
-    return (
-      <p className={`text-sm leading-relaxed ${correct ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'}`}>
-        {body || (correct ? 'Correct!' : `Answer: ${expectedAnswer(currentStep, scenario)}`)}
-      </p>
     )
   }
 
@@ -590,7 +510,7 @@ export default function PokerTrainer() {
             {[
               { label: 'Pot', value: `$${scenario.pot}`, color: 'text-green-600 dark:text-green-400' },
               { label: 'To Call', value: `$${scenario.callAmount}`, color: 'text-orange-500 dark:text-orange-400' },
-              { label: 'Cards Left', value: `${scenario.cardsTocome}`, color: 'text-gray-800 dark:text-gray-100' },
+              { label: 'Cards Left', value: `${scenario.cardsToCome}`, color: 'text-gray-800 dark:text-gray-100' },
             ].map(({ label, value, color }) => (
               <div key={label} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 py-3 text-center shadow-sm">
                 <div className="text-xs text-gray-400 mb-1">{label}</div>
@@ -677,7 +597,6 @@ export default function PokerTrainer() {
                   )}
                   <ExplanationBody
                     text={currentExplanation}
-                    loading={loadingExplanation}
                     correct={currentResult!.correct}
                   />
                 </div>
