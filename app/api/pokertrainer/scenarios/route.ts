@@ -248,6 +248,10 @@ export async function GET(request: NextRequest) {
       messages: [{ role: 'user', content: USER_PROMPT }],
     })
 
+    if (!response.content.length) {
+      console.error('[pokertrainer/scenarios] empty content array, stop_reason:', response.stop_reason)
+      throw new Error(`empty content (stop_reason: ${response.stop_reason})`)
+    }
     const text = response.content[0].type === 'text' ? response.content[0].text : ''
     const cleaned = text.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim()
     raw = JSON.parse(cleaned)

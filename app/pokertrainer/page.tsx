@@ -537,6 +537,20 @@ export default function PokerTrainer() {
 
   const activeScenarios = filterLevel ? scenarios.filter(s => s.level === filterLevel) : scenarios
   const scenario = activeScenarios[sIdx]
+
+  if (!scenario) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <p className="text-gray-500 dark:text-gray-400 font-medium mb-3">No scenarios for this difficulty level.</p>
+          <button onClick={() => changeFilter(null)} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-colors">
+            Show All
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   const steps = scenario.steps
   const currentStep = steps[stepIdx]
   const currentResult = results[stepIdx]
@@ -613,9 +627,8 @@ export default function PokerTrainer() {
     // Fire evaluation for level 3 decision step with reasoning
     if (currentStep === 'decision' && scenario.level === 3 && reasoning.trim()) {
       const playerTypeStepIdx = scenario.steps.indexOf('playerType')
-      const playerTypeGiven = playerTypeStepIdx >= 0 && results[playerTypeStepIdx]
-        ? results[playerTypeStepIdx]!.given
-        : ''
+      const playerTypeResult = playerTypeStepIdx >= 0 ? results[playerTypeStepIdx] : undefined
+      const playerTypeGiven = playerTypeResult ? playerTypeResult.given : ''
       setLoadingEvaluation(true)
       try {
         const res = await fetch('/api/pokertrainer/evaluate', {
@@ -641,7 +654,7 @@ export default function PokerTrainer() {
           setEvaluation(data.evaluation ?? null)
         }
       } catch {
-        // Evaluation is optional — silent failure
+        setEvaluation('Coach feedback unavailable — try again.')
       } finally {
         setLoadingEvaluation(false)
       }
