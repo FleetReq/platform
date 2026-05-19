@@ -788,6 +788,10 @@ export default function PokerTrainer() {
   const [loadingEvaluation, setLoadingEvaluation] = useState(false)
   const [raiseSizeChosen, setRaiseSizeChosen] = useState<RaiseSize | null>(null)
   const [villainOutcome, setVillainOutcome] = useState<VillainOutcome | null>(null)
+  // Snapshot count at session start so mid-session AI loads don't add new pips
+  const [sessionScenarioCount, setSessionScenarioCount] = useState(
+    () => STATIC_SCENARIOS.filter(s => s.level === 1).length
+  )
   const [micSupported, setMicSupported] = useState(false)
   const activeRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -830,6 +834,8 @@ export default function PokerTrainer() {
   }, [])
 
   const activeScenarios = scenarios.filter(s => s.level === filterLevel)
+  // Stable pip list — frozen at session start so AI loading mid-session doesn't add circles
+  const pipScenarios = activeScenarios.slice(0, sessionScenarioCount)
   const scenario = activeScenarios[sIdx]
 
   if (!scenario) {
@@ -1016,6 +1022,7 @@ export default function PokerTrainer() {
   }
 
   function changeFilter(lvl: 1 | 2 | 3) {
+    setSessionScenarioCount(scenarios.filter(s => s.level === lvl).length)
     setFilterLevel(lvl)
     resetSession()
   }
@@ -1028,6 +1035,7 @@ export default function PokerTrainer() {
   function restart() {
     resetSession()
     setFilterLevel(1)
+    setSessionScenarioCount(STATIC_SCENARIOS.filter(s => s.level === 1).length)
     setScenarios(shuffleStatic())
     setAiFailed(false)
     setAiFailReason(null)
@@ -1109,8 +1117,8 @@ export default function PokerTrainer() {
           </div>
 
           {/* Progress pips */}
-          <div className="flex gap-1.5 items-center" role="list" aria-label={`Scenario progress: ${sIdx + 1} of ${activeScenarios.length}`}>
-            {activeScenarios.map((s, i) => {
+          <div className="flex gap-1.5 items-center" role="list" aria-label={`Scenario progress: ${sIdx + 1} of ${pipScenarios.length}`}>
+            {pipScenarios.map((s, i) => {
               const sr = scenarioResults[i]
               let pipClass: string
               if (i < sIdx) {
@@ -1182,7 +1190,7 @@ export default function PokerTrainer() {
             <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${LEVEL_COLORS[scenario.level]}`}>
               {scenario.levelName}
             </span>
-            <span className="text-xs text-white/40">Scenario {sIdx + 1}/{activeScenarios.length}</span>
+            <span className="text-xs text-white/40">Scenario {sIdx + 1}/{pipScenarios.length}</span>
             <span className="text-xs text-white/40">· {scenario.street}</span>
           </div>
 
