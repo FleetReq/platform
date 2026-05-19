@@ -10,6 +10,7 @@
     "analyze": "ANALYZE=true npm run build"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.97.0",
     "@next/bundle-analyzer": "^15.5.3",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.57.4",
