@@ -667,6 +667,8 @@ export default function PokerTrainer() {
   const [reasoning, setReasoning] = useState('')
   const [usedMic, setUsedMic] = useState(false)
   const [isListening, setIsListening] = useState(false)
+  const [aiFailed, setAiFailed] = useState(false)
+  const [aiFailReason, setAiFailReason] = useState<string | null>(null)
   const [evaluation, setEvaluation] = useState<string | null>(null)
   const [loadingEvaluation, setLoadingEvaluation] = useState(false)
   const [micSupported, setMicSupported] = useState(false)
@@ -697,12 +699,16 @@ export default function PokerTrainer() {
           })
           .catch((err: unknown) => {
             if (fetchToken.current !== token) return
-            console.error('[PokerTrainer] batch 2 failed:', err instanceof Error ? err.message : err)
+            const msg = err instanceof Error ? err.message : String(err)
+            console.error('[PokerTrainer] batch 2 failed:', msg)
+            setAiFailed(true); setAiFailReason(msg)
           })
       })
       .catch((err: unknown) => {
         if (fetchToken.current !== token) return
-        console.error('[PokerTrainer] batch 1 failed:', err instanceof Error ? err.message : err)
+        const msg = err instanceof Error ? err.message : String(err)
+        console.error('[PokerTrainer] batch 1 failed:', msg)
+        setAiFailed(true); setAiFailReason(msg)
       })
   }, [])
 
@@ -893,6 +899,8 @@ export default function PokerTrainer() {
     resetSession()
     setFilterLevel(1)
     setScenarios(shuffleStatic())
+    setAiFailed(false)
+    setAiFailReason(null)
     const token = ++fetchToken.current
     fetchBatch(1)
       .then(s => {
@@ -905,12 +913,16 @@ export default function PokerTrainer() {
           })
           .catch((err: unknown) => {
             if (fetchToken.current !== token) return
-            console.error('[PokerTrainer] batch 2 failed:', err instanceof Error ? err.message : err)
+            const msg = err instanceof Error ? err.message : String(err)
+            console.error('[PokerTrainer] batch 2 failed:', msg)
+            setAiFailed(true); setAiFailReason(msg)
           })
       })
       .catch((err: unknown) => {
         if (fetchToken.current !== token) return
-        console.error('[PokerTrainer] batch 1 failed:', err instanceof Error ? err.message : err)
+        const msg = err instanceof Error ? err.message : String(err)
+        console.error('[PokerTrainer] batch 1 failed:', msg)
+        setAiFailed(true); setAiFailReason(msg)
       })
   }
 
@@ -1374,6 +1386,18 @@ export default function PokerTrainer() {
           )}
         </div>
       </div>
+
+      {aiFailed && (
+        <div className="fixed bottom-0 inset-x-0 z-50 flex items-center justify-between px-4 py-1.5 bg-amber-950/90 border-t border-amber-500/30 backdrop-blur-sm">
+          <span className="text-xs text-amber-400 font-medium">⚠ AI unavailable · static scenarios only</span>
+          {aiFailReason && <span className="text-xs text-amber-500/60 truncate ml-4 max-w-xs">{aiFailReason}</span>}
+          <button
+            onClick={() => setAiFailed(false)}
+            className="ml-4 text-amber-500/60 hover:text-amber-300 text-xs shrink-0"
+            aria-label="Dismiss"
+          >✕</button>
+        </div>
+      )}
     </div>
   )
 }
