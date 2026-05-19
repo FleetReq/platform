@@ -33,27 +33,29 @@ function labelPos(x: number, y: number) {
   return { lx: x, ly: y + dy }
 }
 
-// Cardinal direction: place two cards toward the nearest horizontal/vertical center axis.
+// Use whichever axis (horizontal vs vertical) has the larger component toward center.
+// This prevents adjacent-seat collisions (e.g. CO goes west, BTN goes west — no overlap).
 function cardPair(sx: number, sy: number): [{ cx: number; cy: number }, { cx: number; cy: number }] {
   const GAP = 4
-  if (sy < CY - 25) {
-    // top region → south
-    const cy = sy + R_SEAT + GAP + CH / 2
-    return [{ cx: sx - 11, cy }, { cx: sx + 11, cy }]
-  }
-  if (sy > CY + 25) {
-    // bottom region → north
+  const dx = CX - sx   // positive = center is to the right
+  const dy = CY - sy   // positive = center is below
+
+  if (Math.abs(dy) > Math.abs(dx)) {
+    // vertical dominates
+    if (dy > 0) {
+      const cy = sy + R_SEAT + GAP + CH / 2
+      return [{ cx: sx - 11, cy }, { cx: sx + 11, cy }]   // south
+    }
     const cy = sy - R_SEAT - GAP - CH / 2
-    return [{ cx: sx - 11, cy }, { cx: sx + 11, cy }]
+    return [{ cx: sx - 11, cy }, { cx: sx + 11, cy }]     // north
   }
-  if (sx < CX) {
-    // left → east
+  // horizontal dominates
+  if (dx > 0) {
     const cx = sx + R_SEAT + GAP + CW / 2
-    return [{ cx, cy: sy - 14 }, { cx, cy: sy + 14 }]
+    return [{ cx, cy: sy - 14 }, { cx, cy: sy + 14 }]     // east
   }
-  // right → west
   const cx = sx - R_SEAT - GAP - CW / 2
-  return [{ cx, cy: sy - 14 }, { cx, cy: sy + 14 }]
+  return [{ cx, cy: sy - 14 }, { cx, cy: sy + 14 }]       // west
 }
 
 function SvgCardFace({ card, cx, cy }: { card: string; cx: number; cy: number }) {
@@ -72,10 +74,10 @@ function SvgCardFace({ card, cx, cy }: { card: string; cx: number; cy: number })
 function SvgCardBack({ cx, cy }: { cx: number; cy: number }) {
   const w = CW - 1, h = CH - 1
   return (
-    <g>
-      <rect x={cx - w / 2} y={cy - h / 2} width={w} height={h} rx={2} fill="#1a6b45" stroke="#0d4a2a" strokeWidth="0.8" />
+    <g filter="url(#pt-cshadow)">
+      <rect x={cx - w / 2} y={cy - h / 2} width={w} height={h} rx={2} fill="#1e3a5f" stroke="#0f2240" strokeWidth="0.8" />
       <rect x={cx - w / 2 + 2} y={cy - h / 2 + 2} width={w - 4} height={h - 4} rx={1}
-        fill="none" stroke="rgba(255,255,255,0.22)" strokeWidth="0.6" />
+        fill="none" stroke="rgba(255,255,255,0.30)" strokeWidth="0.7" />
     </g>
   )
 }
