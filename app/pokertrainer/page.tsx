@@ -261,6 +261,44 @@ function expectedAnswer(step: Step, s: Scenario): string {
   }
 }
 
+function getStepGuide(step: Step, s: Scenario, prevResults: (StepResult | undefined)[]): { formula: string; worked: string } | null {
+  const totalIfCall = s.pot + s.callAmount
+  switch (step) {
+    case 'potOdds':
+      return {
+        formula: 'Pot ÷ Call Amount = X:1',
+        worked: `$${s.pot} ÷ $${s.callAmount} = ?:1`,
+      }
+    case 'breakeven':
+      return {
+        formula: 'Call ÷ (Pot + Call) × 100 = %',
+        worked: `$${s.callAmount} ÷ ($${s.pot} + $${s.callAmount}) = $${s.callAmount} ÷ $${totalIfCall} = ?%`,
+      }
+    case 'outs':
+      return {
+        formula: 'Count every card left in the deck that completes your hand',
+        worked: s.outDesc,
+      }
+    case 'equity': {
+      const rule = s.cardsTocome === 2 ? 4 : 2
+      return {
+        formula: `Rule of ${rule}: Outs × ${rule} = equity %`,
+        worked: `${s.outs} outs × ${rule} = ?%`,
+      }
+    }
+    case 'decision': {
+      const equityResult = prevResults[3] // equity is step index 3
+      const breakevenResult = prevResults[1] // breakeven is step index 1
+      const equity = equityResult ? s.equityPct : '?'
+      const breakeven = breakevenResult ? s.breakevenPct : '?'
+      return {
+        formula: 'If equity % > break-even % → call or raise   |   If lower → fold',
+        worked: `Your equity: ~${equity}%   vs   Break-even: ${breakeven}%`,
+      }
+    }
+  }
+}
+
 function PokerCard({ value }: { value: string }) {
   const red = value.includes('♥') || value.includes('♦')
   return (
@@ -607,6 +645,17 @@ export default function PokerTrainer() {
           ) : (
             <>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{config.prompt}</p>
+
+              {(() => {
+                const guide = getStepGuide(currentStep, scenario, results)
+                return guide ? (
+                  <div className="bg-gray-50 dark:bg-gray-800/60 rounded-lg px-3 py-2.5 mb-3 space-y-1">
+                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Formula</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{guide.formula}</p>
+                    <p className="text-sm font-mono font-semibold text-gray-700 dark:text-gray-200">{guide.worked}</p>
+                  </div>
+                ) : null
+              })()}
 
               {config.inputType === 'decision' ? (
                 <div className="space-y-3">
