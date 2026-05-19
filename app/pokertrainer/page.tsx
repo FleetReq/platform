@@ -353,7 +353,6 @@ export default function PokerTrainer() {
 
   const streamExplanation = useCallback(async (
     step: Step,
-    correct: boolean,
     userAnswer: string,
     expected: string,
     idx: number
@@ -371,7 +370,6 @@ export default function PokerTrainer() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           step,
-          correct,
           userAnswer,
           expectedAnswer: expected,
           scenarioContext: {
@@ -425,7 +423,15 @@ export default function PokerTrainer() {
       return next
     })
     setScore(prev => ({ correct: prev.correct + (correct ? 1 : 0), total: prev.total + 1 }))
-    streamExplanation(currentStep, correct, value, expected, idx)
+    if (correct) {
+      setExplanations(prev => {
+        const next = [...prev]
+        next[idx] = scenario.explanations[currentStep] ?? ''
+        return next
+      })
+    } else {
+      streamExplanation(currentStep, value, expected, idx)
+    }
   }
 
   function handleCheck() {
@@ -728,6 +734,7 @@ export default function PokerTrainer() {
                         placeholder={config.inputType === 'ratio' ? 'e.g. 3:1' : 'e.g. 25'}
                         min={0}
                         autoFocus
+                        autoComplete="off"
                         className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                       {config.inputType === 'number' && <span className="text-sm text-gray-400 font-medium">%</span>}
