@@ -1246,6 +1246,7 @@ export default function PokerTrainer() {
                 activePositions={[scenario.heroPosition, scenario.villainPosition, ...scenario.otherPlayers]}
                 heroCards={scenario.hand}
                 boardCards={scenario.board}
+                tableSize={scenario.tableSize}
               />
             </div>
             <p className="text-xs text-white/40 text-center mt-1.5">

@@ -7,10 +7,23 @@ interface PokerTableProps {
   activePositions: string[]
   heroCards: string[]
   boardCards: string[]   // 3 cards = Flop, 4 = Turn; river slot always ghost
+  tableSize?: number
 }
 
-// Fixed 9-max layout
+// All 9 seat positions in arc order
 const NINE_MAX: string[] = ['BTN', 'SB', 'BB', 'UTG', 'UTG+1', 'UTG+2', 'LJ', 'HJ', 'CO']
+
+// Which positions exist for each table size
+const TABLE_POSITIONS: Record<number, string[]> = {
+  2: ['BTN', 'BB'],
+  3: ['BTN', 'SB', 'BB'],
+  4: ['BTN', 'SB', 'BB', 'CO'],
+  5: ['BTN', 'SB', 'BB', 'UTG', 'CO'],
+  6: ['BTN', 'SB', 'BB', 'UTG', 'HJ', 'CO'],
+  7: ['BTN', 'SB', 'BB', 'UTG', 'UTG+1', 'HJ', 'CO'],
+  8: ['BTN', 'SB', 'BB', 'UTG', 'UTG+1', 'LJ', 'HJ', 'CO'],
+  9: ['BTN', 'SB', 'BB', 'UTG', 'UTG+1', 'UTG+2', 'LJ', 'HJ', 'CO'],
+}
 
 const SUIT_COLOR: Record<string, string> = {
   '♥': '#dc2626', '♦': '#b45309', '♣': '#2563eb', '♠': '#374151',
@@ -75,8 +88,9 @@ function SvgCardSlot({ cx, cy }: { cx: number; cy: number }) {
   )
 }
 
-export function PokerTable({ heroPosition, villainPosition, villainName, activePositions, heroCards, boardCards }: PokerTableProps) {
+export function PokerTable({ heroPosition, villainPosition, villainName, activePositions, heroCards, boardCards, tableSize }: PokerTableProps) {
   const heroIdx    = NINE_MAX.indexOf(heroPosition)
+  const tablePositions = new Set(TABLE_POSITIONS[tableSize ?? 9] ?? NINE_MAX)
 
   const boardOffsets = Array.from({ length: BOARD_SLOTS }, (_, i) =>
     (i - (BOARD_SLOTS - 1) / 2) * BOARD_SPACING
@@ -159,11 +173,15 @@ export function PokerTable({ heroPosition, villainPosition, villainName, activeP
         const isHero    = pos === heroPosition
         const isVillain = pos === villainPosition
         const isActive  = activePositions.includes(pos)
-        const isEmpty   = !isHero && !isVillain && !isActive
+        const inTable   = tablePositions.has(pos)
+        const isFolded  = inTable && !isHero && !isVillain && !isActive
+        const isEmpty   = !inTable
         const isFeatured = isHero || isVillain
         const isDealer  = pos === 'BTN'
 
-        const opacity = isEmpty ? 0.18 : 1
+        if (isEmpty) return null
+
+        const opacity = isFolded ? 0.38 : 1
         const fill    = isHero ? 'url(#pt-hero)' : isVillain ? 'url(#pt-villain)' : isActive ? 'url(#pt-active)' : '#0f1923'
         const stroke  = isHero ? '#93c5fd' : isVillain ? '#fde68a' : isActive ? '#4b5563' : '#2a3a4a'
         const glow    = isHero ? 'url(#pt-glow-hero)' : isVillain ? 'url(#pt-glow-villain)' : undefined
@@ -190,9 +208,9 @@ export function PokerTable({ heroPosition, villainPosition, villainName, activeP
             <text x={x} y={y} textAnchor="middle" dominantBaseline="middle"
               fontSize={pos.length > 3 ? '5' : '6'} fontWeight="700"
               fill={isHero ? '#dbeafe' : isVillain ? '#fef3c7' : '#9ca3af'} letterSpacing="0.2">
-              {isEmpty ? '—' : pos}
+              {pos}
             </text>
-            {isDealer && !isEmpty && (
+            {isDealer && (
               <g>
                 <circle cx={btnX} cy={btnY} r="8" fill="url(#pt-btn)" stroke="#9ca3af" strokeWidth="1" />
                 <text x={btnX} y={btnY} textAnchor="middle" dominantBaseline="middle" fontSize="6" fontWeight="800" fill="#374151">D</text>
