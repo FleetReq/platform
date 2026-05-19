@@ -585,7 +585,7 @@ function ShuffleAnimation() {
 
 async function fetchBatch(batch: 1 | 2): Promise<Scenario[]> {
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 15000)
+  const timeout = setTimeout(() => controller.abort(), 12000)
   try {
     const res = await fetch(`/api/pokertrainer/scenarios?batch=${batch}`, { signal: controller.signal })
     if (!res.ok) {
@@ -594,16 +594,11 @@ async function fetchBatch(batch: 1 | 2): Promise<Scenario[]> {
       throw new Error(detail ? `${detail} (${res.status})` : `HTTP ${res.status}`)
     }
     const data = await res.json()
-    if (!Array.isArray(data.scenarios) || data.scenarios.length !== 3) throw new Error('bad shape')
+    if (!Array.isArray(data.scenarios) || !data.scenarios.length) throw new Error('bad shape')
     return data.scenarios as Scenario[]
   } finally {
     clearTimeout(timeout)
   }
-}
-
-async function fetchScenarios(): Promise<Scenario[]> {
-  const [batch1, batch2] = await Promise.all([fetchBatch(1), fetchBatch(2)])
-  return [...batch1, ...batch2]
 }
 
 export default function PokerTrainer() {
@@ -641,17 +636,29 @@ export default function PokerTrainer() {
 
   useEffect(() => {
     const token = ++fetchToken.current
-    fetchScenarios()
-      .then(s => { if (fetchToken.current === token) setScenarios(s) })
-      .catch((err: unknown) => {
-        if (fetchToken.current === token) {
-          const msg = err instanceof Error ? err.message : 'unknown error'
-          console.error('[PokerTrainer] scenario fetch failed:', msg)
-          setUsedFallback(true)
-          setFallbackReason(msg)
-        }
+
+    // Batch 1 (2 scenarios): dismisses loading screen as soon as it arrives
+    fetchBatch(1)
+      .then(s => {
+        if (fetchToken.current !== token) return
+        setScenarios(s)
+        setLoadingScenarios(false)
+        // Batch 2 (4 scenarios): silently appends while user plays batch 1
+        fetchBatch(2)
+          .then(s2 => {
+            if (fetchToken.current === token)
+              setScenarios(prev => (prev === STATIC_SCENARIOS ? s2 : [...prev, ...s2]))
+          })
+          .catch(() => { /* batch 2 failure is silent — batch 1 is enough to play */ })
       })
-      .finally(() => { if (fetchToken.current === token) setLoadingScenarios(false) })
+      .catch((err: unknown) => {
+        if (fetchToken.current !== token) return
+        const msg = err instanceof Error ? err.message : 'unknown error'
+        console.error('[PokerTrainer] batch 1 failed:', msg)
+        setUsedFallback(true)
+        setFallbackReason(msg)
+        setLoadingScenarios(false)
+      })
   }, [])
 
   const activeScenarios = filterLevel ? scenarios.filter(s => s.level === filterLevel) : scenarios
@@ -839,17 +846,26 @@ export default function PokerTrainer() {
     setUsedFallback(false)
     setLoadingScenarios(true)
     const token = ++fetchToken.current
-    fetchScenarios()
-      .then(s => { if (fetchToken.current === token) setScenarios(s) })
-      .catch((err: unknown) => {
-        if (fetchToken.current === token) {
-          const msg = err instanceof Error ? err.message : 'unknown error'
-          console.error('[PokerTrainer] scenario fetch failed:', msg)
-          setUsedFallback(true)
-          setFallbackReason(msg)
-        }
+    fetchBatch(1)
+      .then(s => {
+        if (fetchToken.current !== token) return
+        setScenarios(s)
+        setLoadingScenarios(false)
+        fetchBatch(2)
+          .then(s2 => {
+            if (fetchToken.current === token)
+              setScenarios(prev => (prev === STATIC_SCENARIOS ? s2 : [...prev, ...s2]))
+          })
+          .catch(() => { /* silent */ })
       })
-      .finally(() => { if (fetchToken.current === token) setLoadingScenarios(false) })
+      .catch((err: unknown) => {
+        if (fetchToken.current !== token) return
+        const msg = err instanceof Error ? err.message : 'unknown error'
+        console.error('[PokerTrainer] batch 1 failed:', msg)
+        setUsedFallback(true)
+        setFallbackReason(msg)
+        setLoadingScenarios(false)
+      })
   }
 
   if (loadingScenarios) {

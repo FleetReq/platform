@@ -211,29 +211,34 @@ const EXAMPLE_SCENARIO = `{
   "villainPlayerType": "nit"
 }`
 
+// Batch 1: 2 scenarios — loads fast (~2s), user starts playing immediately
+// Batch 2: 4 scenarios — loads in background while user plays batch 1
 const BATCH_PROMPTS: Record<1 | 2, string> = {
-  1: `Generate exactly 3 Texas Hold'em scenarios.
+  1: `Generate exactly 2 Texas Hold'em scenarios.
 
 Level assignment:
 - scenarios[0]: level 1 (Rookie)
-- scenarios[1]: level 1 (Rookie)
-- scenarios[2]: level 2 (Regular)
+- scenarios[1]: level 2 (Regular)
 
-Variety: mix Flop and Turn, include flush draw and straight draw, at least 1 fold decision.
+Variety: one Flop and one Turn, different draw types, one fold and one call/raise decision.
 
 Return this exact structure: { "scenarios": [ ${EXAMPLE_SCENARIO}, ... ] }`,
 
-  2: `Generate exactly 3 Texas Hold'em scenarios.
+  2: `Generate exactly 4 Texas Hold'em scenarios.
 
 Level assignment:
-- scenarios[0]: level 2 (Regular)
-- scenarios[1]: level 3 (Shark)
+- scenarios[0]: level 1 (Rookie)
+- scenarios[1]: level 2 (Regular)
 - scenarios[2]: level 3 (Shark)
+- scenarios[3]: level 3 (Shark)
 
-Variety: include at least 1 combo draw, mix Flop and Turn, at least 1 raise decision (equity > 1.5× breakeven).
+Variety: include at least 1 combo draw, mix Flop and Turn, at least 1 raise decision, at least 1 fold decision.
 
 Return this exact structure: { "scenarios": [ ${EXAMPLE_SCENARIO}, ... ] }`,
 }
+
+const BATCH_SIZE: Record<1 | 2, number> = { 1: 2, 2: 4 }
+const BATCH_MAX_TOKENS: Record<1 | 2, number> = { 1: 700, 2: 1500 }
 
 export async function GET(request: NextRequest) {
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -254,7 +259,7 @@ export async function GET(request: NextRequest) {
   try {
     const response = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1500,
+      max_tokens: BATCH_MAX_TOKENS[batch],
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: BATCH_PROMPTS[batch] }],
     })
@@ -272,7 +277,7 @@ export async function GET(request: NextRequest) {
   }
 
   const rawScenarios = (raw as { scenarios?: unknown[] })?.scenarios
-  if (!Array.isArray(rawScenarios) || rawScenarios.length !== 3) {
+  if (!Array.isArray(rawScenarios) || rawScenarios.length !== BATCH_SIZE[batch]) {
     return NextResponse.json({ error: 'Invalid response shape' }, { status: 503 })
   }
 
