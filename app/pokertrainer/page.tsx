@@ -389,6 +389,61 @@ function ExplanationBody({ text, correct }: { text: string | undefined; correct:
   )
 }
 
+const SHUFFLE_CARDS = [
+  { rank: 'A', suit: '♥', c: 'heart' }, { rank: 'K', suit: '♦', c: 'diamond' },
+  { rank: 'Q', suit: '♣', c: 'club' },  { rank: 'J', suit: '♠', c: 'spade' },
+  { rank: 'T', suit: '♥', c: 'heart' }, { rank: '9', suit: '♦', c: 'diamond' },
+  { rank: '8', suit: '♣', c: 'club' },  { rank: '7', suit: '♠', c: 'spade' },
+  { rank: '6', suit: '♥', c: 'heart' }, { rank: '5', suit: '♦', c: 'diamond' },
+  { rank: '4', suit: '♣', c: 'club' },  { rank: '3', suit: '♠', c: 'spade' },
+  { rank: '2', suit: '♥', c: 'heart' }, { rank: 'A', suit: '♣', c: 'club' },
+  { rank: 'K', suit: '♠', c: 'spade' }, { rank: 'Q', suit: '♦', c: 'diamond' },
+  { rank: 'J', suit: '♥', c: 'heart' }, { rank: 'T', suit: '♠', c: 'spade' },
+] as const
+
+function ShuffleAnimation() {
+  const [frame, setFrame] = useState(0)
+  useEffect(() => {
+    const id = setInterval(() => setFrame(f => f + 1), 480)
+    return () => clearInterval(id)
+  }, [])
+  const cards = [0, 6, 13].map(off => SHUFFLE_CARDS[(frame + off) % SHUFFLE_CARDS.length])
+  return (
+    <>
+      <style>{`
+        @keyframes ptFanCard {
+          0%, 15%, 82%, 100% { transform: rotate(0deg) translateX(0) translateY(0); box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+          42%, 58%           { transform: rotate(var(--fan-r)) translateX(var(--fan-x)) translateY(var(--fan-y)); box-shadow: 0 10px 28px rgba(0,0,0,0.22); }
+        }
+        .ptfc {
+          position: absolute; inset: 0; border-radius: 10px;
+          border: 1.5px solid #e5e7eb; background: #fff;
+          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+          font-weight: 800; font-size: 16px; line-height: 1;
+          transform-origin: bottom center;
+          animation: ptFanCard 2.2s ease-in-out infinite;
+        }
+        .dark .ptfc { background: #1e293b; border-color: #334155; }
+        .ptfc.l { --fan-r: -27deg; --fan-x: -46px; --fan-y: 7px; animation-delay: 0.07s; }
+        .ptfc.r { --fan-r:  27deg; --fan-x:  46px; --fan-y: 7px; animation-delay: 0.07s; }
+        .ptfc.m { --fan-r: 0deg; --fan-x: 0; --fan-y: -5px; z-index: 2; }
+        .ptfc .heart    { color: #dc2626; } .dark .ptfc .heart    { color: #f87171; }
+        .ptfc .diamond  { color: #ca8a04; } .dark .ptfc .diamond  { color: #fbbf24; }
+        .ptfc .club     { color: #2563eb; } .dark .ptfc .club     { color: #60a5fa; }
+        .ptfc .spade    { color: #374151; } .dark .ptfc .spade    { color: #e2e8f0; }
+      `}</style>
+      <div style={{ position: 'relative', width: 52, height: 76 }} aria-hidden="true">
+        {(['l', 'm', 'r'] as const).map((slot, i) => (
+          <div key={slot} className={`ptfc ${slot}`}>
+            <span className={cards[i].c}>{cards[i].rank}</span>
+            <span className={cards[i].c}>{cards[i].suit}</span>
+          </div>
+        ))}
+      </div>
+    </>
+  )
+}
+
 async function fetchScenarios(): Promise<Scenario[]> {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 9000)
@@ -626,34 +681,9 @@ export default function PokerTrainer() {
         aria-live="polite"
         aria-label="Loading scenarios"
       >
-        <style>{`
-          @keyframes ptFanCard {
-            0%, 15%, 85%, 100% { transform: rotate(0deg) translateX(0px) translateY(0px); box-shadow: 0 2px 8px rgba(0,0,0,0.10); }
-            45%, 55%           { transform: rotate(var(--fan-rot)) translateX(var(--fan-x)) translateY(var(--fan-y)); box-shadow: 0 8px 24px rgba(0,0,0,0.18); }
-          }
-          .pt-fan-wrap { position: relative; width: 52px; height: 76px; }
-          .pt-fan-card {
-            position: absolute; inset: 0;
-            border-radius: 10px;
-            border: 1.5px solid #e5e7eb;
-            background: #fff;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
-            font-weight: 800; font-size: 15px; line-height: 1;
-            transform-origin: bottom center;
-            animation: ptFanCard 2.4s ease-in-out infinite;
-            user-select: none;
-          }
-          .dark .pt-fan-card { background: #1e293b; border-color: #334155; }
-          .pt-fan-card.cl { --fan-rot: -28deg; --fan-x: -48px; --fan-y: 8px; animation-delay: 0.07s; color: #dc2626; }
-          .pt-fan-card.cc { --fan-rot:   0deg; --fan-x:   0px; --fan-y: -6px; z-index: 2;           color: #374151; }
-          .pt-fan-card.cr { --fan-rot:  28deg; --fan-x:  48px; --fan-y: 8px; animation-delay: 0.07s; color: #2563eb; }
-          .dark .pt-fan-card.cc { color: #f1f5f9; }
-        `}</style>
         <div className="text-center">
-          <div className="pt-fan-wrap mx-auto mb-10" aria-hidden="true">
-            <div className="pt-fan-card cl"><span>A</span><span>♥</span></div>
-            <div className="pt-fan-card cc"><span>K</span><span>♠</span></div>
-            <div className="pt-fan-card cr"><span>Q</span><span>♣</span></div>
+          <div className="mx-auto mb-10">
+            <ShuffleAnimation />
           </div>
           <p className="text-lg font-semibold text-gray-800 dark:text-gray-100">Shuffling the deck...</p>
           <p className="text-sm text-gray-400 mt-1">Generating fresh scenarios</p>

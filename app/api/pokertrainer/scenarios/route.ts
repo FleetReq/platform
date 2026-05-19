@@ -19,13 +19,14 @@ interface RawScenario {
   cardsToCome: 1 | 2
   outs: number
   outDesc: string
-  tableSize: number
-  heroPosition: string
-  villainPosition: string
-  otherPlayers: string[]
-  villainName: string
-  villainDescription: string
-  villainPlayerType: PlayerType
+  // Villain/table fields — optional; defaults applied in processScenario
+  tableSize?: number
+  heroPosition?: string
+  villainPosition?: string
+  otherPlayers?: string[]
+  villainName?: string
+  villainDescription?: string
+  villainPlayerType?: PlayerType
 }
 
 const STEPS_BY_LEVEL: Record<1 | 2 | 3, Step[]> = {
@@ -97,6 +98,15 @@ function processScenario(raw: RawScenario, idx: number) {
   const equityPct = raw.outs * rule
   const decision = computeDecision(raw.level, equityPct, breakevenPct)
 
+  // Villain/table fields — fill in sensible defaults if Haiku omitted them
+  const tableSize       = (typeof raw.tableSize === 'number' && raw.tableSize >= 2 && raw.tableSize <= 8) ? raw.tableSize : 6
+  const heroPosition    = (typeof raw.heroPosition === 'string' && VALID_POSITIONS.has(raw.heroPosition)) ? raw.heroPosition : 'CO'
+  const villainPosition = (typeof raw.villainPosition === 'string' && VALID_POSITIONS.has(raw.villainPosition) && raw.villainPosition !== heroPosition) ? raw.villainPosition : 'BTN'
+  const otherPlayers    = Array.isArray(raw.otherPlayers) ? raw.otherPlayers.filter((p): p is string => typeof p === 'string' && VALID_POSITIONS.has(p)) : []
+  const villainName     = (typeof raw.villainName === 'string' && raw.villainName) ? raw.villainName : 'Villain'
+  const villainDescription = (typeof raw.villainDescription === 'string' && raw.villainDescription.length > 5) ? raw.villainDescription : 'Your opponent at the table.'
+  const villainPlayerType  = VALID_PLAYER_TYPES.has(raw.villainPlayerType as PlayerType) ? raw.villainPlayerType as PlayerType : 'tag'
+
   return {
     id: idx + 1,
     level: raw.level,
@@ -110,13 +120,13 @@ function processScenario(raw: RawScenario, idx: number) {
     cardsToCome: raw.cardsToCome,
     outs: raw.outs,
     outDesc: raw.outDesc,
-    tableSize: raw.tableSize,
-    heroPosition: raw.heroPosition,
-    villainPosition: raw.villainPosition,
-    otherPlayers: raw.otherPlayers,
-    villainName: raw.villainName,
-    villainDescription: raw.villainDescription,
-    villainPlayerType: raw.villainPlayerType,
+    tableSize,
+    heroPosition,
+    villainPosition,
+    otherPlayers,
+    villainName,
+    villainDescription,
+    villainPlayerType,
     potOddsNum,
     potOddsDen: 1,
     breakevenPct,
@@ -154,15 +164,7 @@ function validate(s: unknown): s is RawScenario {
   const ratio = (r.pot as number) / (r.callAmount as number)
   if (!CLEAN_RATIOS.some(cr => Math.abs(ratio - cr) < 0.1)) return false
 
-  // Table context
-  if (typeof r.tableSize !== 'number' || r.tableSize < 2 || r.tableSize > 8 || !Number.isInteger(r.tableSize)) return false
-  if (typeof r.heroPosition !== 'string' || !VALID_POSITIONS.has(r.heroPosition)) return false
-  if (typeof r.villainPosition !== 'string' || !VALID_POSITIONS.has(r.villainPosition)) return false
-  if (r.heroPosition === r.villainPosition) return false
-  if (!Array.isArray(r.otherPlayers)) return false
-  if (typeof r.villainName !== 'string' || !r.villainName) return false
-  if (typeof r.villainDescription !== 'string' || r.villainDescription.length < 10) return false
-  if (!VALID_PLAYER_TYPES.has(r.villainPlayerType as PlayerType)) return false
+  // Villain/table fields are optional — missing or invalid values get defaults in processScenario
 
   return true
 }
