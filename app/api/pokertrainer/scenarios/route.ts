@@ -30,8 +30,8 @@ interface RawScenario {
 }
 
 const STEPS_BY_LEVEL: Record<1 | 2 | 3, Step[]> = {
-  1: ['potOdds', 'breakeven'],
-  2: ['potOdds', 'breakeven', 'outs', 'equity', 'playerType'],
+  1: ['potOdds', 'breakeven', 'outs', 'equity', 'decision'],
+  2: ['potOdds', 'breakeven', 'outs', 'equity', 'playerType', 'decision'],
   3: ['potOdds', 'breakeven', 'outs', 'equity', 'playerType', 'decision'],
 }
 
@@ -82,7 +82,7 @@ function buildExplanations(
 
   return {
     potOdds: `Pot is $${raw.pot}, you call $${raw.callAmount}. Divide: ${raw.pot} ÷ ${raw.callAmount} = ${potOddsNum}. Your pot odds are ${potOddsNum}:1.`,
-    breakeven: `You risk $${raw.callAmount} to win $${total} total ($${raw.pot} + $${raw.callAmount}). ${raw.callAmount} ÷ ${total} ≈ ${breakevenPct}%. You need ${breakevenPct}% equity to break even.`,
+    breakeven: `Your ${potOddsNum}:1 pot odds = risking $${raw.callAmount} for a $${total} pot. $${raw.callAmount} ÷ $${total} ≈ ${breakevenPct}%. You need at least ${breakevenPct}% equity to break even — now go find out if you have it.`,
     outs: raw.outDesc,
     equity: `${cardsStr} → Rule of ${rule}: ${raw.outs} × ${rule} = ${equityPct}%. Your equity (${equityPct}%) ${compareStr}.${equityPct < breakevenPct ? ' Fold.' : ''}`.trimEnd(),
     playerType: `${raw.villainName} is a ${raw.villainPlayerType.toUpperCase()}. ${PLAYER_TYPE_EXPLAINS[raw.villainPlayerType]}`,

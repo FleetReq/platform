@@ -67,10 +67,13 @@ const STATIC_SCENARIOS: Scenario[] = [
     breakevenPct: 25,
     equityPct: 36,
     decision: 'call',
-    steps: ['potOdds', 'breakeven'],
+    steps: ['potOdds', 'breakeven', 'outs', 'equity', 'decision'],
     explanations: {
       potOdds: 'Pot is $60, you call $20. Divide: 60 ÷ 20 = 3. Your pot odds are 3:1.',
-      breakeven: 'You risk $20 to win $80 total ($60 + $20). 20 ÷ 80 = 25%. You need 25% equity to break even — and your flush draw has ~36%, so this is a clear call.',
+      breakeven: 'Your 3:1 pot odds = risking $20 for an $80 pot. $20 ÷ $80 = 25%. You need at least 25% equity to break even — now go find out if you have it.',
+      outs: '13 hearts total. You can see 4 of them (A♥ 7♥ K♥ 9♥). That leaves 9 unseen hearts that complete your flush.',
+      equity: 'Two cards to come → Rule of 4: 9 × 4 = 36%. Your equity (36%) beats the 25% breakeven — profitable call.',
+      decision: 'Call. 36% equity vs 25% breakeven. Your flush draw is a clear +EV call. Over time this hand prints money.',
     },
   },
   {
@@ -98,10 +101,13 @@ const STATIC_SCENARIOS: Scenario[] = [
     breakevenPct: 33,
     equityPct: 16,
     decision: 'fold',
-    steps: ['potOdds', 'breakeven'],
+    steps: ['potOdds', 'breakeven', 'outs', 'equity', 'decision'],
     explanations: {
       potOdds: 'Pot is $90, you call $45. Divide: 90 ÷ 45 = 2. Your pot odds are 2:1.',
-      breakeven: 'You risk $45 to win $135 total ($90 + $45). 45 ÷ 135 ≈ 33%. You need 33% equity — but with one card to come and 8 outs, you only have ~16%. Fold.',
+      breakeven: 'Your 2:1 pot odds = risking $45 for a $135 pot. $45 ÷ $135 ≈ 33%. You need at least 33% equity — that\'s a steep price.',
+      outs: '4 Kings complete the K-high straight + 4 Eights complete the 8-high straight. Any of those 8 cards make your hand.',
+      equity: 'One card to come → Rule of 2: 8 × 2 = 16%. Your equity (16%) is less than half the 33% you need.',
+      decision: 'Fold. 16% equity vs 33% breakeven — calling here loses money over time. The pot odds are just too expensive for this draw.',
     },
   },
   {
@@ -129,13 +135,14 @@ const STATIC_SCENARIOS: Scenario[] = [
     breakevenPct: 33,
     equityPct: 18,
     decision: 'fold',
-    steps: ['potOdds', 'breakeven', 'outs', 'equity', 'playerType'],
+    steps: ['potOdds', 'breakeven', 'outs', 'equity', 'playerType', 'decision'],
     explanations: {
       potOdds: 'Pot is $120, you call $60. Divide: 120 ÷ 60 = 2. Your pot odds are 2:1.',
-      breakeven: 'You risk $60 to win $180 total ($120 + $60). 60 ÷ 180 ≈ 33%. You need 33% equity to break even.',
+      breakeven: 'Your 2:1 pot odds = risking $60 for a $180 pot. $60 ÷ $180 ≈ 33%. You need 33% equity to break even — now go find out if you have it.',
       outs: '13 spades in the deck. You can see 4 (8♠ 7♠ 6♠ J♠). That leaves 9 outs.',
-      equity: 'One card to come → Rule of 2: 9 × 2 = 18%. Your equity (18%) falls well short of 33%. Fold — the price is too high.',
+      equity: 'One card to come → Rule of 2: 9 × 2 = 18%. Your equity (18%) falls well short of 33%.',
       playerType: 'Hoodie Guy is a LAG (Loose-Aggressive). LAGs play many hands and apply constant pressure. Their wide range means they bluff frequently — but the math still says fold here regardless.',
+      decision: 'Fold. Your 18% equity falls well short of the 33% breakeven. Even knowing a LAG is betting wide, calling is –EV when the gap is this large.',
     },
   },
   {
@@ -163,13 +170,14 @@ const STATIC_SCENARIOS: Scenario[] = [
     breakevenPct: 17,
     equityPct: 32,
     decision: 'call',
-    steps: ['potOdds', 'breakeven', 'outs', 'equity', 'playerType'],
+    steps: ['potOdds', 'breakeven', 'outs', 'equity', 'playerType', 'decision'],
     explanations: {
       potOdds: 'Pot is $50, you call $10. Divide: 50 ÷ 10 = 5. Your pot odds are 5:1.',
-      breakeven: 'You risk $10 to win $60 total ($50 + $10). 10 ÷ 60 ≈ 17%. You only need 17% equity — a very cheap price.',
+      breakeven: 'Your 5:1 pot odds = risking $10 for a $60 pot. $10 ÷ $60 ≈ 17%. You only need 17% equity — a very cheap price.',
       outs: '4 Jacks (J T 9 8 7 straight) + 4 Sixes (T 9 8 7 6 straight) = 8 outs. Either card makes you a straight.',
-      equity: 'Two cards to come → Rule of 4: 8 × 4 = 32%. Your equity (32%) nearly doubles the 17% needed. Easy call!',
-      playerType: "The Regular is a TAG (Tight-Aggressive). TAGs play solid ranges and bet strong hands hard. Disciplined players who bluff occasionally but aren't loose. Getting a great price here is an easy call regardless.",
+      equity: 'Two cards to come → Rule of 4: 8 × 4 = 32%. Your equity (32%) nearly doubles the 17% needed.',
+      playerType: "The Regular is a TAG (Tight-Aggressive). TAGs play solid ranges and bet strong hands hard. Disciplined players who bluff occasionally but aren't loose.",
+      decision: "Call. Your 32% equity nearly doubles the 17% breakeven — this is a slam dunk. Even against a TAG who has a real hand, the pot is giving you great value for your draw.",
     },
   },
   {
@@ -244,37 +252,61 @@ const STATIC_SCENARIOS: Scenario[] = [
   },
 ]
 
-const STEP_CONFIG: Record<Step, { label: string; prompt: string; inputType: 'ratio' | 'number' | 'decision' | 'playerType' }> = {
+type StepCategory = 'GTO' | 'Exploitative' | 'Decision'
+
+const STEP_CONFIG: Record<Step, { label: string; prompt: string; inputType: 'ratio' | 'number' | 'decision' | 'playerType'; category: StepCategory }> = {
   potOdds: {
     label: 'Pot Odds',
     prompt: 'What are your pot odds? Enter as a ratio — e.g. "3:1"',
     inputType: 'ratio',
+    category: 'GTO',
   },
   breakeven: {
     label: 'Break-Even %',
     prompt: 'What % equity do you need to break even? (whole number, ±2 counts)',
     inputType: 'number',
+    category: 'GTO',
   },
   outs: {
     label: 'Count Your Outs',
     prompt: 'How many outs do you have? (exact number)',
     inputType: 'number',
+    category: 'GTO',
   },
   equity: {
-    label: 'Equity % (Rule of 2/4)',
+    label: 'Equity %',
     prompt: 'Using the Rule of 2 or 4, what is your approximate equity %? (±2 counts)',
     inputType: 'number',
+    category: 'GTO',
   },
   playerType: {
     label: 'Read the Villain',
     prompt: 'Based on the description, what type of player is the villain?',
     inputType: 'playerType',
+    category: 'Exploitative',
   },
   decision: {
     label: 'The Decision',
     prompt: 'Based on your equity vs. break-even — call, fold, or raise?',
     inputType: 'decision',
+    category: 'Decision',
   },
+}
+
+const CATEGORY_STYLE: Record<StepCategory, string> = {
+  GTO:          'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
+  Exploitative: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+  Decision:     'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+}
+
+function getPrompt(step: Step, s: Scenario, results: (StepResult | undefined)[]): string {
+  if (step === 'breakeven') {
+    const potOddsIdx = s.steps.indexOf('potOdds')
+    if (potOddsIdx >= 0 && results[potOddsIdx]) {
+      return `You found ${s.potOddsNum}:1 pot odds — what % equity do you need to break even? (whole number, ±2 counts)`
+    }
+  }
+  return STEP_CONFIG[step].prompt
 }
 
 function checkAnswer(step: Step, raw: string, s: Scenario): boolean {
@@ -919,6 +951,9 @@ export default function PokerTrainer() {
                       <span className={`text-xs font-semibold ${r.correct ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
                         {STEP_CONFIG[step].label}
                       </span>
+                      <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${CATEGORY_STYLE[STEP_CONFIG[step].category]}`}>
+                        {STEP_CONFIG[step].category}
+                      </span>
                       {!r.correct && (
                         <span className="text-xs text-gray-400 ml-auto">
                           was <strong>{expectedAnswer(step, scenario)}</strong>
@@ -952,7 +987,12 @@ export default function PokerTrainer() {
                 </span>
                 <div>
                   <p className="text-xs text-gray-400 leading-none mb-0.5">Step {stepIdx + 1} of {steps.length}</p>
-                  <p className="font-semibold text-sm leading-tight">{config.label}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-sm leading-tight">{config.label}</p>
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${CATEGORY_STYLE[config.category]}`}>
+                      {config.category}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -972,7 +1012,7 @@ export default function PokerTrainer() {
                 </div>
               ) : (
                 <div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{config.prompt}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{getPrompt(currentStep, scenario, results)}</p>
 
                   {/* Formula guide */}
                   {(() => {
