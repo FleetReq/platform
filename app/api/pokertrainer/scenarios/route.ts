@@ -211,34 +211,31 @@ const EXAMPLE_SCENARIO = `{
   "villainPlayerType": "nit"
 }`
 
-// Batch 1: 2 scenarios — loads fast (~2s), user starts playing immediately
-// Batch 2: 4 scenarios — loads in background while user plays batch 1
+// Batch 1: 1 scenario — smallest possible payload, loading screen gone in ~1.5s
+// Batch 2: 5 scenarios — loads in background while user plays scenario 1
 const BATCH_PROMPTS: Record<1 | 2, string> = {
-  1: `Generate exactly 2 Texas Hold'em scenarios.
+  1: `Generate exactly 1 Texas Hold'em scenario at level 1 (Rookie).
+
+Use a flush draw or open-ended straight draw on the Flop. Include a fold or call decision.
+
+Return this exact structure: { "scenarios": [ ${EXAMPLE_SCENARIO} ] }`,
+
+  2: `Generate exactly 5 Texas Hold'em scenarios.
 
 Level assignment:
 - scenarios[0]: level 1 (Rookie)
 - scenarios[1]: level 2 (Regular)
-
-Variety: one Flop and one Turn, different draw types, one fold and one call/raise decision.
-
-Return this exact structure: { "scenarios": [ ${EXAMPLE_SCENARIO}, ... ] }`,
-
-  2: `Generate exactly 4 Texas Hold'em scenarios.
-
-Level assignment:
-- scenarios[0]: level 1 (Rookie)
-- scenarios[1]: level 2 (Regular)
-- scenarios[2]: level 3 (Shark)
+- scenarios[2]: level 2 (Regular)
 - scenarios[3]: level 3 (Shark)
+- scenarios[4]: level 3 (Shark)
 
-Variety: include at least 1 combo draw, mix Flop and Turn, at least 1 raise decision, at least 1 fold decision.
+Variety: include flush draws, straight draws, at least 1 combo draw, mix Flop and Turn, at least 2 fold decisions, at least 1 raise decision.
 
 Return this exact structure: { "scenarios": [ ${EXAMPLE_SCENARIO}, ... ] }`,
 }
 
-const BATCH_SIZE: Record<1 | 2, number> = { 1: 2, 2: 4 }
-const BATCH_MAX_TOKENS: Record<1 | 2, number> = { 1: 700, 2: 1500 }
+const BATCH_SIZE: Record<1 | 2, number> = { 1: 1, 2: 5 }
+const BATCH_MAX_TOKENS: Record<1 | 2, number> = { 1: 400, 2: 1800 }
 
 export async function GET(request: NextRequest) {
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -247,7 +244,7 @@ export async function GET(request: NextRequest) {
 
   const batchParam = request.nextUrl.searchParams.get('batch')
   const batch = batchParam === '2' ? 2 : 1
-  const idxOffset = batch === 2 ? 3 : 0
+  const idxOffset = batch === 2 ? BATCH_SIZE[1] : 0
 
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
   const limited = rateLimit(`pokertrainer:${ip}`, RATE_LIMITS.EXPENSIVE)
