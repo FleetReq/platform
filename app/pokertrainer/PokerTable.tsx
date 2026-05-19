@@ -179,9 +179,15 @@ export function PokerTable({ heroPosition, villainPosition, villainName, activeP
         const isFeatured = isHero || isVillain
         const isDealer  = pos === 'BTN'
 
-        if (isEmpty) return null
+        // Ghost seat: seat doesn't exist at this table size — faint ring only, no text
+        if (isEmpty) {
+          return (
+            <circle key={pos} cx={x} cy={y} r={R_SEAT}
+              fill="rgba(0,0,0,0.15)" stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
+          )
+        }
 
-        const opacity = isFolded ? 0.38 : 1
+        const opacity = isFolded ? 0.35 : 1
         const fill    = isHero ? 'url(#pt-hero)' : isVillain ? 'url(#pt-villain)' : isActive ? 'url(#pt-active)' : '#0f1923'
         const stroke  = isHero ? '#93c5fd' : isVillain ? '#fde68a' : isActive ? '#4b5563' : '#2a3a4a'
         const glow    = isHero ? 'url(#pt-glow-hero)' : isVillain ? 'url(#pt-glow-villain)' : undefined
