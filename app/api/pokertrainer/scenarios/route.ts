@@ -260,7 +260,7 @@ Return this exact structure: { "scenarios": [ ${EXAMPLE_SCENARIO}, ... ] }`,
 }
 
 const BATCH_SIZE: Record<1 | 2, number> = { 1: 1, 2: 5 }
-const BATCH_MAX_TOKENS: Record<1 | 2, number> = { 1: 400, 2: 1800 }
+const BATCH_MAX_TOKENS: Record<1 | 2, number> = { 1: 400, 2: 2800 }
 
 export async function GET(request: NextRequest) {
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -287,21 +287,26 @@ export async function GET(request: NextRequest) {
     })
 
     if (!response.content.length) {
-      console.error('[pokertrainer/scenarios] empty content, stop_reason:', response.stop_reason)
+      console.error('[pokertrainer/scenarios] empty content', JSON.stringify({ batch, stop_reason: response.stop_reason }))
       throw new Error(`empty content (stop_reason: ${response.stop_reason})`)
+    }
+    if (response.stop_reason === 'max_tokens') {
+      console.error('[pokertrainer/scenarios] output truncated — max_tokens hit', JSON.stringify({ batch, max_tokens: BATCH_MAX_TOKENS[batch] }))
+      throw new Error(`output truncated at ${BATCH_MAX_TOKENS[batch]} tokens`)
     }
     const text = response.content[0].type === 'text' ? response.content[0].text : ''
     const cleaned = text.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim()
     raw = JSON.parse(cleaned)
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
-    console.error(`[pokertrainer/scenarios] batch ${batch} generation error: ${msg}`)
+    const stack = err instanceof Error ? err.stack : undefined
+    console.error('[pokertrainer/scenarios] generation error', JSON.stringify({ batch, message: msg, stack }))
     return NextResponse.json({ error: 'Generation failed' }, { status: 503 })
   }
 
   const rawScenarios = (raw as { scenarios?: unknown[] })?.scenarios
   if (!Array.isArray(rawScenarios) || rawScenarios.length !== BATCH_SIZE[batch]) {
-    console.warn(`[pokertrainer/scenarios] batch ${batch} bad shape: got ${Array.isArray(rawScenarios) ? rawScenarios.length : typeof rawScenarios} scenarios`)
+    console.error('[pokertrainer/scenarios] bad shape', JSON.stringify({ batch, expected: BATCH_SIZE[batch], got: Array.isArray(rawScenarios) ? rawScenarios.length : typeof rawScenarios }))
     return NextResponse.json({ error: 'Invalid response shape' }, { status: 503 })
   }
 
