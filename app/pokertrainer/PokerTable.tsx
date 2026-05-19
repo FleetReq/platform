@@ -38,18 +38,30 @@ function labelPos(x: number, y: number) {
   return { lx: x, ly: y + dy }
 }
 
-// Two-card positions centered at the 50% inward point, spread perpendicularly
+// Place two cards in the cardinal direction that points toward the table center.
+// Top seats  → south (below seat, cards side-by-side)
+// Bottom seats → north (above seat, cards side-by-side)
+// Left/right  → east/west (beside seat, cards stacked vertically)
 function cardPair(sx: number, sy: number): [{ cx: number; cy: number }, { cx: number; cy: number }] {
-  const midX = sx + (CX - sx) * 0.5
-  const midY = sy + (CY - sy) * 0.5
-  const dx = CX - sx, dy = CY - sy
-  const dist = Math.sqrt(dx * dx + dy * dy) || 1
-  const px = -dy / dist, py = dx / dist
-  const off = 11
-  return [
-    { cx: midX - px * off, cy: midY - py * off },
-    { cx: midX + px * off, cy: midY + py * off },
-  ]
+  const CW = 18, CH = 25, GAP = 4
+  if (sy < CY - 30) {
+    // seat is above center → south
+    const cy = sy + R_SEAT + GAP + CH / 2
+    return [{ cx: sx - 11, cy }, { cx: sx + 11, cy }]
+  }
+  if (sy > CY + 30) {
+    // seat is below center → north
+    const cy = sy - R_SEAT - GAP - CH / 2
+    return [{ cx: sx - 11, cy }, { cx: sx + 11, cy }]
+  }
+  if (sx < CX) {
+    // seat is on the left → east
+    const cx = sx + R_SEAT + GAP + CW / 2
+    return [{ cx, cy: sy - 14 }, { cx, cy: sy + 14 }]
+  }
+  // seat is on the right → west
+  const cx = sx - R_SEAT - GAP - CW / 2
+  return [{ cx, cy: sy - 14 }, { cx, cy: sy + 14 }]
 }
 
 function SvgCardFace({ card, cx, cy }: { card: string; cx: number; cy: number }) {
