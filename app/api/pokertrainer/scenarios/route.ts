@@ -166,6 +166,8 @@ function validate(s: unknown): s is RawScenario {
   // pot/callAmount must give a clean ratio
   const ratio = (r.pot as number) / (r.callAmount as number)
   if (!CLEAN_RATIOS.some(cr => Math.abs(ratio - cr) < 0.1)) return false
+  // Level 1 (Rookie): 2.5:1 gives 2/7 ≈ 28.6% — not in any quick table, too hard
+  if (r.level === 1 && Math.abs(ratio - 2.5) < 0.1) return false
 
   // Villain/table fields are optional — missing or invalid values get defaults in processScenario
 
@@ -178,6 +180,7 @@ STRICT RULES:
 1. Use Unicode suit symbols only: ♠ ♥ ♦ ♣
 2. No card may appear twice within the same scenario (hand + board combined)
 3. pot ÷ callAmount must equal exactly one of: 2, 2.5, 3, 4, or 5
+   Level 1 ONLY: never use 2.5 — it gives 2/7 ≈ 28.6% which requires real division and is not in the quick table. Level 1 must use 2, 3, 4, or 5 only.
 4. Only Flop and Turn scenarios (no River — there must always be cards to come)
 5. cardsToCome: always 2 for Flop, always 1 for Turn
 6. Flop board has exactly 3 cards, Turn board has exactly 4 cards
