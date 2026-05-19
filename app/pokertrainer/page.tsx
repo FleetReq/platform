@@ -585,7 +585,7 @@ function ShuffleAnimation() {
 
 async function fetchScenarios(): Promise<Scenario[]> {
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 9000)
+  const timeout = setTimeout(() => controller.abort(), 25000)
   try {
     const res = await fetch('/api/pokertrainer/scenarios', { signal: controller.signal })
     if (!res.ok) {
