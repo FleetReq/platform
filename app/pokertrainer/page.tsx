@@ -527,6 +527,20 @@ function getPrompt(step: Step, s: Scenario, results: (StepResult | undefined)[])
   return STEP_CONFIG[step].prompt
 }
 
+function isRaiseBorderline(s: Scenario): boolean {
+  return s.decision === 'call' && s.cardsToCome === 2 && s.equityPct >= 30
+}
+
+function borderlineRaiseNote(s: Scenario): string {
+  const callEv = (s.equityPct / 100) * (s.pot + s.callAmount) - s.callAmount
+  const minRaise = s.callAmount * 2
+  const newPotIfCalled = s.pot + minRaise + (minRaise - s.callAmount)
+  const evRaiseCalled = Math.round((s.equityPct / 100) * newPotIfCalled - minRaise)
+  const evRaiseFold = s.pot - minRaise
+  const foldPctNeeded = Math.round(((callEv - evRaiseCalled) / (evRaiseFold - evRaiseCalled)) * 100)
+  return ` A minimum raise to $${minRaise} is also viable: if villain calls, pot becomes $${newPotIfCalled} and your ${s.equityPct}% equity still gives +$${evRaiseCalled} EV — profitable but less than calling (+$${Math.round(callEv)}). Raising beats calling if villain folds more than ${foldPctNeeded}% of the time, so it's worth considering against a tight player.`
+}
+
 function checkAnswer(step: Step, raw: string, s: Scenario): boolean {
   const v = raw.trim()
   if (!v) return false
@@ -553,7 +567,10 @@ function checkAnswer(step: Step, raw: string, s: Scenario): boolean {
       return v.toLowerCase() === s.villainPlayerType
     }
     case 'decision': {
-      return v.toLowerCase() === s.decision
+      const ans = v.toLowerCase()
+      if (ans === s.decision) return true
+      if (ans === 'raise' && isRaiseBorderline(s)) return true
+      return false
     }
   }
 }
@@ -565,7 +582,7 @@ function expectedAnswer(step: Step, s: Scenario): string {
     case 'outs': return `${s.outs}`
     case 'equity': return `${s.equityPct}%`
     case 'playerType': return s.villainPlayerType
-    case 'decision': return s.decision
+    case 'decision': return isRaiseBorderline(s) ? `${s.decision} (raise also viable)` : s.decision
   }
 }
 
@@ -750,6 +767,7 @@ export default function PokerTrainer() {
   const isLastStep = stepIdx === steps.length - 1
   const scenarioDone = isChecked && isLastStep
   const config = STEP_CONFIG[currentStep]
+  const borderline = isChecked && !!currentResult?.correct && currentStep === 'decision' && isRaiseBorderline(scenario)
 
   const villainPtIdx = scenario.steps.indexOf('playerType')
   const villainTypeRevealed = scenario.level === 1 || (villainPtIdx >= 0 && !!results[villainPtIdx])
@@ -815,7 +833,9 @@ export default function PokerTrainer() {
     setScore(prev => ({ correct: prev.correct + (correct ? 1 : 0), total: prev.total + 1 }))
     setExplanations(prev => {
       const next = [...prev]
-      next[idx] = scenario.explanations[currentStep] ?? expectedAnswer(currentStep, scenario)
+      let expl = scenario.explanations[currentStep] ?? expectedAnswer(currentStep, scenario)
+      if (currentStep === 'decision' && isRaiseBorderline(scenario)) expl += borderlineRaiseNote(scenario)
+      next[idx] = expl
       return next
     })
 
@@ -1059,10 +1079,10 @@ export default function PokerTrainer() {
       <div id="main-tabpanel" role="tabpanel" aria-labelledby={`tab-${filterLevel}`} className="flex-1 overflow-hidden flex flex-col lg:flex-row bg-[#0c0e14]">
 
         {/* LEFT — scenario context */}
-        <div className="lg:w-[42%] lg:flex-shrink-0 overflow-y-auto p-5 sm:p-7 lg:border-r border-white/8 bg-[#0c0e14]">
+        <div className="lg:w-[42%] lg:flex-shrink-0 overflow-y-auto p-5 sm:p-7 lg:border-r border-b lg:border-b-0 border-white/8 bg-[#0c0e14] max-h-[44vh] lg:max-h-none">
 
           {/* Level + meta */}
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-3">
             <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${LEVEL_COLORS[scenario.level]}`}>
               {scenario.levelName}
             </span>
@@ -1070,35 +1090,35 @@ export default function PokerTrainer() {
             <span className="text-xs text-white/40">· {scenario.street}</span>
           </div>
 
+          {/* Stats — first so they're visible even at small mobile heights */}
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            {[
+              { label: 'Pot', value: `$${scenario.pot}`, color: 'text-emerald-400' },
+              { label: 'To Call', value: `$${scenario.callAmount}`, color: 'text-orange-400' },
+              { label: 'Cards Left', value: `${scenario.cardsToCome}`, color: 'text-white' },
+            ].map(({ label, value, color }) => (
+              <div key={label} className="bg-[#13151f] rounded-xl border border-white/8 py-3 text-center">
+                <div className={`text-2xl sm:text-3xl lg:text-4xl font-black tabular-nums tracking-tight ${color}`}>{value}</div>
+                <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 mt-1">{label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Hand description */}
+          <div className="bg-[#13151f] border border-white/8 border-l-4 border-l-blue-400 rounded-xl px-4 py-3 text-sm text-white/70 mb-3 leading-snug">
+            {scenario.handDesc}
+          </div>
+
           {/* Quick Reference */}
-          <div className="rounded-xl bg-[#13151f] border border-white/8 border-l-4 border-l-teal-400 px-4 py-3 space-y-1 mb-4">
+          <div className="rounded-xl bg-[#13151f] border border-white/8 border-l-4 border-l-teal-400 px-4 py-3 space-y-1 mb-3">
             <p className="text-[10px] font-bold text-teal-400 uppercase tracking-[0.15em] mb-1">Quick Reference</p>
             <p className="text-xs text-white/60">Rule of 4 — outs × 4 when <strong className="text-white/90">2 cards</strong> to come (Flop)</p>
             <p className="text-xs text-white/60">Rule of 2 — outs × 2 when <strong className="text-white/90">1 card</strong> to come (Turn)</p>
             <p className="text-xs text-white/40 pt-1 border-t border-white/8 mt-1">Breakeven: 2:1 → 33% · 3:1 → 25% · 4:1 → 20% · 5:1 → 17%</p>
           </div>
 
-          {/* Poker Table with cards */}
-          <div className="mb-3">
-            <PokerTable
-              heroPosition={scenario.heroPosition}
-              villainPosition={scenario.villainPosition}
-              villainName={scenario.villainName}
-              activePositions={[scenario.heroPosition, scenario.villainPosition, ...scenario.otherPlayers]}
-              heroCards={scenario.hand}
-              boardCards={scenario.board}
-            />
-            <p className="text-xs text-white/40 text-center mt-1.5">
-              You: <strong className="text-blue-400">{scenario.heroPosition}</strong>
-              {' · '}
-              {scenario.villainName}: <strong className="text-amber-400">{scenario.villainPosition}</strong>
-              {' · '}
-              <span className="text-white/30">{scenario.tableSize}-handed</span>
-            </p>
-          </div>
-
           {/* Villain Profile */}
-          <div className="rounded-xl bg-[#13151f] border border-white/8 border-l-4 border-l-amber-400 px-4 py-3 mb-4">
+          <div className="rounded-xl bg-[#13151f] border border-white/8 border-l-4 border-l-amber-400 px-4 py-3 mb-3">
             <div className="flex items-center justify-between mb-2">
               <p className="text-[10px] font-bold text-amber-400 uppercase tracking-[0.15em]">
                 Villain: {scenario.villainName}
@@ -1112,23 +1132,25 @@ export default function PokerTrainer() {
             <p className="text-sm text-white/70 leading-snug">{scenario.villainDescription}</p>
           </div>
 
-          {/* Hand description */}
-          <div className="bg-[#13151f] border border-white/8 border-l-4 border-l-blue-400 rounded-xl px-4 py-3 text-sm text-white/70 mb-4 leading-snug">
-            {scenario.handDesc}
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { label: 'Pot', value: `$${scenario.pot}`, color: 'text-emerald-400' },
-              { label: 'To Call', value: `$${scenario.callAmount}`, color: 'text-orange-400' },
-              { label: 'Cards Left', value: `${scenario.cardsToCome}`, color: 'text-white' },
-            ].map(({ label, value, color }) => (
-              <div key={label} className="bg-[#13151f] rounded-xl border border-white/8 py-4 text-center">
-                <div className={`text-4xl font-black tabular-nums tracking-tight ${color}`}>{value}</div>
-                <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 mt-1">{label}</div>
-              </div>
-            ))}
+          {/* Poker Table with cards */}
+          <div className="mb-1">
+            <div className="max-w-[280px] lg:max-w-none mx-auto">
+              <PokerTable
+                heroPosition={scenario.heroPosition}
+                villainPosition={scenario.villainPosition}
+                villainName={scenario.villainName}
+                activePositions={[scenario.heroPosition, scenario.villainPosition, ...scenario.otherPlayers]}
+                heroCards={scenario.hand}
+                boardCards={scenario.board}
+              />
+            </div>
+            <p className="text-xs text-white/40 text-center mt-1.5">
+              You: <strong className="text-blue-400">{scenario.heroPosition}</strong>
+              {' · '}
+              {scenario.villainName}: <strong className="text-amber-400">{scenario.villainPosition}</strong>
+              {' · '}
+              <span className="text-white/30">{scenario.tableSize}-handed</span>
+            </p>
           </div>
 
         </div>
@@ -1142,17 +1164,20 @@ export default function PokerTrainer() {
               {steps.slice(0, stepIdx).map((step, i) => {
                 const r = results[i]
                 if (!r) return null
+                const borderline = step === 'decision' && r.correct && isRaiseBorderline(scenario)
                 return (
                   <div key={step} className={`rounded-xl border px-4 py-3 ${
-                    r.correct
-                      ? 'border-emerald-500/30 bg-emerald-500/10'
-                      : 'border-red-500/30 bg-red-500/10'
+                    !r.correct
+                      ? 'border-red-500/30 bg-red-500/10'
+                      : borderline
+                        ? 'border-amber-500/30 bg-amber-500/10'
+                        : 'border-emerald-500/30 bg-emerald-500/10'
                   }`}>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0 ${r.correct ? 'bg-emerald-500' : 'bg-red-500'}`}>
+                      <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0 ${!r.correct ? 'bg-red-500' : borderline ? 'bg-amber-500' : 'bg-emerald-500'}`}>
                         {r.correct ? '✓' : '✗'}
                       </span>
-                      <span className={`text-xs font-semibold ${r.correct ? 'text-emerald-400' : 'text-red-400'}`}>
+                      <span className={`text-xs font-semibold ${!r.correct ? 'text-red-400' : borderline ? 'text-amber-400' : 'text-emerald-400'}`}>
                         {STEP_CONFIG[step].label}
                       </span>
                       <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${CATEGORY_STYLE[STEP_CONFIG[step].category]}`}>
@@ -1178,17 +1203,21 @@ export default function PokerTrainer() {
             <div className={`rounded-xl border p-5 ${
               !isChecked
                 ? 'bg-[#13151f] border-blue-500/60 shadow-xl shadow-blue-500/10'
-                : currentResult!.correct
-                  ? 'bg-[#13151f] border-emerald-500/40'
-                  : 'bg-[#13151f] border-red-500/40'
+                : !currentResult!.correct
+                  ? 'bg-[#13151f] border-red-500/40'
+                  : borderline
+                    ? 'bg-[#13151f] border-amber-500/40'
+                    : 'bg-[#13151f] border-emerald-500/40'
             }`}>
               {/* Step header */}
               <div className="flex items-center gap-2.5 mb-4">
                 <span className={`w-9 h-9 rounded-full flex items-center justify-center font-black flex-shrink-0 ${
                   isChecked
-                    ? currentResult!.correct
-                      ? 'bg-emerald-500 text-white text-sm shadow-lg shadow-emerald-500/40'
-                      : 'bg-red-500 text-white text-sm shadow-lg shadow-red-500/40'
+                    ? !currentResult!.correct
+                      ? 'bg-red-500 text-white text-sm shadow-lg shadow-red-500/40'
+                      : borderline
+                        ? 'bg-amber-500 text-white text-sm shadow-lg shadow-amber-500/40'
+                        : 'bg-emerald-500 text-white text-sm shadow-lg shadow-emerald-500/40'
                     : 'bg-blue-500 text-white text-base shadow-lg shadow-blue-500/40'
                 }`}>
                   {isChecked ? (currentResult!.correct ? '✓' : '✗') : stepIdx + 1}
@@ -1206,7 +1235,7 @@ export default function PokerTrainer() {
 
               {isChecked ? (
                 <div className={`rounded-lg px-4 py-3 ${
-                  currentResult!.correct ? 'bg-emerald-500/10' : 'bg-red-500/10'
+                  !currentResult!.correct ? 'bg-red-500/10' : borderline ? 'bg-amber-500/10' : 'bg-emerald-500/10'
                 }`}>
                   {!currentResult!.correct && (
                     <p className="text-xs font-semibold text-red-400 mb-1.5">

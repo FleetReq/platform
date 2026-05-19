@@ -9,22 +9,25 @@ interface PokerTableProps {
   boardCards: string[]   // 3 cards = Flop, 4 = Turn; river slot always ghost
 }
 
-// Fixed 9-max layout, evenly spaced. Inactive seats show dimmed.
+// Fixed 9-max layout
 const NINE_MAX: string[] = ['BTN', 'SB', 'BB', 'UTG', 'UTG+1', 'UTG+2', 'LJ', 'HJ', 'CO']
 
 const SUIT_COLOR: Record<string, string> = {
   '♥': '#dc2626', '♦': '#b45309', '♣': '#2563eb', '♠': '#374151',
 }
 
-const CX = 200, CY = 108
+const CX = 200, CY = 120
 const RX_SEAT = 156, RY_SEAT = 71
 const R_SEAT = 18
 const BOARD_SLOTS = 5
-const BOARD_SPACING = 20   // px between card centers
-const CW = 18, CH = 25     // card face dimensions
+const BOARD_SPACING = 20
+const CW = 18, CH = 25
+
+// 9 seats spread from ~1 o'clock to ~11 o'clock, leaving the top 60° for the dealer
+const SEAT_ANGLES = [300, 337.5, 15, 52.5, 90, 127.5, 165, 202.5, 240].map(d => (d * Math.PI) / 180)
 
 function seatCoord(i: number) {
-  const angle = (i / NINE_MAX.length) * 2 * Math.PI
+  const angle = SEAT_ANGLES[i]
   return { x: CX + RX_SEAT * Math.cos(angle), y: CY + RY_SEAT * Math.sin(angle) }
 }
 
@@ -33,25 +36,23 @@ function labelPos(x: number, y: number) {
   return { lx: x, ly: y + dy }
 }
 
-// Top half of table → cards south (below seat, toward center).
-// Bottom half → cards north. Pure left/right → east/west.
+// Cards placed between seat and table center
 function cardPair(sx: number, sy: number): [{ cx: number; cy: number }, { cx: number; cy: number }] {
   const GAP = 4
   if (sy < CY) {
     const cy = sy + R_SEAT + GAP + CH / 2
-    return [{ cx: sx - 11, cy }, { cx: sx + 11, cy }]   // south
+    return [{ cx: sx - 11, cy }, { cx: sx + 11, cy }]
   }
   if (sy > CY) {
     const cy = sy - R_SEAT - GAP - CH / 2
-    return [{ cx: sx - 11, cy }, { cx: sx + 11, cy }]   // north
+    return [{ cx: sx - 11, cy }, { cx: sx + 11, cy }]
   }
-  // exactly at CY (BTN, UTG+1)
   if (sx < CX) {
     const cx = sx + R_SEAT + GAP + CW / 2
-    return [{ cx, cy: sy - 14 }, { cx, cy: sy + 14 }]   // east
+    return [{ cx, cy: sy - 14 }, { cx, cy: sy + 14 }]
   }
   const cx = sx - R_SEAT - GAP - CW / 2
-  return [{ cx, cy: sy - 14 }, { cx, cy: sy + 14 }]     // west
+  return [{ cx, cy: sy - 14 }, { cx, cy: sy + 14 }]
 }
 
 function SvgCardFace({ card, cx, cy }: { card: string; cx: number; cy: number }) {
@@ -67,17 +68,6 @@ function SvgCardFace({ card, cx, cy }: { card: string; cx: number; cy: number })
   )
 }
 
-function SvgCardBack({ cx, cy }: { cx: number; cy: number }) {
-  const w = CW - 1, h = CH - 1
-  return (
-    <g filter="url(#pt-cshadow)">
-      <rect x={cx - w / 2} y={cy - h / 2} width={w} height={h} rx={2} fill="#1e3a5f" stroke="#0f2240" strokeWidth="0.8" />
-      <rect x={cx - w / 2 + 2} y={cy - h / 2 + 2} width={w - 4} height={h - 4} rx={1}
-        fill="none" stroke="rgba(255,255,255,0.30)" strokeWidth="0.7" />
-    </g>
-  )
-}
-
 function SvgCardSlot({ cx, cy }: { cx: number; cy: number }) {
   return (
     <rect x={cx - CW / 2} y={cy - CH / 2} width={CW} height={CH} rx={2}
@@ -87,15 +77,13 @@ function SvgCardSlot({ cx, cy }: { cx: number; cy: number }) {
 
 export function PokerTable({ heroPosition, villainPosition, villainName, activePositions, heroCards, boardCards }: PokerTableProps) {
   const heroIdx    = NINE_MAX.indexOf(heroPosition)
-  const villainIdx = NINE_MAX.indexOf(villainPosition)
 
-  // Board: always 5 slots; boardCards fills left-to-right, rest are ghost slots
   const boardOffsets = Array.from({ length: BOARD_SLOTS }, (_, i) =>
-    (i - (BOARD_SLOTS - 1) / 2) * BOARD_SPACING   // -40, -20, 0, +20, +40
+    (i - (BOARD_SLOTS - 1) / 2) * BOARD_SPACING
   )
 
   return (
-    <svg viewBox="0 0 400 220" className="w-full h-auto select-none" role="img" aria-label={`Poker table: you at ${heroPosition}, ${villainName} at ${villainPosition}`}>
+    <svg viewBox="0 0 400 240" className="w-full h-auto select-none" role="img" aria-label={`Poker table: you at ${heroPosition}, ${villainName} at ${villainPosition}`}>
       <title>{`Poker table: you at ${heroPosition}, ${villainName} at ${villainPosition}`}</title>
       <defs>
         <radialGradient id="pt-felt" cx="50%" cy="42%" r="58%">
@@ -141,6 +129,12 @@ export function PokerTable({ heroPosition, villainPosition, villainName, activeP
         </filter>
       </defs>
 
+      {/* House dealer — fixed north, above the rim */}
+      <rect x={178} y={4} width={44} height={15} rx={4}
+        fill="#0f172a" stroke="rgba(255,255,255,0.14)" strokeWidth="1" />
+      <text x={200} y={15} textAnchor="middle" fontSize="7" fontWeight="700"
+        fill="rgba(255,255,255,0.38)" letterSpacing="1">DEALER</text>
+
       {/* Table shadow */}
       <ellipse cx={CX} cy={CY + 8} rx="189" ry="102" fill="black" opacity="0.30" />
 
@@ -155,7 +149,7 @@ export function PokerTable({ heroPosition, villainPosition, villainName, activeP
       <ellipse cx={CX} cy={CY} rx="175" ry="84" fill="url(#pt-felt)" />
       <ellipse cx={CX} cy={CY} rx="175" ry="84" fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="2" />
 
-      {/* Board area oval hints */}
+      {/* Board area oval hint */}
       <ellipse cx={CX} cy={CY} rx="56" ry="22" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5" />
 
       {/* All 9 seats */}
@@ -173,6 +167,12 @@ export function PokerTable({ heroPosition, villainPosition, villainName, activeP
         const fill    = isHero ? 'url(#pt-hero)' : isVillain ? 'url(#pt-villain)' : isActive ? 'url(#pt-active)' : '#0f1923'
         const stroke  = isHero ? '#93c5fd' : isVillain ? '#fde68a' : isActive ? '#4b5563' : '#2a3a4a'
         const glow    = isHero ? 'url(#pt-glow-hero)' : isVillain ? 'url(#pt-glow-villain)' : undefined
+
+        // Dealer button: offset toward table center so it stays inside the rim
+        const dx = CX - x, dy = CY - y
+        const dlen = Math.sqrt(dx * dx + dy * dy)
+        const btnX = x + (dx / dlen) * 24
+        const btnY = y + (dy / dlen) * 24
 
         return (
           <g key={pos} opacity={opacity}>
@@ -194,8 +194,8 @@ export function PokerTable({ heroPosition, villainPosition, villainName, activeP
             </text>
             {isDealer && !isEmpty && (
               <g>
-                <circle cx={x + 15} cy={y - 15} r="8" fill="url(#pt-btn)" stroke="#9ca3af" strokeWidth="1" />
-                <text x={x + 15} y={y - 15} textAnchor="middle" dominantBaseline="middle" fontSize="6" fontWeight="800" fill="#374151">D</text>
+                <circle cx={btnX} cy={btnY} r="8" fill="url(#pt-btn)" stroke="#9ca3af" strokeWidth="1" />
+                <text x={btnX} y={btnY} textAnchor="middle" dominantBaseline="middle" fontSize="6" fontWeight="800" fill="#374151">D</text>
               </g>
             )}
             {isFeatured && (
@@ -207,13 +207,6 @@ export function PokerTable({ heroPosition, villainPosition, villainName, activeP
           </g>
         )
       })}
-
-      {/* Villain face-down cards — rendered before hero so hero cards sit on top if they overlap */}
-      {villainIdx >= 0 && (() => {
-        const { x, y } = seatCoord(villainIdx)
-        const [p1, p2] = cardPair(x, y)
-        return <g><SvgCardBack cx={p1.cx} cy={p1.cy} /><SvgCardBack cx={p2.cx} cy={p2.cy} /></g>
-      })()}
 
       {/* Hero face-up cards */}
       {heroIdx >= 0 && heroCards.length >= 2 && (() => {
