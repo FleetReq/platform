@@ -28,6 +28,11 @@ interface RawScenario {
   villainName?: string
   villainDescription?: string
   villainPlayerType?: PlayerType
+  villainResponses?: {
+    fold: string
+    call: string
+    reraise: string
+  }
 }
 
 const STEPS_BY_LEVEL: Record<1 | 2 | 3, Step[]> = {
@@ -93,6 +98,14 @@ function buildExplanations(
   }
 }
 
+function validateVillainResponses(r: unknown): { fold: string; call: string; reraise: string } | undefined {
+  if (!r || typeof r !== 'object') return undefined
+  const o = r as Record<string, unknown>
+  if (typeof o.fold !== 'string' || typeof o.call !== 'string' || typeof o.reraise !== 'string') return undefined
+  if (!o.fold || !o.call || !o.reraise) return undefined
+  return { fold: o.fold, call: o.call, reraise: o.reraise }
+}
+
 function processScenario(raw: RawScenario, idx: number) {
   const potOddsNum = Math.round((raw.pot / raw.callAmount) * 10) / 10
   const total = raw.pot + raw.callAmount
@@ -130,6 +143,7 @@ function processScenario(raw: RawScenario, idx: number) {
     villainName,
     villainDescription,
     villainPlayerType,
+    villainResponses: validateVillainResponses(raw.villainResponses),
     potOddsNum,
     potOddsDen: 1,
     breakevenPct,
@@ -197,7 +211,9 @@ STRICT RULES:
     - Level 1: clearly and obviously implies the player type (learning hint for new players)
     - Level 2: moderately suggestive but not obvious — player can figure it out with thought
     - Level 3: genuinely ambiguous — multiple types are plausible, any reasonable read is defensible
-12. Return ONLY raw JSON — no markdown, no code blocks, no explanation`
+12. Return ONLY raw JSON — no markdown, no code blocks, no explanation
+13. For Level 2 and 3 scenarios ONLY: include a "villainResponses" object with "fold", "call", and "reraise" keys. Each value is one short sentence describing the villain's reaction when the hero raises — use the villain's name and match their personality. Example: { "fold": "Old Timer sighs and folds face-up.", "call": "Old Timer calls without hesitation.", "reraise": "Old Timer stares you down and ships it in." }
+    Level 1 scenarios must NOT include villainResponses.`
 
 const EXAMPLE_SCENARIO = `{
   "level": 1,

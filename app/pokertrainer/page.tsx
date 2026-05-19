@@ -34,6 +34,7 @@ interface Scenario {
   decision: Decision
   steps: Step[]
   explanations: Partial<Record<Step, string>>
+  villainResponses?: { fold: string; call: string; reraise: string }
 }
 
 interface StepResult {
@@ -144,6 +145,11 @@ const STATIC_SCENARIOS: Scenario[] = [
       playerType: 'Hoodie Guy is a LAG (Loose-Aggressive). LAGs play many hands and apply constant pressure. Their wide range means they bluff frequently — but the math still says fold here regardless.',
       decision: 'Fold. Your 18% equity falls well short of the 33% breakeven. Even knowing a LAG is betting wide, calling is –EV when the gap is this large.',
     },
+    villainResponses: {
+      fold: 'Hoodie Guy exhales sharply and mucks his cards.',
+      call: 'Hoodie Guy calls instantly, barely flinching.',
+      reraise: 'Hoodie Guy makes it three-times your bet — pressure right back at you.',
+    },
   },
   {
     id: 4,
@@ -178,6 +184,11 @@ const STATIC_SCENARIOS: Scenario[] = [
       equity: 'Two cards to come → Rule of 4: 8 × 4 = 32%. Your equity (32%) nearly doubles the 17% needed.',
       playerType: "The Regular is a TAG (Tight-Aggressive). TAGs play solid ranges and bet strong hands hard. Disciplined players who bluff occasionally but aren't loose.",
       decision: "Call. Your 32% equity nearly doubles the 17% breakeven — this is a slam dunk. Even against a TAG who has a real hand, the pot is giving you great value for your draw.",
+    },
+    villainResponses: {
+      fold: 'The Regular pauses, nods once, and folds face-up — top pair, no kicker.',
+      call: 'The Regular calls deliberately and stacks his remaining chips.',
+      reraise: 'The Regular raises back — a precise, measured three-bet.',
     },
   },
   {
@@ -214,6 +225,11 @@ const STATIC_SCENARIOS: Scenario[] = [
       playerType: 'Wild Card leans Maniac — raises constantly, mixes bluffs with strong hands. With a big draw and positive EV, calling (or semi-bluffing) is strong. Against a maniac, implied odds when you hit are enormous.',
       decision: 'Call. Your 30% equity beats the 25% breakeven. With a combo draw this large, calling is clearly +EV. Raising as a semi-bluff is also strong here — if they fold, you win immediately.',
     },
+    villainResponses: {
+      fold: 'Wild Card groans loudly and throws his hand away.',
+      call: 'Wild Card snap-calls and slaps the felt.',
+      reraise: 'Wild Card immediately re-raises — zero hesitation.',
+    },
   },
   {
     id: 6,
@@ -248,6 +264,11 @@ const STATIC_SCENARIOS: Scenario[] = [
       equity: 'Two cards to come → Rule of 4: 12 × 4 = 48%. You have nearly a coin-flip edge — nearly double the breakeven!',
       playerType: 'The Thinker shows TAG tendencies — selective but capable of aggression. The ambiguous sizing suggests range balancing. Against a TAG, your 48% equity and the nut draw make raising very attractive.',
       decision: 'Raise! With 48% equity vs 25% breakeven you have a commanding advantage. Raising builds the pot, gives fold equity, and when you hit the nuts (club or Ten), you\'re never afraid of being re-raised off your hand.',
+    },
+    villainResponses: {
+      fold: 'The Thinker tanks for 30 seconds, then folds face-down.',
+      call: 'The Thinker calls after a long think, expression unreadable.',
+      reraise: 'The Thinker three-bets back — surgical and deliberate.',
     },
   },
   // ── Additional static scenarios (7–12) ──────────────────────────────────
@@ -353,6 +374,11 @@ const STATIC_SCENARIOS: Scenario[] = [
       playerType: 'Coach is a TAG. TAGs bet for value with strong holdings and fold to serious pressure. Their range here is likely strong — but your 36% equity is more than enough to call at this price.',
       decision: 'Call. 36% equity vs 20% breakeven is a huge edge. Even against a TAG with a strong hand, your nut flush draw is printing money at these odds.',
     },
+    villainResponses: {
+      fold: 'Coach nods respectfully and folds, flashing top pair.',
+      call: 'Coach calls and settles in — he\'s seeing this to showdown.',
+      reraise: 'Coach three-bets. He came prepared.',
+    },
   },
   {
     id: 10,
@@ -387,6 +413,11 @@ const STATIC_SCENARIOS: Scenario[] = [
       equity: 'One card to come → Rule of 2: 4 × 2 = 8%. Your equity (8%) is barely a quarter of the 33% needed.',
       playerType: 'The Kid is a LAG — wide range, lots of bluffs. But even knowing he bluffs frequently, the math is brutal: 8% equity vs 33% breakeven means calling is -EV regardless.',
       decision: 'Fold. A gutshot on the turn with 2:1 pot odds is a clear fold. 8% equity vs 33% breakeven — even a frequent bluffer can\'t make this call profitable.',
+    },
+    villainResponses: {
+      fold: 'The Kid mutters and sends his cards in. Frustrated.',
+      call: 'The Kid calls with a grin. \'Let\'s gamble.\'',
+      reraise: 'The Kid shoves without hesitation — he lives for this.',
     },
   },
   {
@@ -423,6 +454,11 @@ const STATIC_SCENARIOS: Scenario[] = [
       playerType: 'Brick Wall could be a NIT defending a big hand, or a TAG picking a spot. Either way, your 32% equity justifies calling — there\'s no shame in folding if the price gets worse on the turn.',
       decision: 'Call. 32% equity vs 29% breakeven is a thin but clear edge. Your straight draw has enough equity to see the turn. Be ready to reassess if the price gets worse.',
     },
+    villainResponses: {
+      fold: 'Brick Wall\'s face stays blank — then he folds, showing two pair.',
+      call: 'Brick Wall calls stoically. He\'s going to showdown.',
+      reraise: 'Brick Wall slowly, silently raises. He has you crushed.',
+    },
   },
   {
     id: 12,
@@ -458,6 +494,11 @@ const STATIC_SCENARIOS: Scenario[] = [
       playerType: 'The Host leans calling station — wide range, hard to fold. That\'s great news: when you make the nut flush or wheel, you\'ll get paid off. Raising semi-bluffs work poorly against stations, but value-raising your equity here is strong.',
       decision: 'Raise. With 48% equity vs a 25% breakeven you have a massive edge. Raising builds the pot for when you hit and may fold out marginal hands — even a calling station has a folding threshold.',
     },
+    villainResponses: {
+      fold: 'The Host chuckles softly. \'Nice hand.\' He folds.',
+      call: 'The Host calls cheerfully. \'I like my hand too.\'',
+      reraise: 'The Host raises back, smiling. He almost never folds.',
+    },
   },
 ]
 
@@ -468,6 +509,49 @@ function shuffleStatic(): Scenario[] {
     ;[arr[i], arr[j]] = [arr[j], arr[i]]
   }
   return arr
+}
+
+type RaiseSize = 'min' | 'half' | 'pot' | 'allin'
+type VillainOutcome = 'fold' | 'call' | 'reraise'
+
+// Probability that villain folds to each raise size, by player type
+const FOLD_PROB: Record<PlayerType, Record<RaiseSize, number>> = {
+  nit:     { min: 0.55, half: 0.70, pot: 0.82, allin: 0.88 },
+  tag:     { min: 0.35, half: 0.50, pot: 0.65, allin: 0.75 },
+  lag:     { min: 0.15, half: 0.25, pot: 0.40, allin: 0.50 },
+  station: { min: 0.05, half: 0.10, pot: 0.15, allin: 0.08 },
+  maniac:  { min: 0.10, half: 0.20, pot: 0.30, allin: 0.15 },
+}
+
+// Maniac re-raises instead of calling (on non-all-in sizes)
+const RERAISE_PROB: Partial<Record<PlayerType, Record<RaiseSize, number>>> = {
+  maniac: { min: 0.50, half: 0.35, pot: 0.15, allin: 0 },
+}
+
+function rollVillainOutcome(playerType: PlayerType, size: RaiseSize): VillainOutcome {
+  const fold = FOLD_PROB[playerType][size]
+  const reraise = RERAISE_PROB[playerType]?.[size] ?? 0
+  const r = Math.random()
+  if (r < fold) return 'fold'
+  if (r < fold + reraise) return 'reraise'
+  return 'call'
+}
+
+function getRaiseAmounts(s: Scenario): Record<RaiseSize, number | null> {
+  return {
+    min:   s.callAmount * 2,
+    half:  Math.round(s.callAmount * 1.5 + s.pot / 2),
+    pot:   s.callAmount * 2 + s.pot,
+    allin: null,
+  }
+}
+
+function getVillainResponse(s: Scenario, outcome: VillainOutcome): string {
+  if (s.villainResponses) return s.villainResponses[outcome]
+  const n = s.villainName
+  if (outcome === 'fold') return `${n} thinks for a moment and folds.`
+  if (outcome === 'reraise') return `${n} stares you down and re-raises.`
+  return `${n} calls without hesitation.`
 }
 
 type StepCategory = 'GTO' | 'Exploitative' | 'Decision'
@@ -702,6 +786,8 @@ export default function PokerTrainer() {
   const [aiFailReason, setAiFailReason] = useState<string | null>(null)
   const [evaluation, setEvaluation] = useState<string | null>(null)
   const [loadingEvaluation, setLoadingEvaluation] = useState(false)
+  const [raiseSizeChosen, setRaiseSizeChosen] = useState<RaiseSize | null>(null)
+  const [villainOutcome, setVillainOutcome] = useState<VillainOutcome | null>(null)
   const [micSupported, setMicSupported] = useState(false)
   const activeRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -771,6 +857,7 @@ export default function PokerTrainer() {
 
   const villainPtIdx = scenario.steps.indexOf('playerType')
   const villainTypeRevealed = scenario.level === 1 || (villainPtIdx >= 0 && !!results[villainPtIdx])
+  const showRaiseInteraction = isChecked && currentStep === 'decision' && currentResult?.given === 'raise' && scenario.level >= 2
   const villainBadge = villainTypeRevealed ? PLAYER_TYPE_BADGE[scenario.villainPlayerType] : null
 
   useLayoutEffect(() => {
@@ -905,6 +992,8 @@ export default function PokerTrainer() {
       setReasoning('')
       setUsedMic(false)
       setEvaluation(null)
+      setRaiseSizeChosen(null)
+      setVillainOutcome(null)
     }
   }
 
@@ -922,11 +1011,18 @@ export default function PokerTrainer() {
     setUsedMic(false)
     setEvaluation(null)
     setLoadingEvaluation(false)
+    setRaiseSizeChosen(null)
+    setVillainOutcome(null)
   }
 
   function changeFilter(lvl: 1 | 2 | 3) {
     setFilterLevel(lvl)
     resetSession()
+  }
+
+  function handleRaisePick(size: RaiseSize) {
+    setRaiseSizeChosen(size)
+    setVillainOutcome(rollVillainOutcome(scenario.villainPlayerType, size))
   }
 
   function restart() {
@@ -1404,6 +1500,83 @@ export default function PokerTrainer() {
                 )}
               </div>
             )}
+
+            {/* Villain reaction — shown when player raises on Regular/Shark */}
+            {showRaiseInteraction && (() => {
+              const amounts = getRaiseAmounts(scenario)
+              const SIZES: { key: RaiseSize; label: string; amount: number | null }[] = [
+                { key: 'min',   label: 'Min raise', amount: amounts.min },
+                { key: 'half',  label: '½ Pot',     amount: amounts.half },
+                { key: 'pot',   label: 'Pot raise',  amount: amounts.pot },
+                { key: 'allin', label: 'All-in',     amount: null },
+              ]
+              const OUTCOME_STYLE: Record<VillainOutcome, { border: string; bg: string; badge: string; label: string }> = {
+                fold:    { border: 'border-emerald-500/40', bg: 'bg-emerald-500/10', badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40', label: 'FOLDS' },
+                call:    { border: 'border-amber-500/40',   bg: 'bg-amber-500/10',   badge: 'bg-amber-500/20 text-amber-300 border-amber-500/40',   label: 'CALLS' },
+                reraise: { border: 'border-red-500/40',     bg: 'bg-red-500/10',     badge: 'bg-red-500/20 text-red-300 border-red-500/40',     label: 'RE-RAISES' },
+              }
+              const outcomeNote: Record<VillainOutcome, (s: Scenario, size: RaiseSize, amt: number | null) => string> = {
+                fold:    (s, _sz, amt) => `You take down the $${s.pot + (amt ?? s.callAmount * 4)} pot.`,
+                call:    (s, _sz, amt) => {
+                  const newPot = s.pot + (amt ?? s.callAmount * 2) * 2
+                  return `Pot grows to $${newPot}. Your ${s.equityPct}% equity still applies — you're getting paid if you hit.`
+                },
+                reraise: (_s, _sz, _amt) => `Villain comes back over the top. Reassess your equity vs the new price.`,
+              }
+              if (!raiseSizeChosen) {
+                return (
+                  <div className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3">
+                    <p className="text-[10px] font-bold text-amber-400 uppercase tracking-[0.15em] mb-2.5">
+                      🔺 Villain Reaction — How Much Do You Raise?
+                    </p>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {SIZES.map(({ key, label, amount }) => (
+                        <button
+                          key={key}
+                          onClick={() => handleRaisePick(key)}
+                          className="py-2.5 px-2 rounded-lg bg-white/5 hover:bg-amber-500/15 border border-white/10 hover:border-amber-500/40 text-white/70 hover:text-amber-300 transition-all text-center"
+                        >
+                          <div className="text-xs font-bold leading-tight">{label}</div>
+                          <div className="text-[11px] text-white/40 mt-0.5">
+                            {amount !== null ? `$${amount}` : 'All chips'}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )
+              }
+              if (!villainOutcome) return null
+              const style = OUTCOME_STYLE[villainOutcome]
+              const chosenAmt = SIZES.find(s => s.key === raiseSizeChosen)!
+              return (
+                <div className={`mt-3 rounded-xl border ${style.border} ${style.bg} px-4 py-3`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.15em]">
+                      🔺 Villain Reaction
+                    </p>
+                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border uppercase tracking-wider ${style.badge}`}>
+                      {style.label}
+                    </span>
+                    <span className="text-[10px] text-white/30 ml-auto">
+                      {chosenAmt.label}{chosenAmt.amount !== null ? ` $${chosenAmt.amount}` : ''}
+                    </span>
+                  </div>
+                  <p className="text-sm text-white/80 italic mb-2">
+                    &ldquo;{getVillainResponse(scenario, villainOutcome)}&rdquo;
+                  </p>
+                  <p className="text-xs text-white/40">
+                    {outcomeNote[villainOutcome](scenario, raiseSizeChosen, chosenAmt.amount)}
+                  </p>
+                  <button
+                    onClick={() => { setRaiseSizeChosen(null); setVillainOutcome(null) }}
+                    className="mt-2 text-[11px] text-white/30 hover:text-white/60 transition-colors"
+                  >
+                    Try a different size ↺
+                  </button>
+                </div>
+              )
+            })()}
           </div>
 
           {/* Navigation buttons */}
