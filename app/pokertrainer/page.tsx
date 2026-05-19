@@ -634,7 +634,7 @@ function ExplanationBody({ text, correct }: { text: string | undefined; correct:
   )
 }
 
-async function fetchBatch(batch: 1 | 2): Promise<Scenario[]> {
+async function fetchBatchOnce(batch: 1 | 2): Promise<Scenario[]> {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 12000)
   try {
@@ -649,6 +649,20 @@ async function fetchBatch(batch: 1 | 2): Promise<Scenario[]> {
     return data.scenarios as Scenario[]
   } finally {
     clearTimeout(timeout)
+  }
+}
+
+async function fetchBatch(batch: 1 | 2): Promise<Scenario[]> {
+  try {
+    return await fetchBatchOnce(batch)
+  } catch (firstErr) {
+    // One automatic retry after 2s — handles cold-start timeouts and transient API blips
+    await new Promise(r => setTimeout(r, 2000))
+    try {
+      return await fetchBatchOnce(batch)
+    } catch {
+      throw firstErr
+    }
   }
 }
 

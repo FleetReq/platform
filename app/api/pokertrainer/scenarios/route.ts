@@ -140,34 +140,39 @@ function processScenario(raw: RawScenario, idx: number) {
   }
 }
 
-function validate(s: unknown): s is RawScenario {
-  if (!s || typeof s !== 'object') return false
+function validate(s: unknown, idx?: number): s is RawScenario {
+  const tag = idx !== undefined ? `[scenario ${idx}]` : ''
+  const fail = (reason: string) => { console.warn(`[pokertrainer/scenarios] validation${tag}: ${reason}`); return false }
+
+  if (!s || typeof s !== 'object') return fail('not an object')
   const r = s as Record<string, unknown>
-  if (![1, 2, 3].includes(r.level as number)) return false
-  if (!['Flop', 'Turn'].includes(r.street as string)) return false
-  if (!Array.isArray(r.hand) || r.hand.length !== 2) return false
-  if (!Array.isArray(r.board)) return false
-  if (typeof r.pot !== 'number' || r.pot <= 0) return false
-  if (typeof r.callAmount !== 'number' || r.callAmount <= 0 || r.callAmount >= r.pot) return false
-  if (![1, 2].includes(r.cardsToCome as number)) return false
-  if (typeof r.outs !== 'number' || r.outs < 1 || r.outs > 20) return false
-  if (typeof r.outDesc !== 'string' || !r.outDesc) return false
-  if (typeof r.handDesc !== 'string' || !r.handDesc) return false
+  if (![1, 2, 3].includes(r.level as number)) return fail(`bad level: ${r.level}`)
+  if (!['Flop', 'Turn'].includes(r.street as string)) return fail(`bad street: ${r.street}`)
+  if (!Array.isArray(r.hand) || r.hand.length !== 2) return fail(`bad hand: ${JSON.stringify(r.hand)}`)
+  if (!Array.isArray(r.board)) return fail('board not array')
+  if (typeof r.pot !== 'number' || r.pot <= 0) return fail(`bad pot: ${r.pot}`)
+  if (typeof r.callAmount !== 'number' || r.callAmount <= 0 || r.callAmount >= r.pot) return fail(`bad callAmount: ${r.callAmount}`)
+  if (![1, 2].includes(r.cardsToCome as number)) return fail(`bad cardsToCome: ${r.cardsToCome}`)
+  if (typeof r.outs !== 'number' || r.outs < 1 || r.outs > 20) return fail(`bad outs: ${r.outs}`)
+  if (typeof r.outDesc !== 'string' || !r.outDesc) return fail('missing outDesc')
+  if (typeof r.handDesc !== 'string' || !r.handDesc) return fail('missing handDesc')
 
   // Street ↔ board length ↔ cardsToCome must all agree
-  if (r.street === 'Flop' && ((r.board as string[]).length !== 3 || r.cardsToCome !== 2)) return false
-  if (r.street === 'Turn' && ((r.board as string[]).length !== 4 || r.cardsToCome !== 1)) return false
+  if (r.street === 'Flop' && ((r.board as string[]).length !== 3 || r.cardsToCome !== 2))
+    return fail(`Flop board length ${(r.board as string[]).length} or cardsToCome ${r.cardsToCome}`)
+  if (r.street === 'Turn' && ((r.board as string[]).length !== 4 || r.cardsToCome !== 1))
+    return fail(`Turn board length ${(r.board as string[]).length} or cardsToCome ${r.cardsToCome}`)
 
   // Card format and uniqueness
   const allCards = [...(r.hand as string[]), ...(r.board as string[])]
-  if (!allCards.every(c => typeof c === 'string' && CARD_RE.test(c))) return false
-  if (new Set(allCards).size !== allCards.length) return false
+  const badCard = allCards.find(c => typeof c !== 'string' || !CARD_RE.test(c))
+  if (badCard !== undefined) return fail(`bad card format: ${badCard}`)
+  if (new Set(allCards).size !== allCards.length) return fail(`duplicate cards: ${allCards.join(' ')}`)
 
   // pot/callAmount must give a clean ratio
   const ratio = (r.pot as number) / (r.callAmount as number)
-  if (!CLEAN_RATIOS.some(cr => Math.abs(ratio - cr) < 0.1)) return false
-  // Level 1 (Rookie): 2.5:1 gives 2/7 ≈ 28.6% — not in any quick table, too hard
-  if (r.level === 1 && Math.abs(ratio - 2.5) < 0.1) return false
+  if (!CLEAN_RATIOS.some(cr => Math.abs(ratio - cr) < 0.1)) return fail(`bad ratio: ${ratio.toFixed(2)} (pot ${r.pot} call ${r.callAmount})`)
+  if (r.level === 1 && Math.abs(ratio - 2.5) < 0.1) return fail('level 1 cannot use 2.5:1')
 
   // Villain/table fields are optional — missing or invalid values get defaults in processScenario
 
@@ -272,18 +277,19 @@ export async function GET(request: NextRequest) {
     const cleaned = text.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim()
     raw = JSON.parse(cleaned)
   } catch (err) {
-    console.error(`[pokertrainer/scenarios] batch ${batch} failed:`, err)
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error(`[pokertrainer/scenarios] batch ${batch} generation error: ${msg}`)
     return NextResponse.json({ error: 'Generation failed' }, { status: 503 })
   }
 
   const rawScenarios = (raw as { scenarios?: unknown[] })?.scenarios
   if (!Array.isArray(rawScenarios) || rawScenarios.length !== BATCH_SIZE[batch]) {
+    console.warn(`[pokertrainer/scenarios] batch ${batch} bad shape: got ${Array.isArray(rawScenarios) ? rawScenarios.length : typeof rawScenarios} scenarios`)
     return NextResponse.json({ error: 'Invalid response shape' }, { status: 503 })
   }
 
-  const valid = rawScenarios.every(validate)
+  const valid = rawScenarios.every((s, i) => validate(s, i))
   if (!valid) {
-    console.warn(`[pokertrainer/scenarios] batch ${batch} validation failed`)
     return NextResponse.json({ error: 'Scenario validation failed' }, { status: 503 })
   }
 
