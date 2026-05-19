@@ -4,8 +4,9 @@ import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 const client = new Anthropic()
 
-type Step = 'potOdds' | 'breakeven' | 'outs' | 'equity' | 'decision'
+type Step = 'potOdds' | 'breakeven' | 'outs' | 'equity' | 'playerType' | 'decision'
 type Decision = 'call' | 'fold' | 'raise'
+type PlayerType = 'nit' | 'tag' | 'lag' | 'station' | 'maniac'
 
 interface RawScenario {
   level: 1 | 2 | 3
@@ -18,12 +19,19 @@ interface RawScenario {
   cardsToCome: 1 | 2
   outs: number
   outDesc: string
+  tableSize: number
+  heroPosition: string
+  villainPosition: string
+  otherPlayers: string[]
+  villainName: string
+  villainDescription: string
+  villainPlayerType: PlayerType
 }
 
 const STEPS_BY_LEVEL: Record<1 | 2 | 3, Step[]> = {
   1: ['potOdds', 'breakeven'],
-  2: ['potOdds', 'breakeven', 'outs', 'equity'],
-  3: ['potOdds', 'breakeven', 'outs', 'equity', 'decision'],
+  2: ['potOdds', 'breakeven', 'outs', 'equity', 'playerType'],
+  3: ['potOdds', 'breakeven', 'outs', 'equity', 'playerType', 'decision'],
 }
 
 const LEVEL_NAMES: Record<1 | 2 | 3, string> = {
@@ -34,6 +42,16 @@ const LEVEL_NAMES: Record<1 | 2 | 3, string> = {
 
 const CLEAN_RATIOS = [2, 2.5, 3, 4, 5]
 const CARD_RE = /^[2-9TJQKA][♠♥♦♣]$/
+const VALID_POSITIONS = new Set(['BTN', 'SB', 'BB', 'UTG', 'UTG+1', 'LJ', 'HJ', 'CO'])
+const VALID_PLAYER_TYPES = new Set<PlayerType>(['nit', 'tag', 'lag', 'station', 'maniac'])
+
+const PLAYER_TYPE_EXPLAINS: Record<PlayerType, string> = {
+  nit: 'Nits play very few hands. When they bet big, their range is narrow and strong.',
+  tag: 'TAGs play solid ranges and apply pressure with good hands. Disciplined but bluff occasionally.',
+  lag: 'LAGs play many hands with lots of aggression. Their wide range makes their bets harder to read.',
+  station: 'Calling stations rarely fold. Bluffing is pointless — value bet heavily when you hit.',
+  maniac: 'Maniacs raise and re-raise with nearly anything. Massive implied odds when you hit.',
+}
 
 function computeDecision(level: 1 | 2 | 3, equityPct: number, breakevenPct: number): Decision {
   if (equityPct < breakevenPct) return 'fold'
@@ -66,6 +84,7 @@ function buildExplanations(
     breakeven: `You risk $${raw.callAmount} to win $${total} total ($${raw.pot} + $${raw.callAmount}). ${raw.callAmount} ÷ ${total} ≈ ${breakevenPct}%. You need ${breakevenPct}% equity to break even.`,
     outs: raw.outDesc,
     equity: `${cardsStr} → Rule of ${rule}: ${raw.outs} × ${rule} = ${equityPct}%. Your equity (${equityPct}%) ${compareStr}.${equityPct < breakevenPct ? ' Fold.' : ''}`.trimEnd(),
+    playerType: `${raw.villainName} is a ${raw.villainPlayerType.toUpperCase()}. ${PLAYER_TYPE_EXPLAINS[raw.villainPlayerType]}`,
     decision: decisionText[decision],
   }
 }
@@ -91,6 +110,13 @@ function processScenario(raw: RawScenario, idx: number) {
     cardsToCome: raw.cardsToCome,
     outs: raw.outs,
     outDesc: raw.outDesc,
+    tableSize: raw.tableSize,
+    heroPosition: raw.heroPosition,
+    villainPosition: raw.villainPosition,
+    otherPlayers: raw.otherPlayers,
+    villainName: raw.villainName,
+    villainDescription: raw.villainDescription,
+    villainPlayerType: raw.villainPlayerType,
     potOddsNum,
     potOddsDen: 1,
     breakevenPct,
@@ -105,7 +131,7 @@ function validate(s: unknown): s is RawScenario {
   if (!s || typeof s !== 'object') return false
   const r = s as Record<string, unknown>
   if (![1, 2, 3].includes(r.level as number)) return false
-  if (!['Flop', 'Turn'].includes(r.street as string)) return false  // River unsupported (0 cards to come)
+  if (!['Flop', 'Turn'].includes(r.street as string)) return false
   if (!Array.isArray(r.hand) || r.hand.length !== 2) return false
   if (!Array.isArray(r.board)) return false
   if (typeof r.pot !== 'number' || r.pot <= 0) return false
@@ -128,6 +154,16 @@ function validate(s: unknown): s is RawScenario {
   const ratio = (r.pot as number) / (r.callAmount as number)
   if (!CLEAN_RATIOS.some(cr => Math.abs(ratio - cr) < 0.1)) return false
 
+  // Table context
+  if (typeof r.tableSize !== 'number' || r.tableSize < 2 || r.tableSize > 8 || !Number.isInteger(r.tableSize)) return false
+  if (typeof r.heroPosition !== 'string' || !VALID_POSITIONS.has(r.heroPosition)) return false
+  if (typeof r.villainPosition !== 'string' || !VALID_POSITIONS.has(r.villainPosition)) return false
+  if (r.heroPosition === r.villainPosition) return false
+  if (!Array.isArray(r.otherPlayers)) return false
+  if (typeof r.villainName !== 'string' || !r.villainName) return false
+  if (typeof r.villainDescription !== 'string' || r.villainDescription.length < 10) return false
+  if (!VALID_PLAYER_TYPES.has(r.villainPlayerType as PlayerType)) return false
+
   return true
 }
 
@@ -142,7 +178,13 @@ STRICT RULES:
 6. Flop board has exactly 3 cards, Turn board has exactly 4 cards
 7. outs must be accurate (flush draw = 9, OESD = 8, gutshot = 4, combo draw varies)
 8. outDesc must show the counting step-by-step
-9. Return ONLY raw JSON — no markdown, no code blocks, no explanation`
+9. heroPosition and villainPosition must be different valid positions: BTN SB BB UTG UTG+1 LJ HJ CO
+10. villainPlayerType must be exactly one of: nit tag lag station maniac
+11. Villain description calibration by level:
+    - Level 1: clearly and obviously implies the player type (learning hint for new players)
+    - Level 2: moderately suggestive but not obvious — player can figure it out with thought
+    - Level 3: genuinely ambiguous — multiple types are plausible, any reasonable read is defensible
+12. Return ONLY raw JSON — no markdown, no code blocks, no explanation`
 
 const USER_PROMPT = `Generate exactly 6 Texas Hold'em scenarios.
 
@@ -155,6 +197,7 @@ Variety requirements:
 - Include flush draws, open-ended straight draws, gutshots, and at least one combo draw
 - Mix Flop and Turn scenarios
 - At least 2 scenarios result in fold decisions (equity < breakeven) and at least 2 in call/raise
+- Use a variety of table sizes (4–8 players) and positions
 
 Return this exact structure:
 {
@@ -169,7 +212,14 @@ Return this exact structure:
       "callAmount": 20,
       "cardsToCome": 2,
       "outs": 9,
-      "outDesc": "13 hearts total − 4 visible (A♥ 7♥ K♥ 9♥) = 9 outs remaining"
+      "outDesc": "13 hearts total − 4 visible (A♥ 7♥ K♥ 9♥) = 9 outs remaining",
+      "tableSize": 6,
+      "heroPosition": "CO",
+      "villainPosition": "BTN",
+      "otherPlayers": ["SB", "BB"],
+      "villainName": "Old Timer",
+      "villainDescription": "An older gentleman who has folded almost every hand tonight. He finally raised big preflop for the first time and seems very sure of himself.",
+      "villainPlayerType": "nit"
     }
   ]
 }`
@@ -189,7 +239,7 @@ export async function GET(request: NextRequest) {
   try {
     const response = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 2048,
+      max_tokens: 3000,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: USER_PROMPT }],
     })
