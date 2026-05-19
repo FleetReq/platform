@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 const client = new Anthropic()
 
@@ -31,8 +32,11 @@ const LEVEL_NAMES: Record<1 | 2 | 3, string> = {
   3: 'Shark',
 }
 
+const CLEAN_RATIOS = [2, 2.5, 3, 4, 5]
+const CARD_RE = /^[2-9TJQKA][♠♥♦♣]$/
+
 function computeDecision(level: 1 | 2 | 3, equityPct: number, breakevenPct: number): Decision {
-  if (equityPct < breakevenPct - 1) return 'fold'
+  if (equityPct < breakevenPct) return 'fold'
   if (level === 3 && equityPct > breakevenPct * 1.5 && equityPct >= 35) return 'raise'
   return 'call'
 }
@@ -101,17 +105,29 @@ function validate(s: unknown): s is RawScenario {
   if (!s || typeof s !== 'object') return false
   const r = s as Record<string, unknown>
   if (![1, 2, 3].includes(r.level as number)) return false
-  if (!['Flop', 'Turn', 'River'].includes(r.street as string)) return false
+  if (!['Flop', 'Turn'].includes(r.street as string)) return false  // River unsupported (0 cards to come)
   if (!Array.isArray(r.hand) || r.hand.length !== 2) return false
-  if (!Array.isArray(r.board) || r.board.length < 3 || r.board.length > 5) return false
+  if (!Array.isArray(r.board)) return false
   if (typeof r.pot !== 'number' || r.pot <= 0) return false
   if (typeof r.callAmount !== 'number' || r.callAmount <= 0 || r.callAmount >= r.pot) return false
   if (![1, 2].includes(r.cardsToCome as number)) return false
   if (typeof r.outs !== 'number' || r.outs < 1 || r.outs > 20) return false
   if (typeof r.outDesc !== 'string' || !r.outDesc) return false
   if (typeof r.handDesc !== 'string' || !r.handDesc) return false
+
+  // Street ↔ board length ↔ cardsToCome must all agree
+  if (r.street === 'Flop' && ((r.board as string[]).length !== 3 || r.cardsToCome !== 2)) return false
+  if (r.street === 'Turn' && ((r.board as string[]).length !== 4 || r.cardsToCome !== 1)) return false
+
+  // Card format and uniqueness
   const allCards = [...(r.hand as string[]), ...(r.board as string[])]
+  if (!allCards.every(c => typeof c === 'string' && CARD_RE.test(c))) return false
   if (new Set(allCards).size !== allCards.length) return false
+
+  // pot/callAmount must give a clean ratio
+  const ratio = (r.pot as number) / (r.callAmount as number)
+  if (!CLEAN_RATIOS.some(cr => Math.abs(ratio - cr) < 0.1)) return false
+
   return true
 }
 
@@ -120,15 +136,17 @@ const SYSTEM_PROMPT = `You are a poker scenario generator for a pot odds trainin
 STRICT RULES:
 1. Use Unicode suit symbols only: ♠ ♥ ♦ ♣
 2. No card may appear twice within the same scenario (hand + board combined)
-3. pot ÷ callAmount must equal a clean number: 2, 2.5, 3, 4, or 5
-4. cardsToCome: always 2 for Flop, always 1 for Turn
-5. outs must be accurate for the described draw (flush draw = 9, OESD = 8, gutshot = 4, combo varies)
-6. outDesc must show the counting step-by-step (e.g. "13 spades − 4 visible = 9 remaining")
-7. Return ONLY raw JSON — no markdown, no code blocks, no explanation`
+3. pot ÷ callAmount must equal exactly one of: 2, 2.5, 3, 4, or 5
+4. Only Flop and Turn scenarios (no River — there must always be cards to come)
+5. cardsToCome: always 2 for Flop, always 1 for Turn
+6. Flop board has exactly 3 cards, Turn board has exactly 4 cards
+7. outs must be accurate (flush draw = 9, OESD = 8, gutshot = 4, combo draw varies)
+8. outDesc must show the counting step-by-step
+9. Return ONLY raw JSON — no markdown, no code blocks, no explanation`
 
 const USER_PROMPT = `Generate exactly 6 Texas Hold'em scenarios.
 
-Level assignment (required):
+Level assignment:
 - scenarios[0] and [1]: level 1 (Rookie)
 - scenarios[2] and [3]: level 2 (Regular)
 - scenarios[4] and [5]: level 3 (Shark)
@@ -136,9 +154,9 @@ Level assignment (required):
 Variety requirements:
 - Include flush draws, open-ended straight draws, gutshots, and at least one combo draw
 - Mix Flop and Turn scenarios
-- Ensure at least 2 scenarios result in fold decisions (equity < breakeven) and at least 2 result in call/raise decisions
+- At least 2 scenarios result in fold decisions (equity < breakeven) and at least 2 in call/raise
 
-Return this exact structure (no other fields):
+Return this exact structure:
 {
   "scenarios": [
     {
@@ -156,9 +174,15 @@ Return this exact structure (no other fields):
   ]
 }`
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json({ error: 'API not configured' }, { status: 503 })
+  }
+
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
+  const limited = rateLimit(`pokertrainer:${ip}`, RATE_LIMITS.EXPENSIVE)
+  if (!limited.success) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
   }
 
   let raw: unknown
@@ -171,10 +195,10 @@ export async function GET() {
     })
 
     const text = response.content[0].type === 'text' ? response.content[0].text : ''
-    // Strip markdown code fences if Claude wraps the JSON
     const cleaned = text.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim()
     raw = JSON.parse(cleaned)
-  } catch {
+  } catch (err) {
+    console.error('[pokertrainer/scenarios] generation failed:', err)
     return NextResponse.json({ error: 'Generation failed' }, { status: 503 })
   }
 
@@ -185,6 +209,7 @@ export async function GET() {
 
   const valid = rawScenarios.every(validate)
   if (!valid) {
+    console.warn('[pokertrainer/scenarios] validation failed for one or more scenarios')
     return NextResponse.json({ error: 'Scenario validation failed' }, { status: 503 })
   }
 
