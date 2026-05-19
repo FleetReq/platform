@@ -1040,7 +1040,6 @@ export default function PokerTrainer() {
           {/* Poker Table with cards */}
           <div className="mb-3">
             <PokerTable
-              tableSize={scenario.tableSize}
               heroPosition={scenario.heroPosition}
               villainPosition={scenario.villainPosition}
               villainName={scenario.villainName}
