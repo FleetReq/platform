@@ -1477,7 +1477,7 @@ export default function PokerTrainer() {
                         autoComplete="off"
                         className="flex-1 px-4 py-3 rounded-xl border border-white/15 bg-white/5 text-white text-sm placeholder-white/25 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
-                      {config.inputType === 'number' && <span className="text-sm text-white/30 font-medium" aria-hidden="true">%</span>}
+                      {(currentStep === 'breakeven' || currentStep === 'equity') && <span className="text-sm text-white/30 font-medium" aria-hidden="true">%</span>}
                       <button
                         onClick={handleCheck}
                         disabled={!input.trim()}
