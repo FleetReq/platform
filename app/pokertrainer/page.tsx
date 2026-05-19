@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import { PokerTable } from './PokerTable'
 import { PlayerTypeStep, type PlayerType } from './PlayerTypeStep'
+import { InstallButton } from './InstallButton'
 
 type Step = 'potOdds' | 'breakeven' | 'outs' | 'equity' | 'playerType' | 'decision'
 type Decision = 'call' | 'fold' | 'raise'
@@ -1144,6 +1145,8 @@ export default function PokerTrainer() {
               )
             })}
           </div>
+
+          <InstallButton />
 
           <div
             className="text-right pl-2 border-l border-white/8"
