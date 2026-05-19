@@ -26,10 +26,12 @@ export function InstallButton() {
       return
     }
 
+    // Always show on Android/Chrome — may or may not get native prompt
+    setHidden(false)
+
     const onPrompt = (e: Event) => {
       e.preventDefault()
       setPrompt(e as BeforeInstallPromptEvent)
-      setHidden(false)
     }
     const onInstalled = () => setHidden(true)
 
@@ -41,7 +43,6 @@ export function InstallButton() {
     }
   }, [])
 
-  // Close iOS tip when clicking outside
   useEffect(() => {
     if (!showTip) return
     const onDown = (e: MouseEvent) => {
@@ -54,11 +55,14 @@ export function InstallButton() {
   }, [showTip])
 
   const handleClick = async () => {
-    if (isIOS) { setShowTip(v => !v); return }
-    if (!prompt) return
-    await prompt.prompt()
-    setPrompt(null)
-    setHidden(true)
+    if (prompt) {
+      await prompt.prompt()
+      setPrompt(null)
+      setHidden(true)
+      return
+    }
+    // No native prompt available (iOS, or Android where Chrome already has it installed) — show instructions
+    setShowTip(v => !v)
   }
 
   if (hidden) return null
@@ -81,10 +85,14 @@ export function InstallButton() {
         <div
           ref={tipRef}
           role="tooltip"
-          className="absolute right-0 top-10 z-50 w-52 rounded-xl border border-white/12 bg-[#1a1d2a] shadow-2xl p-3 text-xs text-white/80 leading-relaxed"
+          className="absolute right-0 top-10 z-50 w-56 rounded-xl border border-white/12 bg-[#1a1d2a] shadow-2xl p-3 text-xs text-white/80 leading-relaxed"
         >
           <p className="font-semibold text-white mb-1">Add to Home Screen</p>
-          <p>Tap the <strong className="text-white">Share</strong> icon <span aria-hidden="true" className="text-base leading-none">⎙</span> at the bottom of Safari, then tap <strong className="text-white">Add to Home Screen</strong>.</p>
+          {isIOS ? (
+            <p>Tap the <strong className="text-white">Share</strong> icon <span aria-hidden="true" className="text-base leading-none">⎙</span> at the bottom of Safari, then <strong className="text-white">Add to Home Screen</strong>.</p>
+          ) : (
+            <p>Tap the <strong className="text-white">⋮ menu</strong> in Chrome, then tap <strong className="text-white">Add to Home screen</strong>.</p>
+          )}
           <button
             onClick={() => setShowTip(false)}
             className="mt-2 text-white/40 hover:text-white/70 text-[10px] uppercase tracking-wider"

@@ -785,6 +785,7 @@ export default function PokerTrainer() {
   const [isListening, setIsListening] = useState(false)
   const [aiFailed, setAiFailed] = useState(false)
   const [aiFailReason, setAiFailReason] = useState<string | null>(null)
+  const [aiLoaded, setAiLoaded] = useState(false)
   const [evaluation, setEvaluation] = useState<string | null>(null)
   const [loadingEvaluation, setLoadingEvaluation] = useState(false)
   const [raiseSizeChosen, setRaiseSizeChosen] = useState<RaiseSize | null>(null)
@@ -1040,6 +1041,7 @@ export default function PokerTrainer() {
     setScenarios(shuffleStatic())
     setAiFailed(false)
     setAiFailReason(null)
+    setAiLoaded(false)
     const token = ++fetchToken.current
     fetchBatch(1)
       .then(s => {
@@ -1047,8 +1049,10 @@ export default function PokerTrainer() {
         setScenarios(prev => [...prev, ...s])
         fetchBatch(2)
           .then(s2 => {
-            if (fetchToken.current === token)
-              setScenarios(prev => [...prev, ...s2])
+            if (fetchToken.current !== token) return
+            setScenarios(prev => [...prev, ...s2])
+            setAiLoaded(true)
+            setTimeout(() => setAiLoaded(false), 3000)
           })
           .catch((err: unknown) => {
             if (fetchToken.current !== token) return
@@ -1614,6 +1618,12 @@ export default function PokerTrainer() {
           )}
         </div>
       </div>
+
+      {aiLoaded && (
+        <div className="fixed bottom-0 inset-x-0 z-50 flex items-center justify-center px-4 py-1.5 bg-emerald-950/90 border-t border-emerald-500/30 backdrop-blur-sm pointer-events-none">
+          <span className="text-xs text-emerald-400 font-medium">✓ AI scenarios ready — more variety unlocked</span>
+        </div>
+      )}
 
       {aiFailed && (
         <div className="fixed bottom-0 inset-x-0 z-50 flex items-center justify-between px-4 py-1.5 bg-amber-950/90 border-t border-amber-500/30 backdrop-blur-sm">

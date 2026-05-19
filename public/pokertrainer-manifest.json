@@ -3,6 +3,7 @@
   "short_name": "Poker Trainer",
   "description": "Pot odds, outs, and equity training for poker players",
   "start_url": "/pokertrainer",
+  "scope": "/pokertrainer",
   "display": "standalone",
   "background_color": "#111827",
   "theme_color": "#1e3a5f",
