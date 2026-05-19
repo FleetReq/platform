@@ -32,7 +32,7 @@ interface StepResult {
   given: string
 }
 
-const SCENARIOS: Scenario[] = [
+const STATIC_SCENARIOS: Scenario[] = [
   {
     id: 1,
     level: 1,
@@ -327,7 +327,17 @@ function ExplanationBody({ text, correct }: { text: string | undefined; correct:
   )
 }
 
+async function fetchScenarios(): Promise<Scenario[]> {
+  const res = await fetch('/api/pokertrainer/scenarios')
+  if (!res.ok) throw new Error('fetch failed')
+  const data = await res.json()
+  if (!Array.isArray(data.scenarios) || data.scenarios.length !== 6) throw new Error('bad shape')
+  return data.scenarios as Scenario[]
+}
+
 export default function PokerTrainer() {
+  const [scenarios, setScenarios] = useState<Scenario[]>(STATIC_SCENARIOS)
+  const [loadingScenarios, setLoadingScenarios] = useState(true)
   const [sIdx, setSIdx] = useState(0)
   const [stepIdx, setStepIdx] = useState(0)
   const [results, setResults] = useState<(StepResult | undefined)[]>([])
@@ -339,7 +349,14 @@ export default function PokerTrainer() {
   const activeRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const scenario = SCENARIOS[sIdx]
+  useEffect(() => {
+    fetchScenarios()
+      .then(s => setScenarios(s))
+      .catch(() => {/* silently use static fallback */})
+      .finally(() => setLoadingScenarios(false))
+  }, [])
+
+  const scenario = scenarios[sIdx]
   const steps = scenario.steps
   const currentStep = steps[stepIdx]
   const currentResult = results[stepIdx]
@@ -386,7 +403,7 @@ export default function PokerTrainer() {
   }
 
   function nextScenario() {
-    if (sIdx + 1 >= SCENARIOS.length) {
+    if (sIdx + 1 >= scenarios.length) {
       setDone(true)
     } else {
       setSIdx(i => i + 1)
@@ -407,6 +424,23 @@ export default function PokerTrainer() {
     setSelected('')
     setScore({ correct: 0, total: 0 })
     setDone(false)
+    setLoadingScenarios(true)
+    fetchScenarios()
+      .then(s => setScenarios(s))
+      .catch(() => setScenarios(STATIC_SCENARIOS))
+      .finally(() => setLoadingScenarios(false))
+  }
+
+  if (loadingScenarios) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <div className="text-5xl mb-4">🃏</div>
+          <p className="text-lg font-semibold text-gray-800 dark:text-gray-100">Shuffling the deck...</p>
+          <p className="text-sm text-gray-400 mt-1">Generating fresh scenarios</p>
+        </div>
+      </div>
+    )
   }
 
   if (done) {
@@ -454,7 +488,7 @@ export default function PokerTrainer() {
 
         {/* Progress pips */}
         <div className="flex gap-1.5 items-center">
-          {SCENARIOS.map((s, i) => (
+          {scenarios.map((s, i) => (
             <div key={s.id} className={`rounded-full transition-all ${
               i < sIdx
                 ? 'w-2.5 h-2.5 bg-green-500'
@@ -482,7 +516,7 @@ export default function PokerTrainer() {
             <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${LEVEL_COLORS[scenario.level]}`}>
               {scenario.levelName}
             </span>
-            <span className="text-xs text-gray-400">Scenario {sIdx + 1}/{SCENARIOS.length}</span>
+            <span className="text-xs text-gray-400">Scenario {sIdx + 1}/{scenarios.length}</span>
             <span className="text-xs text-gray-400">· {scenario.street}</span>
           </div>
 
@@ -679,7 +713,7 @@ export default function PokerTrainer() {
           )}
           {scenarioDone && (
             <button onClick={nextScenario} className="mt-4 w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition-colors">
-              {sIdx + 1 >= SCENARIOS.length ? 'See Results 🏆' : 'Next Scenario →'}
+              {sIdx + 1 >= scenarios.length ? 'See Results 🏆' : 'Next Scenario →'}
             </button>
           )}
         </div>
