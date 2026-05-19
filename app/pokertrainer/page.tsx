@@ -492,33 +492,9 @@ export default function PokerTrainer() {
     )
   }
 
-  return (
-    <div className="min-h-screen p-4 sm:p-6 max-w-2xl mx-auto pb-16">
-
-      {/* Header */}
-      <div className="flex items-center justify-between mb-5">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight">🃏 Poker Trainer</h1>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Pot odds · Outs · Equity decisions</p>
-        </div>
-        <div className="text-right">
-          <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{score.correct}/{score.total}</div>
-          <div className="text-xs text-gray-400">correct</div>
-        </div>
-      </div>
-
-      {/* Scenario progress */}
-      <div className="flex gap-1 mb-5">
-        {SCENARIOS.map((s, i) => (
-          <div
-            key={s.id}
-            className={`h-1.5 flex-1 rounded-full transition-colors ${
-              i < sIdx ? 'bg-green-500' : i === sIdx ? 'bg-blue-500' : 'bg-gray-200 dark:bg-gray-700'
-            }`}
-          />
-        ))}
-      </div>
-
+  /* ── shared sub-sections ─────────────────────────────────────── */
+  const scenarioPanel = (
+    <>
       {/* Level + scenario label */}
       <div className="flex items-center gap-2 mb-4">
         <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${LEVEL_COLORS[scenario.level]}`}>
@@ -546,27 +522,31 @@ export default function PokerTrainer() {
           {scenario.handDesc}
         </div>
         <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg py-2">
+          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg py-3">
             <div className="text-xs text-gray-400 mb-0.5">Pot</div>
-            <div className="font-bold text-green-600 dark:text-green-400">${scenario.pot}</div>
+            <div className="font-bold text-lg text-green-600 dark:text-green-400">${scenario.pot}</div>
           </div>
-          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg py-2">
+          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg py-3">
             <div className="text-xs text-gray-400 mb-0.5">To Call</div>
-            <div className="font-bold text-orange-600 dark:text-orange-400">${scenario.callAmount}</div>
+            <div className="font-bold text-lg text-orange-600 dark:text-orange-400">${scenario.callAmount}</div>
           </div>
-          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg py-2">
+          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg py-3">
             <div className="text-xs text-gray-400 mb-0.5">Cards Left</div>
-            <div className="font-bold">{scenario.cardsTocome}</div>
+            <div className="font-bold text-lg">{scenario.cardsTocome}</div>
           </div>
         </div>
       </div>
 
       {/* Rule of 2/4 reference */}
-      <div className="text-xs text-gray-400 dark:text-gray-500 mb-4 flex gap-4">
-        <span>💡 Rule of 4: outs × 4 (2 cards to come)</span>
-        <span>Rule of 2: outs × 2 (1 card to come)</span>
+      <div className="text-xs text-gray-400 dark:text-gray-500 space-y-0.5">
+        <p>💡 <strong>Rule of 4:</strong> outs × 4 when 2 cards to come</p>
+        <p>💡 <strong>Rule of 2:</strong> outs × 2 when 1 card to come</p>
       </div>
+    </>
+  )
 
+  const stepsPanel = (
+    <>
       {/* Completed steps */}
       <div className="space-y-2 mb-3">
         {steps.slice(0, stepIdx).map((step, i) => {
@@ -610,16 +590,12 @@ export default function PokerTrainer() {
             }`}>
               {isChecked ? (currentResult!.correct ? '✓' : '✗') : stepIdx + 1}
             </span>
-            <span className="font-semibold text-sm">
-              Step {stepIdx + 1}: {config.label}
-            </span>
+            <span className="font-semibold text-sm">Step {stepIdx + 1}: {config.label}</span>
           </div>
 
           {isChecked ? (
             <div className={`rounded-lg px-3 py-2.5 text-sm ${
-              currentResult!.correct
-                ? 'bg-green-50 dark:bg-green-900/20'
-                : 'bg-red-50 dark:bg-red-900/20'
+              currentResult!.correct ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'
             }`}>
               {!currentResult!.correct && (
                 <p className="font-semibold text-red-700 dark:text-red-400 mb-1 text-xs">
@@ -634,9 +610,7 @@ export default function PokerTrainer() {
                 </div>
               ) : (
                 <p className={`text-sm leading-relaxed ${
-                  currentResult!.correct
-                    ? 'text-green-800 dark:text-green-300'
-                    : 'text-red-800 dark:text-red-300'
+                  currentResult!.correct ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'
                 }`}>
                   {currentExplanation ?? scenario.explanations[currentStep]}
                 </p>
@@ -666,10 +640,8 @@ export default function PokerTrainer() {
                         onClick={() => setSelected(d)}
                         className={`flex-1 py-2.5 rounded-lg font-semibold text-sm capitalize transition-all ${
                           selected === d
-                            ? d === 'call'
-                              ? 'bg-green-600 text-white shadow'
-                              : d === 'fold'
-                              ? 'bg-red-600 text-white shadow'
+                            ? d === 'call' ? 'bg-green-600 text-white shadow'
+                              : d === 'fold' ? 'bg-red-600 text-white shadow'
                               : 'bg-purple-600 text-white shadow'
                             : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                         }`}
@@ -699,9 +671,7 @@ export default function PokerTrainer() {
                     autoFocus
                     className="flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
-                  {config.inputType === 'number' && (
-                    <span className="text-sm text-gray-400">%</span>
-                  )}
+                  {config.inputType === 'number' && <span className="text-sm text-gray-400">%</span>}
                   <button
                     onClick={handleCheck}
                     disabled={!input.trim()}
@@ -718,21 +688,52 @@ export default function PokerTrainer() {
 
       {/* Next buttons */}
       {isChecked && !scenarioDone && (
-        <button
-          onClick={nextStep}
-          className="mt-3 w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-colors"
-        >
+        <button onClick={nextStep} className="mt-3 w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-colors">
           Next Step →
         </button>
       )}
       {scenarioDone && (
-        <button
-          onClick={nextScenario}
-          className="mt-3 w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold text-sm transition-colors"
-        >
+        <button onClick={nextScenario} className="mt-3 w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold text-sm transition-colors">
           {sIdx + 1 >= SCENARIOS.length ? 'See Results 🏆' : 'Next Scenario →'}
         </button>
       )}
+    </>
+  )
+
+  return (
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+      {/* Top bar */}
+      <div className="flex items-center justify-between px-4 sm:px-8 py-4 border-b border-gray-200/60 dark:border-gray-700/40">
+        <div>
+          <h1 className="text-lg sm:text-2xl font-bold tracking-tight">🃏 Poker Trainer</h1>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Pot odds · Outs · Equity decisions</p>
+        </div>
+        <div className="text-right">
+          <div className="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400">{score.correct}/{score.total}</div>
+          <div className="text-xs text-gray-400">correct</div>
+        </div>
+      </div>
+
+      {/* Scenario progress bar */}
+      <div className="flex gap-1 px-4 sm:px-8 py-2">
+        {SCENARIOS.map((s, i) => (
+          <div key={s.id} className={`h-1.5 flex-1 rounded-full transition-colors ${
+            i < sIdx ? 'bg-green-500' : i === sIdx ? 'bg-blue-500' : 'bg-gray-200 dark:bg-gray-700'
+          }`} />
+        ))}
+      </div>
+
+      {/* Main content — 2 columns on lg+, stacked on mobile */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 p-4 sm:p-8 max-w-6xl w-full mx-auto">
+        {/* Left: scenario */}
+        <div className="lg:sticky lg:top-6 lg:self-start">
+          {scenarioPanel}
+        </div>
+        {/* Right: steps */}
+        <div>
+          {stepsPanel}
+        </div>
+      </div>
     </div>
   )
 }
