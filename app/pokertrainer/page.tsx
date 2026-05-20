@@ -1199,22 +1199,22 @@ export default function PokerTrainer() {
             </span>
             <span className="text-xs text-white/40">Scenario {sIdx + 1}/{pipScenarios.length}</span>
             <span className="text-xs text-white/40">· {scenario.street}</span>
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-white/8 text-white/50">
-              ×{scenario.cardsToCome === 2 ? '4' : '2'} rule
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30">
+              ×<strong>{scenario.cardsToCome === 2 ? '4' : '2'}</strong> rule
             </span>
           </div>
 
-          {/* Hand description */}
-          <div className="bg-[#13151f] border border-white/8 border-l-4 border-l-blue-400 rounded-xl px-4 py-3 text-sm text-white/70 mb-3 leading-snug">
+          {/* Hand description — hero card, primary info */}
+          <div className="bg-[#0f1729] border border-blue-500/25 border-l-4 border-l-blue-400 rounded-xl px-4 py-3 text-sm text-white/85 mb-3 leading-snug">
             {scenario.handDesc}
           </div>
 
-          {/* Quick Reference */}
-          <div className="rounded-xl bg-[#13151f] border border-white/8 border-l-4 border-l-teal-400 px-4 py-3 space-y-1 mb-3">
-            <p className="text-[10px] font-bold text-teal-400 uppercase tracking-[0.15em] mb-1">Quick Reference</p>
-            <p className="text-xs text-white/60">Rule of 4 — outs × 4 when <strong className="text-white/90">2 cards</strong> to come (Flop)</p>
-            <p className="text-xs text-white/60">Rule of 2 — outs × 2 when <strong className="text-white/90">1 card</strong> to come (Turn)</p>
-            <p className="text-xs text-white/40 pt-1 border-t border-white/8 mt-1">Breakeven: 2:1 → 33% · 3:1 → 25% · 4:1 → 20% · 5:1 → 17%</p>
+          {/* Quick Reference — tertiary, recedes visually */}
+          <div className="rounded-xl bg-transparent border border-white/6 border-l-4 border-l-teal-400/40 px-4 py-3 space-y-1 mb-3">
+            <p className="text-[10px] font-bold text-teal-400/50 uppercase tracking-[0.15em] mb-1">Quick Reference</p>
+            <p className="text-xs text-white/40">Rule of 4 — outs × 4 when <strong className="text-white/55">2 cards</strong> to come (Flop)</p>
+            <p className="text-xs text-white/40">Rule of 2 — outs × 2 when <strong className="text-white/55">1 card</strong> to come (Turn)</p>
+            <p className="text-xs text-white/30 pt-1 border-t border-white/6 mt-1">Breakeven: 2:1 → 33% · 3:1 → 25% · 4:1 → 20% · 5:1 → 17%</p>
           </div>
 
           {/* Villain Profile */}
@@ -1283,7 +1283,7 @@ export default function PokerTrainer() {
                       <span className={`text-xs font-semibold ${!r.correct ? 'text-red-400' : borderline ? 'text-amber-400' : 'text-emerald-400'}`}>
                         {STEP_CONFIG[step].label}
                       </span>
-                      <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-full ${CATEGORY_STYLE[STEP_CONFIG[step].category]}`}>
+                      <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-full ${CATEGORY_STYLE[STEP_CONFIG[step].category]}`}>
                         {STEP_CONFIG[step].category}
                       </span>
                       {!r.correct && (
@@ -1329,7 +1329,7 @@ export default function PokerTrainer() {
                   <p className="text-[10px] text-white/30 leading-none mb-0.5 uppercase tracking-wider">Step {stepIdx + 1} of {steps.length}</p>
                   <div className="flex items-center gap-2">
                     <p className="font-bold text-sm leading-tight text-white">{config.label}</p>
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${CATEGORY_STYLE[config.category]}`}>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${CATEGORY_STYLE[config.category]}`}>
                       {config.category}
                     </span>
                   </div>
@@ -1358,8 +1358,8 @@ export default function PokerTrainer() {
                   {(() => {
                     const guide = getStepGuide(currentStep, scenario, results)
                     return guide ? (
-                      <div className="bg-black/30 rounded-lg px-4 py-3 mb-4 border border-white/8">
-                        <p className="text-[10px] text-white/30 font-bold uppercase tracking-[0.15em] mb-1">{guide.formula}</p>
+                      <div className="bg-[#0a0c10] rounded-lg px-4 py-3 mb-4 border border-white/15">
+                        <p className="text-[11px] text-white/45 font-bold uppercase tracking-[0.15em] mb-1">{guide.formula}</p>
                         <p className="text-base font-mono font-bold text-white">{guide.worked}</p>
                         {guide.tip && (
                           <p className="text-xs text-white/40 mt-1.5 pt-1.5 border-t border-white/8">{guide.tip}</p>
@@ -1418,7 +1418,7 @@ export default function PokerTrainer() {
                                 : 'bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/80 border border-white/10'
                             }`}
                           >
-                            <span aria-hidden="true">{d === 'call' ? '📞 ' : d === 'fold' ? '🗑️ ' : '⬆️ '}</span>
+                            <span aria-hidden="true" className="mr-1 font-mono">{d === 'call' ? '↵' : d === 'fold' ? '✕' : '↑'}</span>
                             {d === 'call' ? 'Call' : d === 'fold' ? 'Fold' : 'Raise'}
                           </button>
                         ))}
