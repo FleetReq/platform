@@ -1026,27 +1026,54 @@ export default function PokerTrainer() {
 
   if (done) {
     const pct = score.total > 0 ? Math.round((score.correct / score.total) * 100) : 0
+    const nextLevel = filterLevel < 3 ? (filterLevel + 1) as 2 | 3 : null
+    const LEVEL_NAMES_DONE: Record<2 | 3, string> = { 2: 'Regular', 3: 'Shark' }
+    const readyForNext = pct >= 60
     return (
       <div className="min-h-screen flex items-center justify-center p-6 bg-[#0c0e14]">
         <div className="bg-[#13151f] border border-white/8 rounded-2xl shadow-2xl max-w-sm w-full text-center p-8">
           <div className="text-5xl mb-4">🃏</div>
-          <h1 className="text-2xl font-bold mb-1 text-white">Session Complete</h1>
-          <p className="text-white/40 text-sm mb-6">
+          <h1 className="text-2xl font-bold mb-1 text-white">
+            {filterLevel === 1 ? 'Rookie' : filterLevel === 2 ? 'Regular' : 'Shark'} Complete
+          </h1>
+          <p className="text-white/40 text-sm mb-4">
             {score.correct} / {score.total} steps correct ({pct}%)
           </p>
           <div className={`text-3xl font-bold mb-2 ${pct >= 80 ? 'text-emerald-400' : pct >= 60 ? 'text-amber-400' : 'text-red-400'}`}>
-            {pct >= 80 ? '🏆 Shark' : pct >= 60 ? '📈 Improving' : '📚 Keep Studying'}
+            {pct >= 80 ? '🏆 Sharp' : pct >= 60 ? '📈 Improving' : '📚 Keep Studying'}
           </div>
           <p className="text-sm text-white/40 mb-8">
             {pct >= 80
-              ? 'You make +EV decisions. Table image: dangerous.'
+              ? 'Clean math, good reads. You\'re ready for the next level.'
               : pct >= 60
-              ? 'Solid foundation. Work on the tricky spots.'
-              : 'Review the Rule of 2/4 and pot odds math.'}
+              ? 'Solid foundation. A few more reps and you\'ll have it locked.'
+              : 'Review the Rule of 2/4 and pot odds math before moving on.'}
           </p>
-          <button onClick={restart} className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
-            Play Again
-          </button>
+          <div className="flex flex-col gap-3">
+            {nextLevel && readyForNext && (
+              <button
+                onClick={() => changeFilter(nextLevel)}
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+              >
+                Next Level: {LEVEL_NAMES_DONE[nextLevel]} →
+              </button>
+            )}
+            {nextLevel && !readyForNext && (
+              <p className="text-xs text-amber-400/80 -mb-1">Score 60%+ to unlock {LEVEL_NAMES_DONE[nextLevel]}</p>
+            )}
+            <button
+              onClick={nextLevel ? () => changeFilter(filterLevel) : restart}
+              className={`w-full py-2.5 rounded-lg font-semibold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 ${
+                nextLevel && readyForNext
+                  ? 'bg-white/8 hover:bg-white/12 text-white/60 hover:text-white/80'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+              }`}
+            >
+              {nextLevel
+                ? `Replay ${filterLevel === 1 ? 'Rookie' : 'Regular'}`
+                : 'Play Again'}
+            </button>
+          </div>
         </div>
       </div>
     )
