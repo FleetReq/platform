@@ -742,7 +742,7 @@ function ThinkingDots() {
     const id = setInterval(() => setDots(d => (d % 3) + 1), 400)
     return () => clearInterval(id)
   }, [])
-  return <span>Thinking{'.'.repeat(dots)}</span>
+  return <span>Reading the hand{'.'.repeat(dots)}</span>
 }
 
 // Fetch a single AI scenario — server handles internal retry until valid
@@ -1139,7 +1139,7 @@ export default function PokerTrainer() {
                   key={s.id}
                   role="listitem"
                   aria-label={`Scenario ${i + 1}: ${status}`}
-                  className={`rounded-full transition-all ${pipClass}`}
+                  className={`rounded-full transition-all duration-300 ${pipClass}`}
                 />
               )
             })}
@@ -1171,13 +1171,15 @@ export default function PokerTrainer() {
           {/* Install + Score */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <InstallButton />
-            <div
-              className="text-right pl-2 border-l border-white/8"
-              aria-label={`Score: ${score.correct} of ${score.total} steps correct`}
-            >
-              <div className="text-base font-bold text-blue-400 tabular-nums">{score.correct}/{score.total}</div>
-              <div className="text-xs font-bold uppercase tracking-wider text-white/50 leading-none" aria-hidden="true">steps</div>
-            </div>
+            {score.total > 0 && (
+              <div
+                className="text-right pl-2 border-l border-white/8"
+                aria-label={`Score: ${score.correct} of ${score.total} steps correct`}
+              >
+                <div className="text-base font-bold text-blue-400 tabular-nums">{Math.round((score.correct / score.total) * 100)}%</div>
+                <div className="text-xs font-bold uppercase tracking-wider text-white/50 leading-none" aria-hidden="true">{score.correct}/{score.total}</div>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -1222,59 +1224,46 @@ export default function PokerTrainer() {
             <p className="text-sm text-white font-semibold leading-snug">{scenario.handDesc}</p>
           </div>
 
-          {/* Villain profile — plain typography */}
-          <div className="mb-3">
+          {/* Villain profile — dossier style */}
+          <div className="mb-3 border-l-2 border-amber-500/60 pl-3">
             <div className="flex items-center gap-2 mb-1">
-              <p className="text-xs font-bold text-amber-400/70 uppercase tracking-widest">{scenario.villainName}</p>
+              <p className="text-xs font-bold text-amber-300 uppercase tracking-widest">{scenario.villainName}</p>
               {villainBadge && (
                 <span className={`text-xs font-black px-2 py-0.5 rounded-full uppercase tracking-wider ${villainBadge.style}`}>
                   {villainBadge.label}
                 </span>
               )}
             </div>
-            <p className="text-sm text-white/65 leading-snug">{scenario.villainDescription}</p>
+            <p className="text-sm text-white/80 leading-snug">{scenario.villainDescription}</p>
           </div>
 
 
         </div>
 
-        {/* BOTTOM / RIGHT — steps (bottom sheet on mobile) */}
-        <div className="flex-1 overflow-y-auto p-5 sm:p-6 bg-[#171a27] lg:bg-[#0c0e14] rounded-t-2xl lg:rounded-none shadow-[0_-16px_48px_rgba(0,0,0,0.5)] lg:shadow-none border-t border-white/10 lg:border-t-0" style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}>
+        {/* BOTTOM / RIGHT — steps (bottom sheet on mobile, felt texture) */}
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6 felt-panel lg:bg-[#0c0e14] rounded-t-2xl lg:rounded-none shadow-[0_-16px_48px_rgba(0,0,0,0.5)] lg:shadow-none border-t border-white/10 lg:border-t-0" style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}>
 
-          {/* Completed steps */}
+          {/* Completed steps — compact timeline */}
           {stepIdx > 0 && (
-            <div className="space-y-2 mb-4">
+            <div className="border-l-2 border-white/10 pl-3 mb-5 space-y-2">
               {steps.slice(0, stepIdx).map((step, i) => {
                 const r = results[i]
                 if (!r) return null
                 const borderline = step === 'decision' && r.correct && isRaiseBorderline(scenario)
+                const dotColor = !r.correct ? 'bg-red-500' : borderline ? 'bg-amber-500' : 'bg-emerald-500'
+                const labelColor = !r.correct ? 'text-red-400' : borderline ? 'text-amber-400' : 'text-emerald-400'
                 return (
-                  <div key={step} className={`rounded-xl border px-4 py-3 ${
-                    !r.correct
-                      ? 'border-red-500/30 bg-red-500/10'
-                      : borderline
-                        ? 'border-amber-500/30 bg-amber-500/10'
-                        : 'border-emerald-500/30 bg-emerald-500/10'
-                  }`}>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className={`w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 ${!r.correct ? 'bg-red-500' : borderline ? 'bg-amber-500' : 'bg-emerald-500'}`}>
-                        {r.correct ? '✓' : '✗'}
-                      </span>
-                      <span className={`text-xs font-semibold ${!r.correct ? 'text-red-400' : borderline ? 'text-amber-400' : 'text-emerald-400'}`}>
-                        {STEP_CONFIG[step].label}
-                      </span>
-                      <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-full ${CATEGORY_STYLE[STEP_CONFIG[step].category]}`}>
-                        {STEP_CONFIG[step].category}
-                      </span>
-                      {!r.correct && (
-                        <span className="text-xs text-white/50 ml-auto">
-                          was <strong className="text-white/75">{expectedAnswer(step, scenario)}</strong>
-                        </span>
-                      )}
+                  <div key={step} className="step-enter relative flex items-start gap-2.5 py-1">
+                    <span className={`w-3.5 h-3.5 rounded-full flex-shrink-0 mt-0.5 -ml-[1.1rem] border-2 border-[#171a27] ${dotColor}`} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className={`text-xs font-bold ${labelColor}`}>{STEP_CONFIG[step].label}</span>
+                        {!r.correct && (
+                          <span className="text-xs text-white/50">· was <strong className="text-white/75">{expectedAnswer(step, scenario)}</strong></span>
+                        )}
+                      </div>
+                      <p className="text-xs text-white/55 leading-relaxed mt-0.5">{explanations[i] || scenario.explanations[step]}</p>
                     </div>
-                    <p className="text-xs text-white/65 leading-relaxed pl-6">
-                      {explanations[i] || scenario.explanations[step]}
-                    </p>
                   </div>
                 )
               })}
@@ -1332,17 +1321,17 @@ export default function PokerTrainer() {
                 </div>
               ) : (
                 <div>
-                  <p className="text-sm text-white/60 mb-3">{getPrompt(currentStep, scenario, results)}</p>
+                  <p className="text-sm text-white/80 mb-3">{getPrompt(currentStep, scenario, results)}</p>
 
                   {/* Formula guide */}
                   {(() => {
                     const guide = getStepGuide(currentStep, scenario, results)
                     return guide ? (
-                      <div className="bg-[#0a0c10] rounded-lg px-4 py-3 mb-4 border border-white/15">
-                        <p className="text-xs text-teal-400 font-bold uppercase tracking-[0.15em] mb-1.5">{guide.formula}</p>
+                      <div className="rounded-lg px-4 py-3 mb-4 border-l-2 border-teal-500 bg-teal-500/5 shadow-[inset_0_0_20px_rgba(20,184,166,0.06)] border border-teal-500/20">
+                        <p className="text-xs text-teal-300 font-black uppercase tracking-[0.15em] mb-1.5">{guide.formula}</p>
                         <p className="text-xl font-mono font-bold text-white tabular-nums">{guide.worked}</p>
                         {guide.tip && (
-                          <p className="text-xs text-white/40 mt-1.5 pt-1.5 border-t border-white/8">{guide.tip}</p>
+                          <p className="text-xs text-white/50 mt-1.5 pt-1.5 border-t border-teal-500/15">{guide.tip}</p>
                         )}
                       </div>
                     ) : null
@@ -1358,7 +1347,7 @@ export default function PokerTrainer() {
                       <button
                         onClick={handleCheck}
                         disabled={!selected}
-                        className="mt-3 w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-bold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#13151f]"
+                        className="mt-3 w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-bold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1e2238]"
                       >
                         Confirm Read
                       </button>
@@ -1390,16 +1379,22 @@ export default function PokerTrainer() {
                             aria-checked={selected === d}
                             tabIndex={selected === d || (!selected && d === 'call') ? 0 : -1}
                             onClick={() => setSelected(d)}
-                            className={`py-3 rounded-xl font-bold text-sm capitalize transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-1 focus-visible:ring-offset-[#13151f] ${
+                            className={`h-16 rounded-2xl font-black text-base capitalize transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-1 focus-visible:ring-offset-[#1e2238] flex flex-col items-center justify-center gap-0.5 ${
                               selected === d
-                                ? d === 'call' ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
-                                  : d === 'fold' ? 'bg-red-500 text-white shadow-lg shadow-red-500/30'
-                                  : 'bg-purple-500 text-white shadow-lg shadow-purple-500/30'
-                                : 'bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/80 border border-white/10'
+                                ? d === 'call'
+                                  ? 'bg-emerald-500 text-white shadow-xl shadow-emerald-500/40 ring-2 ring-emerald-400/40 scale-[1.03]'
+                                  : d === 'fold'
+                                    ? 'bg-red-500/30 border border-red-500/60 text-red-300 shadow-lg shadow-red-500/20 scale-[1.03]'
+                                    : 'bg-purple-500/30 border border-purple-500/60 text-purple-300 shadow-lg shadow-purple-500/20 scale-[1.03]'
+                                : d === 'call'
+                                  ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/50'
+                                  : d === 'fold'
+                                    ? 'bg-red-500/5 border border-red-500/20 text-red-400/70 hover:bg-red-500/15 hover:text-red-300'
+                                    : 'bg-purple-500/5 border border-purple-500/20 text-purple-400/70 hover:bg-purple-500/15 hover:text-purple-300'
                             }`}
                           >
-                            <span aria-hidden="true" className="mr-1 font-mono">{d === 'call' ? '↵' : d === 'fold' ? '✕' : '↑'}</span>
-                            {d === 'call' ? 'Call' : d === 'fold' ? 'Fold' : 'Raise'}
+                            <span className="leading-none">{d === 'call' ? 'Call' : d === 'fold' ? 'Fold' : 'Raise'}</span>
+                            {d === 'call' && <span className="text-xs font-bold opacity-70">${scenario.callAmount}</span>}
                           </button>
                         ))}
                       </div>
