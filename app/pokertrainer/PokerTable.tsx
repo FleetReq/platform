@@ -164,7 +164,7 @@ export function PokerTable({ heroPosition, villainPosition, villainName, activeP
 
       {/* Pot — chip stack left of board */}
       <text x={CX - 74} y={CY - 10} textAnchor="middle" fontSize="13" fontWeight="900"
-        fill="#34d399" letterSpacing="-0.5">${pot}</text>
+        fill="#34d399" letterSpacing="-0.5">{pot}</text>
       <ellipse cx={CX - 74} cy={CY + 5} rx={14} ry={4.5} fill="rgba(4,120,87,0.35)" />
       <ellipse cx={CX - 74} cy={CY + 2.5} rx={14} ry={4.5} fill="rgba(4,120,87,0.55)" />
       <ellipse cx={CX - 74} cy={CY} rx={14} ry={4.5} fill="#065f46" stroke="rgba(52,211,153,0.4)" strokeWidth="0.8" />
@@ -173,7 +173,7 @@ export function PokerTable({ heroPosition, villainPosition, villainName, activeP
 
       {/* To Call — chip stack right of board */}
       <text x={CX + 74} y={CY - 10} textAnchor="middle" fontSize="13" fontWeight="900"
-        fill="#fb923c" letterSpacing="-0.5">${callAmount}</text>
+        fill="#fb923c" letterSpacing="-0.5">{callAmount}</text>
       <ellipse cx={CX + 74} cy={CY + 5} rx={12} ry={4.5} fill="rgba(194,65,12,0.35)" />
       <ellipse cx={CX + 74} cy={CY + 2.5} rx={12} ry={4.5} fill="rgba(194,65,12,0.55)" />
       <ellipse cx={CX + 74} cy={CY} rx={12} ry={4.5} fill="#9a3412" stroke="rgba(251,146,60,0.4)" strokeWidth="0.8" />
