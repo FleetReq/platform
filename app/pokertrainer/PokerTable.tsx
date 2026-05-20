@@ -237,7 +237,7 @@ export function PokerTable({ heroPosition, villainPosition, villainName, activeP
               </g>
             )}
             {isFeatured && (
-              <text x={lx} y={ly} textAnchor="middle" fontSize="8.5" fontWeight="700"
+              <text x={lx} y={ly} textAnchor="middle" fontSize="10" fontWeight="700"
                 fill={isHero ? '#93c5fd' : '#fde68a'} letterSpacing="0.5">
                 {isHero ? 'YOU' : villainName}
               </text>

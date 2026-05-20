@@ -79,7 +79,7 @@ export function PlayerTypeStep({ selected, onSelect, disabled }: PlayerTypeStepP
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+      <div className="grid grid-cols-5 gap-1.5">
         {PLAYER_TYPES.map(type => (
           <button
             key={type.value}
@@ -92,7 +92,7 @@ export function PlayerTypeStep({ selected, onSelect, disabled }: PlayerTypeStepP
             disabled={disabled}
             aria-pressed={selected === type.value}
             aria-label={`${type.label}: ${type.short}`}
-            className={`flex flex-col items-center gap-1 py-3 px-1 rounded-xl text-xs font-semibold transition-all border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-1 focus-visible:ring-offset-[#13151f] ${
+            className={`flex flex-col items-center gap-1 py-3 px-0.5 rounded-xl text-xs font-semibold transition-all border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-1 focus-visible:ring-offset-[#1e2238] ${
               disabled ? 'cursor-default opacity-80' : 'cursor-pointer'
             } ${
               selected === type.value

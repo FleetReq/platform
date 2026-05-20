@@ -1176,17 +1176,17 @@ export default function PokerTrainer() {
               aria-label={`Score: ${score.correct} of ${score.total} steps correct`}
             >
               <div className="text-base font-bold text-blue-400 tabular-nums">{score.correct}/{score.total}</div>
-              <div className="text-xs font-bold uppercase tracking-wider text-white/30 leading-none" aria-hidden="true">steps</div>
+              <div className="text-xs font-bold uppercase tracking-wider text-white/50 leading-none" aria-hidden="true">steps</div>
             </div>
           </div>
         </div>
       </header>
 
-      {/* ── Body: 2-col on lg, stacked on mobile ────────────────── */}
-      <div id="main-tabpanel" role="tabpanel" aria-labelledby={`tab-${filterLevel}`} className="flex-1 overflow-hidden flex flex-col lg:flex-row bg-[#0c0e14]">
+      {/* ── Body: 2-col on lg, table-top + bottom-sheet on mobile ── */}
+      <div id="main-tabpanel" role="tabpanel" aria-labelledby={`tab-${filterLevel}`} className="flex-1 overflow-hidden flex flex-col lg:flex-row">
 
-        {/* LEFT — scenario context */}
-        <div className="lg:w-[42%] lg:flex-shrink-0 overflow-y-auto p-4 sm:p-6 lg:border-r border-b lg:border-b-0 border-white/8 bg-[#0c0e14] max-h-[54vh] lg:max-h-none">
+        {/* TOP / LEFT — scenario context */}
+        <div className="flex-shrink-0 h-[44vh] lg:h-auto lg:w-[42%] overflow-y-auto p-4 lg:p-6 lg:border-r border-b lg:border-b-0 border-white/8 bg-[#0c0e14]">
 
           {/* Level + meta */}
           <div className="flex items-center gap-2 mb-3 flex-wrap">
@@ -1200,8 +1200,8 @@ export default function PokerTrainer() {
             </span>
           </div>
 
-          {/* Poker Table — dominant, width-capped on mobile to keep hand/villain visible */}
-          <div className="mb-3 max-w-[64vw] sm:max-w-none mx-auto">
+          {/* Poker Table — full width on all screen sizes */}
+          <div className="mb-3 mx-auto">
             <PokerTable
               heroPosition={scenario.heroPosition}
               villainPosition={scenario.villainPosition}
@@ -1238,8 +1238,8 @@ export default function PokerTrainer() {
 
         </div>
 
-        {/* RIGHT — steps */}
-        <div className="flex-1 overflow-y-auto p-5 sm:p-7 bg-[#0c0e14]" style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}>
+        {/* BOTTOM / RIGHT — steps (bottom sheet on mobile) */}
+        <div className="flex-1 overflow-y-auto p-5 sm:p-6 bg-[#171a27] lg:bg-[#0c0e14] rounded-t-2xl lg:rounded-none shadow-[0_-16px_48px_rgba(0,0,0,0.5)] lg:shadow-none border-t border-white/10 lg:border-t-0" style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}>
 
           {/* Completed steps */}
           {stepIdx > 0 && (
@@ -1267,8 +1267,8 @@ export default function PokerTrainer() {
                         {STEP_CONFIG[step].category}
                       </span>
                       {!r.correct && (
-                        <span className="text-xs text-white/30 ml-auto">
-                          was <strong className="text-white/60">{expectedAnswer(step, scenario)}</strong>
+                        <span className="text-xs text-white/50 ml-auto">
+                          was <strong className="text-white/75">{expectedAnswer(step, scenario)}</strong>
                         </span>
                       )}
                     </div>
@@ -1285,12 +1285,12 @@ export default function PokerTrainer() {
           <div ref={activeRef}>
             <div className={`rounded-xl border p-5 ${
               !isChecked
-                ? 'bg-[#13151f] border-blue-500/60 shadow-xl shadow-blue-500/10'
+                ? 'bg-[#1e2238] lg:bg-[#171a27] border-blue-500/60 shadow-xl shadow-blue-500/10'
                 : !currentResult!.correct
-                  ? 'bg-[#13151f] border-red-500/40'
+                  ? 'bg-[#1e2238] lg:bg-[#171a27] border-red-500/40'
                   : borderline
-                    ? 'bg-[#13151f] border-amber-500/40'
-                    : 'bg-[#13151f] border-emerald-500/40'
+                    ? 'bg-[#1e2238] lg:bg-[#171a27] border-amber-500/40'
+                    : 'bg-[#1e2238] lg:bg-[#171a27] border-emerald-500/40'
             }`}>
               {/* Step header */}
               <div className="flex items-center gap-2.5 mb-4">
@@ -1535,10 +1535,10 @@ export default function PokerTrainer() {
                         <button
                           key={key}
                           onClick={() => handleRaisePick(key)}
-                          className="py-2.5 px-2 rounded-lg bg-white/5 hover:bg-amber-500/15 border border-white/10 hover:border-amber-500/40 text-white/70 hover:text-amber-300 transition-all text-center"
+                          className="py-3.5 px-3 rounded-lg bg-white/5 hover:bg-amber-500/15 border border-white/10 hover:border-amber-500/40 text-white/70 hover:text-amber-300 transition-all text-center"
                         >
-                          <div className="text-xs font-bold leading-tight">{label}</div>
-                          <div className="text-xs text-white/40 mt-0.5">
+                          <div className="text-sm font-bold leading-tight">{label}</div>
+                          <div className="text-xs text-white/65 mt-0.5">
                             {amount !== null ? `$${amount}` : 'All chips'}
                           </div>
                         </button>
@@ -1566,12 +1566,12 @@ export default function PokerTrainer() {
                   <p className="text-sm text-white/80 italic mb-2">
                     &ldquo;{getVillainResponse(scenario, villainOutcome)}&rdquo;
                   </p>
-                  <p className="text-xs text-white/40">
+                  <p className="text-xs text-white/60">
                     {outcomeNote[villainOutcome](scenario, raiseSizeChosen, chosenAmt.amount)}
                   </p>
                   <button
                     onClick={() => { setRaiseSizeChosen(null); setVillainOutcome(null) }}
-                    className="mt-2 text-xs text-white/30 hover:text-white/60 transition-colors"
+                    className="mt-2 text-xs text-white/50 hover:text-white/70 transition-colors"
                   >
                     Try a different size ↺
                   </button>
