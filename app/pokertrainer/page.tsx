@@ -894,6 +894,7 @@ export default function PokerTrainer() {
   )
   const activeRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const decisionRef = useRef<HTMLDivElement>(null)
   const fetchToken = useRef(0)
 
   useEffect(() => {
@@ -971,7 +972,11 @@ export default function PokerTrainer() {
   useLayoutEffect(() => {
     if (!isChecked) {
       activeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-      inputRef.current?.focus()
+      if (currentStep === 'decision') {
+        decisionRef.current?.focus()
+      } else {
+        inputRef.current?.focus()
+      }
     }
   }, [stepIdx, sIdx, isChecked])
 
@@ -1522,74 +1527,68 @@ export default function PokerTrainer() {
                       )}
                     </div>
                   ) : config.inputType === 'decision' ? (
-                    <div className="space-y-3">
-                      <div
-                        className="grid grid-cols-3 gap-2"
-                        role="radiogroup"
-                        aria-label="Decision"
-                        onKeyDown={(e) => {
-                          const options: Decision[] = ['call', 'fold', 'raise']
-                          if (!['ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp'].includes(e.key)) return
-                          e.preventDefault()
-                          e.stopPropagation()
-                          const currentIdx = selected ? options.indexOf(selected as Decision) : 0
-                          const nextIdx = (e.key === 'ArrowRight' || e.key === 'ArrowDown')
-                            ? (currentIdx + 1) % options.length
-                            : (currentIdx - 1 + options.length) % options.length
-                          setSelected(options[nextIdx])
-                          const buttons = (e.currentTarget as HTMLDivElement).querySelectorAll('[role="radio"]')
-                          ;(buttons[nextIdx] as HTMLElement)?.focus()
-                        }}
-                      >
-                        {(['call', 'fold', 'raise'] as Decision[]).map(d => (
-                          <button
-                            key={d}
-                            role="radio"
-                            aria-checked={selected === d}
-                            tabIndex={selected === d || (!selected && d === 'call') ? 0 : -1}
-                            onClick={() => setSelected(d)}
-                            className={`h-16 rounded-2xl font-black text-base capitalize transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-1 focus-visible:ring-offset-[#1e2238] flex flex-col items-center justify-center gap-0.5 ${
-                              selected === d
-                                ? d === 'call'
-                                  ? 'bg-emerald-500 text-white shadow-xl shadow-emerald-500/40 ring-2 ring-emerald-400/40 scale-[1.03]'
-                                  : d === 'fold'
-                                    ? 'bg-red-500/30 border border-red-500/60 text-red-300 shadow-lg shadow-red-500/20 scale-[1.03]'
-                                    : 'bg-purple-500/30 border border-purple-500/60 text-purple-300 shadow-lg shadow-purple-500/20 scale-[1.03]'
-                                : d === 'call'
-                                  ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/50'
-                                  : d === 'fold'
-                                    ? 'bg-red-500/5 border border-red-500/20 text-red-400/70 hover:bg-red-500/15 hover:text-red-300'
-                                    : 'bg-purple-500/5 border border-purple-500/20 text-purple-400/70 hover:bg-purple-500/15 hover:text-purple-300'
-                            }`}
-                          >
-                            <span className="leading-none">{d === 'call' ? 'Call' : d === 'fold' ? 'Fold' : 'Raise'}</span>
-                            {d === 'call' && <span className="text-xs font-bold opacity-70">${scenario.callAmount}</span>}
-                          </button>
-                        ))}
+                    <div
+                      ref={decisionRef}
+                      tabIndex={0}
+                      className="space-y-2.5 focus:outline-none"
+                      aria-label="Decision — use arrow keys or tap a button"
+                      onKeyDown={(e) => {
+                        if (isChecked || loadingEvaluation) return
+                        if (e.key === 'ArrowLeft')  { e.preventDefault(); e.stopPropagation(); submit('fold') }
+                        if (e.key === 'ArrowRight') { e.preventDefault(); e.stopPropagation(); submit('call') }
+                        if (e.key === 'ArrowUp')    { e.preventDefault(); e.stopPropagation(); submit('raise') }
+                      }}
+                    >
+                      {/* Raise — top center */}
+                      <div className="flex justify-center">
+                        <button
+                          disabled={isChecked || loadingEvaluation}
+                          onClick={() => submit('raise')}
+                          className="w-1/2 h-14 sm:h-12 rounded-2xl font-black text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/40 focus-visible:ring-offset-1 focus-visible:ring-offset-[#1e2238] flex flex-col items-center justify-center gap-0.5 bg-purple-500/10 border border-purple-500/20 text-purple-400/75 hover:bg-purple-500/20 hover:border-purple-500/50 hover:text-purple-300 disabled:pointer-events-none"
+                        >
+                          <span className="hidden sm:block text-[10px] font-bold opacity-40 tracking-widest">↑</span>
+                          <span className="leading-none">Raise</span>
+                        </button>
                       </div>
-                      <button
-                        onClick={handleCheck}
-                        disabled={!selected || loadingEvaluation}
-                        className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-semibold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                      >
-                        {loadingEvaluation ? <ThinkingDots /> : 'Confirm Decision'}
-                      </button>
+                      {/* Fold + Call — bottom row */}
+                      <div className="grid grid-cols-2 gap-2.5">
+                        <button
+                          disabled={isChecked || loadingEvaluation}
+                          onClick={() => submit('fold')}
+                          className="h-14 sm:h-12 rounded-2xl font-black text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/40 focus-visible:ring-offset-1 focus-visible:ring-offset-[#1e2238] flex items-center justify-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400/75 hover:bg-red-500/20 hover:border-red-500/40 hover:text-red-300 disabled:pointer-events-none"
+                        >
+                          <span className="hidden sm:inline text-xs opacity-35">←</span>
+                          <span>Fold</span>
+                        </button>
+                        <button
+                          disabled={isChecked || loadingEvaluation}
+                          onClick={() => submit('call')}
+                          className="h-14 sm:h-12 rounded-2xl font-black text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/40 focus-visible:ring-offset-1 focus-visible:ring-offset-[#1e2238] flex flex-col items-center justify-center gap-0.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/50 disabled:pointer-events-none"
+                        >
+                          <span className="flex items-center gap-2 leading-none">
+                            <span>Call</span>
+                            <span className="hidden sm:inline text-xs opacity-35">→</span>
+                          </span>
+                          <span className="text-xs font-bold opacity-60">${scenario.callAmount}</span>
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     <div>
                       <div className="flex items-center gap-2">
                         <input
                           ref={inputRef}
-                          type={config.inputType === 'number' ? 'number' : 'text'}
+                          type="text"
+                          inputMode={currentStep === 'potOdds' ? 'decimal' : 'numeric'}
                           aria-label={config.label}
                           value={input}
                           onChange={e => setInput(e.target.value)}
                           onKeyDown={e => e.key === 'Enter' && handleCheck()}
-                          placeholder={config.inputType === 'ratio' ? 'e.g. 3:1' : 'e.g. 25'}
-                          min={0}
+                          placeholder={currentStep === 'potOdds' ? 'e.g. 3' : 'e.g. 25'}
                           autoComplete="off"
                           className="flex-1 px-4 py-3 rounded-xl border border-white/15 bg-white/5 text-white text-sm placeholder-white/25 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
+                        {currentStep === 'potOdds' && <span className="text-sm text-white/35 font-medium select-none" aria-hidden="true">: 1</span>}
                         {(currentStep === 'breakeven' || currentStep === 'equity') && <span className="text-sm text-white/30 font-medium" aria-hidden="true">%</span>}
                         <button
                           onClick={handleCheck}
