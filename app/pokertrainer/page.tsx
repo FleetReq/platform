@@ -1024,7 +1024,7 @@ export default function PokerTrainer() {
   }
 
   function changeFilter(lvl: 1 | 2 | 3) {
-    setSessionScenarioCount(scenarios.filter(s => s.level === lvl).length)
+    setSessionScenarioCount(STATIC_SCENARIOS.filter(s => s.level === lvl).length)
     setFilterLevel(lvl)
     resetSession()
   }
