@@ -418,16 +418,20 @@ export async function GET(request: NextRequest) {
   }
 
   const rawScenarios = (raw as { scenarios?: unknown[] })?.scenarios
-  if (!Array.isArray(rawScenarios) || rawScenarios.length !== BATCH_SIZE[batch]) {
+  if (!Array.isArray(rawScenarios) || rawScenarios.length < 1) {
     console.error('[pokertrainer/scenarios] bad shape', JSON.stringify({ batch, expected: BATCH_SIZE[batch], got: Array.isArray(rawScenarios) ? rawScenarios.length : typeof rawScenarios }))
     return NextResponse.json({ error: 'Invalid response shape' }, { status: 503 })
   }
 
-  const valid = rawScenarios.every((s, i) => validate(s, i))
-  if (!valid) {
+  // Keep valid scenarios individually — a bad one in a batch of 5 shouldn't discard the rest
+  const validRaw = rawScenarios.filter((s, i) => validate(s, i))
+  if (validRaw.length === 0) {
     return NextResponse.json({ error: 'Scenario validation failed' }, { status: 503 })
   }
+  if (validRaw.length < rawScenarios.length) {
+    console.warn(`[pokertrainer/scenarios] batch ${batch}: ${rawScenarios.length - validRaw.length} scenario(s) failed validation and were dropped`)
+  }
 
-  const scenarios = rawScenarios.map((s, i) => processScenario(s as RawScenario, idxOffset + i))
+  const scenarios = validRaw.map((s, i) => processScenario(s as RawScenario, idxOffset + i))
   return NextResponse.json({ scenarios })
 }
