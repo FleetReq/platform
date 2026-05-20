@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
   }
 
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
-  const limited = rateLimit(`pokertrainer-eval:${ip}`, RATE_LIMITS.EXPENSIVE)
+  const limited = rateLimit(`pokertrainer-eval:${ip}`, RATE_LIMITS.AI_EVAL)
   if (!limited.success) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
   }
@@ -68,26 +68,34 @@ export async function POST(request: NextRequest) {
 
 Evaluate.`
 
-  try {
-    const response = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 150,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: prompt }],
-    })
-
-    const text = response.content[0].type === 'text' ? response.content[0].text : ''
-    let verdict = 'correct'
-    let feedback = text
+  for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const parsed = JSON.parse(text.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim())
-      verdict = parsed.verdict ?? 'correct'
-      feedback = parsed.feedback ?? text
-    } catch { /* fallback: use raw text */ }
+      const response = await client.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 150,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: prompt }],
+      })
 
-    return NextResponse.json({ verdict, feedback })
-  } catch (err) {
-    console.error('[pokertrainer/evaluate] failed:', err)
-    return NextResponse.json({ error: 'Evaluation failed' }, { status: 503 })
+      const text = response.content[0].type === 'text' ? response.content[0].text : ''
+      let verdict = 'correct'
+      let feedback = text
+      try {
+        const parsed = JSON.parse(text.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim())
+        verdict = parsed.verdict ?? 'correct'
+        feedback = parsed.feedback ?? text
+      } catch { /* fallback: use raw text */ }
+
+      return NextResponse.json({ verdict, feedback })
+    } catch (err: unknown) {
+      const status = (err as { status?: number }).status
+      if (attempt === 0 && (status === 529 || status === 503 || status === 500)) {
+        await new Promise(r => setTimeout(r, 800))
+        continue
+      }
+      console.error('[pokertrainer/evaluate] failed:', err)
+      return NextResponse.json({ error: 'Evaluation failed' }, { status: 503 })
+    }
   }
+  return NextResponse.json({ error: 'Evaluation failed' }, { status: 503 })
 }

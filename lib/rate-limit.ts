@@ -110,6 +110,9 @@ export const RATE_LIMITS = {
   /** Expensive operations - strict limit */
   EXPENSIVE: { limit: 10, window: 60 }, // 10 requests per minute
 
+  /** AI evaluation calls — slightly looser to allow rapid play */
+  AI_EVAL: { limit: 30, window: 60 }, // 30 requests per minute
+
   /** Anonymous/unauthenticated - very strict */
   ANONYMOUS: { limit: 20, window: 60 * 5 }, // 20 requests per 5 minutes
 } as const
