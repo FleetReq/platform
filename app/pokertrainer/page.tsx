@@ -1149,7 +1149,7 @@ export default function PokerTrainer() {
             <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${LEVEL_COLORS[scenario.level]}`}>
               {scenario.levelName}
             </span>
-            <span className="text-xs text-white/60 font-semibold">Scenario {sIdx + 1}/{pipScenarios.length}</span>
+            <span className="text-xs text-white/60 font-semibold">Scenario {sIdx + 1}/{activeScenarios.length}</span>
             <span className="text-xs text-white/60 font-semibold">· {scenario.street}</span>
             <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30">
               ×<strong>{scenario.cardsToCome === 2 ? '4' : '2'}</strong> rule
