@@ -53,6 +53,61 @@ const CARD_RE = /^[2-9TJQKA][♠♥♦♣]$/
 const VALID_POSITIONS = new Set(['BTN', 'SB', 'BB', 'UTG', 'UTG+1', 'LJ', 'HJ', 'CO'])
 const VALID_PLAYER_TYPES = new Set<PlayerType>(['nit', 'tag', 'lag', 'station', 'maniac'])
 
+const RANK_MAP: Record<string, number> = {
+  '2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'T':10,'J':11,'Q':12,'K':13,'A':14,
+}
+
+// Returns an error string if the hand description contradicts the actual cards, null if consistent.
+function validateDrawConsistency(hand: string[], board: string[], handDesc: string, outs: number): string | null {
+  const desc = handDesc.toLowerCase()
+  const handSuits = hand.map(c => c.slice(-1))
+  const boardSuits = board.map(c => c.slice(-1))
+
+  // Flush draw: both hole cards must be same suit AND at least 2 board cards match that suit
+  if (desc.includes('flush') && !desc.match(/made flush|complete/)) {
+    const flushSuit = handSuits.find(s => handSuits.filter(x => x === s).length === 2)
+    if (!flushSuit)
+      return 'flush draw claimed but hole cards are not both the same suit'
+    const boardCount = boardSuits.filter(s => s === flushSuit).length
+    if (boardCount < 2)
+      return `flush draw claimed but only ${boardCount} board card(s) share suit ${flushSuit} — need at least 2`
+  }
+
+  // Straight draw: verify the ranks actually form the claimed draw
+  if (desc.includes('straight')) {
+    const allCards = [...hand, ...board]
+    const rankNums = allCards.map(c => RANK_MAP[c[0]] ?? 0).filter(n => n > 0)
+    const rankSet = new Set(rankNums)
+    const withLowAce = rankSet.has(14) ? new Set([...rankSet, 1]) : rankSet
+
+    if (outs === 8) {
+      // OESD: 4 strictly consecutive ranks must be present
+      const hasOESD = [rankSet, withLowAce].some(set => {
+        const arr = [...set].sort((a, b) => a - b)
+        return arr.some((_, i) =>
+          i + 3 < arr.length &&
+          arr[i+1] === arr[i]+1 && arr[i+2] === arr[i]+2 && arr[i+3] === arr[i]+3
+        )
+      })
+      if (!hasOESD)
+        return `OESD (8 outs) claimed but cards don't contain 4 consecutive ranks: ${[...rankSet].sort((a,b)=>a-b).join(',')}`
+    }
+
+    if (outs === 4) {
+      // Gutshot: exactly 4 of 5 consecutive ranks present (one gap)
+      let hasGutshot = false
+      for (let start = 1; start <= 10 && !hasGutshot; start++) {
+        const window = [start, start+1, start+2, start+3, start+4]
+        if (window.filter(r => withLowAce.has(r)).length === 4) hasGutshot = true
+      }
+      if (!hasGutshot)
+        return `gutshot (4 outs) claimed but cards don't form 4-of-5 consecutive ranks: ${[...rankSet].sort((a,b)=>a-b).join(',')}`
+    }
+  }
+
+  return null
+}
+
 const PLAYER_TYPE_EXPLAINS: Record<PlayerType, string> = {
   nit: 'Nits play very few hands. When they bet big, their range is narrow and strong.',
   tag: 'TAGs play solid ranges and apply pressure with good hands. Disciplined but bluff occasionally.',
@@ -184,6 +239,10 @@ function validate(s: unknown, idx?: number): s is RawScenario {
   if (badCard !== undefined) return fail(`bad card format: ${badCard}`)
   if (new Set(allCards).size !== allCards.length) return fail(`duplicate cards: ${allCards.join(' ')}`)
 
+  // Hand description must match the actual cards mathematically
+  const drawError = validateDrawConsistency(r.hand as string[], r.board as string[], r.handDesc as string, r.outs as number)
+  if (drawError) return fail(drawError)
+
   // pot/callAmount must give a clean ratio
   const ratio = (r.pot as number) / (r.callAmount as number)
   if (!CLEAN_RATIOS.some(cr => Math.abs(ratio - cr) < 0.1)) return fail(`bad ratio: ${ratio.toFixed(2)} (pot ${r.pot} call ${r.callAmount})`)
@@ -214,7 +273,8 @@ STRICT RULES:
     - Level 3: genuinely ambiguous — multiple types are plausible, any reasonable read is defensible
 12. Return ONLY raw JSON — no markdown, no code blocks, no explanation
 13. For Level 2 and 3 scenarios ONLY: include a "villainResponses" object with "fold", "call", and "reraise" keys. Each value is one short sentence describing the villain's reaction when the hero raises — use the villain's name and match their personality. Example: { "fold": "Old Timer sighs and folds face-up.", "call": "Old Timer calls without hesitation.", "reraise": "Old Timer stares you down and ships it in." }
-    Level 1 scenarios must NOT include villainResponses.`
+    Level 1 scenarios must NOT include villainResponses.
+14. villainDescription must describe general table tendencies observed across multiple hands — NOT actions in the current hand. Never reference this hand's bet size, pot, or raise. Write observations like "has been folding to 3-bets all night" or "keeps buying in after busting". No specific hand actions.`
 
 const EXAMPLE_SCENARIO = `{
   "level": 1,
