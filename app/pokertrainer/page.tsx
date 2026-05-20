@@ -919,6 +919,13 @@ export default function PokerTrainer() {
             villainPlayerType: scenario.villainPlayerType,
             villainDescription: scenario.villainDescription,
             handDesc: scenario.handDesc,
+            heroPosition: scenario.heroPosition,
+            villainPosition: scenario.villainPosition,
+            otherPlayers: scenario.otherPlayers,
+            street: scenario.street,
+            pot: scenario.pot,
+            callAmount: scenario.callAmount,
+            cardsToCome: scenario.cardsToCome,
           }),
         })
         if (res.ok) {
