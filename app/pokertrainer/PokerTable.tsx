@@ -31,7 +31,7 @@ const SUIT_COLOR: Record<string, string> = {
   '♥': '#dc2626', '♦': '#b45309', '♣': '#2563eb', '♠': '#374151',
 }
 
-const CX = 200, CY = 120
+const CX = 200, CY = 130
 const RX_SEAT = 168, RY_SEAT = 83
 const R_SEAT = 18
 const BOARD_SLOTS = 5
@@ -62,8 +62,8 @@ function cardPair(sx: number, sy: number): [{ cx: number; cy: number }, { cx: nu
   const cx = sx - ux * dist
   const cy = sy - uy * dist
   return [
-    { cx: cx + px * 11, cy: cy + py * 11 },
-    { cx: cx - px * 11, cy: cy - py * 11 },
+    { cx: cx + px * 15, cy: cy + py * 15 },
+    { cx: cx - px * 15, cy: cy - py * 15 },
   ]
 }
 
@@ -96,7 +96,7 @@ export function PokerTable({ heroPosition, villainPosition, villainName, activeP
   )
 
   return (
-    <svg viewBox="0 0 400 240" className="w-full h-auto select-none" role="img" aria-label={`Poker table: you at ${heroPosition}, ${villainName} at ${villainPosition}`}>
+    <svg viewBox="0 0 400 260" className="w-full h-auto select-none" role="img" aria-label={`Poker table: you at ${heroPosition}, ${villainName} at ${villainPosition}`}>
       <title>{`Poker table: you at ${heroPosition}, ${villainName} at ${villainPosition}`}</title>
       <defs>
         <radialGradient id="pt-felt" cx="50%" cy="42%" r="58%">
@@ -163,18 +163,21 @@ export function PokerTable({ heroPosition, villainPosition, villainName, activeP
       <ellipse cx={CX} cy={CY} rx="175" ry="84" fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="2" />
 
       {/* Pot — chip stack left of board */}
-      <text x={CX - 82} y={CY - 20} textAnchor="middle" fontSize="13" fontWeight="900"
+      <text x={CX - 74} y={CY - 10} textAnchor="middle" fontSize="13" fontWeight="900"
         fill="#34d399" letterSpacing="-0.5">${pot}</text>
-      <ellipse cx={CX - 82} cy={CY + 3} rx={14} ry={4.5} fill="rgba(4,120,87,0.35)" />
-      <ellipse cx={CX - 82} cy={CY + 1.5} rx={14} ry={4.5} fill="rgba(4,120,87,0.55)" />
-      <ellipse cx={CX - 82} cy={CY} rx={14} ry={4.5} fill="#065f46" stroke="rgba(52,211,153,0.4)" strokeWidth="0.8" />
-      <text x={CX - 82} y={CY + 13} textAnchor="middle" fontSize="6" fontWeight="700"
+      <ellipse cx={CX - 74} cy={CY + 5} rx={14} ry={4.5} fill="rgba(4,120,87,0.35)" />
+      <ellipse cx={CX - 74} cy={CY + 2.5} rx={14} ry={4.5} fill="rgba(4,120,87,0.55)" />
+      <ellipse cx={CX - 74} cy={CY} rx={14} ry={4.5} fill="#065f46" stroke="rgba(52,211,153,0.4)" strokeWidth="0.8" />
+      <text x={CX - 74} y={CY + 13} textAnchor="middle" fontSize="6" fontWeight="700"
         fill="rgba(255,255,255,0.28)" letterSpacing="1.5">POT</text>
 
-      {/* To Call — right of board */}
-      <text x={CX + 82} y={CY - 4} textAnchor="middle" fontSize="14" fontWeight="900"
+      {/* To Call — chip stack right of board */}
+      <text x={CX + 74} y={CY - 10} textAnchor="middle" fontSize="13" fontWeight="900"
         fill="#fb923c" letterSpacing="-0.5">${callAmount}</text>
-      <text x={CX + 82} y={CY + 11} textAnchor="middle" fontSize="6" fontWeight="700"
+      <ellipse cx={CX + 74} cy={CY + 5} rx={12} ry={4.5} fill="rgba(194,65,12,0.35)" />
+      <ellipse cx={CX + 74} cy={CY + 2.5} rx={12} ry={4.5} fill="rgba(194,65,12,0.55)" />
+      <ellipse cx={CX + 74} cy={CY} rx={12} ry={4.5} fill="#9a3412" stroke="rgba(251,146,60,0.4)" strokeWidth="0.8" />
+      <text x={CX + 74} y={CY + 13} textAnchor="middle" fontSize="6" fontWeight="700"
         fill="rgba(255,255,255,0.28)" letterSpacing="1.5">TO CALL</text>
 
       {/* All 9 seats */}
@@ -230,7 +233,7 @@ export function PokerTable({ heroPosition, villainPosition, villainName, activeP
             {isDealer && (
               <g>
                 <circle cx={btnX} cy={btnY} r="8" fill="url(#pt-btn)" stroke="#9ca3af" strokeWidth="1" />
-                <text x={btnX} y={btnY} textAnchor="middle" dominantBaseline="middle" fontSize="6" fontWeight="800" fill="#374151">D</text>
+                <text x={btnX} y={btnY} textAnchor="middle" dominantBaseline="middle" fontSize="7" fontWeight="900" fill="#374151">D</text>
               </g>
             )}
             {isFeatured && (
