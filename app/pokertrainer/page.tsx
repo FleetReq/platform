@@ -620,7 +620,7 @@ function getOutsConceptualHint(s: Scenario): string {
   if (s.outs === 4) {
     const rankMatch = s.outDesc.match(/^4\s+(\w+)/)
     const rank = rankMatch?.[1] ?? 'that rank'
-    return `${rank}s fill the gap — how many ${rank}s are in a full deck?`
+    return `${rank} fill the gap — how many ${rank} are in a full deck?`
   }
 
   // Fallback: strip the answer from outDesc
@@ -807,7 +807,7 @@ function getStepGuide(step: Step, s: Scenario, prevResults: (StepResult | undefi
         }
       }
       if (s.level === 2) {
-        return { formula: 'equity % > break-even % → call or raise   |   lower → fold' }
+        return null
       }
       return null
     }
@@ -1019,6 +1019,10 @@ export default function PokerTrainer() {
     setExplanations(prev => {
       const next = [...prev]
       let expl = scenario.explanations[currentStep] ?? expectedAnswer(currentStep, scenario)
+      if (scenario.level >= 2 && (currentStep === 'equity' || currentStep === 'breakeven')) {
+        const cut = expl.indexOf('%. ')
+        if (cut !== -1) expl = expl.slice(0, cut + 1)
+      }
       if (isDecision && isRaiseBorderline(scenario)) expl += borderlineRaiseNote(scenario)
       next[idx] = expl
       return next
