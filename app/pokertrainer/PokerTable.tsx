@@ -30,7 +30,7 @@ const SUIT_COLOR: Record<string, string> = {
 }
 
 const CX = 200, CY = 120
-const RX_SEAT = 156, RY_SEAT = 71
+const RX_SEAT = 168, RY_SEAT = 83
 const R_SEAT = 18
 const BOARD_SLOTS = 5
 const BOARD_SPACING = 20
@@ -49,23 +49,20 @@ function labelPos(x: number, y: number) {
   return { lx: x, ly: y + dy }
 }
 
-// Cards placed between seat and table center
+// Cards placed inward from seat toward felt center, spread tangentially so
+// adjacent seats (e.g. SB and BB) never overlap each other's cards.
 function cardPair(sx: number, sy: number): [{ cx: number; cy: number }, { cx: number; cy: number }] {
-  const GAP = 4
-  if (sy < CY) {
-    const cy = sy + R_SEAT + GAP + CH / 2
-    return [{ cx: sx - 11, cy }, { cx: sx + 11, cy }]
-  }
-  if (sy > CY) {
-    const cy = sy - R_SEAT - GAP - CH / 2
-    return [{ cx: sx - 11, cy }, { cx: sx + 11, cy }]
-  }
-  if (sx < CX) {
-    const cx = sx + R_SEAT + GAP + CW / 2
-    return [{ cx, cy: sy - 14 }, { cx, cy: sy + 14 }]
-  }
-  const cx = sx - R_SEAT - GAP - CW / 2
-  return [{ cx, cy: sy - 14 }, { cx, cy: sy + 14 }]
+  const dx = sx - CX, dy = sy - CY
+  const len = Math.sqrt(dx * dx + dy * dy)
+  const ux = dx / len, uy = dy / len   // radial unit: center → seat
+  const px = -uy, py = ux              // tangential unit (perpendicular)
+  const dist = R_SEAT + 4 + CH / 2     // inward distance from seat center
+  const cx = sx - ux * dist
+  const cy = sy - uy * dist
+  return [
+    { cx: cx + px * 11, cy: cy + py * 11 },
+    { cx: cx - px * 11, cy: cy - py * 11 },
+  ]
 }
 
 function SvgCardFace({ card, cx, cy }: { card: string; cx: number; cy: number }) {
