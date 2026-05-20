@@ -138,10 +138,39 @@ function buildExplanations(
     ? `beats the ${breakevenPct}% needed`
     : `falls short of the ${breakevenPct}% needed`
 
+  // Villain-specific tactical note appended to each decision
+  const villainNote: Record<PlayerType, Record<Decision, string>> = {
+    nit: {
+      call:  `${villainName} likely has a strong made hand — don't expect them to fold to aggression. You're calling for the pot odds, not implied odds. If you miss on the turn, let it go.`,
+      fold:  `Against ${villainName} this is especially clear — Nits don't bet big without the goods.`,
+      raise: `${villainName} will usually call or 3-bet with a premium — treat this as a semi-bluff. Your draw is the backup plan if they continue.`,
+    },
+    tag: {
+      call:  `${villainName} is disciplined — when you hit and bet, they'll fold weaker pairs and pay off with strong hands. Play your made hand straightforwardly.`,
+      fold:  `${villainName}'s range here is solid and balanced. The math reflects reality.`,
+      raise: `${villainName} folds weak holdings to pressure — this semi-bluff has two ways to win: fold equity now, draw equity if called.`,
+    },
+    lag: {
+      call:  `${villainName} bets wide, so you may already be winning even without completing the draw. Let the pot odds do the work.`,
+      fold:  `${villainName} bets wide enough that folding is close — but the math says the price still isn't right even against their range.`,
+      raise: `${villainName} may fold to resistance since they bluff frequently. If they continue, your draw keeps you live with plenty of outs.`,
+    },
+    station: {
+      call:  `When you hit, bet every street against ${villainName} — they won't fold anything. Don't slow-play; extract maximum value.`,
+      fold:  `${villainName} won't fold anyway, so there's no bluff equity to factor in. The math just doesn't support calling.`,
+      raise: `${villainName} will call the raise, which is fine — you're building the pot for when you hit. Skip any bluffs on the river if you miss.`,
+    },
+    maniac: {
+      call:  `${villainName} will fire again on future streets, so your implied odds are much better than the raw math shows. If you hit, you could win a massive pot.`,
+      fold:  `Even ${villainName}'s loose range includes enough strong hands to make this fold correct at this price.`,
+      raise: `${villainName} might 3-bet and turn this into a huge pot. Your equity can handle it — but be ready for a sweat.`,
+    },
+  }
+
   const decisionText: Record<Decision, string> = {
-    fold: `Fold. Your ${equityPct}% equity falls short of the ${breakevenPct}% needed to break even. Calling here loses money over time.`,
-    call: `Call. Your ${equityPct}% equity beats the ${breakevenPct}% breakeven — this is a profitable call in the long run.`,
-    raise: `Raise. With ${equityPct}% equity vs a ${breakevenPct}% breakeven you have a commanding edge. Raising builds the pot for when you hit and gives you fold equity to win immediately.`,
+    fold:  `Fold. Your ${equityPct}% equity falls short of the ${breakevenPct}% needed to break even. ${villainNote[villainPlayerType].fold}`,
+    call:  `Call. Your ${equityPct}% equity beats the ${breakevenPct}% breakeven — profitable in the long run. ${villainNote[villainPlayerType].call}`,
+    raise: `Raise. With ${equityPct}% equity vs ${breakevenPct}% breakeven you have a commanding edge — raising builds the pot and gives you fold equity. ${villainNote[villainPlayerType].raise}`,
   }
 
   return {
