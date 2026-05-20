@@ -1347,11 +1347,11 @@ export default function PokerTrainer() {
         </div>
       </header>
 
-      {/* ── Body: 2-col on lg, table-top + bottom-sheet on mobile ── */}
-      <div id="main-tabpanel" role="tabpanel" aria-labelledby={`tab-${filterLevel}`} className="flex-1 overflow-hidden flex flex-col lg:flex-row">
+      {/* ── Body: 2-col on lg, single scroll on mobile ── */}
+      <div id="main-tabpanel" role="tabpanel" aria-labelledby={`tab-${filterLevel}`} className="flex-1 overflow-y-auto lg:overflow-hidden flex flex-col lg:flex-row">
 
-        {/* TOP / LEFT — scenario context */}
-        <div className="flex-shrink-0 h-[44vh] lg:h-auto lg:w-[42%] overflow-y-auto p-4 lg:p-6 lg:border-r border-b lg:border-b-0 border-white/8 bg-[#0c0e14]">
+        {/* TOP / LEFT — scenario context (auto-height on mobile, fixed column on desktop) */}
+        <div className="flex-shrink-0 lg:h-full lg:w-[42%] lg:overflow-y-auto p-4 lg:p-6 lg:border-r border-b lg:border-b-0 border-white/8 bg-[#0c0e14]">
 
           {/* Level + meta */}
           <div className="flex items-center gap-2 mb-3 flex-wrap">
@@ -1403,8 +1403,21 @@ export default function PokerTrainer() {
 
         </div>
 
-        {/* BOTTOM / RIGHT — steps (bottom sheet on mobile, felt texture) */}
-        <div className="flex-1 overflow-y-auto p-5 sm:p-6 felt-panel lg:bg-[#0c0e14] rounded-t-2xl lg:rounded-none shadow-[0_-16px_48px_rgba(0,0,0,0.5)] lg:shadow-none border-t border-white/10 lg:border-t-0" style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}>
+        {/* Sticky stats strip — mobile only, sticks once context scrolls off */}
+        <div className="sticky top-0 z-10 lg:hidden flex items-center gap-3 px-4 py-2 bg-[#0c0e14]/95 backdrop-blur border-b border-white/8 text-xs font-bold" aria-label="Key numbers">
+          <span className="text-white/40 uppercase tracking-wider">Pot</span>
+          <span className="text-white">${scenario.pot}</span>
+          <span className="text-white/20">·</span>
+          <span className="text-white/40 uppercase tracking-wider">Call</span>
+          <span className="text-white">${scenario.callAmount}</span>
+          <span className="text-white/20">·</span>
+          <span className="px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30">
+            ×{scenario.cardsToCome === 2 ? '4' : '2'} rule
+          </span>
+        </div>
+
+        {/* BOTTOM / RIGHT — steps (card on mobile, felt texture on desktop) */}
+        <div className="lg:flex-1 lg:overflow-y-auto p-5 sm:p-6 felt-panel lg:bg-[#0c0e14] rounded-t-2xl lg:rounded-none shadow-[0_-16px_48px_rgba(0,0,0,0.5)] lg:shadow-none border-t border-white/10 lg:border-t-0" style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}>
 
           {/* Completed steps — compact timeline */}
           {stepIdx > 0 && (
