@@ -255,6 +255,30 @@ function validate(s: unknown, idx?: number): s is RawScenario {
 
 const SYSTEM_PROMPT = `You are a poker scenario generator for a pot odds training app.
 
+DRAW CONSTRUCTION GUIDE — build the cards FIRST, then name the draw:
+
+Flush draw on the FLOP (9 outs):
+  A flush draw requires 4 cards of the same suit already visible.
+  WRONG: hand A♦K♦ + flop Q♦7♣2♠ → only 3 diamonds total → this is a BACKDOOR flush draw, NOT a flush draw
+  RIGHT: hand A♦K♦ + flop Q♦J♦2♠ → 4 diamonds total → outs = 13 − 4 = 9 → this IS a flush draw
+  Rule: both hole cards share a suit AND the flop contains AT LEAST 2 cards of that same suit.
+  Vary the suits and ranks each time — do not repeat the same cards.
+
+OESD — open-ended straight draw (8 outs):
+  Pick any 4 strictly consecutive ranks and distribute them across hole + board.
+  Two different ranks (one lower, one higher) each have 4 cards that complete it = 8 outs total.
+  NEVER claim OESD unless 4 consecutive ranks appear across hand+board combined.
+  Vary the ranks each time.
+
+Gutshot straight draw (4 outs):
+  Pick 5 consecutive ranks, remove exactly one from the interior (not the ends).
+  Distribute the 4 present ranks across hole + board.
+  Only the one missing interior rank completes it = 4 outs.
+  NEVER claim gutshot unless 4-of-5 consecutive ranks with one interior gap are present.
+
+Combo flush+straight draw (15 outs typical):
+  Satisfy BOTH the flush draw rule AND the OESD rule simultaneously.
+
 STRICT RULES:
 1. Use Unicode suit symbols only: ♠ ♥ ♦ ♣
 2. No card may appear twice within the same scenario (hand + board combined)
