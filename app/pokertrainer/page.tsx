@@ -75,7 +75,7 @@ const STATIC_SCENARIOS: Scenario[] = [
       breakeven: 'Your 3:1 pot odds = risking $20 for an $80 pot. $20 ÷ $80 = 25%. You need at least 25% equity to break even — now go find out if you have it.',
       outs: '13 hearts total. You can see 4 of them (A♥ 7♥ K♥ 9♥). That leaves 9 unseen hearts that complete your flush.',
       equity: 'Two cards to come → Rule of 4: 9 × 4 = 36%. Your equity (36%) beats the 25% breakeven — profitable call.',
-      decision: 'Call. 36% equity vs 25% breakeven. Your flush draw is a clear +EV call. Over time this hand prints money.',
+      decision: 'Call. 36% equity beats the 25% breakeven — profitable in the long run. Old Timer likely has a strong made hand, so don\'t expect fold equity if you raise. You\'re calling for the pot odds, not implied odds. If you miss on the turn, let it go.',
     },
   },
   {
@@ -109,7 +109,7 @@ const STATIC_SCENARIOS: Scenario[] = [
       breakeven: 'Your 2:1 pot odds = risking $45 for a $135 pot. $45 ÷ $135 ≈ 33%. You need at least 33% equity — that\'s a steep price.',
       outs: '4 Kings complete the K-high straight + 4 Eights complete the 8-high straight. Any of those 8 cards make your hand.',
       equity: 'One card to come → Rule of 2: 8 × 2 = 16%. Your equity (16%) is less than half the 33% you need.',
-      decision: 'Fold. 16% equity vs 33% breakeven — calling here loses money over time. The pot odds are just too expensive for this draw.',
+      decision: 'Fold. 16% equity falls well short of the 33% breakeven — this call loses money over time. The Caller won\'t fold anyway, so there\'s no bluff equity to factor in. The math just doesn\'t support calling here.',
     },
   },
   {
@@ -304,7 +304,7 @@ const STATIC_SCENARIOS: Scenario[] = [
       breakeven: 'Your 4:1 pot odds = risking $20 for a $100 pot. $20 ÷ $100 = 20%. You need at least 20% equity to break even — now go find out if you have it.',
       outs: 'Only a Jack saves you — it makes the K Q J T 9 straight. There are exactly 4 Jacks in the deck.',
       equity: 'Two cards to come → Rule of 4: 4 × 4 = 16%. Your equity (16%) falls short of the 20% you need. Fold.',
-      decision: 'Fold. A gutshot gives you only 4 outs. Even with two cards to come, 16% equity misses the 20% breakeven. Don\'t chase weak draws at bad prices.',
+      decision: 'Fold. 16% equity misses the 20% breakeven — gutshots need better odds. Even with Big Stack Billy\'s wide range, the raw math doesn\'t change. If you hit, his implied odds are massive, but you can\'t get there at this price.',
     },
   },
   {
@@ -338,7 +338,7 @@ const STATIC_SCENARIOS: Scenario[] = [
       breakeven: 'Your 3:1 pot odds = risking $20 for an $80 pot. $20 ÷ $80 = 25%. You need at least 25% equity to break even — now go find out if you have it.',
       outs: '13 hearts in the deck. You can see 4 of them (6♥ 7♥ T♥ 4♥). That leaves 9 unseen hearts that complete your flush.',
       equity: 'Two cards to come → Rule of 4: 9 × 4 = 36%. Your equity (36%) beats the 25% needed — profitable call.',
-      decision: 'Call. 36% equity vs 25% breakeven. Your flush draw has the edge here — calling is +EV over time.',
+      decision: 'Call. 36% equity beats the 25% breakeven — profitable in the long run. Careful Carl likely has a strong made hand, so don\'t expect fold equity. You\'re calling for the pot odds, not implied odds. If you miss on the turn, let it go.',
     },
   },
   {
@@ -373,7 +373,7 @@ const STATIC_SCENARIOS: Scenario[] = [
       outs: '13 spades in the deck. You can see 4 (A♠ T♠ K♠ 6♠). That leaves 9 outs — any spade makes the nut flush.',
       equity: 'Two cards to come → Rule of 4: 9 × 4 = 36%. Your equity (36%) nearly doubles the 20% needed.',
       playerType: 'Coach is a TAG. TAGs bet for value with strong holdings and fold to serious pressure. Their range here is likely strong — but your 36% equity is more than enough to call at this price.',
-      decision: 'Call. 36% equity vs 20% breakeven is a huge edge. Even against a TAG with a strong hand, your nut flush draw is printing money at these odds.',
+      decision: 'Call. 36% equity vs 20% breakeven is a huge edge. Coach is disciplined — when you hit and bet, he\'ll fold weaker pairs and pay off with strong hands. Play your made hand straightforwardly.',
     },
     villainResponses: {
       fold: 'Coach nods respectfully and folds, flashing top pair.',
@@ -413,7 +413,7 @@ const STATIC_SCENARIOS: Scenario[] = [
       outs: 'Only an 8 makes your straight (Q J T 9 8). There are 4 Eights in the deck.',
       equity: 'One card to come → Rule of 2: 4 × 2 = 8%. Your equity (8%) is barely a quarter of the 33% needed.',
       playerType: 'The Kid is a LAG — wide range, lots of bluffs. But even knowing he bluffs frequently, the math is brutal: 8% equity vs 33% breakeven means calling is -EV regardless.',
-      decision: 'Fold. A gutshot on the turn with 2:1 pot odds is a clear fold. 8% equity vs 33% breakeven — even a frequent bluffer can\'t make this call profitable.',
+      decision: 'Fold. 8% equity vs 33% breakeven — even knowing The Kid bluffs frequently, the math is brutal. Their wide range doesn\'t change the price enough to justify calling.',
     },
     villainResponses: {
       fold: 'The Kid mutters and sends his cards in. Frustrated.',
@@ -453,7 +453,7 @@ const STATIC_SCENARIOS: Scenario[] = [
       outs: '4 Aces make the broadway straight (A K Q J T). 4 Nines make the king-high straight (K Q J T 9). Total: 8 outs.',
       equity: 'Two cards to come → Rule of 4: 8 × 4 = 32%. Your equity (32%) clears the 29% needed.',
       playerType: 'Brick Wall could be a NIT defending a big hand, or a TAG picking a spot. Either way, your 32% equity justifies calling — there\'s no shame in folding if the price gets worse on the turn.',
-      decision: 'Call. 32% equity vs 29% breakeven is a thin but clear edge. Your straight draw has enough equity to see the turn. Be ready to reassess if the price gets worse.',
+      decision: 'Call. 32% equity vs 29% breakeven is thin but correct. Brick Wall likely has a strong made hand — don\'t expect them to fold to aggression. If the price gets worse on the turn, be ready to let it go.',
     },
     villainResponses: {
       fold: 'Brick Wall\'s face stays blank — then he folds, showing two pair.',
@@ -736,6 +736,15 @@ function ExplanationBody({ text, correct }: { text: string | undefined; correct:
   )
 }
 
+function ThinkingDots() {
+  const [dots, setDots] = useState(1)
+  useEffect(() => {
+    const id = setInterval(() => setDots(d => (d % 3) + 1), 400)
+    return () => clearInterval(id)
+  }, [])
+  return <span>Thinking{'.'.repeat(dots)}</span>
+}
+
 async function fetchBatchOnce(batch: 1 | 2): Promise<Scenario[]> {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 25000)
@@ -776,13 +785,11 @@ export default function PokerTrainer() {
   const [score, setScore] = useState({ correct: 0, total: 0 })
   const [scenarioResults, setScenarioResults] = useState<{ correct: number; total: number }[]>([])
   const [done, setDone] = useState(false)
-  const [reasoning, setReasoning] = useState('')
-  const [usedMic, setUsedMic] = useState(false)
-  const [isListening, setIsListening] = useState(false)
+
   const [aiFailed, setAiFailed] = useState(false)
   const [aiFailReason, setAiFailReason] = useState<string | null>(null)
   const [aiLoaded, setAiLoaded] = useState(false)
-  const [evaluation, setEvaluation] = useState<string | null>(null)
+  const [evaluation, setEvaluation] = useState<{ verdict: 'correct' | 'borderline' | 'incorrect'; feedback: string } | null>(null)
   const [loadingEvaluation, setLoadingEvaluation] = useState(false)
   const [raiseSizeChosen, setRaiseSizeChosen] = useState<RaiseSize | null>(null)
   const [villainOutcome, setVillainOutcome] = useState<VillainOutcome | null>(null)
@@ -790,18 +797,9 @@ export default function PokerTrainer() {
   const [sessionScenarioCount, setSessionScenarioCount] = useState(
     () => STATIC_SCENARIOS.filter(s => s.level === 1).length
   )
-  const [micSupported, setMicSupported] = useState(false)
   const activeRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const fetchToken = useRef(0)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recognitionRef = useRef<any>(null)
-
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const w = window as any
-    setMicSupported(!!(w.SpeechRecognition || w.webkitSpeechRecognition))
-  }, [])
 
   useEffect(() => {
     const token = ++fetchToken.current
@@ -874,7 +872,6 @@ export default function PokerTrainer() {
   // Keyboard navigation: Enter or → advances after an answer is checked
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
-      if (e.target instanceof HTMLTextAreaElement) return  // let reasoning field type normally
       if (e.key !== 'Enter' && e.key !== 'ArrowRight') return
       if (isChecked && !scenarioDone) { e.preventDefault(); nextStep() }
       else if (scenarioDone) { e.preventDefault(); nextScenario() }
@@ -884,33 +881,6 @@ export default function PokerTrainer() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isChecked, scenarioDone])
 
-  function startMic() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const w = window as any
-    const SR = w.SpeechRecognition || w.webkitSpeechRecognition
-    if (!SR) return
-    const recognition = new SR()
-    recognition.continuous = false
-    recognition.interimResults = false
-    recognition.lang = 'en-US'
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    recognition.onresult = (e: any) => {
-      const transcript: string = e.results[0][0].transcript
-      setReasoning(prev => prev + (prev ? ' ' : '') + transcript)
-      setUsedMic(true)
-      setIsListening(false)
-    }
-    recognition.onerror = () => setIsListening(false)
-    recognition.onend = () => setIsListening(false)
-    recognitionRef.current = recognition
-    setIsListening(true)
-    recognition.start()
-  }
-
-  function stopMic() {
-    recognitionRef.current?.stop()
-    setIsListening(false)
-  }
 
   async function submit(value: string) {
     const correct = checkAnswer(currentStep, value, scenario)
@@ -930,11 +900,8 @@ export default function PokerTrainer() {
       return next
     })
 
-    // Fire evaluation for level 3 decision step with reasoning
-    if (currentStep === 'decision' && scenario.level === 3 && reasoning.trim()) {
-      const playerTypeStepIdx = scenario.steps.indexOf('playerType')
-      const playerTypeResult = playerTypeStepIdx >= 0 ? results[playerTypeStepIdx] : undefined
-      const playerTypeGiven = playerTypeResult ? playerTypeResult.given : ''
+    // Fire AI evaluation for every decision step
+    if (currentStep === 'decision') {
       setLoadingEvaluation(true)
       try {
         const res = await fetch('/api/pokertrainer/evaluate', {
@@ -942,25 +909,21 @@ export default function PokerTrainer() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             decision: value,
-            reasoning: reasoning.trim(),
-            usedMic,
-            playerTypeAnswer: playerTypeGiven,
-            correctPlayerType: scenario.villainPlayerType,
+            correctDecision: scenario.decision,
             equityPct: scenario.equityPct,
             breakevenPct: scenario.breakevenPct,
-            correctDecision: scenario.decision,
+            villainName: scenario.villainName,
+            villainPlayerType: scenario.villainPlayerType,
             villainDescription: scenario.villainDescription,
-            street: scenario.street,
-            pot: scenario.pot,
-            callAmount: scenario.callAmount,
+            handDesc: scenario.handDesc,
           }),
         })
         if (res.ok) {
           const data = await res.json()
-          setEvaluation(data.evaluation ?? null)
+          setEvaluation(data.verdict ? { verdict: data.verdict, feedback: data.feedback } : null)
         }
       } catch {
-        setEvaluation('Coach feedback unavailable — try again.')
+        // Silently skip — static explanation is still shown
       } finally {
         setLoadingEvaluation(false)
       }
@@ -993,8 +956,6 @@ export default function PokerTrainer() {
       setExplanations([])
       setInput('')
       setSelected('')
-      setReasoning('')
-      setUsedMic(false)
       setEvaluation(null)
       setRaiseSizeChosen(null)
       setVillainOutcome(null)
@@ -1011,8 +972,6 @@ export default function PokerTrainer() {
     setScore({ correct: 0, total: 0 })
     setScenarioResults([])
     setDone(false)
-    setReasoning('')
-    setUsedMic(false)
     setEvaluation(null)
     setLoadingEvaluation(false)
     setRaiseSizeChosen(null)
@@ -1400,42 +1359,12 @@ export default function PokerTrainer() {
                           </button>
                         ))}
                       </div>
-                      {/* Reasoning textarea — shown for all decision steps */}
-                      <div>
-                        <label htmlFor="reasoning-input" className="text-xs text-white/40 font-medium mb-1.5 block">
-                          {scenario.level === 3 ? 'Optional: explain your reasoning — AI coach will evaluate it' : 'Optional: explain your thinking'}
-                        </label>
-                        <div className="relative">
-                          <textarea
-                            id="reasoning-input"
-                            value={reasoning}
-                            onChange={e => setReasoning(e.target.value)}
-                            placeholder="e.g. I'm calling because my equity beats the breakeven, and this player bets wide..."
-                            rows={3}
-                            className="w-full px-4 py-3 rounded-xl border border-white/15 bg-white/5 text-white text-sm placeholder-white/25 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none pr-12"
-                          />
-                          {micSupported && (
-                            <button
-                              onClick={isListening ? stopMic : startMic}
-                              type="button"
-                              aria-label={isListening ? 'Stop recording' : 'Start voice input'}
-                              className={`absolute bottom-3 right-3 w-11 h-11 rounded-full flex items-center justify-center transition-all text-base ${
-                                isListening
-                                  ? 'bg-red-500 text-white shadow-md ring-2 ring-red-500/40'
-                                  : 'bg-white/8 text-white/40 hover:bg-white/15 hover:text-white/70'
-                              }`}
-                            >
-                              🎙️
-                            </button>
-                          )}
-                        </div>
-                      </div>
                       <button
                         onClick={handleCheck}
                         disabled={!selected || loadingEvaluation}
                         className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-semibold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                       >
-                        Confirm Decision
+                        {loadingEvaluation ? <ThinkingDots /> : 'Confirm Decision'}
                       </button>
                     </div>
                   ) : (
@@ -1466,23 +1395,23 @@ export default function PokerTrainer() {
               )}
             </div>
 
-            {/* AI evaluation (level 3 decision step after checking) */}
-            {isChecked && currentStep === 'decision' && (loadingEvaluation || evaluation) && (
-              <div className={`mt-3 rounded-xl px-4 py-3 border ${
-                loadingEvaluation
-                  ? 'bg-white/5 border-white/8'
-                  : 'bg-purple-500/10 border-purple-500/30'
-              }`}>
-                <p className="text-xs font-bold text-purple-400 uppercase tracking-[0.15em] mb-1.5">
-                  Coach Evaluation
-                </p>
-                {loadingEvaluation ? (
-                  <p className="text-sm text-white/30 italic">Analyzing your reasoning...</p>
-                ) : (
-                  <p className="text-sm text-purple-300 leading-relaxed">{evaluation}</p>
-                )}
-              </div>
-            )}
+            {/* AI coach evaluation — fires on every decision step */}
+            {isChecked && currentStep === 'decision' && evaluation && (() => {
+              const VERDICT_STYLE = {
+                correct:    { border: 'border-emerald-500/40', bg: 'bg-emerald-500/10', label: 'text-emerald-400', text: 'text-emerald-200', dot: '🟢' },
+                borderline: { border: 'border-amber-500/40',   bg: 'bg-amber-500/10',   label: 'text-amber-400',   text: 'text-amber-200',   dot: '🟡' },
+                incorrect:  { border: 'border-red-500/40',     bg: 'bg-red-500/10',     label: 'text-red-400',     text: 'text-red-200',     dot: '🔴' },
+              }
+              const style = VERDICT_STYLE[evaluation.verdict] ?? VERDICT_STYLE.correct
+              return (
+                <div className={`mt-3 rounded-xl px-4 py-3 border ${style.bg} ${style.border}`}>
+                  <p className={`text-xs font-bold uppercase tracking-[0.15em] mb-1.5 ${style.label}`}>
+                    {style.dot} Coach
+                  </p>
+                  <p className={`text-sm leading-relaxed ${style.text}`}>{evaluation.feedback}</p>
+                </div>
+              )
+            })()}
 
             {/* Villain reaction — shown when player raises on Regular/Shark */}
             {showRaiseInteraction && (() => {

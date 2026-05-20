@@ -4,19 +4,15 @@ import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
 const client = new Anthropic()
 
-const SYSTEM_PROMPT = `You are a poker coach evaluating a student's decision and reasoning at the end of a practice hand.
+const SYSTEM_PROMPT = `You are a seasoned poker coach evaluating a student's decision in a pot odds practice scenario. Give honest, concise feedback — 1-3 sentences max. Speak directly, like a coach at the table.
 
-Your response should be 3-5 sentences max. Evaluate whether their logic is sound — not just whether the answer matches the math, but whether they accounted for the player read correctly.
+Verdict rules:
+- "correct": the student made the right play — either the mathematically correct decision, or a defensible alternative well-justified by the villain type
+- "borderline": the math supports one answer but the villain type makes the other play legitimate, OR equity is within 5% of breakeven, OR both call and raise are reasonable
+- "incorrect": the student chose a play that loses money given the math, without sufficient villain-type justification
 
-Key principles:
-- Folding despite +EV math because of a strong read IS valid reasoning (a nit's range may not include hands you beat)
-- Calling despite marginal math because of a LAG/maniac read IS valid (implied odds, fold equity)
-- If they got the math right AND the player read right: enthusiastic confirmation
-- If they got the math right but ignored the player read: note that the read should have influenced the decision
-- If their reasoning is incoherent or self-contradictory: gently point out the issue
-- If voice transcription errors seem present (gibberish words): interpret generously and note what you understood
-- Never be harsh. This is learning, not a test.
-- End with one concrete takeaway they can apply next time.`
+Always acknowledge the math first, then factor in the villain type. Never be harsh — this is practice.
+Return ONLY valid JSON: { "verdict": "correct" | "borderline" | "incorrect", "feedback": "your 1-3 sentence feedback" }`
 
 export async function POST(request: NextRequest) {
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -32,48 +28,44 @@ export async function POST(request: NextRequest) {
   const body = await request.json()
   const {
     decision,
-    reasoning,
-    usedMic,
-    playerTypeAnswer,
-    correctPlayerType,
+    correctDecision,
     equityPct,
     breakevenPct,
-    correctDecision,
+    villainName,
+    villainPlayerType,
     villainDescription,
-    street,
-    pot,
-    callAmount,
+    handDesc,
   } = body
 
-  const mathResult = equityPct >= breakevenPct ? 'call/raise (positive EV)' : 'fold (negative EV)'
-  const playerTypeCorrect = playerTypeAnswer === correctPlayerType
-  const decisionCorrect = decision === correctDecision
+  const mathVerdict = equityPct >= breakevenPct ? 'call or raise (+EV)' : 'fold (–EV)'
 
-  const prompt = `
-Hand context:
-- Street: ${street}
-- Pot: $${pot}, Call: $${callAmount}
-- Equity: ~${equityPct}%, Breakeven: ${breakevenPct}%
-- Math says: ${mathResult}
-- Villain: "${villainDescription}"
-- Correct player type: ${correctPlayerType} (student answered: ${playerTypeAnswer}, ${playerTypeCorrect ? 'CORRECT' : 'INCORRECT'})
-- Correct decision: ${correctDecision} (student chose: ${decision}, ${decisionCorrect ? 'CORRECT' : 'INCORRECT'})
-${usedMic ? '- Note: student used voice input — transcription may have minor errors' : ''}
+  const prompt = `Scenario:
+- Hand: ${handDesc}
+- Equity: ${equityPct}%, Breakeven: ${breakevenPct}% — math says ${mathVerdict}
+- Villain: ${villainName} (${villainPlayerType}) — "${villainDescription}"
+- Correct answer: ${correctDecision}
+- Student chose: ${decision}
 
-Student's reasoning: "${reasoning}"
-
-Evaluate their reasoning. Is the logic sound given both the math and the player read?`.trim()
+Evaluate.`
 
   try {
     const response = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 200,
+      max_tokens: 150,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: prompt }],
     })
 
     const text = response.content[0].type === 'text' ? response.content[0].text : ''
-    return NextResponse.json({ evaluation: text })
+    let verdict = 'correct'
+    let feedback = text
+    try {
+      const parsed = JSON.parse(text.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim())
+      verdict = parsed.verdict ?? 'correct'
+      feedback = parsed.feedback ?? text
+    } catch { /* fallback: use raw text */ }
+
+    return NextResponse.json({ verdict, feedback })
   } catch (err) {
     console.error('[pokertrainer/evaluate] failed:', err)
     return NextResponse.json({ error: 'Evaluation failed' }, { status: 503 })
