@@ -41,6 +41,7 @@ interface Scenario {
 interface StepResult {
   correct: boolean
   given: string
+  revealed?: boolean
 }
 
 const STATIC_SCENARIOS: Scenario[] = [
@@ -555,6 +556,77 @@ function getVillainResponse(s: Scenario, outcome: VillainOutcome): string {
   return `${n} calls without hesitation.`
 }
 
+function playDing() {
+  try {
+    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+    const ctx = new AudioCtx()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    osc.frequency.setValueAtTime(880, ctx.currentTime)
+    osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.08)
+    gain.gain.setValueAtTime(0.25, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35)
+    osc.start(ctx.currentTime)
+    osc.stop(ctx.currentTime + 0.35)
+  } catch { /* silently skip if audio unavailable */ }
+}
+
+function getRookieNudge(step: Step, s: Scenario): string | null {
+  switch (step) {
+    case 'potOdds':
+      return 'Divide the pot by the call amount — both numbers are shown above.'
+    case 'breakeven':
+      return 'Divide the call amount by the total if you call: call ÷ (pot + call).'
+    case 'outs': {
+      const desc = s.handDesc.toLowerCase()
+      if (desc.includes('flush') && !desc.includes('straight') && !desc.includes('gutshot'))
+        return 'There are 13 of each suit in a full deck — subtract the ones already visible.'
+      if (s.outs === 8)
+        return 'Two ranks complete this straight, one on each end. Each rank has 4 cards in the deck.'
+      if (s.outs === 4)
+        return 'One rank fills the gap. Every rank has exactly 4 cards in a full deck.'
+      return 'Work through the equation shown above step by step.'
+    }
+    case 'equity':
+      return `Multiply outs × ${s.cardsToCome === 2 ? '4 — there are two cards still to come.' : '2 — there is one card still to come.'}`
+    default:
+      return null
+  }
+}
+
+function getOutsConceptualHint(s: Scenario): string {
+  const desc = s.handDesc.toLowerCase()
+
+  // Flush draw: build "13 hearts − 4 visible (cards) = ?" from the actual cards
+  if (desc.includes('flush') && !desc.includes('straight') && !desc.includes('gutshot')) {
+    const allCards = [...s.hand, ...s.board]
+    const suitCounts: Record<string, number> = {}
+    for (const c of allCards) suitCounts[c.slice(-1)] = (suitCounts[c.slice(-1)] ?? 0) + 1
+    const drawSuit = Object.entries(suitCounts).find(([, n]) => n >= 3)?.[0] ?? ''
+    const SUIT_NAMES: Record<string, string> = { '♠': 'spades', '♥': 'hearts', '♦': 'diamonds', '♣': 'clubs' }
+    const suitName = SUIT_NAMES[drawSuit] ?? 'suited cards'
+    const visible = allCards.filter(c => c.slice(-1) === drawSuit)
+    return `13 ${suitName} total − ${visible.length} visible (${visible.join(' ')}) = ?`
+  }
+
+  // OESD (8 outs): strip "= 8 straight outs" → "4 Kings + 4 Eights = ?"
+  if (s.outs === 8) {
+    return s.outDesc.replace(/\s*=\s*\d+.*$/, ' = ?').trim()
+  }
+
+  // Gutshot (4 outs): the answer is always 4, but make them identify the rank
+  if (s.outs === 4) {
+    const rankMatch = s.outDesc.match(/^4\s+(\w+)/)
+    const rank = rankMatch?.[1] ?? 'that rank'
+    return `${rank}s fill the gap — how many ${rank}s are in a full deck?`
+  }
+
+  // Fallback: strip the answer from outDesc
+  return s.outDesc.replace(/\s*=\s*\d+.*$/, ' = ?').trim()
+}
+
 type StepCategory = 'GTO' | 'Exploitative' | 'Decision'
 
 const STEP_CONFIG: Record<Step, { label: string; prompt: string; inputType: 'ratio' | 'number' | 'decision' | 'playerType'; category: StepCategory }> = {
@@ -671,44 +743,73 @@ function expectedAnswer(step: Step, s: Scenario): string {
   }
 }
 
-function getStepGuide(step: Step, s: Scenario, prevResults: (StepResult | undefined)[]): { formula: string; worked: string; tip?: string } | null {
+function getStepGuide(step: Step, s: Scenario, prevResults: (StepResult | undefined)[]): { formula: string; worked?: string; tip?: string } | null {
+  if (s.level === 3) return null
+
   const totalIfCall = s.pot + s.callAmount
   switch (step) {
     case 'potOdds':
-      return {
-        formula: 'Pot ÷ Call Amount = X:1',
-        worked: `$${s.pot} ÷ $${s.callAmount} = ?:1`,
-        tip: 'Common ratios: $60/$20 = 3:1 · $90/$30 = 3:1 · $100/$25 = 4:1',
+      if (s.level === 1) {
+        return {
+          formula: 'Pot ÷ Call Amount = X:1',
+          worked: `$${s.pot} ÷ $${s.callAmount} = ?:1`,
+          tip: 'Quick table: 2:1 · 3:1 · 4:1 · 5:1',
+        }
       }
+      return { formula: 'Pot ÷ Call Amount = X:1' }
+
     case 'breakeven':
-      return {
-        formula: 'Call ÷ (Pot + Call) × 100 = %',
-        worked: `$${s.callAmount} ÷ ($${s.pot} + $${s.callAmount}) = $${s.callAmount} ÷ $${totalIfCall} = ?%`,
-        tip: 'Quick table: 2:1 → 33% · 3:1 → 25% · 4:1 → 20% · 5:1 → 17%',
+      if (s.level === 1) {
+        return {
+          formula: 'Call ÷ (Pot + Call) × 100 = %',
+          worked: `$${s.callAmount} ÷ $${totalIfCall} = ?%`,
+          tip: '2:1 → 33% · 3:1 → 25% · 4:1 → 20% · 5:1 → 17%',
+        }
       }
+      return { formula: 'Call ÷ (Pot + Call) × 100 = %' }
+
     case 'outs':
-      return {
-        formula: 'Count every card left in the deck that completes your hand',
-        worked: s.outDesc,
+      if (s.level === 1) {
+        return {
+          formula: 'Count every card left in the deck that completes your hand',
+          worked: getOutsConceptualHint(s),
+        }
       }
+      return null
+
     case 'equity': {
       const rule = s.cardsToCome === 2 ? 4 : 2
-      return {
-        formula: `Rule of ${rule}: Outs × ${rule} = equity %`,
-        worked: `${s.outs} outs × ${rule} = ?%`,
+      if (s.level === 1) {
+        const outsIdx = s.steps.indexOf('outs')
+        const outsCorrect = outsIdx >= 0 && prevResults[outsIdx]?.correct
+        return {
+          formula: `Rule of ${rule}: Outs × ${rule} = equity %`,
+          worked: outsCorrect ? `${s.outs} outs × ${rule} = ?%` : undefined,
+        }
       }
+      return { formula: `Outs × ${rule} (${s.cardsToCome === 2 ? 'flop' : 'turn'}) = equity %` }
     }
+
     case 'playerType':
       return null
+
     case 'decision': {
-      const equityIdx = s.steps.indexOf('equity')
-      const breakevenIdx = s.steps.indexOf('breakeven')
-      const equity = equityIdx >= 0 && prevResults[equityIdx] ? s.equityPct : '?'
-      const breakeven = breakevenIdx >= 0 && prevResults[breakevenIdx] ? s.breakevenPct : '?'
-      return {
-        formula: 'If equity % > break-even % → call or raise   |   If lower → fold',
-        worked: `Your equity: ~${equity}%   vs   Break-even: ${breakeven}%`,
+      if (s.level === 1) {
+        const equityIdx = s.steps.indexOf('equity')
+        const breakevenIdx = s.steps.indexOf('breakeven')
+        const equityKnown = equityIdx >= 0 && prevResults[equityIdx]?.correct
+        const breakevenKnown = breakevenIdx >= 0 && prevResults[breakevenIdx]?.correct
+        return {
+          formula: 'equity % > break-even % → call or raise   |   lower → fold',
+          worked: equityKnown && breakevenKnown
+            ? `Your equity: ~${s.equityPct}%   vs   Break-even: ${s.breakevenPct}%`
+            : undefined,
+        }
       }
+      if (s.level === 2) {
+        return { formula: 'equity % > break-even % → call or raise   |   lower → fold' }
+      }
+      return null
     }
   }
 }
@@ -774,8 +875,6 @@ export default function PokerTrainer() {
   const [explanations, setExplanations] = useState<(string | undefined)[]>([])
   const [input, setInput] = useState('')
   const [selected, setSelected] = useState('')
-  const [score, setScore] = useState({ correct: 0, total: 0 })
-  const [scenarioResults, setScenarioResults] = useState<{ correct: number; total: number }[]>([])
   const [done, setDone] = useState(false)
 
   const [aiFailed, setAiFailed] = useState(false)
@@ -785,6 +884,10 @@ export default function PokerTrainer() {
   const [loadingEvaluation, setLoadingEvaluation] = useState(false)
   const [raiseSizeChosen, setRaiseSizeChosen] = useState<RaiseSize | null>(null)
   const [villainOutcome, setVillainOutcome] = useState<VillainOutcome | null>(null)
+  const [shaking, setShaking] = useState(false)
+  const [attempts, setAttempts] = useState<number[]>([])
+  const [disabledOptions, setDisabledOptions] = useState<string[]>([])
+  const [scenarioPass, setScenarioPass] = useState<(boolean | null)[]>([])
   // Snapshot count at session start so mid-session AI loads don't add new pips
   const [sessionScenarioCount, setSessionScenarioCount] = useState(
     () => STATIC_SCENARIOS.filter(s => s.level === 1).length
@@ -888,23 +991,44 @@ export default function PokerTrainer() {
   async function submit(value: string) {
     const correct = checkAnswer(currentStep, value, scenario)
     const idx = stepIdx
+    const isDecision = currentStep === 'decision'
 
+    // Intermediate step wrong → shake and require retry
+    if (!correct && !isDecision) {
+      setAttempts(prev => {
+        const next = [...prev]
+        next[idx] = (next[idx] ?? 0) + 1
+        return next
+      })
+      if (config.inputType === 'playerType') {
+        setDisabledOptions(prev => [...prev, value])
+      }
+      setInput('')
+      setSelected('')
+      setShaking(true)
+      setTimeout(() => setShaking(false), 460)
+      return
+    }
+
+    // Correct answer (any step) or decision step (always final) — record result
     setResults(prev => {
       const next = [...prev]
       next[idx] = { correct, given: value }
       return next
     })
-    setScore(prev => ({ correct: prev.correct + (correct ? 1 : 0), total: prev.total + 1 }))
     setExplanations(prev => {
       const next = [...prev]
       let expl = scenario.explanations[currentStep] ?? expectedAnswer(currentStep, scenario)
-      if (currentStep === 'decision' && isRaiseBorderline(scenario)) expl += borderlineRaiseNote(scenario)
+      if (isDecision && isRaiseBorderline(scenario)) expl += borderlineRaiseNote(scenario)
       next[idx] = expl
       return next
     })
 
-    // Fire AI evaluation for every decision step
-    if (currentStep === 'decision') {
+    if (correct) playDing()
+
+    // Fire AI evaluation for decision step
+    if (isDecision) {
+      const sIdxAtSubmit = sIdx
       setLoadingEvaluation(true)
       try {
         const res = await fetch('/api/pokertrainer/evaluate', {
@@ -930,14 +1054,38 @@ export default function PokerTrainer() {
         })
         if (res.ok) {
           const data = await res.json()
-          setEvaluation(data.verdict ? { verdict: data.verdict, feedback: data.feedback } : null)
+          if (data.verdict) {
+            setEvaluation({ verdict: data.verdict, feedback: data.feedback })
+            const passed = data.verdict === 'correct' || data.verdict === 'borderline'
+            setScenarioPass(prev => {
+              const next = [...prev]
+              next[sIdxAtSubmit] = passed
+              return next
+            })
+          }
         }
       } catch {
-        // Silently skip — static explanation is still shown
+        // Coach unavailable — static explanation still shown
       } finally {
         setLoadingEvaluation(false)
       }
     }
+  }
+
+  function revealCurrentAnswer() {
+    const idx = stepIdx
+    const answer = expectedAnswer(currentStep, scenario)
+    setResults(prev => {
+      const next = [...prev]
+      next[idx] = { correct: true, given: answer, revealed: true }
+      return next
+    })
+    setExplanations(prev => {
+      const next = [...prev]
+      next[idx] = scenario.explanations[currentStep] ?? answer
+      return next
+    })
+    // No ding — they didn't earn it
   }
 
   function handleCheck() {
@@ -950,13 +1098,10 @@ export default function PokerTrainer() {
     setStepIdx(i => i + 1)
     setInput('')
     setSelected('')
+    setDisabledOptions([])
   }
 
   function nextScenario() {
-    const stepCorrect = results.filter(r => r?.correct).length
-    const stepTotal = results.filter(r => r !== undefined).length
-    setScenarioResults(prev => [...prev, { correct: stepCorrect, total: stepTotal }])
-
     if (sIdx + 1 >= activeScenarios.length) {
       setDone(true)
     } else {
@@ -969,6 +1114,8 @@ export default function PokerTrainer() {
       setEvaluation(null)
       setRaiseSizeChosen(null)
       setVillainOutcome(null)
+      setAttempts([])
+      setDisabledOptions([])
     }
   }
 
@@ -979,13 +1126,15 @@ export default function PokerTrainer() {
     setExplanations([])
     setInput('')
     setSelected('')
-    setScore({ correct: 0, total: 0 })
-    setScenarioResults([])
     setDone(false)
     setEvaluation(null)
     setLoadingEvaluation(false)
     setRaiseSizeChosen(null)
     setVillainOutcome(null)
+    setAttempts([])
+    setDisabledOptions([])
+    setScenarioPass([])
+    setShaking(false)
   }
 
   function changeFilter(lvl: 1 | 2 | 3) {
@@ -1044,7 +1193,9 @@ export default function PokerTrainer() {
   }
 
   if (done) {
-    const pct = score.total > 0 ? Math.round((score.correct / score.total) * 100) : 0
+    const passCount = scenarioPass.filter(p => p === true).length
+    const total = scenarioPass.filter(p => p !== null).length
+    const pct = total > 0 ? Math.round((passCount / total) * 100) : 0
     const nextLevel = filterLevel < 3 ? (filterLevel + 1) as 2 | 3 : null
     const LEVEL_NAMES_DONE: Record<2 | 3, string> = { 2: 'Regular', 3: 'Shark' }
     const readyForNext = pct >= 60
@@ -1056,7 +1207,7 @@ export default function PokerTrainer() {
             {filterLevel === 1 ? 'Rookie' : filterLevel === 2 ? 'Regular' : 'Shark'} Complete
           </h1>
           <p className="text-white/40 text-sm mb-4">
-            {score.correct} / {score.total} steps correct ({pct}%)
+            {passCount} / {total > 0 ? total : activeScenarios.length} scenarios passed
           </p>
           <div className={`text-3xl font-bold mb-2 ${pct >= 80 ? 'text-emerald-400' : pct >= 60 ? 'text-amber-400' : 'text-red-400'}`}>
             {pct >= 80 ? '🏆 Sharp' : pct >= 60 ? '📈 Improving' : '📚 Keep Studying'}
@@ -1119,20 +1270,19 @@ export default function PokerTrainer() {
           {/* Progress pips */}
           <div className="flex gap-1.5 items-center flex-shrink-0" role="list" aria-label={`Scenario progress: ${sIdx + 1} of ${pipScenarios.length}`}>
             {pipScenarios.map((s, i) => {
-              const sr = scenarioResults[i]
+              const pass = scenarioPass[i]
               let pipClass: string
               if (i < sIdx) {
-                if (!sr) pipClass = 'w-2.5 h-2.5 bg-green-500'
-                else if (sr.correct === sr.total) pipClass = 'w-2.5 h-2.5 bg-green-500'
-                else if (sr.correct === 0) pipClass = 'w-2.5 h-2.5 bg-red-400'
-                else pipClass = 'w-2.5 h-2.5 bg-yellow-400'
+                if (pass === true)  pipClass = 'w-2.5 h-2.5 bg-emerald-500'
+                else if (pass === false) pipClass = 'w-2.5 h-2.5 bg-red-400'
+                else pipClass = 'w-2.5 h-2.5 bg-white/25'
               } else if (i === sIdx) {
                 pipClass = 'w-3 h-3 bg-blue-500 ring-2 ring-blue-500/40'
               } else {
                 pipClass = 'w-2 h-2 bg-white/15'
               }
               const status = i < sIdx
-                ? sr ? (sr.correct === sr.total ? 'perfect' : `${sr.correct}/${sr.total} correct`) : 'complete'
+                ? pass === true ? 'passed' : pass === false ? 'failed' : 'complete'
                 : i === sIdx ? 'current' : 'upcoming'
               return (
                 <div
@@ -1171,15 +1321,19 @@ export default function PokerTrainer() {
           {/* Install + Score */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <InstallButton />
-            {score.total > 0 && (
-              <div
-                className="text-right pl-2 border-l border-white/8"
-                aria-label={`Score: ${score.correct} of ${score.total} steps correct`}
-              >
-                <div className="text-base font-bold text-blue-400 tabular-nums">{Math.round((score.correct / score.total) * 100)}%</div>
-                <div className="text-xs font-bold uppercase tracking-wider text-white/50 leading-none" aria-hidden="true">{score.correct}/{score.total}</div>
-              </div>
-            )}
+            {scenarioPass.some(p => p !== null) && (() => {
+              const passed = scenarioPass.filter(p => p === true).length
+              const graded = scenarioPass.filter(p => p !== null).length
+              return (
+                <div
+                  className="text-right pl-2 border-l border-white/8"
+                  aria-label={`Score: ${passed} of ${graded} scenarios passed`}
+                >
+                  <div className="text-base font-bold text-blue-400 tabular-nums">{passed}/{graded}</div>
+                  <div className="text-xs font-bold uppercase tracking-wider text-white/50 leading-none" aria-hidden="true">passed</div>
+                </div>
+              )
+            })()}
           </div>
         </div>
       </header>
@@ -1250,8 +1404,8 @@ export default function PokerTrainer() {
                 const r = results[i]
                 if (!r) return null
                 const borderline = step === 'decision' && r.correct && isRaiseBorderline(scenario)
-                const dotColor = !r.correct ? 'bg-red-500' : borderline ? 'bg-amber-500' : 'bg-emerald-500'
-                const labelColor = !r.correct ? 'text-red-400' : borderline ? 'text-amber-400' : 'text-emerald-400'
+                const dotColor = !r.correct ? 'bg-red-500' : (borderline || r.revealed) ? 'bg-amber-500' : 'bg-emerald-500'
+                const labelColor = !r.correct ? 'text-red-400' : (borderline || r.revealed) ? 'text-amber-400' : 'text-emerald-400'
                 return (
                   <div key={step} className="step-enter relative flex items-start gap-2.5 py-1">
                     <span className={`w-3.5 h-3.5 rounded-full flex-shrink-0 mt-0.5 -ml-[1.1rem] border-2 border-[#171a27] ${dotColor}`} />
@@ -1271,7 +1425,7 @@ export default function PokerTrainer() {
           )}
 
           {/* Active step */}
-          <div ref={activeRef}>
+          <div ref={activeRef} className={shaking ? 'shake' : ''}>
             <div className={`rounded-xl border p-5 ${
               !isChecked
                 ? 'bg-[#1e2238] lg:bg-[#171a27] border-blue-500/60 shadow-xl shadow-blue-500/10'
@@ -1329,7 +1483,9 @@ export default function PokerTrainer() {
                     return guide ? (
                       <div className="rounded-lg px-4 py-3 mb-4 border-l-2 border-teal-500 bg-teal-500/5 shadow-[inset_0_0_20px_rgba(20,184,166,0.06)] border border-teal-500/20">
                         <p className="text-xs text-teal-300 font-black uppercase tracking-[0.15em] mb-1.5">{guide.formula}</p>
-                        <p className="text-xl font-mono font-bold text-white tabular-nums">{guide.worked}</p>
+                        {guide.worked && (
+                          <p className="text-xl font-mono font-bold text-white tabular-nums">{guide.worked}</p>
+                        )}
                         {guide.tip && (
                           <p className="text-xs text-white/50 mt-1.5 pt-1.5 border-t border-teal-500/15">{guide.tip}</p>
                         )}
@@ -1343,6 +1499,7 @@ export default function PokerTrainer() {
                         selected={selected as PlayerType | ''}
                         onSelect={(type) => setSelected(type)}
                         disabled={false}
+                        disabledOptions={disabledOptions as PlayerType[]}
                       />
                       <button
                         onClick={handleCheck}
@@ -1351,6 +1508,14 @@ export default function PokerTrainer() {
                       >
                         Confirm Read
                       </button>
+                      {(attempts[stepIdx] ?? 0) >= (scenario.level === 1 ? 2 : scenario.level === 2 ? 4 : 6) && (
+                        <button
+                          onClick={revealCurrentAnswer}
+                          className="mt-2 w-full py-2 text-xs text-white/35 hover:text-white/55 transition-colors"
+                        >
+                          Show answer ↓
+                        </button>
+                      )}
                     </div>
                   ) : config.inputType === 'decision' ? (
                     <div className="space-y-3">
@@ -1407,29 +1572,47 @@ export default function PokerTrainer() {
                       </button>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2">
-                      <input
-                        ref={inputRef}
-                        type={config.inputType === 'number' ? 'number' : 'text'}
-                        aria-label={config.label}
-                        value={input}
-                        onChange={e => setInput(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && handleCheck()}
-                        placeholder={config.inputType === 'ratio' ? 'e.g. 3:1' : 'e.g. 25'}
-                        min={0}
-                        autoComplete="off"
-                        className="flex-1 px-4 py-3 rounded-xl border border-white/15 bg-white/5 text-white text-sm placeholder-white/25 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                      {(currentStep === 'breakeven' || currentStep === 'equity') && <span className="text-sm text-white/30 font-medium" aria-hidden="true">%</span>}
-                      <button
-                        onClick={handleCheck}
-                        disabled={!input.trim()}
-                        className="px-5 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-semibold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                      >
-                        Check ↵
-                      </button>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          ref={inputRef}
+                          type={config.inputType === 'number' ? 'number' : 'text'}
+                          aria-label={config.label}
+                          value={input}
+                          onChange={e => setInput(e.target.value)}
+                          onKeyDown={e => e.key === 'Enter' && handleCheck()}
+                          placeholder={config.inputType === 'ratio' ? 'e.g. 3:1' : 'e.g. 25'}
+                          min={0}
+                          autoComplete="off"
+                          className="flex-1 px-4 py-3 rounded-xl border border-white/15 bg-white/5 text-white text-sm placeholder-white/25 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        {(currentStep === 'breakeven' || currentStep === 'equity') && <span className="text-sm text-white/30 font-medium" aria-hidden="true">%</span>}
+                        <button
+                          onClick={handleCheck}
+                          disabled={!input.trim()}
+                          className="px-5 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-semibold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                        >
+                          Check ↵
+                        </button>
+                      </div>
+                      {(attempts[stepIdx] ?? 0) >= (scenario.level === 1 ? 2 : scenario.level === 2 ? 4 : 6) && currentStep !== 'decision' && (
+                        <button
+                          onClick={revealCurrentAnswer}
+                          className="mt-2 w-full py-1.5 text-xs text-white/35 hover:text-white/55 transition-colors"
+                        >
+                          Show answer ↓
+                        </button>
+                      )}
                     </div>
                   )}
+
+                  {/* Rookie nudge — appears after first wrong attempt on non-decision steps */}
+                  {scenario.level === 1 && (attempts[stepIdx] ?? 0) >= 1 && currentStep !== 'decision' && (() => {
+                    const nudge = getRookieNudge(currentStep, scenario)
+                    return nudge ? (
+                      <p className="mt-3 text-xs text-amber-400/75 leading-relaxed">↑ {nudge}</p>
+                    ) : null
+                  })()}
                 </div>
               )}
             </div>
@@ -1522,9 +1705,10 @@ export default function PokerTrainer() {
               if (!raiseSizeChosen) {
                 return (
                   <div className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3">
-                    <p className="text-xs font-bold text-amber-400 uppercase tracking-[0.15em] mb-2.5">
-                      🔺 Villain Reaction — How Much Do You Raise?
+                    <p className="text-xs font-bold text-amber-400 uppercase tracking-[0.15em] mb-0.5">
+                      🔺 You chose to raise — pick your size
                     </p>
+                    <p className="text-xs text-white/40 mb-2.5">The villain will react based on their player type</p>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                       {SIZES.map(({ key, label, amount }) => (
                         <button

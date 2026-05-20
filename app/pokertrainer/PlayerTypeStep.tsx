@@ -70,9 +70,10 @@ interface PlayerTypeStepProps {
   selected: PlayerType | ''
   onSelect: (type: PlayerType) => void
   disabled: boolean
+  disabledOptions?: PlayerType[]
 }
 
-export function PlayerTypeStep({ selected, onSelect, disabled }: PlayerTypeStepProps) {
+export function PlayerTypeStep({ selected, onSelect, disabled, disabledOptions = [] }: PlayerTypeStepProps) {
   const [hovered, setHovered] = useState<PlayerType | null>(null)
   const active = hovered ?? (selected || null)
   const activeInfo = active ? PLAYER_TYPES.find(t => t.value === active) : null
@@ -80,30 +81,38 @@ export function PlayerTypeStep({ selected, onSelect, disabled }: PlayerTypeStepP
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-5 gap-1.5">
-        {PLAYER_TYPES.map(type => (
+        {PLAYER_TYPES.map(type => {
+          const isOptionDisabled = disabled || disabledOptions.includes(type.value)
+          const wasWrong = disabledOptions.includes(type.value)
+          return (
           <button
             key={type.value}
-            onClick={() => !disabled && onSelect(type.value)}
-            onMouseEnter={() => setHovered(type.value)}
+            onClick={() => !isOptionDisabled && onSelect(type.value)}
+            onMouseEnter={() => !isOptionDisabled && setHovered(type.value)}
             onMouseLeave={() => setHovered(null)}
-            onTouchStart={() => setHovered(type.value)}
-            onFocus={() => setHovered(type.value)}
+            onTouchStart={() => !isOptionDisabled && setHovered(type.value)}
+            onFocus={() => !isOptionDisabled && setHovered(type.value)}
             onBlur={() => setHovered(null)}
-            disabled={disabled}
+            disabled={isOptionDisabled}
             aria-pressed={selected === type.value}
-            aria-label={`${type.label}: ${type.short}`}
+            aria-label={`${type.label}: ${type.short}${wasWrong ? ' — not this one' : ''}`}
             className={`flex flex-col items-center gap-1 py-3 px-0.5 rounded-xl text-xs font-semibold transition-all border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-1 focus-visible:ring-offset-[#1e2238] ${
-              disabled ? 'cursor-default opacity-80' : 'cursor-pointer'
+              wasWrong
+                ? 'cursor-not-allowed opacity-30 bg-red-500/5 border-red-500/20 text-red-400/40 line-through'
+                : isOptionDisabled ? 'cursor-default opacity-80' : 'cursor-pointer'
             } ${
-              selected === type.value
+              !wasWrong && selected === type.value
                 ? TYPE_SELECTED[type.value]
-                : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white/80 hover:border-white/20'
+                : !wasWrong && !isOptionDisabled
+                  ? 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white/80 hover:border-white/20'
+                  : ''
             }`}
           >
             <span className="text-lg" aria-hidden="true">{type.emoji}</span>
             <span>{type.label}</span>
           </button>
-        ))}
+        )})}
+
       </div>
 
       <div className={`rounded-lg px-4 py-3 text-sm transition-all border min-h-[60px] ${

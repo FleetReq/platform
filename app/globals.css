@@ -371,6 +371,19 @@ body {
     radial-gradient(ellipse at 80% 20%, rgba(5, 46, 22, 0.12) 0%, transparent 50%);
 }
 
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  15%       { transform: translateX(-8px); }
+  30%       { transform: translateX(8px); }
+  45%       { transform: translateX(-6px); }
+  60%       { transform: translateX(6px); }
+  75%       { transform: translateX(-3px); }
+  90%       { transform: translateX(3px); }
+}
+.shake {
+  animation: shake 0.45s ease-in-out;
+}
+
 /* Subscription Badge Animations */
 @keyframes gradient-shift {
   0%, 100% {
