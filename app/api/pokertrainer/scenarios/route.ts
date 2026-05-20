@@ -355,9 +355,9 @@ const VILLAIN_HINTS: Record<1 | 2 | 3, string> = {
   3: 'Villain description should be genuinely ambiguous — multiple player types should be plausible',
 }
 
-function buildPrompt(level: 1 | 2 | 3, idx: number, attempt: number): string {
-  const drawHint = DRAW_HINTS[(idx + attempt) % DRAW_HINTS.length]
-  const streetHint = (idx + attempt) % 2 === 0 ? 'Flop' : 'Turn'
+function buildPrompt(level: 1 | 2 | 3, drawOffset: number, streetOffset: number, attempt: number): string {
+  const drawHint = DRAW_HINTS[(drawOffset + attempt) % DRAW_HINTS.length]
+  const streetHint = (streetOffset + attempt) % 2 === 0 ? 'Flop' : 'Turn'
   const villainRespHint = level >= 2
     ? 'Include "villainResponses" with fold/call/reraise strings matching the villain\'s personality.'
     : 'Do NOT include villainResponses (Level 1 only).'
@@ -394,6 +394,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
   }
 
+  // Random starting draw type and street so every request is independently distributed.
+  // Retries rotate through the remaining options — so a failed flush draw tries OESD next, etc.
+  const drawOffset = Math.floor(Math.random() * DRAW_HINTS.length)
+  const streetOffset = Math.floor(Math.random() * 2)
+
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     if (attempt > 0) await new Promise(r => setTimeout(r, RETRY_DELAY_MS))
 
@@ -403,7 +408,7 @@ export async function GET(request: NextRequest) {
         model: 'claude-haiku-4-5-20251001',
         max_tokens: SINGLE_MAX_TOKENS,
         system: SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: buildPrompt(level, idx, attempt) }],
+        messages: [{ role: 'user', content: buildPrompt(level, drawOffset, streetOffset, attempt) }],
       })
 
       if (!response.content.length) {
