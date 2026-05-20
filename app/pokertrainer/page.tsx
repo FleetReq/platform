@@ -1439,20 +1439,61 @@ export default function PokerTrainer() {
               )}
             </div>
 
-            {/* AI coach evaluation — fires on every decision step */}
-            {isChecked && currentStep === 'decision' && evaluation && (() => {
+            {/* AI coach evaluation — always reserves space once on decision step */}
+            {currentStep === 'decision' && (() => {
+              const isIdle     = !isChecked && !loadingEvaluation && !evaluation
+              const isLoading  = loadingEvaluation
+              const isResolved = isChecked && !!evaluation
+
               const VERDICT_STYLE = {
-                correct:    { border: 'border-emerald-500/40', bg: 'bg-emerald-500/10', label: 'text-emerald-400', text: 'text-emerald-200', dot: '🟢' },
-                borderline: { border: 'border-amber-500/40',   bg: 'bg-amber-500/10',   label: 'text-amber-400',   text: 'text-amber-200',   dot: '🟡' },
-                incorrect:  { border: 'border-red-500/40',     bg: 'bg-red-500/10',     label: 'text-red-400',     text: 'text-red-200',     dot: '🔴' },
+                correct:    { border: 'border-emerald-500/40', bg: 'bg-emerald-500/10', label: 'text-emerald-400', text: 'text-emerald-200', chip: '#10b981', dot: '🟢' },
+                borderline: { border: 'border-amber-500/40',   bg: 'bg-amber-500/10',   label: 'text-amber-400',   text: 'text-amber-200',   chip: '#f59e0b', dot: '🟡' },
+                incorrect:  { border: 'border-red-500/40',     bg: 'bg-red-500/10',     label: 'text-red-400',     text: 'text-red-200',     chip: '#ef4444', dot: '🔴' },
               }
-              const style = VERDICT_STYLE[evaluation.verdict] ?? VERDICT_STYLE.correct
+              const style = isResolved && evaluation
+                ? (VERDICT_STYLE[evaluation.verdict] ?? VERDICT_STYLE.correct)
+                : null
+
               return (
-                <div className={`mt-3 rounded-xl px-4 py-3 border ${style.bg} ${style.border}`}>
-                  <p className={`text-xs font-bold uppercase tracking-[0.15em] mb-1.5 ${style.label}`}>
-                    {style.dot} Coach
-                  </p>
-                  <p className={`text-sm leading-relaxed ${style.text}`}>{evaluation.feedback}</p>
+                <div className={`mt-3 rounded-xl px-4 py-3 border transition-all duration-500 ease-out ${
+                  isResolved && style
+                    ? `${style.bg} ${style.border}`
+                    : 'bg-white/[0.03] border-white/[0.08]'
+                }`}>
+                  {/* Header row: chip icon + label */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <circle cx="8" cy="8" r="7.5" stroke={isResolved && style ? style.chip : 'rgba(255,255,255,0.2)'} strokeWidth="1" fill={isResolved && style ? style.chip + '22' : 'rgba(255,255,255,0.04)'} style={{ transition: 'stroke 0.5s, fill 0.5s' }} />
+                      <circle cx="8" cy="8" r="4" stroke={isResolved && style ? style.chip : 'rgba(255,255,255,0.2)'} strokeWidth="1" fill="none" style={{ transition: 'stroke 0.5s' }} />
+                    </svg>
+                    <p className={`text-xs font-bold uppercase tracking-[0.15em] transition-colors duration-500 ${
+                      isResolved && style ? style.label : 'text-white/25'
+                    }`}>
+                      {isResolved && style ? `${style.dot} Coach` : 'Coach'}
+                    </p>
+                  </div>
+
+                  {/* Body */}
+                  {isIdle && (
+                    <p className="text-sm text-white/20 italic">Waiting for your decision…</p>
+                  )}
+                  {isLoading && (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1.5 mb-3">
+                        <span className="w-2 h-2 rounded-full bg-white/30 animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="w-2 h-2 rounded-full bg-white/30 animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="w-2 h-2 rounded-full bg-white/30 animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                      <div className="h-2.5 rounded-full bg-white/10 animate-pulse w-full" />
+                      <div className="h-2.5 rounded-full bg-white/10 animate-pulse w-4/5" />
+                      <div className="h-2.5 rounded-full bg-white/10 animate-pulse w-3/5" />
+                    </div>
+                  )}
+                  {isResolved && evaluation && style && (
+                    <p className={`text-sm leading-relaxed transition-opacity duration-300 ${style.text}`}>
+                      {evaluation.feedback}
+                    </p>
+                  )}
                 </div>
               )
             })()}
