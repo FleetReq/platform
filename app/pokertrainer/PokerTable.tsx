@@ -178,7 +178,7 @@ export function PokerTable({ heroPosition, villainPosition, villainName, activeP
       <ellipse cx={CX + 74} cy={CY + 2.5} rx={12} ry={4.5} fill="rgba(194,65,12,0.55)" />
       <ellipse cx={CX + 74} cy={CY} rx={12} ry={4.5} fill="#9a3412" stroke="rgba(251,146,60,0.4)" strokeWidth="0.8" />
       <text x={CX + 74} y={CY + 13} textAnchor="middle" fontSize="6" fontWeight="700"
-        fill="rgba(255,255,255,0.28)" letterSpacing="1.5">TO CALL</text>
+        fill="rgba(255,255,255,0.28)" letterSpacing="1.5">CALL</text>
 
       {/* All 9 seats */}
       {NINE_MAX.map((pos, i) => {

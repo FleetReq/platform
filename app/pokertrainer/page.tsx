@@ -755,17 +755,13 @@ async function fetchBatchOnce(batch: 1 | 2): Promise<Scenario[]> {
 }
 
 async function fetchBatch(batch: 1 | 2): Promise<Scenario[]> {
-  try {
-    return await fetchBatchOnce(batch)
-  } catch (firstErr) {
-    // One automatic retry after 2s — handles cold-start timeouts and transient API blips
-    await new Promise(r => setTimeout(r, 2000))
-    try {
-      return await fetchBatchOnce(batch)
-    } catch {
-      throw firstErr
-    }
+  // Up to 3 attempts — each generates a fresh AI response, so retrying clears validation failures
+  let lastErr: unknown
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt > 0) await new Promise(r => setTimeout(r, 1500))
+    try { return await fetchBatchOnce(batch) } catch (err) { lastErr = err }
   }
+  throw lastErr
 }
 
 export default function PokerTrainer() {
