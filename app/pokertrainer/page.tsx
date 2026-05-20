@@ -1444,6 +1444,7 @@ export default function PokerTrainer() {
               const isIdle     = !isChecked && !loadingEvaluation && !evaluation
               const isLoading  = loadingEvaluation
               const isResolved = isChecked && !!evaluation
+              const isFailed   = isChecked && !loadingEvaluation && !evaluation
 
               const VERDICT_STYLE = {
                 correct:    { border: 'border-emerald-500/40', bg: 'bg-emerald-500/10', label: 'text-emerald-400', text: 'text-emerald-200', chip: '#10b981', dot: '🟢' },
@@ -1493,6 +1494,9 @@ export default function PokerTrainer() {
                     <p className={`text-sm leading-relaxed transition-opacity duration-300 ${style.text}`}>
                       {evaluation.feedback}
                     </p>
+                  )}
+                  {isFailed && (
+                    <p className="text-sm text-white/20 italic">Coach feedback unavailable.</p>
                   )}
                 </div>
               )
