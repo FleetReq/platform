@@ -2,7 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
 import { rateLimit, RATE_LIMITS } from '@/lib/rate-limit'
 
-export const maxDuration = 30
+export const maxDuration = 55
 
 const client = new Anthropic()
 
@@ -21,7 +21,6 @@ interface RawScenario {
   cardsToCome: 1 | 2
   outs: number
   outDesc: string
-  // Villain/table fields — optional; defaults applied in processScenario
   tableSize?: number
   heroPosition?: string
   villainPosition?: string
@@ -57,13 +56,11 @@ const RANK_MAP: Record<string, number> = {
   '2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'T':10,'J':11,'Q':12,'K':13,'A':14,
 }
 
-// Returns an error string if the hand description contradicts the actual cards, null if consistent.
 function validateDrawConsistency(hand: string[], board: string[], handDesc: string, outs: number): string | null {
   const desc = handDesc.toLowerCase()
   const handSuits = hand.map(c => c.slice(-1))
   const boardSuits = board.map(c => c.slice(-1))
 
-  // Flush draw: both hole cards must be same suit AND at least 2 board cards match that suit
   if (desc.includes('flush') && !desc.match(/made flush|complete/)) {
     const flushSuit = handSuits.find(s => handSuits.filter(x => x === s).length === 2)
     if (!flushSuit)
@@ -73,7 +70,6 @@ function validateDrawConsistency(hand: string[], board: string[], handDesc: stri
       return `flush draw claimed but only ${boardCount} board card(s) share suit ${flushSuit} — need at least 2`
   }
 
-  // Straight draw: verify the ranks actually form the claimed draw
   if (desc.includes('straight')) {
     const allCards = [...hand, ...board]
     const rankNums = allCards.map(c => RANK_MAP[c[0]] ?? 0).filter(n => n > 0)
@@ -81,7 +77,6 @@ function validateDrawConsistency(hand: string[], board: string[], handDesc: stri
     const withLowAce = rankSet.has(14) ? new Set([...rankSet, 1]) : rankSet
 
     if (outs === 8) {
-      // OESD: 4 strictly consecutive ranks must be present
       const hasOESD = [rankSet, withLowAce].some(set => {
         const arr = [...set].sort((a, b) => a - b)
         return arr.some((_, i) =>
@@ -94,7 +89,6 @@ function validateDrawConsistency(hand: string[], board: string[], handDesc: stri
     }
 
     if (outs === 4) {
-      // Gutshot: exactly 4 of 5 consecutive ranks present (one gap)
       let hasGutshot = false
       for (let start = 1; start <= 10 && !hasGutshot; start++) {
         const window = [start, start+1, start+2, start+3, start+4]
@@ -138,7 +132,6 @@ function buildExplanations(
     ? `beats the ${breakevenPct}% needed`
     : `falls short of the ${breakevenPct}% needed`
 
-  // Villain-specific tactical note appended to each decision
   const villainNote: Record<PlayerType, Record<Decision, string>> = {
     nit: {
       call:  `${villainName} likely has a strong made hand — don't expect them to fold to aggression. You're calling for the pot odds, not implied odds. If you miss on the turn, let it go.`,
@@ -199,7 +192,6 @@ function processScenario(raw: RawScenario, idx: number) {
   const equityPct = raw.outs * rule
   const decision = computeDecision(raw.level, equityPct, breakevenPct)
 
-  // Villain/table fields — fill in sensible defaults if Haiku omitted them
   const tableSize       = (typeof raw.tableSize === 'number' && raw.tableSize >= 2 && raw.tableSize <= 8) ? raw.tableSize : 6
   const heroPosition    = (typeof raw.heroPosition === 'string' && VALID_POSITIONS.has(raw.heroPosition)) ? raw.heroPosition : 'CO'
   const villainPosition = (typeof raw.villainPosition === 'string' && VALID_POSITIONS.has(raw.villainPosition) && raw.villainPosition !== heroPosition) ? raw.villainPosition : 'BTN'
@@ -256,28 +248,22 @@ function validate(s: unknown, idx?: number): s is RawScenario {
   if (typeof r.outDesc !== 'string' || !r.outDesc) return fail('missing outDesc')
   if (typeof r.handDesc !== 'string' || !r.handDesc) return fail('missing handDesc')
 
-  // Street ↔ board length ↔ cardsToCome must all agree
   if (r.street === 'Flop' && ((r.board as string[]).length !== 3 || r.cardsToCome !== 2))
     return fail(`Flop board length ${(r.board as string[]).length} or cardsToCome ${r.cardsToCome}`)
   if (r.street === 'Turn' && ((r.board as string[]).length !== 4 || r.cardsToCome !== 1))
     return fail(`Turn board length ${(r.board as string[]).length} or cardsToCome ${r.cardsToCome}`)
 
-  // Card format and uniqueness
   const allCards = [...(r.hand as string[]), ...(r.board as string[])]
   const badCard = allCards.find(c => typeof c !== 'string' || !CARD_RE.test(c))
   if (badCard !== undefined) return fail(`bad card format: ${badCard}`)
   if (new Set(allCards).size !== allCards.length) return fail(`duplicate cards: ${allCards.join(' ')}`)
 
-  // Hand description must match the actual cards mathematically
   const drawError = validateDrawConsistency(r.hand as string[], r.board as string[], r.handDesc as string, r.outs as number)
   if (drawError) return fail(drawError)
 
-  // pot/callAmount must give a clean ratio
   const ratio = (r.pot as number) / (r.callAmount as number)
   if (!CLEAN_RATIOS.some(cr => Math.abs(ratio - cr) < 0.1)) return fail(`bad ratio: ${ratio.toFixed(2)} (pot ${r.pot} call ${r.callAmount})`)
   if (r.level === 1 && Math.abs(ratio - 2.5) < 0.1) return fail('level 1 cannot use 2.5:1')
-
-  // Villain/table fields are optional — missing or invalid values get defaults in processScenario
 
   return true
 }
@@ -349,40 +335,58 @@ const EXAMPLE_SCENARIO = `{
   "villainPlayerType": "nit"
 }`
 
-// Batch 1: 1 scenario — smallest possible payload, loading screen gone in ~1.5s
-// Batch 2: 5 scenarios — loads in background while user plays scenario 1
-const BATCH_PROMPTS: Record<1 | 2, string> = {
-  1: `Generate exactly 1 Texas Hold'em scenario at level 1 (Rookie).
+// Rotate draw type and street on each attempt so retries don't hit the same failure mode
+const DRAW_HINTS = [
+  'flush draw',
+  'open-ended straight draw (OESD)',
+  'gutshot straight draw',
+  'combo flush+straight draw',
+]
 
-Use a flush draw or open-ended straight draw on the Flop. Include a fold or call decision.
-
-Return this exact structure: { "scenarios": [ ${EXAMPLE_SCENARIO} ] }`,
-
-  2: `Generate exactly 5 Texas Hold'em scenarios.
-
-Level assignment:
-- scenarios[0]: level 1 (Rookie)
-- scenarios[1]: level 2 (Regular)
-- scenarios[2]: level 2 (Regular)
-- scenarios[3]: level 3 (Shark)
-- scenarios[4]: level 3 (Shark)
-
-Variety: include flush draws, straight draws, at least 1 combo draw, mix Flop and Turn, at least 2 fold decisions, at least 1 raise decision.
-
-Return this exact structure: { "scenarios": [ ${EXAMPLE_SCENARIO}, ... ] }`,
+const DECISION_HINTS: Record<1 | 2 | 3, string> = {
+  1: 'Decision should be call or fold (avoid raise at Rookie level — it confuses beginners)',
+  2: 'Decision can be call, fold, or raise',
+  3: 'Decision can be call, fold, or raise — raise is appropriate when equity strongly exceeds breakeven',
 }
 
-const BATCH_SIZE: Record<1 | 2, number> = { 1: 1, 2: 5 }
-const BATCH_MAX_TOKENS: Record<1 | 2, number> = { 1: 400, 2: 2800 }
+const VILLAIN_HINTS: Record<1 | 2 | 3, string> = {
+  1: 'Villain description must clearly and obviously imply the player type (a helpful hint for beginners)',
+  2: 'Villain description should be moderately suggestive — not obvious, but deducible with thought',
+  3: 'Villain description should be genuinely ambiguous — multiple player types should be plausible',
+}
+
+function buildPrompt(level: 1 | 2 | 3, idx: number, attempt: number): string {
+  const drawHint = DRAW_HINTS[(idx + attempt) % DRAW_HINTS.length]
+  const streetHint = (idx + attempt) % 2 === 0 ? 'Flop' : 'Turn'
+  const villainRespHint = level >= 2
+    ? 'Include "villainResponses" with fold/call/reraise strings matching the villain\'s personality.'
+    : 'Do NOT include villainResponses (Level 1 only).'
+
+  return `Generate exactly 1 Texas Hold'em scenario at level ${level} (${LEVEL_NAMES[level]}).
+
+Requirements:
+- Draw type: ${drawHint} on the ${streetHint}
+- ${DECISION_HINTS[level]}
+- ${VILLAIN_HINTS[level]}
+- ${villainRespHint}
+
+Return this exact structure: { "scenarios": [ ${EXAMPLE_SCENARIO} ] }`
+}
+
+// Per-scenario generation with internal retry until valid — guarantees accuracy
+const MAX_ATTEMPTS = 5
+const RETRY_DELAY_MS = 600
+const SINGLE_MAX_TOKENS = 700
 
 export async function GET(request: NextRequest) {
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json({ error: 'API not configured' }, { status: 503 })
   }
 
-  const batchParam = request.nextUrl.searchParams.get('batch')
-  const batch = batchParam === '2' ? 2 : 1
-  const idxOffset = batch === 2 ? BATCH_SIZE[1] : 0
+  const levelParam = request.nextUrl.searchParams.get('level')
+  const idxParam = request.nextUrl.searchParams.get('idx')
+  const level = (['1', '2', '3'].includes(levelParam ?? '')) ? parseInt(levelParam!) as 1 | 2 | 3 : 1
+  const idx = Math.max(0, parseInt(idxParam ?? '0') || 0)
 
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
   const limited = rateLimit(`pokertrainer:${ip}`, RATE_LIMITS.EXPENSIVE)
@@ -390,48 +394,55 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
   }
 
-  let raw: unknown
-  try {
-    const response = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: BATCH_MAX_TOKENS[batch],
-      system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: BATCH_PROMPTS[batch] }],
-    })
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    if (attempt > 0) await new Promise(r => setTimeout(r, RETRY_DELAY_MS))
 
-    if (!response.content.length) {
-      console.error('[pokertrainer/scenarios] empty content', JSON.stringify({ batch, stop_reason: response.stop_reason }))
-      throw new Error(`empty content (stop_reason: ${response.stop_reason})`)
+    let raw: unknown
+    try {
+      const response = await client.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: SINGLE_MAX_TOKENS,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: buildPrompt(level, idx, attempt) }],
+      })
+
+      if (!response.content.length) {
+        console.warn(`[pokertrainer/scenarios] lvl${level}/idx${idx} attempt ${attempt + 1}: empty content`)
+        continue
+      }
+      if (response.stop_reason === 'max_tokens') {
+        console.warn(`[pokertrainer/scenarios] lvl${level}/idx${idx} attempt ${attempt + 1}: truncated`)
+        continue
+      }
+
+      const text = response.content[0].type === 'text' ? response.content[0].text : ''
+      const cleaned = text.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim()
+      raw = JSON.parse(cleaned)
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      console.warn(`[pokertrainer/scenarios] lvl${level}/idx${idx} attempt ${attempt + 1}: API/parse error: ${msg}`)
+      continue
     }
-    if (response.stop_reason === 'max_tokens') {
-      console.error('[pokertrainer/scenarios] output truncated — max_tokens hit', JSON.stringify({ batch, max_tokens: BATCH_MAX_TOKENS[batch] }))
-      throw new Error(`output truncated at ${BATCH_MAX_TOKENS[batch]} tokens`)
+
+    const rawArr = (raw as { scenarios?: unknown[] })?.scenarios
+    if (!Array.isArray(rawArr) || rawArr.length < 1) {
+      console.warn(`[pokertrainer/scenarios] lvl${level}/idx${idx} attempt ${attempt + 1}: bad shape`)
+      continue
     }
-    const text = response.content[0].type === 'text' ? response.content[0].text : ''
-    const cleaned = text.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim()
-    raw = JSON.parse(cleaned)
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    const stack = err instanceof Error ? err.stack : undefined
-    console.error('[pokertrainer/scenarios] generation error', JSON.stringify({ batch, message: msg, stack }))
-    return NextResponse.json({ error: 'Generation failed' }, { status: 503 })
+
+    const rawScenario = rawArr[0]
+    if (!validate(rawScenario, 0)) {
+      // validate() already logs the reason — retry with shifted draw type
+      continue
+    }
+
+    // Valid scenario — return immediately
+    if (attempt > 0) {
+      console.log(`[pokertrainer/scenarios] lvl${level}/idx${idx} succeeded on attempt ${attempt + 1}`)
+    }
+    return NextResponse.json({ scenario: processScenario(rawScenario as RawScenario, idx) })
   }
 
-  const rawScenarios = (raw as { scenarios?: unknown[] })?.scenarios
-  if (!Array.isArray(rawScenarios) || rawScenarios.length < 1) {
-    console.error('[pokertrainer/scenarios] bad shape', JSON.stringify({ batch, expected: BATCH_SIZE[batch], got: Array.isArray(rawScenarios) ? rawScenarios.length : typeof rawScenarios }))
-    return NextResponse.json({ error: 'Invalid response shape' }, { status: 503 })
-  }
-
-  // Keep valid scenarios individually — a bad one in a batch of 5 shouldn't discard the rest
-  const validRaw = rawScenarios.filter((s, i) => validate(s, i))
-  if (validRaw.length === 0) {
-    return NextResponse.json({ error: 'Scenario validation failed' }, { status: 503 })
-  }
-  if (validRaw.length < rawScenarios.length) {
-    console.warn(`[pokertrainer/scenarios] batch ${batch}: ${rawScenarios.length - validRaw.length} scenario(s) failed validation and were dropped`)
-  }
-
-  const scenarios = validRaw.map((s, i) => processScenario(s as RawScenario, idxOffset + i))
-  return NextResponse.json({ scenarios })
+  console.error(`[pokertrainer/scenarios] lvl${level}/idx${idx} all ${MAX_ATTEMPTS} attempts exhausted`)
+  return NextResponse.json({ error: 'Could not generate valid scenario' }, { status: 503 })
 }

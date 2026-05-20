@@ -745,32 +745,24 @@ function ThinkingDots() {
   return <span>Thinking{'.'.repeat(dots)}</span>
 }
 
-async function fetchBatchOnce(batch: 1 | 2): Promise<Scenario[]> {
+// Fetch a single AI scenario — server handles internal retry until valid
+async function fetchOneScenario(level: 1 | 2 | 3, idx: number): Promise<Scenario> {
   const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 25000)
+  // 45s: server may retry up to 5x with ~2-3s Haiku latency each
+  const timeout = setTimeout(() => controller.abort(), 45000)
   try {
-    const res = await fetch(`/api/pokertrainer/scenarios?batch=${batch}`, { signal: controller.signal })
+    const res = await fetch(`/api/pokertrainer/scenarios?level=${level}&idx=${idx}`, { signal: controller.signal })
     if (!res.ok) {
       let detail = ''
       try { const body = await res.json(); detail = body.error ?? '' } catch { /* ignore */ }
       throw new Error(detail ? `${detail} (${res.status})` : `HTTP ${res.status}`)
     }
     const data = await res.json()
-    if (!Array.isArray(data.scenarios) || !data.scenarios.length) throw new Error('bad shape')
-    return data.scenarios as Scenario[]
+    if (!data.scenario) throw new Error('bad shape')
+    return data.scenario as Scenario
   } finally {
     clearTimeout(timeout)
   }
-}
-
-async function fetchBatch(batch: 1 | 2): Promise<Scenario[]> {
-  // Up to 3 attempts — each generates a fresh AI response, so retrying clears validation failures
-  let lastErr: unknown
-  for (let attempt = 0; attempt < 3; attempt++) {
-    if (attempt > 0) await new Promise(r => setTimeout(r, 1500))
-    try { return await fetchBatchOnce(batch) } catch (err) { lastErr = err }
-  }
-  throw lastErr
 }
 
 export default function PokerTrainer() {
@@ -804,29 +796,40 @@ export default function PokerTrainer() {
   useEffect(() => {
     const token = ++fetchToken.current
 
-    // Silently append AI scenarios while user plays static ones immediately
-    fetchBatch(1)
-      .then(s => {
-        if (fetchToken.current !== token) return
-        setScenarios(prev => [...prev, ...s])
-        fetchBatch(2)
-          .then(s2 => {
-            if (fetchToken.current === token)
-              setScenarios(prev => [...prev, ...s2])
-          })
-          .catch((err: unknown) => {
-            if (fetchToken.current !== token) return
-            const msg = err instanceof Error ? err.message : String(err)
-            console.error('[PokerTrainer] batch 2 failed:', msg)
-            setAiFailed(true); setAiFailReason(msg)
-          })
-      })
-      .catch((err: unknown) => {
-        if (fetchToken.current !== token) return
-        const msg = err instanceof Error ? err.message : String(err)
-        console.error('[PokerTrainer] batch 1 failed:', msg)
-        setAiFailed(true); setAiFailReason(msg)
-      })
+    // Fetch 2 AI scenarios per level in parallel — each call has server-side retry until valid
+    const AI_FETCHES: [1 | 2 | 3, number][] = [
+      [1, 100], [1, 101],
+      [2, 200], [2, 201],
+      [3, 300], [3, 301],
+    ]
+    const TOTAL = AI_FETCHES.length
+    let loadedCount = 0
+    let failedCount = 0
+
+    function onLoad(s: Scenario) {
+      if (fetchToken.current !== token) return
+      loadedCount++
+      setScenarios(prev => [...prev, s])
+      if (loadedCount + failedCount === TOTAL && loadedCount > 0) {
+        setAiLoaded(true)
+        setTimeout(() => setAiLoaded(false), 3000)
+      }
+    }
+
+    function onFail(err: unknown) {
+      if (fetchToken.current !== token) return
+      failedCount++
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error(`[PokerTrainer] scenario fetch failed:`, msg)
+      if (loadedCount === 0 && loadedCount + failedCount === TOTAL) {
+        setAiFailed(true)
+        setAiFailReason(msg)
+      }
+    }
+
+    for (const [level, idx] of AI_FETCHES) {
+      fetchOneScenario(level, idx).then(onLoad).catch(onFail)
+    }
   }, [])
 
   const activeScenarios = scenarios.filter(s => s.level === filterLevel)
@@ -998,30 +1001,39 @@ export default function PokerTrainer() {
     setAiFailReason(null)
     setAiLoaded(false)
     const token = ++fetchToken.current
-    fetchBatch(1)
-      .then(s => {
-        if (fetchToken.current !== token) return
-        setScenarios(prev => [...prev, ...s])
-        fetchBatch(2)
-          .then(s2 => {
-            if (fetchToken.current !== token) return
-            setScenarios(prev => [...prev, ...s2])
-            setAiLoaded(true)
-            setTimeout(() => setAiLoaded(false), 3000)
-          })
-          .catch((err: unknown) => {
-            if (fetchToken.current !== token) return
-            const msg = err instanceof Error ? err.message : String(err)
-            console.error('[PokerTrainer] batch 2 failed:', msg)
-            setAiFailed(true); setAiFailReason(msg)
-          })
-      })
-      .catch((err: unknown) => {
-        if (fetchToken.current !== token) return
-        const msg = err instanceof Error ? err.message : String(err)
-        console.error('[PokerTrainer] batch 1 failed:', msg)
-        setAiFailed(true); setAiFailReason(msg)
-      })
+    const AI_FETCHES: [1 | 2 | 3, number][] = [
+      [1, 100], [1, 101],
+      [2, 200], [2, 201],
+      [3, 300], [3, 301],
+    ]
+    const TOTAL = AI_FETCHES.length
+    let loadedCount = 0
+    let failedCount = 0
+
+    function onLoad(s: Scenario) {
+      if (fetchToken.current !== token) return
+      loadedCount++
+      setScenarios(prev => [...prev, s])
+      if (loadedCount + failedCount === TOTAL && loadedCount > 0) {
+        setAiLoaded(true)
+        setTimeout(() => setAiLoaded(false), 3000)
+      }
+    }
+
+    function onFail(err: unknown) {
+      if (fetchToken.current !== token) return
+      failedCount++
+      const msg = err instanceof Error ? err.message : String(err)
+      console.error(`[PokerTrainer] scenario fetch failed:`, msg)
+      if (loadedCount === 0 && loadedCount + failedCount === TOTAL) {
+        setAiFailed(true)
+        setAiFailReason(msg)
+      }
+    }
+
+    for (const [level, idx] of AI_FETCHES) {
+      fetchOneScenario(level, idx).then(onLoad).catch(onFail)
+    }
   }
 
   if (done) {
