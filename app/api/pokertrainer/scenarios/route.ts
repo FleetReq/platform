@@ -405,7 +405,7 @@ export async function GET(request: NextRequest) {
     let raw: unknown
     try {
       const response = await client.messages.create({
-        model: 'claude-sonnet-4-5-20250929',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: SINGLE_MAX_TOKENS,
         system: SYSTEM_PROMPT,
         messages: [{ role: 'user', content: buildPrompt(level, drawOffset, streetOffset, attempt) }],
