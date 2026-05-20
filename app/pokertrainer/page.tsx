@@ -1193,26 +1193,15 @@ export default function PokerTrainer() {
         <div className="lg:w-[42%] lg:flex-shrink-0 overflow-y-auto p-5 sm:p-7 lg:border-r border-b lg:border-b-0 border-white/8 bg-[#0c0e14] max-h-[44vh] lg:max-h-none">
 
           {/* Level + meta */}
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
             <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${LEVEL_COLORS[scenario.level]}`}>
               {scenario.levelName}
             </span>
             <span className="text-xs text-white/40">Scenario {sIdx + 1}/{pipScenarios.length}</span>
             <span className="text-xs text-white/40">· {scenario.street}</span>
-          </div>
-
-          {/* Stats — first so they're visible even at small mobile heights */}
-          <div className="grid grid-cols-3 gap-2 mb-3">
-            {[
-              { label: 'Pot', value: `$${scenario.pot}`, color: 'text-emerald-400' },
-              { label: 'To Call', value: `$${scenario.callAmount}`, color: 'text-orange-400' },
-              { label: 'Cards Left', value: `${scenario.cardsToCome}`, color: 'text-white' },
-            ].map(({ label, value, color }) => (
-              <div key={label} className="bg-[#13151f] rounded-xl border border-white/8 py-3 text-center">
-                <div className={`text-2xl sm:text-3xl lg:text-4xl font-black tabular-nums tracking-tight ${color}`}>{value}</div>
-                <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/30 mt-1">{label}</div>
-              </div>
-            ))}
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-white/8 text-white/50">
+              ×{scenario.cardsToCome === 2 ? '4' : '2'} rule
+            </span>
           </div>
 
           {/* Hand description */}
@@ -1254,6 +1243,8 @@ export default function PokerTrainer() {
                 heroCards={scenario.hand}
                 boardCards={scenario.board}
                 tableSize={scenario.tableSize}
+                pot={scenario.pot}
+                callAmount={scenario.callAmount}
               />
             </div>
             <p className="text-xs text-white/40 text-center mt-1.5">

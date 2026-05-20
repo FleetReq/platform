@@ -8,6 +8,8 @@ interface PokerTableProps {
   heroCards: string[]
   boardCards: string[]   // 3 cards = Flop, 4 = Turn; river slot always ghost
   tableSize?: number
+  pot: number
+  callAmount: number
 }
 
 // All 9 seat positions in arc order
@@ -85,7 +87,7 @@ function SvgCardSlot({ cx, cy }: { cx: number; cy: number }) {
   )
 }
 
-export function PokerTable({ heroPosition, villainPosition, villainName, activePositions, heroCards, boardCards, tableSize }: PokerTableProps) {
+export function PokerTable({ heroPosition, villainPosition, villainName, activePositions, heroCards, boardCards, tableSize, pot, callAmount }: PokerTableProps) {
   const heroIdx    = NINE_MAX.indexOf(heroPosition)
   const tablePositions = new Set(TABLE_POSITIONS[tableSize ?? 9] ?? NINE_MAX)
 
@@ -160,8 +162,17 @@ export function PokerTable({ heroPosition, villainPosition, villainName, activeP
       <ellipse cx={CX} cy={CY} rx="175" ry="84" fill="url(#pt-felt)" />
       <ellipse cx={CX} cy={CY} rx="175" ry="84" fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="2" />
 
-      {/* Board area oval hint */}
-      <ellipse cx={CX} cy={CY} rx="56" ry="22" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5" />
+      {/* Pot — above board cards */}
+      <text x={CX} y={CY - 31} textAnchor="middle" fontSize="7" fontWeight="700"
+        fill="rgba(255,255,255,0.28)" letterSpacing="1.5">POT</text>
+      <text x={CX} y={CY - 18} textAnchor="middle" fontSize="15" fontWeight="900"
+        fill="#34d399" letterSpacing="-0.5">${pot}</text>
+
+      {/* Call — below board cards */}
+      <text x={CX} y={CY + 27} textAnchor="middle" fontSize="7" fontWeight="700"
+        fill="rgba(255,255,255,0.28)" letterSpacing="1.5">TO CALL</text>
+      <text x={CX} y={CY + 40} textAnchor="middle" fontSize="14" fontWeight="900"
+        fill="#fb923c" letterSpacing="-0.5">${callAmount}</text>
 
       {/* All 9 seats */}
       {NINE_MAX.map((pos, i) => {
