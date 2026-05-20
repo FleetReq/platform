@@ -1062,16 +1062,14 @@ export default function PokerTrainer() {
               <p className="text-xs text-amber-400/80 -mb-1">Score 60%+ to unlock {LEVEL_NAMES_DONE[nextLevel]}</p>
             )}
             <button
-              onClick={nextLevel ? () => changeFilter(filterLevel) : restart}
+              onClick={() => changeFilter(filterLevel)}
               className={`w-full py-2.5 rounded-lg font-semibold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 ${
                 nextLevel && readyForNext
                   ? 'bg-white/8 hover:bg-white/12 text-white/60 hover:text-white/80'
                   : 'bg-blue-600 hover:bg-blue-700 text-white'
               }`}
             >
-              {nextLevel
-                ? `Replay ${filterLevel === 1 ? 'Rookie' : 'Regular'}`
-                : 'Play Again'}
+              {`Replay ${filterLevel === 1 ? 'Rookie' : filterLevel === 2 ? 'Regular' : 'Shark'}`}
             </button>
           </div>
         </div>
