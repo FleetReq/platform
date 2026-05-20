@@ -79,13 +79,14 @@ export function PlayerTypeStep({ selected, onSelect, disabled }: PlayerTypeStepP
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-5 gap-2">
+      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
         {PLAYER_TYPES.map(type => (
           <button
             key={type.value}
             onClick={() => !disabled && onSelect(type.value)}
             onMouseEnter={() => setHovered(type.value)}
             onMouseLeave={() => setHovered(null)}
+            onTouchStart={() => setHovered(type.value)}
             onFocus={() => setHovered(type.value)}
             onBlur={() => setHovered(null)}
             disabled={disabled}
@@ -117,7 +118,7 @@ export function PlayerTypeStep({ selected, onSelect, disabled }: PlayerTypeStepP
             {activeInfo.description}
           </>
         ) : (
-          <span className="italic">Hover over a type to learn what it means</span>
+          <span className="italic">Select a player type to see what it means</span>
         )}
       </div>
     </div>

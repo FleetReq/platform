@@ -1164,7 +1164,7 @@ export default function PokerTrainer() {
                     : 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/70'
                 }`}
               >
-                {lvl === 1 ? '● Rookie' : lvl === 2 ? '●● Regular' : '●●● Shark'}
+                {lvl === 1 ? <><span>●</span><span className="hidden sm:inline"> Rookie</span></> : lvl === 2 ? <><span>●●</span><span className="hidden sm:inline"> Regular</span></> : <><span>●●●</span><span className="hidden sm:inline"> Shark</span></>}
               </button>
             ))}
           </div>
@@ -1187,7 +1187,7 @@ export default function PokerTrainer() {
       <div id="main-tabpanel" role="tabpanel" aria-labelledby={`tab-${filterLevel}`} className="flex-1 overflow-hidden flex flex-col lg:flex-row bg-[#0c0e14]">
 
         {/* LEFT — scenario context */}
-        <div className="lg:w-[42%] lg:flex-shrink-0 overflow-y-auto p-4 sm:p-6 lg:border-r border-b lg:border-b-0 border-white/8 bg-[#0c0e14] max-h-[44vh] lg:max-h-none">
+        <div className="lg:w-[42%] lg:flex-shrink-0 overflow-y-auto p-4 sm:p-6 lg:border-r border-b lg:border-b-0 border-white/8 bg-[#0c0e14] max-h-[54vh] lg:max-h-none">
 
           {/* Level + meta */}
           <div className="flex items-center gap-2 mb-3 flex-wrap">
@@ -1201,8 +1201,8 @@ export default function PokerTrainer() {
             </span>
           </div>
 
-          {/* Poker Table — dominant, fills the panel */}
-          <div className="mb-3">
+          {/* Poker Table — dominant, width-capped on mobile to keep hand/villain visible */}
+          <div className="mb-3 max-w-[64vw] sm:max-w-none mx-auto">
             <PokerTable
               heroPosition={scenario.heroPosition}
               villainPosition={scenario.villainPosition}
@@ -1240,7 +1240,7 @@ export default function PokerTrainer() {
         </div>
 
         {/* RIGHT — steps */}
-        <div className="flex-1 overflow-y-auto p-5 sm:p-7 bg-[#0c0e14]">
+        <div className="flex-1 overflow-y-auto p-5 sm:p-7 bg-[#0c0e14]" style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}>
 
           {/* Completed steps */}
           {stepIdx > 0 && (
@@ -1453,7 +1453,6 @@ export default function PokerTrainer() {
                         onKeyDown={e => e.key === 'Enter' && handleCheck()}
                         placeholder={config.inputType === 'ratio' ? 'e.g. 3:1' : 'e.g. 25'}
                         min={0}
-                        autoFocus
                         autoComplete="off"
                         className="flex-1 px-4 py-3 rounded-xl border border-white/15 bg-white/5 text-white text-sm placeholder-white/25 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
