@@ -28,7 +28,7 @@ const TABLE_POSITIONS: Record<number, string[]> = {
 }
 
 const SUIT_COLOR: Record<string, string> = {
-  '♥': '#dc2626', '♦': '#b45309', '♣': '#2563eb', '♠': '#374151',
+  '♥': '#dc2626', '♦': '#b45309', '♣': '#1e40af', '♠': '#1f2937',
 }
 
 const CX = 200, CY = 130

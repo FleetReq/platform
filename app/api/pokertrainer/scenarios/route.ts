@@ -42,8 +42,8 @@ const STEPS_BY_LEVEL: Record<1 | 2 | 3, Step[]> = {
 }
 
 const LEVEL_NAMES: Record<1 | 2 | 3, string> = {
-  1: 'Rookie',
-  2: 'Regular',
+  1: 'Fish',
+  2: 'Reg',
   3: 'Shark',
 }
 
@@ -344,7 +344,7 @@ const DRAW_HINTS = [
 ]
 
 const DECISION_HINTS: Record<1 | 2 | 3, string> = {
-  1: 'Decision should be call or fold (avoid raise at Rookie level — it confuses beginners)',
+  1: 'Decision should be call or fold (avoid raise at Fish level — it confuses beginners)',
   2: 'Decision can be call, fold, or raise',
   3: 'Decision can be call, fold, or raise — raise is appropriate when equity strongly exceeds breakeven',
 }

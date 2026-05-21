@@ -49,7 +49,7 @@ const STATIC_SCENARIOS: Scenario[] = [
   {
     id: 1,
     level: 1,
-    levelName: 'Rookie',
+    levelName: 'Fish',
     street: 'Flop',
     hand: ['A♥', '7♥'],
     board: ['K♥', '9♥', '2♣'],
@@ -83,7 +83,7 @@ const STATIC_SCENARIOS: Scenario[] = [
   {
     id: 2,
     level: 1,
-    levelName: 'Rookie',
+    levelName: 'Fish',
     street: 'Turn',
     hand: ['J♣', 'T♣'],
     board: ['Q♥', '9♦', '2♠', '3♣'],
@@ -117,7 +117,7 @@ const STATIC_SCENARIOS: Scenario[] = [
   {
     id: 3,
     level: 2,
-    levelName: 'Regular',
+    levelName: 'Reg',
     street: 'Turn',
     hand: ['8♠', '7♠'],
     board: ['6♠', '5♣', '2♦', 'J♠'],
@@ -157,7 +157,7 @@ const STATIC_SCENARIOS: Scenario[] = [
   {
     id: 4,
     level: 2,
-    levelName: 'Regular',
+    levelName: 'Reg',
     street: 'Flop',
     hand: ['7♦', '8♦'],
     board: ['9♦', 'T♣', 'A♠'],
@@ -278,7 +278,7 @@ const STATIC_SCENARIOS: Scenario[] = [
   {
     id: 7,
     level: 1,
-    levelName: 'Rookie',
+    levelName: 'Fish',
     street: 'Flop',
     hand: ['K♠', 'T♥'],
     board: ['Q♦', '9♣', '3♥'],
@@ -312,7 +312,7 @@ const STATIC_SCENARIOS: Scenario[] = [
   {
     id: 8,
     level: 1,
-    levelName: 'Rookie',
+    levelName: 'Fish',
     street: 'Flop',
     hand: ['6♥', '7♥'],
     board: ['T♥', '4♥', 'K♦'],
@@ -346,7 +346,7 @@ const STATIC_SCENARIOS: Scenario[] = [
   {
     id: 9,
     level: 2,
-    levelName: 'Regular',
+    levelName: 'Reg',
     street: 'Flop',
     hand: ['A♠', 'T♠'],
     board: ['K♠', '6♠', '3♣'],
@@ -386,7 +386,7 @@ const STATIC_SCENARIOS: Scenario[] = [
   {
     id: 10,
     level: 2,
-    levelName: 'Regular',
+    levelName: 'Reg',
     street: 'Turn',
     hand: ['9♥', 'J♣'],
     board: ['T♦', 'Q♠', '2♥', '7♣'],
@@ -555,6 +555,18 @@ function getVillainResponse(s: Scenario, outcome: VillainOutcome): string {
   if (outcome === 'fold') return `${n} thinks for a moment and folds.`
   if (outcome === 'reraise') return `${n} stares you down and re-raises.`
   return `${n} calls without hesitation.`
+}
+
+const SUIT_AMBIENT: Record<string, string> = {
+  '♥': 'rgba(220,38,38,0.07)',
+  '♦': 'rgba(180,83,9,0.07)',
+  '♣': 'rgba(30,64,175,0.07)',
+  '♠': 'rgba(99,102,241,0.06)',
+}
+
+function getSuitAmbient(hand: string[]): string {
+  const suit = hand[0]?.slice(-1) ?? ''
+  return SUIT_AMBIENT[suit] ?? 'transparent'
 }
 
 function playDing() {
@@ -879,6 +891,7 @@ export default function PokerTrainer() {
   const [done, setDone] = useState(false)
 
   const [showTip, setShowTip] = useState(true)
+  const [flashCorrect, setFlashCorrect] = useState(false)
   const [aiFailed, setAiFailed] = useState(false)
   const [aiFailReason, setAiFailReason] = useState<string | null>(null)
   const [aiLoaded, setAiLoaded] = useState(false)
@@ -952,7 +965,7 @@ export default function PokerTrainer() {
         <div className="text-center">
           <p className="text-white/40 font-medium mb-3">No scenarios for this difficulty level.</p>
           <button onClick={() => changeFilter(1)} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
-            Show Rookie
+            Show Fish
           </button>
         </div>
       </div>
@@ -973,6 +986,8 @@ export default function PokerTrainer() {
   const villainTypeRevealed = scenario.level === 1 || (villainPtIdx >= 0 && !!results[villainPtIdx])
   const showRaiseInteraction = isChecked && currentStep === 'decision' && currentResult?.given === 'raise' && scenario.level >= 2
   const villainBadge = villainTypeRevealed ? PLAYER_TYPE_BADGE[scenario.villainPlayerType] : null
+
+  const suitAmbient = getSuitAmbient(scenario.hand)
 
   // Hoisted so mobile bottom bar and desktop step card share the same values
   const guide = !isChecked ? getStepGuide(currentStep, scenario, results) : null
@@ -1050,7 +1065,11 @@ export default function PokerTrainer() {
       return next
     })
 
-    if (correct) playDing()
+    if (correct) {
+      playDing()
+      setFlashCorrect(true)
+      setTimeout(() => setFlashCorrect(false), 700)
+    }
 
     // Fire AI evaluation for decision step
     if (isDecision) {
@@ -1223,14 +1242,14 @@ export default function PokerTrainer() {
     const total = scenarioPass.filter(p => p !== null).length
     const pct = total > 0 ? Math.round((passCount / total) * 100) : 0
     const nextLevel = filterLevel < 3 ? (filterLevel + 1) as 2 | 3 : null
-    const LEVEL_NAMES_DONE: Record<2 | 3, string> = { 2: 'Regular', 3: 'Shark' }
+    const LEVEL_NAMES_DONE: Record<2 | 3, string> = { 2: 'Reg', 3: 'Shark' }
     const readyForNext = pct >= 60
     return (
       <div className="min-h-screen flex items-center justify-center p-6 bg-[#0c0e14]">
         <div className="bg-[#13151f] border border-white/8 rounded-2xl shadow-2xl max-w-sm w-full text-center p-8">
           <div className="text-5xl mb-4">🃏</div>
           <h1 className="text-2xl font-bold mb-1 text-white">
-            {filterLevel === 1 ? 'Rookie' : filterLevel === 2 ? 'Regular' : 'Shark'} Complete
+            {filterLevel === 1 ? 'Fish' : filterLevel === 2 ? 'Reg' : 'Shark'} Complete
           </h1>
           <p className="text-white/40 text-sm mb-4">
             {passCount} / {total > 0 ? total : activeScenarios.length} scenarios passed
@@ -1265,7 +1284,7 @@ export default function PokerTrainer() {
                   : 'bg-blue-600 hover:bg-blue-700 text-white'
               }`}
             >
-              {`Replay ${filterLevel === 1 ? 'Rookie' : filterLevel === 2 ? 'Regular' : 'Shark'}`}
+              {`Replay ${filterLevel === 1 ? 'Fish' : filterLevel === 2 ? 'Reg' : 'Shark'}`}
             </button>
           </div>
         </div>
@@ -1286,11 +1305,16 @@ export default function PokerTrainer() {
 
       {/* ── Header ──────────────────────────────────────────────── */}
       <header className="flex-shrink-0 border-b border-white/8 bg-[#0c0e14]">
-        <div className="flex items-center gap-3 px-4 sm:px-6 py-2.5">
+        <div className="flex items-center gap-3 px-4 sm:px-6 py-3">
           {/* Logo */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            <span className="text-xl" aria-hidden="true">🃏</span>
-            <h1 className="text-sm font-bold text-white hidden sm:block leading-none">Poker Trainer</h1>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="2" y="3" width="20" height="18" rx="3" fill="#1e2238" stroke="rgba(255,255,255,0.15)" strokeWidth="1"/>
+              <text x="12" y="16" textAnchor="middle" fontSize="13" fill="#dc2626" fontFamily="serif">♥</text>
+            </svg>
+            <h1 className="text-base font-black tracking-tight text-white hidden sm:block leading-none">
+              Poker <span className="text-emerald-400">Trainer</span>
+            </h1>
           </div>
 
           {/* Progress pips */}
@@ -1339,7 +1363,7 @@ export default function PokerTrainer() {
                     : 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/70'
                 }`}
               >
-                {lvl === 1 ? <><span>●</span><span className="hidden sm:inline"> Rookie</span></> : lvl === 2 ? <><span>●●</span><span className="hidden sm:inline"> Regular</span></> : <><span>●●●</span><span className="hidden sm:inline"> Shark</span></>}
+                {lvl === 1 ? <><span>🐟</span><span className="hidden sm:inline"> Fish</span></> : lvl === 2 ? <><span>🎯</span><span className="hidden sm:inline"> Reg</span></> : <><span>🦈</span><span className="hidden sm:inline"> Shark</span></>}
               </button>
             ))}
           </div>
@@ -1361,11 +1385,11 @@ export default function PokerTrainer() {
               const graded = scenarioPass.filter(p => p !== null).length
               return (
                 <div
-                  className="text-right pl-2 border-l border-white/8"
+                  className="text-right pl-2 border-l border-white/8 bg-white/5 rounded-lg px-2.5 py-1"
                   aria-label={`Score: ${passed} of ${graded} scenarios passed`}
                 >
-                  <div className="text-base font-bold text-blue-400 tabular-nums">{passed}/{graded}</div>
-                  <div className="text-xs font-bold uppercase tracking-wider text-white/50 leading-none" aria-hidden="true">passed</div>
+                  <div className="text-base font-black text-blue-400 tabular-nums leading-none">{passed}/{graded}</div>
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-white/40 leading-none mt-0.5" aria-hidden="true">passed</div>
                 </div>
               )
             })()}
@@ -1391,8 +1415,18 @@ export default function PokerTrainer() {
             </span>
           </div>
 
-          {/* Poker Table — full width on all screen sizes */}
-          <div className="mb-3 mx-auto">
+          {/* Poker Table — atmospheric container with felt ambient + suit glow */}
+          <div className="mb-4 mx-auto rounded-2xl overflow-hidden bg-[#080f0b] relative">
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{ background: 'radial-gradient(ellipse at 50% 60%, rgba(30,122,80,0.18) 0%, transparent 70%)' }}
+              aria-hidden="true"
+            />
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{ background: `radial-gradient(ellipse at 50% 50%, ${suitAmbient} 0%, transparent 65%)` }}
+              aria-hidden="true"
+            />
             <PokerTable
               heroPosition={scenario.heroPosition}
               villainPosition={scenario.villainPosition}
@@ -1404,17 +1438,17 @@ export default function PokerTrainer() {
               pot={scenario.pot}
               callAmount={scenario.callAmount}
             />
-            <p className="text-xs text-white/30 text-center mt-1">{scenario.tableSize}-handed</p>
+            <p className="text-[10px] text-white/25 text-center pb-1.5">{scenario.tableSize}-handed</p>
           </div>
 
-          {/* Hand description — plain typography */}
-          <div className="mb-3">
-            <p className="text-xs font-bold text-blue-400/70 uppercase tracking-widest mb-1">Your Hand</p>
+          {/* Hand description — tight with table, separated from villain */}
+          <div className="mb-5">
+            <p className="text-[10px] font-bold text-blue-400/70 uppercase tracking-widest mb-1">Your Hand</p>
             <p className="text-sm text-white font-semibold leading-snug">{scenario.handDesc}</p>
           </div>
 
           {/* Villain profile — dossier style */}
-          <div className="mb-3 border-l-2 border-amber-500/60 pl-3">
+          <div className="mb-3 border-t border-white/6 pt-3 border-l-2 border-amber-500/60 pl-3">
             <div className="flex items-center gap-2 mb-1">
               <p className="text-xs font-bold text-amber-300 uppercase tracking-widest">{scenario.villainName}</p>
               {villainBadge && (
@@ -1429,7 +1463,7 @@ export default function PokerTrainer() {
           {/* ── Mobile-only: completed steps + active step context ── */}
           <div className="lg:hidden mt-4 pt-4 border-t border-white/8">
             {stepIdx > 0 && (
-              <div className="border-l-2 border-white/10 pl-3 mb-4 space-y-2">
+              <div className="border-l-2 border-white/20 pl-3 mb-4 space-y-2">
                 {steps.slice(0, stepIdx).map((step, i) => {
                   const r = results[i]
                   if (!r) return null
@@ -1438,7 +1472,7 @@ export default function PokerTrainer() {
                   const labelColor = !r.correct ? 'text-red-400' : (bl || r.revealed) ? 'text-amber-400' : 'text-emerald-400'
                   return (
                     <div key={step} className="step-enter relative flex items-start gap-2.5 py-1">
-                      <span className={`w-3.5 h-3.5 rounded-full flex-shrink-0 mt-0.5 -ml-[1.1rem] border-2 border-[#0c0e14] ${dotColor}`} />
+                      <span className={`w-4 h-4 rounded-full flex-shrink-0 mt-0.5 -ml-[1.15rem] border-2 border-[#0c0e14] ${dotColor}`} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className={`text-xs font-bold ${labelColor}`}>{STEP_CONFIG[step].label}</span>
@@ -1456,14 +1490,14 @@ export default function PokerTrainer() {
 
             {/* Active step context card — header + prompt or explanation */}
             <div ref={mobileActiveRef}>
-              <div className={`rounded-xl border p-4 ${
+              <div className={`rounded-xl border p-4 transition-shadow ${
                 !isChecked
-                  ? 'bg-[#1e2238] border-blue-500/60 shadow-xl shadow-blue-500/10'
+                  ? 'bg-[#1c2035] border-blue-500/60 shadow-xl shadow-blue-950/60'
                   : !currentResult!.correct
-                    ? 'bg-[#1e2238] border-red-500/40'
+                    ? 'bg-[#1c2035] border-red-500/40'
                     : borderline
-                      ? 'bg-[#1e2238] border-amber-500/40'
-                      : 'bg-[#1e2238] border-emerald-500/40'
+                      ? 'bg-[#1c2035] border-amber-500/40'
+                      : `bg-[#1c2035] border-emerald-500/40 ${flashCorrect ? 'flash-correct' : ''}`
               }`}>
                 <div className="flex items-center gap-2.5 mb-3">
                   <span className={`w-8 h-8 rounded-full flex items-center justify-center font-black flex-shrink-0 text-sm ${
@@ -1601,7 +1635,7 @@ export default function PokerTrainer() {
 
           {/* Completed steps — compact timeline */}
           {stepIdx > 0 && (
-            <div className="border-l-2 border-white/10 pl-3 mb-5 space-y-2">
+            <div className="border-l-2 border-white/20 pl-3 mb-5 space-y-2">
               {steps.slice(0, stepIdx).map((step, i) => {
                 const r = results[i]
                 if (!r) return null
@@ -1610,7 +1644,7 @@ export default function PokerTrainer() {
                 const labelColor = !r.correct ? 'text-red-400' : (borderline || r.revealed) ? 'text-amber-400' : 'text-emerald-400'
                 return (
                   <div key={step} className="step-enter relative flex items-start gap-2.5 py-1">
-                    <span className={`w-3.5 h-3.5 rounded-full flex-shrink-0 mt-0.5 -ml-[1.1rem] border-2 border-[#171a27] ${dotColor}`} />
+                    <span className={`w-4 h-4 rounded-full flex-shrink-0 mt-0.5 -ml-[1.15rem] border-2 border-[#1c2035] ${dotColor}`} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className={`text-xs font-bold ${labelColor}`}>{STEP_CONFIG[step].label}</span>
@@ -1628,14 +1662,14 @@ export default function PokerTrainer() {
 
           {/* Active step */}
           <div ref={activeRef} className={shaking ? 'shake' : ''}>
-            <div className={`rounded-xl border p-5 ${
+            <div className={`rounded-xl border p-5 transition-shadow ${
               !isChecked
-                ? 'bg-[#1e2238] lg:bg-[#171a27] border-blue-500/60 shadow-xl shadow-blue-500/10'
+                ? 'bg-[#1c2035] border-blue-500/60 shadow-xl shadow-blue-950/60'
                 : !currentResult!.correct
-                  ? 'bg-[#1e2238] lg:bg-[#171a27] border-red-500/40'
+                  ? 'bg-[#1c2035] border-red-500/40'
                   : borderline
-                    ? 'bg-[#1e2238] lg:bg-[#171a27] border-amber-500/40'
-                    : 'bg-[#1e2238] lg:bg-[#171a27] border-emerald-500/40'
+                    ? 'bg-[#1c2035] border-amber-500/40'
+                    : `bg-[#1c2035] border-emerald-500/40 ${flashCorrect ? 'flash-correct' : ''}`
             }`}>
               {/* Step header */}
               <div className="flex items-center gap-2.5 mb-4">
