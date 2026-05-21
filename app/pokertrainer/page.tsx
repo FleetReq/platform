@@ -1363,7 +1363,7 @@ export default function PokerTrainer() {
                     : 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/70'
                 }`}
               >
-                {lvl === 1 ? <><span>🐟</span><span className="hidden sm:inline"> Fish</span></> : lvl === 2 ? <><span>🎯</span><span className="hidden sm:inline"> Reg</span></> : <><span>🦈</span><span className="hidden sm:inline"> Shark</span></>}
+                {lvl === 1 ? <><span>🐟</span><span className="hidden sm:inline"> Fish</span></> : lvl === 2 ? <><span>🥈</span><span className="hidden sm:inline"> Reg</span></> : <><span>🦈</span><span className="hidden sm:inline"> Shark</span></>}
               </button>
             ))}
           </div>
@@ -1472,7 +1472,7 @@ export default function PokerTrainer() {
                   const labelColor = !r.correct ? 'text-red-400' : (bl || r.revealed) ? 'text-amber-400' : 'text-emerald-400'
                   return (
                     <div key={step} className="step-enter relative flex items-start gap-2.5 py-1">
-                      <span className={`w-4 h-4 rounded-full flex-shrink-0 mt-0.5 -ml-[1.15rem] border-2 border-[#0c0e14] ${dotColor}`} />
+                      <span className={`w-4 h-4 rounded-full flex-shrink-0 mt-0.5 -ml-[21px] border-2 border-[#0c0e14] ${dotColor}`} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className={`text-xs font-bold ${labelColor}`}>{STEP_CONFIG[step].label}</span>
@@ -1653,7 +1653,7 @@ export default function PokerTrainer() {
                 const labelColor = !r.correct ? 'text-red-400' : (borderline || r.revealed) ? 'text-amber-400' : 'text-emerald-400'
                 return (
                   <div key={step} className="step-enter relative flex items-start gap-2.5 py-1">
-                    <span className={`w-4 h-4 rounded-full flex-shrink-0 mt-0.5 -ml-[1.15rem] border-2 border-[#1c2035] ${dotColor}`} />
+                    <span className={`w-4 h-4 rounded-full flex-shrink-0 mt-0.5 -ml-[21px] border-2 border-[#1c2035] ${dotColor}`} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className={`text-xs font-bold ${labelColor}`}>{STEP_CONFIG[step].label}</span>

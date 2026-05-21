@@ -23,7 +23,7 @@ const PLAYER_TYPES: PlayerTypeOption[] = [
   {
     value: 'tag',
     label: 'TAG',
-    emoji: '📐',
+    emoji: '🎯',
     short: 'Tight-Aggressive',
     description: 'Tight Aggressive — plays a solid range of hands and bets them hard. The most common "regular" player type. Respect their bets but they do bluff occasionally.',
   },

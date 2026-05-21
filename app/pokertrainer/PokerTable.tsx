@@ -74,8 +74,8 @@ function SvgCardFace({ card, cx, cy }: { card: string; cx: number; cy: number })
   return (
     <g filter="url(#pt-cshadow)">
       <rect x={cx - CW / 2} y={cy - CH / 2} width={CW} height={CH} rx={2} fill="white" stroke="#bbb" strokeWidth="0.8" />
-      <text x={cx - CW / 2 + 2.5} y={cy - CH / 2 + 9} fontSize="7.5" fontWeight="800" fill={color}>{rank}</text>
-      <text x={cx} y={cy + 2} textAnchor="middle" dominantBaseline="middle" fontSize="12" fill={color}>{suit}</text>
+      <text x={cx - CW / 2 + 2} y={cy - CH / 2 + 7} fontSize="7" fontWeight="800" fill={color}>{rank}</text>
+      <text x={cx} y={cy + 3} textAnchor="middle" dominantBaseline="middle" fontSize="9" fill={color}>{suit}</text>
     </g>
   )
 }
@@ -163,6 +163,8 @@ export function PokerTable({ heroPosition, villainPosition, villainName, activeP
       <ellipse cx={CX} cy={CY} rx="175" ry="84" fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="2" />
 
       {/* Pot — chip stack left of board */}
+      <text x={CX - 74 - pot.toString().length * 4 - 1} y={CY - 12} textAnchor="end" fontSize="8" fontWeight="700"
+        fill="#34d399" opacity="0.75">$</text>
       <text x={CX - 74} y={CY - 10} textAnchor="middle" fontSize="13" fontWeight="900"
         fill="#34d399" letterSpacing="-0.5">{pot}</text>
       <ellipse cx={CX - 74} cy={CY + 5} rx={14} ry={4.5} fill="rgba(4,120,87,0.35)" />
@@ -172,6 +174,8 @@ export function PokerTable({ heroPosition, villainPosition, villainName, activeP
         fill="rgba(255,255,255,0.28)" letterSpacing="1.5">POT</text>
 
       {/* To Call — chip stack right of board */}
+      <text x={CX + 74 - callAmount.toString().length * 4 - 1} y={CY - 12} textAnchor="end" fontSize="8" fontWeight="700"
+        fill="#fb923c" opacity="0.75">$</text>
       <text x={CX + 74} y={CY - 10} textAnchor="middle" fontSize="13" fontWeight="900"
         fill="#fb923c" letterSpacing="-0.5">{callAmount}</text>
       <ellipse cx={CX + 74} cy={CY + 5} rx={12} ry={4.5} fill="rgba(194,65,12,0.35)" />

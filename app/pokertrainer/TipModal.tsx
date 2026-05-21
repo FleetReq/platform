@@ -93,6 +93,7 @@ export function TipModal({ scenario, onDismiss }: TipModalProps) {
   const [displayedText, setDisplayedText] = useState('')
   const [typing, setTyping] = useState(true)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const touchStartX = useRef<number | null>(null)
 
   const tip = TIPS[tipIdx]
   const fullHook = tip.hook(tipIdx === 0 ? scenario : undefined)
@@ -146,7 +147,17 @@ export function TipModal({ scenario, onDismiss }: TipModalProps) {
         aria-modal="true"
         aria-label="Poker concept tip"
       >
-        <div className="w-full max-w-[480px] bg-[#13151f] border border-white/8 rounded-2xl shadow-2xl max-h-[85vh] overflow-y-auto">
+        <div
+          className="w-full max-w-[480px] bg-[#13151f] border border-white/8 rounded-2xl shadow-2xl max-h-[85vh] overflow-y-auto"
+          onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX }}
+          onTouchEnd={(e) => {
+            if (touchStartX.current === null) return
+            const delta = e.changedTouches[0].clientX - touchStartX.current
+            touchStartX.current = null
+            if (Math.abs(delta) < 50) return
+            goTo(delta > 0 ? tipIdx - 1 : tipIdx + 1)
+          }}
+        >
           <div className="p-6">
 
             {/* Category label */}
