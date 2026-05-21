@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import { PokerTable } from './PokerTable'
 import { PlayerTypeStep, type PlayerType } from './PlayerTypeStep'
 import { InstallButton } from './InstallButton'
+import { TipModal } from './TipModal'
 
 type Step = 'potOdds' | 'breakeven' | 'outs' | 'equity' | 'playerType' | 'decision'
 type Decision = 'call' | 'fold' | 'raise'
@@ -877,6 +878,7 @@ export default function PokerTrainer() {
   const [selected, setSelected] = useState('')
   const [done, setDone] = useState(false)
 
+  const [showTip, setShowTip] = useState(true)
   const [aiFailed, setAiFailed] = useState(false)
   const [aiFailReason, setAiFailReason] = useState<string | null>(null)
   const [aiLoaded, setAiLoaded] = useState(false)
@@ -1344,6 +1346,15 @@ export default function PokerTrainer() {
 
           {/* Install + Score */}
           <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={() => setShowTip(true)}
+              aria-label="Show poker concept tip"
+              className="p-1.5 rounded-md text-white/35 hover:text-white/70 hover:bg-white/8 transition-colors"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M9 18h6M10 22h4M12 2a7 7 0 0 1 7 7c0 2.4-1.2 4.5-3 5.7V17H8v-2.3C6.2 13.5 5 11.4 5 9a7 7 0 0 1 7-7z"/>
+              </svg>
+            </button>
             <InstallButton />
             {scenarioPass.some(p => p !== null) && (() => {
               const passed = scenarioPass.filter(p => p === true).length
@@ -2130,6 +2141,10 @@ export default function PokerTrainer() {
           </div>
         </div>
       </div>
+
+      {showTip && activeScenarios.length > 0 && (
+        <TipModal scenario={activeScenarios[0]} onDismiss={() => setShowTip(false)} />
+      )}
 
       {aiLoaded && (
         <div className="fixed bottom-0 inset-x-0 z-50 flex items-center justify-center px-4 py-1.5 bg-emerald-950/90 border-t border-emerald-500/30 backdrop-blur-sm pointer-events-none">
