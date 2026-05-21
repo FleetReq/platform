@@ -1519,6 +1519,15 @@ export default function PokerTrainer() {
                 </div>
                 {isChecked ? (
                   <div className={`rounded-lg px-3 py-2.5 ${!currentResult!.correct ? 'bg-red-500/10' : borderline ? 'bg-amber-500/10' : 'bg-emerald-500/10'}`}>
+                    {currentResult!.revealed && (
+                      <div className="mb-2.5 pb-2.5 border-b border-white/10">
+                        <p className="text-[10px] font-bold text-white/25 uppercase tracking-widest mb-1">You were solving</p>
+                        <p className="text-sm text-white/45 leading-snug">{getPrompt(currentStep, scenario, results)}</p>
+                      </div>
+                    )}
+                    {currentResult!.revealed && (
+                      <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1">Answer</p>
+                    )}
                     {!currentResult!.correct && (
                       <p className="text-xs font-semibold text-red-400 mb-1">Correct answer: {expectedAnswer(currentStep, scenario)}</p>
                     )}
@@ -1699,6 +1708,15 @@ export default function PokerTrainer() {
                 <div className={`rounded-lg px-4 py-3 ${
                   !currentResult!.correct ? 'bg-red-500/10' : borderline ? 'bg-amber-500/10' : 'bg-emerald-500/10'
                 }`}>
+                  {currentResult!.revealed && (
+                    <div className="mb-3 pb-3 border-b border-white/10">
+                      <p className="text-[10px] font-bold text-white/25 uppercase tracking-widest mb-1">You were solving</p>
+                      <p className="text-sm text-white/45 leading-snug">{getPrompt(currentStep, scenario, results)}</p>
+                    </div>
+                  )}
+                  {currentResult!.revealed && (
+                    <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mb-1.5">Answer</p>
+                  )}
                   {!currentResult!.correct && (
                     <p className="text-xs font-semibold text-red-400 mb-1.5">
                       Correct answer: {expectedAnswer(currentStep, scenario)}
