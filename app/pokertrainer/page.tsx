@@ -1825,24 +1825,26 @@ export default function PokerTrainer() {
                           Check ↵
                         </button>
                       </div>
-                      {(attempts[stepIdx] ?? 0) >= (scenario.level === 1 ? 2 : scenario.level === 2 ? 4 : 6) && currentStep !== 'decision' && (
-                        <button
-                          onClick={revealCurrentAnswer}
-                          className="mt-2 w-full py-1.5 text-xs text-white/35 hover:text-white/55 transition-colors"
-                        >
-                          Show answer ↓
-                        </button>
-                      )}
                     </div>
                   )}
 
-                  {/* Rookie nudge — appears after first wrong attempt on non-decision steps */}
+                  {/* Rookie nudge — appears after first wrong attempt, directly below input */}
                   {scenario.level === 1 && (attempts[stepIdx] ?? 0) >= 1 && currentStep !== 'decision' && (() => {
                     const nudge = getRookieNudge(currentStep, scenario)
                     return nudge ? (
-                      <p className="mt-3 text-xs text-amber-400/75 leading-relaxed">↑ {nudge}</p>
+                      <p className="mt-2 text-xs text-amber-400/75 leading-relaxed">↑ {nudge}</p>
                     ) : null
                   })()}
+
+                  {/* Escape hatch — after nudge so it doesn't create visual gap above hint */}
+                  {(attempts[stepIdx] ?? 0) >= (scenario.level === 1 ? 2 : scenario.level === 2 ? 4 : 6) && currentStep !== 'decision' && (
+                    <button
+                      onClick={revealCurrentAnswer}
+                      className="mt-1 w-full py-1.5 text-xs text-white/35 hover:text-white/55 transition-colors"
+                    >
+                      Show answer ↓
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -2137,18 +2139,18 @@ export default function PokerTrainer() {
                         Check ↵
                       </button>
                     </div>
-                    {showEscapeHatch && (
-                      <button
-                        onClick={revealCurrentAnswer}
-                        className="mt-2 w-full py-1.5 text-xs text-white/35 hover:text-white/55 transition-colors"
-                      >
-                        Show answer ↓
-                      </button>
-                    )}
                   </div>
                 )}
                 {rookieNudge && (
                   <p className="text-xs text-amber-400/75 leading-relaxed">↑ {rookieNudge}</p>
+                )}
+                {showEscapeHatch && (
+                  <button
+                    onClick={revealCurrentAnswer}
+                    className="mt-1 w-full py-1.5 text-xs text-white/35 hover:text-white/55 transition-colors"
+                  >
+                    Show answer ↓
+                  </button>
                 )}
               </div>
             ) : !scenarioDone ? (
