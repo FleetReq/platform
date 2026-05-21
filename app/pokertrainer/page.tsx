@@ -893,8 +893,11 @@ export default function PokerTrainer() {
     () => STATIC_SCENARIOS.filter(s => s.level === 1).length
   )
   const activeRef = useRef<HTMLDivElement>(null)
+  const mobileActiveRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const mobileInputRef = useRef<HTMLInputElement>(null)
   const decisionRef = useRef<HTMLDivElement>(null)
+  const mobileDecisionRef = useRef<HTMLDivElement>(null)
   const fetchToken = useRef(0)
 
   useEffect(() => {
@@ -969,13 +972,25 @@ export default function PokerTrainer() {
   const showRaiseInteraction = isChecked && currentStep === 'decision' && currentResult?.given === 'raise' && scenario.level >= 2
   const villainBadge = villainTypeRevealed ? PLAYER_TYPE_BADGE[scenario.villainPlayerType] : null
 
+  // Hoisted so mobile bottom bar and desktop step card share the same values
+  const guide = !isChecked ? getStepGuide(currentStep, scenario, results) : null
+  const escapeThreshold = scenario.level === 1 ? 2 : scenario.level === 2 ? 4 : 6
+  const showEscapeHatch = (attempts[stepIdx] ?? 0) >= escapeThreshold && currentStep !== 'decision'
+  const rookieNudge = scenario.level === 1 && (attempts[stepIdx] ?? 0) >= 1 && currentStep !== 'decision'
+    ? getRookieNudge(currentStep, scenario)
+    : null
+
   useLayoutEffect(() => {
     if (!isChecked) {
-      activeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024
+      const scrollTarget = isMobile ? mobileActiveRef : activeRef
+      scrollTarget.current?.scrollIntoView({ behavior: 'smooth', block: isMobile ? 'end' : 'nearest' })
       if (currentStep === 'decision') {
-        decisionRef.current?.focus()
+        if (isMobile) mobileDecisionRef.current?.focus()
+        else decisionRef.current?.focus()
       } else {
-        inputRef.current?.focus()
+        if (isMobile) mobileInputRef.current?.focus()
+        else inputRef.current?.focus()
       }
     }
   }, [stepIdx, sIdx, isChecked])
@@ -1347,11 +1362,11 @@ export default function PokerTrainer() {
         </div>
       </header>
 
-      {/* ── Body: 2-col on lg, single scroll on mobile ── */}
-      <div id="main-tabpanel" role="tabpanel" aria-labelledby={`tab-${filterLevel}`} className="flex-1 overflow-y-auto lg:overflow-hidden flex flex-col lg:flex-row">
+      {/* ── Body: scrollable zone + fixed bottom bar on mobile | 2-col on desktop ── */}
+      <div id="main-tabpanel" role="tabpanel" aria-labelledby={`tab-${filterLevel}`} className="flex-1 overflow-hidden flex flex-col lg:flex-row">
 
-        {/* TOP / LEFT — scenario context (auto-height on mobile, fixed column on desktop) */}
-        <div className="flex-shrink-0 lg:h-full lg:w-[42%] lg:overflow-y-auto p-4 lg:p-6 lg:border-r border-b lg:border-b-0 border-white/8 bg-[#0c0e14]">
+        {/* Scrollable zone — mobile: context + completed steps + step prompt. Desktop: context column. */}
+        <div className="flex-1 overflow-y-auto lg:flex-none lg:w-[42%] lg:overflow-y-auto p-4 lg:p-6 lg:border-r border-white/8 bg-[#0c0e14]">
 
           {/* Level + meta */}
           <div className="flex items-center gap-2 mb-3 flex-wrap">
@@ -1400,24 +1415,178 @@ export default function PokerTrainer() {
             <p className="text-sm text-white/80 leading-snug">{scenario.villainDescription}</p>
           </div>
 
+          {/* ── Mobile-only: completed steps + active step context ── */}
+          <div className="lg:hidden mt-4 pt-4 border-t border-white/8">
+            {stepIdx > 0 && (
+              <div className="border-l-2 border-white/10 pl-3 mb-4 space-y-2">
+                {steps.slice(0, stepIdx).map((step, i) => {
+                  const r = results[i]
+                  if (!r) return null
+                  const bl = step === 'decision' && r.correct && isRaiseBorderline(scenario)
+                  const dotColor = !r.correct ? 'bg-red-500' : (bl || r.revealed) ? 'bg-amber-500' : 'bg-emerald-500'
+                  const labelColor = !r.correct ? 'text-red-400' : (bl || r.revealed) ? 'text-amber-400' : 'text-emerald-400'
+                  return (
+                    <div key={step} className="step-enter relative flex items-start gap-2.5 py-1">
+                      <span className={`w-3.5 h-3.5 rounded-full flex-shrink-0 mt-0.5 -ml-[1.1rem] border-2 border-[#0c0e14] ${dotColor}`} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className={`text-xs font-bold ${labelColor}`}>{STEP_CONFIG[step].label}</span>
+                          {!r.correct && (
+                            <span className="text-xs text-white/50">· was <strong className="text-white/75">{expectedAnswer(step, scenario)}</strong></span>
+                          )}
+                        </div>
+                        <p className="text-xs text-white/55 leading-relaxed mt-0.5">{explanations[i] || scenario.explanations[step]}</p>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
 
-        </div>
+            {/* Active step context card — header + prompt or explanation */}
+            <div ref={mobileActiveRef}>
+              <div className={`rounded-xl border p-4 ${
+                !isChecked
+                  ? 'bg-[#1e2238] border-blue-500/60 shadow-xl shadow-blue-500/10'
+                  : !currentResult!.correct
+                    ? 'bg-[#1e2238] border-red-500/40'
+                    : borderline
+                      ? 'bg-[#1e2238] border-amber-500/40'
+                      : 'bg-[#1e2238] border-emerald-500/40'
+              }`}>
+                <div className="flex items-center gap-2.5 mb-3">
+                  <span className={`w-8 h-8 rounded-full flex items-center justify-center font-black flex-shrink-0 text-sm ${
+                    isChecked
+                      ? !currentResult!.correct ? 'bg-red-500 text-white shadow-lg shadow-red-500/40'
+                        : borderline ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/40'
+                        : 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/40'
+                      : 'bg-blue-500 text-white shadow-lg shadow-blue-500/40'
+                  }`}>
+                    {isChecked ? (currentResult!.correct ? '✓' : '✗') : stepIdx + 1}
+                  </span>
+                  <div>
+                    <p className="text-[10px] text-white/30 leading-none mb-0.5 uppercase tracking-wider">Step {stepIdx + 1} of {steps.length}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-bold text-sm leading-tight text-white">{config.label}</p>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${CATEGORY_STYLE[config.category]}`}>{config.category}</span>
+                    </div>
+                  </div>
+                </div>
+                {isChecked ? (
+                  <div className={`rounded-lg px-3 py-2.5 ${!currentResult!.correct ? 'bg-red-500/10' : borderline ? 'bg-amber-500/10' : 'bg-emerald-500/10'}`}>
+                    {!currentResult!.correct && (
+                      <p className="text-xs font-semibold text-red-400 mb-1">Correct answer: {expectedAnswer(currentStep, scenario)}</p>
+                    )}
+                    <ExplanationBody text={currentExplanation} correct={currentResult!.correct} />
+                  </div>
+                ) : (
+                  <p className="text-sm text-white/80">{getPrompt(currentStep, scenario, results)}</p>
+                )}
+              </div>
 
-        {/* Sticky stats strip — mobile only, sticks once context scrolls off */}
-        <div className="sticky top-0 z-10 lg:hidden flex items-center gap-3 px-4 py-2 bg-[#0c0e14]/95 backdrop-blur border-b border-white/8 text-xs font-bold" aria-label="Key numbers">
-          <span className="text-white/40 uppercase tracking-wider">Pot</span>
-          <span className="text-white">${scenario.pot}</span>
-          <span className="text-white/20">·</span>
-          <span className="text-white/40 uppercase tracking-wider">Call</span>
-          <span className="text-white">${scenario.callAmount}</span>
-          <span className="text-white/20">·</span>
-          <span className="px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30">
-            ×{scenario.cardsToCome === 2 ? '4' : '2'} rule
-          </span>
-        </div>
+              {/* Coach panel (mobile — shown after decision is evaluated) */}
+              {currentStep === 'decision' && isChecked && (() => {
+                const isLoading  = loadingEvaluation
+                const isResolved = !!evaluation
+                const isFailed   = !loadingEvaluation && !evaluation
+                const VERDICT_STYLE = {
+                  correct:    { border: 'border-emerald-500/40', bg: 'bg-emerald-500/10', label: 'text-emerald-400', text: 'text-emerald-200', chip: '#10b981', dot: '🟢' },
+                  borderline: { border: 'border-amber-500/40',   bg: 'bg-amber-500/10',   label: 'text-amber-400',   text: 'text-amber-200',   chip: '#f59e0b', dot: '🟡' },
+                  incorrect:  { border: 'border-red-500/40',     bg: 'bg-red-500/10',     label: 'text-red-400',     text: 'text-red-200',     chip: '#ef4444', dot: '🔴' },
+                }
+                const style = isResolved && evaluation ? (VERDICT_STYLE[evaluation.verdict] ?? VERDICT_STYLE.correct) : null
+                return (
+                  <div className={`mt-3 rounded-xl px-4 py-3 border transition-all duration-500 ${isResolved && style ? `${style.bg} ${style.border}` : 'bg-white/[0.03] border-white/[0.08]'}`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <circle cx="8" cy="8" r="7.5" stroke={style ? style.chip : 'rgba(255,255,255,0.2)'} strokeWidth="1" fill={style ? style.chip + '22' : 'rgba(255,255,255,0.04)'} style={{ transition: 'stroke 0.5s, fill 0.5s' }} />
+                        <circle cx="8" cy="8" r="4" stroke={style ? style.chip : 'rgba(255,255,255,0.2)'} strokeWidth="1" fill="none" style={{ transition: 'stroke 0.5s' }} />
+                      </svg>
+                      <p className={`text-xs font-bold uppercase tracking-[0.15em] transition-colors duration-500 ${style ? style.label : 'text-white/25'}`}>
+                        {style ? `${style.dot} Coach` : 'Coach'}
+                      </p>
+                    </div>
+                    {isLoading && (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-1.5 mb-3">
+                          <span className="w-2 h-2 rounded-full bg-white/30 animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <span className="w-2 h-2 rounded-full bg-white/30 animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <span className="w-2 h-2 rounded-full bg-white/30 animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                        <div className="h-2.5 rounded-full bg-white/10 animate-pulse w-full" />
+                        <div className="h-2.5 rounded-full bg-white/10 animate-pulse w-4/5" />
+                      </div>
+                    )}
+                    {isResolved && evaluation && style && (
+                      <p className={`text-sm leading-relaxed ${style.text}`}>{evaluation.feedback}</p>
+                    )}
+                    {isFailed && <p className="text-sm text-white/20 italic">Coach feedback unavailable.</p>}
+                  </div>
+                )
+              })()}
 
-        {/* BOTTOM / RIGHT — steps (card on mobile, felt texture on desktop) */}
-        <div className="lg:flex-1 lg:overflow-y-auto p-5 sm:p-6 felt-panel lg:bg-[#0c0e14] rounded-t-2xl lg:rounded-none shadow-[0_-16px_48px_rgba(0,0,0,0.5)] lg:shadow-none border-t border-white/10 lg:border-t-0" style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}>
+              {/* Raise interaction (mobile) */}
+              {showRaiseInteraction && (() => {
+                const amounts = getRaiseAmounts(scenario)
+                const SIZES: { key: RaiseSize; label: string; amount: number | null }[] = [
+                  { key: 'min',   label: 'Min raise', amount: amounts.min },
+                  { key: 'half',  label: '½ Pot',     amount: amounts.half },
+                  { key: 'pot',   label: 'Pot raise',  amount: amounts.pot },
+                  { key: 'allin', label: 'All-in',     amount: null },
+                ]
+                const OUTCOME_STYLE: Record<VillainOutcome, { border: string; bg: string; badge: string; label: string }> = {
+                  fold:    { border: 'border-emerald-500/40', bg: 'bg-emerald-500/10', badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40', label: 'FOLDS' },
+                  call:    { border: 'border-amber-500/40',   bg: 'bg-amber-500/10',   badge: 'bg-amber-500/20 text-amber-300 border-amber-500/40',   label: 'CALLS' },
+                  reraise: { border: 'border-red-500/40',     bg: 'bg-red-500/10',     badge: 'bg-red-500/20 text-red-300 border-red-500/40',     label: 'RE-RAISES' },
+                }
+                if (!raiseSizeChosen) {
+                  return (
+                    <div className="mt-3 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3">
+                      <p className="text-xs font-bold text-amber-400 uppercase tracking-[0.15em] mb-0.5">🔺 You raised — pick your size</p>
+                      <p className="text-xs text-white/40 mb-2.5">Villain reacts based on their player type</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {SIZES.map(({ key, label, amount }) => (
+                          <button key={key} onClick={() => handleRaisePick(key)}
+                            className="py-3 px-3 rounded-lg bg-white/5 hover:bg-amber-500/15 border border-white/10 hover:border-amber-500/40 text-white/70 hover:text-amber-300 transition-all text-center">
+                            <div className="text-sm font-bold leading-tight">{label}</div>
+                            <div className="text-xs text-white/65 mt-0.5">{amount !== null ? `$${amount}` : 'All chips'}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                }
+                if (!villainOutcome) return null
+                const st = OUTCOME_STYLE[villainOutcome]
+                const chosenAmt = SIZES.find(s => s.key === raiseSizeChosen)!
+                const outcomeNote: Record<VillainOutcome, string> = {
+                  fold: `You take down the $${scenario.pot + (chosenAmt.amount ?? scenario.callAmount * 4)} pot.`,
+                  call: `Pot grows to $${scenario.pot + (chosenAmt.amount ?? scenario.callAmount * 2) * 2}. Your ${scenario.equityPct}% equity still applies.`,
+                  reraise: 'Villain comes back over the top. Reassess your equity vs the new price.',
+                }
+                return (
+                  <div className={`mt-3 rounded-xl border ${st.border} ${st.bg} px-4 py-3`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <p className="text-xs font-bold text-white/40 uppercase tracking-[0.15em]">🔺 Villain Reaction</p>
+                      <span className={`text-xs font-black px-2 py-0.5 rounded-full border uppercase tracking-wider ${st.badge}`}>{st.label}</span>
+                      <span className="text-xs text-white/30 ml-auto">{chosenAmt.label}{chosenAmt.amount !== null ? ` $${chosenAmt.amount}` : ''}</span>
+                    </div>
+                    <p className="text-sm text-white/80 italic mb-2">&ldquo;{getVillainResponse(scenario, villainOutcome)}&rdquo;</p>
+                    <p className="text-xs text-white/60">{outcomeNote[villainOutcome]}</p>
+                    <button onClick={() => { setRaiseSizeChosen(null); setVillainOutcome(null) }}
+                      className="mt-2 text-xs text-white/50 hover:text-white/70 transition-colors">
+                      Try a different size ↺
+                    </button>
+                  </div>
+                )
+              })()}
+            </div>
+          </div>
+
+        </div>{/* end scrollable zone */}
+
+        {/* ── Desktop-only: right quiz column (felt texture, full step card) ── */}
+        <div className="hidden lg:flex flex-col flex-1 overflow-y-auto p-5 sm:p-6 felt-panel lg:bg-[#0c0e14]" style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}>
 
           {/* Completed steps — compact timeline */}
           {stepIdx > 0 && (
@@ -1796,6 +1965,169 @@ export default function PokerTrainer() {
               {sIdx + 1 < activeScenarios.length && <span className="opacity-60 text-xs font-normal" aria-hidden="true">↵ or →</span>}
             </button>
           )}
+        </div>
+
+        {/* ── Mobile-only: fixed bottom input bar ── */}
+        <div className="lg:hidden flex-shrink-0 bg-[#13151f] border-t border-white/10"
+             style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+          {/* Stats strip */}
+          <div className="flex items-center gap-3 px-4 py-2 border-b border-white/8 text-xs">
+            <span className="text-white/40 font-semibold">Pot</span>
+            <span className="text-white font-black">${scenario.pot}</span>
+            <span className="text-white/20">·</span>
+            <span className="text-white/40 font-semibold">Call</span>
+            <span className="text-white font-black">${scenario.callAmount}</span>
+            <span className="text-white/20">·</span>
+            <span className="px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 font-bold">
+              ×{scenario.cardsToCome === 2 ? '4' : '2'} rule
+            </span>
+          </div>
+          {/* Input / navigation area */}
+          <div className={`px-4 py-3 ${shaking ? 'shake' : ''}`}>
+            {!isChecked ? (
+              <div className="space-y-2.5">
+                {/* Formula guide — compact */}
+                {guide && (
+                  <div className="rounded-lg px-3 py-2 border-l-2 border-teal-500 bg-teal-500/5 border border-teal-500/20">
+                    <p className="text-xs text-teal-300 font-black uppercase tracking-[0.15em]">{guide.formula}</p>
+                    {guide.worked && (
+                      <p className="text-base font-mono font-bold text-white tabular-nums mt-0.5">{guide.worked}</p>
+                    )}
+                    {guide.tip && (
+                      <p className="text-xs text-white/50 mt-1 pt-1 border-t border-teal-500/15">{guide.tip}</p>
+                    )}
+                  </div>
+                )}
+                {/* Input controls */}
+                {config.inputType === 'playerType' ? (
+                  <div>
+                    <PlayerTypeStep
+                      selected={selected as PlayerType | ''}
+                      onSelect={(type) => setSelected(type)}
+                      disabled={false}
+                      disabledOptions={disabledOptions as PlayerType[]}
+                    />
+                    <button
+                      onClick={handleCheck}
+                      disabled={!selected}
+                      className="mt-2.5 w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-bold text-sm transition-colors"
+                    >
+                      Confirm Read
+                    </button>
+                    {showEscapeHatch && (
+                      <button
+                        onClick={revealCurrentAnswer}
+                        className="mt-1.5 w-full py-1.5 text-xs text-white/35 hover:text-white/55 transition-colors"
+                      >
+                        Show answer ↓
+                      </button>
+                    )}
+                  </div>
+                ) : config.inputType === 'decision' ? (
+                  <div
+                    ref={mobileDecisionRef}
+                    tabIndex={0}
+                    className="space-y-2 focus:outline-none"
+                    aria-label="Decision — use arrow keys or tap a button"
+                    onKeyDown={(e) => {
+                      if (isChecked || loadingEvaluation) return
+                      if (e.key === 'ArrowLeft')  { e.preventDefault(); e.stopPropagation(); submit('fold') }
+                      if (e.key === 'ArrowRight') { e.preventDefault(); e.stopPropagation(); submit('call') }
+                      if (e.key === 'ArrowUp')    { e.preventDefault(); e.stopPropagation(); submit('raise') }
+                    }}
+                  >
+                    <div className="flex justify-center">
+                      <button
+                        disabled={isChecked || loadingEvaluation}
+                        onClick={() => submit('raise')}
+                        className="w-1/2 h-14 rounded-2xl font-black text-base transition-all flex flex-col items-center justify-center gap-0.5 bg-purple-500/10 border border-purple-500/20 text-purple-400/75 hover:bg-purple-500/20 hover:border-purple-500/50 hover:text-purple-300 disabled:pointer-events-none"
+                      >
+                        <span className="leading-none">Raise</span>
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        disabled={isChecked || loadingEvaluation}
+                        onClick={() => submit('fold')}
+                        className="h-14 rounded-2xl font-black text-base transition-all flex items-center justify-center bg-red-500/10 border border-red-500/20 text-red-400/75 hover:bg-red-500/20 hover:border-red-500/40 hover:text-red-300 disabled:pointer-events-none"
+                      >
+                        Fold
+                      </button>
+                      <button
+                        disabled={isChecked || loadingEvaluation}
+                        onClick={() => submit('call')}
+                        className="h-14 rounded-2xl font-black text-base transition-all flex flex-col items-center justify-center gap-0.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/50 disabled:pointer-events-none"
+                      >
+                        <span>Call</span>
+                        <span className="text-xs font-bold opacity-60">${scenario.callAmount}</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        ref={mobileInputRef}
+                        type="text"
+                        inputMode={currentStep === 'potOdds' ? 'decimal' : 'numeric'}
+                        aria-label={config.label}
+                        value={input}
+                        onChange={e => setInput(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && handleCheck()}
+                        placeholder={currentStep === 'potOdds' ? 'e.g. 3' : 'e.g. 25'}
+                        autoComplete="off"
+                        className="flex-1 px-4 py-3 rounded-xl border border-white/15 bg-white/5 text-white text-sm placeholder-white/25 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      {currentStep === 'potOdds' && (
+                        <span className="text-sm text-white/35 font-medium select-none" aria-hidden="true">: 1</span>
+                      )}
+                      {(currentStep === 'breakeven' || currentStep === 'equity') && (
+                        <span className="text-sm text-white/30 font-medium" aria-hidden="true">%</span>
+                      )}
+                      <button
+                        onClick={handleCheck}
+                        disabled={!input.trim()}
+                        className="px-5 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl font-semibold text-sm transition-colors"
+                      >
+                        Check ↵
+                      </button>
+                    </div>
+                    {showEscapeHatch && (
+                      <button
+                        onClick={revealCurrentAnswer}
+                        className="mt-2 w-full py-1.5 text-xs text-white/35 hover:text-white/55 transition-colors"
+                      >
+                        Show answer ↓
+                      </button>
+                    )}
+                  </div>
+                )}
+                {rookieNudge && (
+                  <p className="text-xs text-amber-400/75 leading-relaxed">↑ {rookieNudge}</p>
+                )}
+              </div>
+            ) : !scenarioDone ? (
+              <button
+                onClick={nextStep}
+                aria-label={`Next step: ${steps[stepIdx + 1] ? STEP_CONFIG[steps[stepIdx + 1]].label : ''}`}
+                className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+              >
+                <span>Next Step</span>
+                <span className="opacity-60 text-xs font-normal" aria-hidden="true">↵ or →</span>
+              </button>
+            ) : (
+              <button
+                onClick={nextScenario}
+                aria-label={sIdx + 1 >= activeScenarios.length ? 'See final results' : `Next scenario (${sIdx + 2} of ${activeScenarios.length})`}
+                className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
+              >
+                <span>{sIdx + 1 >= activeScenarios.length ? 'See Results 🏆' : 'Next Scenario'}</span>
+                {sIdx + 1 < activeScenarios.length && (
+                  <span className="opacity-60 text-xs font-normal" aria-hidden="true">↵ or →</span>
+                )}
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
