@@ -88,6 +88,12 @@ const TIPS: Tip[] = [
   {
     emoji: '🧭',
     headline: 'Table Positions',
+    hook: () => "Every seat has a permanent name. At a full 9-handed table, there are exactly 9 of them.",
+    body: "Clockwise from the dealer button: BTN (Button/Dealer) → SB → BB → UTG → UTG+1 → UTG+2 → LJ (Lojack) → HJ (Hijack) → CO (Cutoff) → back to BTN.\n\nThree groups by when you act:\n• Early (EP): UTG, UTG+1, UTG+2 — you're first to act, blindest to what's coming. Play tight.\n• Middle (MP): LJ, HJ — slightly more info, slightly wider.\n• Late (LP): CO and BTN — you act last, see everything. Most profitable seats by far.\n\nThe blinds are the exception: SB and BB act last preflop (they posted first), but first post-flop — the worst of both worlds.\n\nTable size shrinks the positions. At 6-handed there's no UTG+1, UTG+2, or LJ — it goes UTG → HJ → CO → BTN → SB → BB. Positions compress, not disappear — playing HJ at a 6-max table is effectively a middle-position hand, not early.",
+  },
+  {
+    emoji: '🧭',
+    headline: 'Table Positions',
     hook: () => "Nine seats. Nine names. Knowing which is which tells you how much information you have before you act.",
     body: "Seat order around the table (clockwise from the dealer): BTN → SB → BB → UTG → UTG+1 → UTG+2 → LJ → HJ → CO → back to BTN.\n\nThree groups:\n• Early (UTG, UTG+1, UTG+2): You act first preflop and have zero information. Play only strong hands.\n• Middle (LJ, HJ): Moderate position. More hands open up, but still selective.\n• Late (CO, BTN): You act last or near-last post-flop. The most profitable seats.\n\nBlinds are a special case: you're last preflop, but first post-flop on every street — the worst of both worlds.\n\nTable size compresses positions. At 6-max: UTG, HJ, CO, BTN, SB, BB — UTG+1, UTG+2, and LJ don't exist. At 5-max it compresses further. Note: LJ (Lojack) comes before HJ (Hijack) — the Lojack is one seat further from the button.",
   },
@@ -119,7 +125,7 @@ const TIPS: Tip[] = [
     emoji: '🪤',
     headline: 'Reverse Implied Odds',
     hook: () => "Small pairs look cheap preflop. Against the wrong opponent, they're a trap you set for yourself.",
-    body: "Implied odds work in your favor when hitting your draw wins a big pot. Reverse implied odds work against you when you hit — but your opponent hit better.\n\nBottom set vs top set is the classic example. Say you have 3-3 and the board runs 7-3-2. You flopped a set. You feel great. But if villain flopped top set with 7-7, you're in serious trouble. You'll make a full house roughly 20% of the time — but their full house is always bigger (sevens-full beats threes-full). The one card that saves you is the last 3 in the deck, giving you quads. That's 1 out — roughly 5% equity to actually win.\n\nThe trap is that the hand looks strong. You bet and raise, building a huge pot with 5% equity. Against a tight player who only bets monsters, the moment they come back over the top, you're almost certainly drawing to one card.",
+    body: "Implied odds work in your favor when hitting your draw wins a big pot. Reverse implied odds work against you when you hit — but your opponent hit better.\n\nExample: you have 3-3, villain has 7-7, board is 7-6-3. You both flopped a set. Yours feels strong — it's not. Your win equity is only ~5%, not 33%. Why? If the board pairs (a 6 hits), villain makes sevens-full-of-sixes; your threes-full-of-sixes loses. If a 7 hits, villain makes quads. The only card that saves you is the last 3 in the deck — quads beat any full house. One out. About 5%.\n\nThe trap: the hand looks like a monster. You build a huge pot with a 5% shot. Against a tight player who only bets with the best hand, the moment they 3-bet you, you're nearly drawing dead.",
   },
   {
     emoji: '🎲',

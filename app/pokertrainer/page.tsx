@@ -1816,10 +1816,9 @@ export default function PokerTrainer() {
                         <button
                           disabled={isChecked || loadingEvaluation}
                           onClick={() => submit('raise')}
-                          className="w-1/2 h-14 sm:h-12 rounded-2xl font-black text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/40 focus-visible:ring-offset-1 focus-visible:ring-offset-[#1e2238] flex flex-col items-center justify-center gap-0.5 bg-purple-500/10 border border-purple-500/20 text-purple-400/75 hover:bg-purple-500/20 hover:border-purple-500/50 hover:text-purple-300 disabled:pointer-events-none"
+                          className="w-1/2 h-14 rounded-2xl font-black text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400/40 focus-visible:ring-offset-1 focus-visible:ring-offset-[#1e2238] flex items-center justify-center bg-purple-600/30 border border-purple-500/50 text-purple-200 hover:bg-purple-600/50 hover:border-purple-400/70 hover:text-white shadow-[0_0_16px_rgba(168,85,247,0.2)] hover:shadow-[0_0_24px_rgba(168,85,247,0.4)] disabled:pointer-events-none disabled:opacity-50"
                         >
-                          <span className="hidden sm:block text-[10px] font-bold opacity-40 tracking-widest">↑</span>
-                          <span className="leading-none">Raise</span>
+                          Raise
                         </button>
                       </div>
                       {/* Fold + Call — bottom row */}
@@ -1827,23 +1826,20 @@ export default function PokerTrainer() {
                         <button
                           disabled={isChecked || loadingEvaluation}
                           onClick={() => submit('fold')}
-                          className="h-14 sm:h-12 rounded-2xl font-black text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/40 focus-visible:ring-offset-1 focus-visible:ring-offset-[#1e2238] flex items-center justify-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400/75 hover:bg-red-500/20 hover:border-red-500/40 hover:text-red-300 disabled:pointer-events-none"
+                          className="h-14 rounded-2xl font-black text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/40 focus-visible:ring-offset-1 focus-visible:ring-offset-[#1e2238] flex items-center justify-center bg-red-600/25 border border-red-500/45 text-red-200 hover:bg-red-600/45 hover:border-red-400/65 hover:text-white disabled:pointer-events-none disabled:opacity-50"
                         >
-                          <span className="hidden sm:inline text-xs opacity-35">←</span>
-                          <span>Fold</span>
+                          Fold
                         </button>
                         <button
                           disabled={isChecked || loadingEvaluation}
                           onClick={() => submit('call')}
-                          className="h-14 sm:h-12 rounded-2xl font-black text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/40 focus-visible:ring-offset-1 focus-visible:ring-offset-[#1e2238] flex flex-col items-center justify-center gap-0.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/50 disabled:pointer-events-none"
+                          className="h-14 rounded-2xl font-black text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/40 focus-visible:ring-offset-1 focus-visible:ring-offset-[#1e2238] flex flex-col items-center justify-center gap-0.5 bg-emerald-600/30 border border-emerald-500/50 text-emerald-200 hover:bg-emerald-600/50 hover:border-emerald-400/70 hover:text-white disabled:pointer-events-none disabled:opacity-50"
                         >
-                          <span className="flex items-center gap-2 leading-none">
-                            <span>Call</span>
-                            <span className="hidden sm:inline text-xs opacity-35">→</span>
-                          </span>
-                          <span className="text-xs font-bold opacity-60">${scenario.callAmount}</span>
+                          <span className="leading-none">Call</span>
+                          <span className="text-xs font-bold text-emerald-300/80">${scenario.callAmount}</span>
                         </button>
                       </div>
+                      <p className="text-[10px] text-white/20 text-center tracking-wide hidden sm:block">← fold &nbsp;&nbsp; ↑ raise &nbsp;&nbsp; call →</p>
                     </div>
                   ) : (
                     <div>
@@ -2132,26 +2128,26 @@ export default function PokerTrainer() {
                       <button
                         disabled={isChecked || loadingEvaluation}
                         onClick={() => submit('raise')}
-                        className="w-1/2 h-14 rounded-2xl font-black text-base transition-all flex flex-col items-center justify-center gap-0.5 bg-purple-500/10 border border-purple-500/20 text-purple-400/75 hover:bg-purple-500/20 hover:border-purple-500/50 hover:text-purple-300 disabled:pointer-events-none"
+                        className="w-1/2 h-14 rounded-2xl font-black text-base transition-all flex items-center justify-center bg-purple-600/30 border border-purple-500/50 text-purple-200 hover:bg-purple-600/50 hover:border-purple-400/70 hover:text-white shadow-[0_0_16px_rgba(168,85,247,0.2)] hover:shadow-[0_0_24px_rgba(168,85,247,0.4)] disabled:pointer-events-none disabled:opacity-50"
                       >
-                        <span className="leading-none">Raise</span>
+                        Raise
                       </button>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         disabled={isChecked || loadingEvaluation}
                         onClick={() => submit('fold')}
-                        className="h-14 rounded-2xl font-black text-base transition-all flex items-center justify-center bg-red-500/10 border border-red-500/20 text-red-400/75 hover:bg-red-500/20 hover:border-red-500/40 hover:text-red-300 disabled:pointer-events-none"
+                        className="h-14 rounded-2xl font-black text-base transition-all flex items-center justify-center bg-red-600/25 border border-red-500/45 text-red-200 hover:bg-red-600/45 hover:border-red-400/65 hover:text-white disabled:pointer-events-none disabled:opacity-50"
                       >
                         Fold
                       </button>
                       <button
                         disabled={isChecked || loadingEvaluation}
                         onClick={() => submit('call')}
-                        className="h-14 rounded-2xl font-black text-base transition-all flex flex-col items-center justify-center gap-0.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/50 disabled:pointer-events-none"
+                        className="h-14 rounded-2xl font-black text-base transition-all flex flex-col items-center justify-center gap-0.5 bg-emerald-600/30 border border-emerald-500/50 text-emerald-200 hover:bg-emerald-600/50 hover:border-emerald-400/70 hover:text-white disabled:pointer-events-none disabled:opacity-50"
                       >
-                        <span>Call</span>
-                        <span className="text-xs font-bold opacity-60">${scenario.callAmount}</span>
+                        <span className="leading-none">Call</span>
+                        <span className="text-xs font-bold text-emerald-300/80">${scenario.callAmount}</span>
                       </button>
                     </div>
                   </div>

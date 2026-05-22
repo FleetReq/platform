@@ -1,7 +1,7 @@
 {
   "name": "Raise the Shark",
-  "short_name": "Raise the Shark",
-  "description": "Pot odds, outs, and equity training for poker players",
+  "short_name": "RaiseShark",
+  "description": "Master pot odds, outs, equity, and poker decisions at every level",
   "start_url": "/pokertrainer",
   "scope": "/pokertrainer",
   "display": "standalone",
