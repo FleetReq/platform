@@ -121,6 +121,36 @@ const TIPS: Tip[] = [
     hook: () => "Only bet strong hands? Good players fold every time. Always bluff? They always call. The answer is the right mix.",
     body: "Every bet size has an optimal bluff frequency. Half-pot bet: bluff about 33% of the time. Pot-sized bet: about 50%. Too few bluffs and opponents profit by folding. Too many and they profit by calling everything down. A balanced range mixes value hands and bluffs in exact ratios that make your opponent indifferent — they can't exploit you either way.",
   },
+  {
+    emoji: '🔺',
+    headline: 'When to Raise',
+    hook: () => "Raise for three reasons only: you have the best hand, you can make them believe you do, or you know they'll fold.",
+    body: "Value raise when you're ahead and want their chips in — top pair or better against a calling station, raise every time. Semi-bluff raise when a strong draw gives you outs if called plus fold equity if not. Bluff raise when the board favors your range, the player folds to pressure, and your story is consistent from preflop. Any raise that doesn't fit one of these three is burning money.",
+  },
+  {
+    emoji: '🤝',
+    headline: 'When to Call',
+    hook: () => "A call without a plan is just a donation. Know why you're calling before you reach for the chips.",
+    body: "Call when pot odds justify your equity and raising would fold out worse hands. Call with draws when implied odds are strong against deep stacks. Call when you're trapping a bluffer and want them to keep firing. Against a nit who never bluffs, most calls are mistakes. Against a maniac, most folds are. The player type changes which calls are profitable — it's never just about the cards.",
+  },
+  {
+    emoji: '🏳️',
+    headline: 'When to Fold',
+    hook: () => "The most profitable fold you'll ever make is the one that saves you from a hand you were going to lose anyway.",
+    body: "Fold when the pot odds don't justify your equity — even with a decent hand. Fold when a tight player bets big on a blank turn; they're not bluffing. Fold when you're re-raised with no draw and no outs. The money you don't lose is as real as the money you win. Discipline folds are the difference between break-even and profitable players.",
+  },
+  {
+    emoji: '💥',
+    headline: 'When to Bet',
+    hook: () => "Checking gives away information for free. Every bet should have a purpose — or it shouldn't happen.",
+    body: "Bet for value when you want worse hands to call — if they can't call, you're not getting value. Bet to protect when draws need to pay to chase. Bet as a bluff when the board favors your range, villain can fold, and your line is consistent from the beginning. Never bet 'to see what they do.' You're either building a pot you plan to win or removing equity they haven't paid for.",
+  },
+  {
+    emoji: '🔍',
+    headline: 'Reading Bet Sizes',
+    hook: () => "A min-bet and an overbet are both chips in the pot. They mean completely different things.",
+    body: "Tiny bet (20–30% pot): villain usually wants a call — often a blocker or thin value. Standard bet (50–75% pot): balanced, hard to read — could be value or bluff. Overbet (100%+): polarized — they either have the nuts or are bluffing with nothing; medium hands don't bet this size. Two streets of checks usually means weakness. Sudden aggression on the river after checking? The draw just got there, or they had it the whole time.",
+  },
 ]
 
 interface TipModalProps {
