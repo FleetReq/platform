@@ -1244,10 +1244,24 @@ export default function PokerTrainer() {
     const nextLevel = filterLevel < 3 ? (filterLevel + 1) as 2 | 3 : null
     const LEVEL_NAMES_DONE: Record<2 | 3, string> = { 2: 'Reg', 3: 'Shark' }
     const readyForNext = pct >= 60
+    const doneCard = scenario?.hand?.[0] ?? 'A♠'
+    const doneSuit = doneCard.slice(-1)
+    const doneRank = doneCard.slice(0, -1)
+    const DONE_SUIT_COLOR: Record<string, string> = { '♥': '#dc2626', '♦': '#b45309', '♣': '#1e40af', '♠': '#6366f1' }
+    const doneSuitColor = DONE_SUIT_COLOR[doneSuit] ?? '#6366f1'
     return (
       <div className="min-h-screen flex items-center justify-center p-6 bg-[#0c0e14]">
         <div className="bg-[#13151f] border border-white/8 rounded-2xl shadow-2xl max-w-sm w-full text-center p-8">
-          <div className="text-5xl mb-4">🃏</div>
+          <svg width="56" height="76" viewBox="0 0 56 76" className="mx-auto mb-5" aria-hidden="true">
+            <defs>
+              <filter id="done-shadow" x="-30%" y="-30%" width="160%" height="160%">
+                <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor={doneSuitColor} floodOpacity="0.35" />
+              </filter>
+            </defs>
+            <rect x="2" y="2" width="52" height="72" rx="6" fill="white" stroke="#e5e7eb" strokeWidth="1" filter="url(#done-shadow)" />
+            <text x="8" y="21" fontSize="14" fontWeight="900" fill={doneSuitColor}>{doneRank}</text>
+            <text x="28" y="50" textAnchor="middle" dominantBaseline="middle" fontSize="26" fill={doneSuitColor}>{doneSuit}</text>
+          </svg>
           <h1 className="text-2xl font-bold mb-1 text-white">
             {filterLevel === 1 ? 'Fish' : filterLevel === 2 ? 'Reg' : 'Shark'} Complete
           </h1>
@@ -1255,7 +1269,7 @@ export default function PokerTrainer() {
             {passCount} / {total > 0 ? total : activeScenarios.length} scenarios passed
           </p>
           <div className={`text-3xl font-bold mb-2 ${pct >= 80 ? 'text-emerald-400' : pct >= 60 ? 'text-amber-400' : 'text-red-400'}`}>
-            {pct >= 80 ? '🏆 Sharp' : pct >= 60 ? '📈 Improving' : '📚 Keep Studying'}
+            {pct >= 80 ? 'Sharp' : pct >= 60 ? 'Improving' : 'Keep Studying'}
           </div>
           <p className="text-sm text-white/40 mb-8">
             {pct >= 80
@@ -1363,7 +1377,13 @@ export default function PokerTrainer() {
                     : 'bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/70'
                 }`}
               >
-                {lvl === 1 ? <><span>🐟</span><span className="hidden sm:inline"> Fish</span></> : lvl === 2 ? <><span>🥈</span><span className="hidden sm:inline"> Reg</span></> : <><span>🦈</span><span className="hidden sm:inline"> Shark</span></>}
+                {lvl === 1 ? (
+                  <><span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">F</span><span className="hidden sm:inline ml-1.5">Fish</span></>
+                ) : lvl === 2 ? (
+                  <><span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-black bg-amber-500/20 text-amber-400 border border-amber-500/40">R</span><span className="hidden sm:inline ml-1.5">Reg</span></>
+                ) : (
+                  <><span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-black bg-red-500/20 text-red-400 border border-red-500/40">S</span><span className="hidden sm:inline ml-1.5">Shark</span></>
+                )}
               </button>
             ))}
           </div>
@@ -1557,7 +1577,7 @@ export default function PokerTrainer() {
                         <circle cx="8" cy="8" r="4" stroke={style ? style.chip : 'rgba(255,255,255,0.2)'} strokeWidth="1" fill="none" style={{ transition: 'stroke 0.5s' }} />
                       </svg>
                       <p className={`text-xs font-bold uppercase tracking-[0.15em] transition-colors duration-500 ${style ? style.label : 'text-white/25'}`}>
-                        {style ? `${style.dot} Coach` : 'Coach'}
+                        Coach
                       </p>
                     </div>
                     {isLoading && (
@@ -1898,7 +1918,7 @@ export default function PokerTrainer() {
                     <p className={`text-xs font-bold uppercase tracking-[0.15em] transition-colors duration-500 ${
                       isResolved && style ? style.label : 'text-white/25'
                     }`}>
-                      {isResolved && style ? `${style.dot} Coach` : 'Coach'}
+                      Coach
                     </p>
                   </div>
 

@@ -73,6 +73,24 @@ const TIPS: Tip[] = [
     body: "A nit only plays premium hands — their bets mean strength. A maniac raises constantly — their bets mean almost nothing. A calling station never folds — stop bluffing, value bet hard. GTO is the default. Exploitation is the profit.",
     widget: 'villainTypes',
   },
+  {
+    emoji: '💰',
+    headline: 'Implied Odds',
+    hook: () => "Pot odds say fold. But what if hitting your draw wins you their entire stack?",
+    body: "Pot odds only count the money already in the middle. Implied odds factor in what you'll win after the draw completes. Against a deep-stacked calling station who never folds, a gutshot becomes a goldmine. Quick gut check: multiply the call by 10. If neither you nor the villain have that much left behind, speculative hands aren't worth chasing.",
+  },
+  {
+    emoji: '📍',
+    headline: 'Position',
+    hook: () => "The button isn't just a seat. It's the most profitable piece of real estate at the table.",
+    body: "Acting last means you see what everyone does before you decide. They check — you learn they're weak. They bet — you know the size before choosing. Out of position, you're flying blind. In position, you have perfect information on every street. Over thousands of hands, position turns breakeven spots into profit and disasters into folds you never had to take.",
+  },
+  {
+    emoji: '🎴',
+    headline: 'Board Texture',
+    hook: () => "K♠7♥2♣ and J♥T♥9♦ are both three-card flops. One is Fort Knox. One is a minefield.",
+    body: "Dry boards (no draws, no connecting cards) favor strong made hands — your top pair is probably still best on the river. Wet boards explode with possibilities: flush draws, straight draws, two-pair combos everywhere. Someone is chasing you down every street. Bet bigger to price out draws. Bet smaller to keep weaker hands in. Read the board before you bet.",
+  },
 ]
 
 interface TipModalProps {
