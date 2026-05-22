@@ -182,6 +182,12 @@ const TIPS: Tip[] = [
     body: "No hand is 0% equity. 72o vs AA: you win 13%. Against KK: 15%. Against QQ: 16%. What separates good starting hands from bad ones isn't zero vs one hundred — it's 45% vs 55%, compounded over thousands of decisions. The math adds up slowly. That's why discipline on starting hand selection matters more than any single hand.",
   },
   {
+    emoji: '👥',
+    headline: 'Who Can Use This Board?',
+    hook: () => "2-3-4 looks dangerous. But if there was a preflop raise, nobody called with 5-6. That board is safer than it looks.",
+    body: "A board is only as wet as the hands people actually hold. Low connected boards (2-3-4, 3-5-6) have plenty of straight draw combinations on paper — but in a raised pot the ranges are AA, KK, QQ, AK, AQ. None of those make straights on low boards. The overpair is almost certainly best. In a limped pot with six callers? Those same boards become minefields — players have 5-6, 7-8, A-2, and small pairs. Meanwhile K-Q-J looks tame but destroys raised-pot ranges: AK, AQ, KQ, JJ, QQ all hit it differently. Before reading the board, read the pot.",
+  },
+  {
     emoji: '🌊',
     headline: 'Set vs Flush Draw',
     hook: () => "You flopped a set. They're on a flush draw. You're winning — but you're not safe.",
