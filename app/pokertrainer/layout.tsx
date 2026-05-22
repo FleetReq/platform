@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Poker Trainer',
+  title: 'Raise the Shark',
   description: 'Practice pot odds, outs, and equity calculations at the table',
   manifest: '/pokertrainer-manifest.json',
   icons: {
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Poker Trainer',
+    title: 'Raise the Shark',
   },
 }
 

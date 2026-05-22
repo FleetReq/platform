@@ -86,6 +86,12 @@ const TIPS: Tip[] = [
     body: "Acting last means you see what everyone does before you decide. They check — you learn they're weak. They bet — you know the size before choosing. Out of position, you're flying blind. In position, you have perfect information on every street. Over thousands of hands, position turns breakeven spots into profit and disasters into folds you never had to take.",
   },
   {
+    emoji: '🧭',
+    headline: 'Table Positions',
+    hook: () => "Nine seats. Nine names. Knowing which is which tells you how much information you have before you act.",
+    body: "Seat order around the table (clockwise from the dealer): BTN → SB → BB → UTG → UTG+1 → UTG+2 → LJ → HJ → CO → back to BTN.\n\nThree groups:\n• Early (UTG, UTG+1, UTG+2): You act first preflop and have zero information. Play only strong hands.\n• Middle (LJ, HJ): Moderate position. More hands open up, but still selective.\n• Late (CO, BTN): You act last or near-last post-flop. The most profitable seats.\n\nBlinds are a special case: you're last preflop, but first post-flop on every street — the worst of both worlds.\n\nTable size compresses positions. At 6-max: UTG, HJ, CO, BTN, SB, BB — UTG+1, UTG+2, and LJ don't exist. At 5-max it compresses further. Note: LJ (Lojack) comes before HJ (Hijack) — the Lojack is one seat further from the button.",
+  },
+  {
     emoji: '🎴',
     headline: 'Board Texture',
     hook: () => "K♠7♥2♣ and J♥T♥9♦ are both three-card flops. One is Fort Knox. One is a minefield.",
@@ -113,7 +119,7 @@ const TIPS: Tip[] = [
     emoji: '🪤',
     headline: 'Reverse Implied Odds',
     hook: () => "Small pairs look cheap preflop. Against the wrong opponent, they're a trap you set for yourself.",
-    body: "Implied odds work in your favor when hitting your draw wins a big pot. Reverse implied odds work against you when you hit a weak version and pay off a stronger one. Hit bottom set against top set on a dry board? You're a big underdog (~33% to improve) and still building the pot. Against a tight player who only bets monsters, the hand you hit can cost you your whole stack — because you'll never believe they have better.",
+    body: "Implied odds work in your favor when hitting your draw wins a big pot. Reverse implied odds work against you when you hit — but your opponent hit better.\n\nBottom set vs top set is the classic example. Say you have 3-3 and the board runs 7-3-2. You flopped a set. You feel great. But if villain flopped top set with 7-7, you're in serious trouble. You'll make a full house roughly 20% of the time — but their full house is always bigger (sevens-full beats threes-full). The one card that saves you is the last 3 in the deck, giving you quads. That's 1 out — roughly 5% equity to actually win.\n\nThe trap is that the hand looks strong. You bet and raise, building a huge pot with 5% equity. Against a tight player who only bets monsters, the moment they come back over the top, you're almost certainly drawing to one card.",
   },
   {
     emoji: '🎲',

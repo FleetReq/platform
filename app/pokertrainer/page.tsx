@@ -1334,7 +1334,7 @@ export default function PokerTrainer() {
               <text x="12" y="16" textAnchor="middle" fontSize="13" fill="#dc2626" fontFamily="serif">♥</text>
             </svg>
             <h1 className="text-base font-black tracking-tight text-white hidden sm:block leading-none">
-              Poker <span className="text-emerald-400">Trainer</span>
+              Raise the <span className="text-emerald-400">Shark</span>
             </h1>
           </div>
 
