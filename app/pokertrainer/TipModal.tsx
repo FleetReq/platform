@@ -77,7 +77,7 @@ const TIPS: Tip[] = [
     emoji: '💰',
     headline: 'Implied Odds',
     hook: () => "Pot odds say fold. But what if hitting your draw wins you their entire stack?",
-    body: "Pot odds only count the money already in the middle. Implied odds factor in what you'll win after the draw completes. Against a deep-stacked calling station who never folds, a gutshot becomes a goldmine. Quick gut check: multiply the call by 10. If neither you nor the villain have that much left behind, speculative hands aren't worth chasing.",
+    body: "Pot odds only count what's already in the pot. Implied odds factor in what you'll win on later streets after your draw completes — money that isn't there yet.\n\nQuick gut check: take YOUR call amount and multiply by 10. Both you AND the villain need at least that much left in your stacks. Example: the call is $20 → you both need $200+ behind. If either stack is shorter, the implied odds aren't there.\n\nThis matters most for speculative hands — holdings that only win by hitting a specific combination: small pocket pairs trying to flop a set, gutshots, suited connectors with no pair yet. These have low direct equity and need big implied odds to justify a call.\n\nNote: a nut flush draw isn't speculative — it already has ~35% direct equity. You don't need implied odds to call a flush draw; the pot odds math handles it. Implied odds are for the long shots that pot odds alone would reject.",
   },
   {
     emoji: '📍',
@@ -378,7 +378,7 @@ export function TipModal({ scenario, onDismiss }: TipModalProps) {
             )}
 
             {/* Body text */}
-            <p className="text-sm text-white/70 leading-relaxed mb-6">
+            <p className="text-sm text-white/70 leading-relaxed mb-6 whitespace-pre-line">
               {tip.body}
             </p>
 
