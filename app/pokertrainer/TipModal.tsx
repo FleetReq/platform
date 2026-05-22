@@ -151,6 +151,42 @@ const TIPS: Tip[] = [
     hook: () => "A min-bet and an overbet are both chips in the pot. They mean completely different things.",
     body: "Tiny bet (20–30% pot): villain usually wants a call — often a blocker or thin value. Standard bet (50–75% pot): balanced, hard to read — could be value or bluff. Overbet (100%+): polarized — they either have the nuts or are bluffing with nothing; medium hands don't bet this size. Two streets of checks usually means weakness. Sudden aggression on the river after checking? The draw just got there, or they had it the whole time.",
   },
+  {
+    emoji: '🤺',
+    headline: 'AK vs KK — You\'re Not Dead',
+    hook: () => "You think they have KK and you're holding AK? You still win 30% of the time. Go for it.",
+    body: "Three aces remain in the deck, plus backdoor straight and flush equity. AK vs KK is 30/70 — not 0/100. Against AA it's 12%. Against QQ it's 46% — almost a coin flip. The math makes dominated spots far less hopeless than they feel. If the pot odds justify the call, the math says call.",
+  },
+  {
+    emoji: '⛏️',
+    headline: 'Set Mining',
+    hook: () => "You limp with 66. The flop comes 9-6-2 rainbow. You just flopped a set — and you'll stack someone.",
+    body: "Pocket pairs hit a set on the flop 11.8% of the time — roughly 1 in 8.5. The rule: you need at least 8.5x the call in implied odds to break even. Villain has $200 behind and it costs $10 to call? That's 20x implied odds — set mine every single time. Against a calling station who never folds, that number goes up even further.",
+  },
+  {
+    emoji: '🏁',
+    headline: 'The Classic Race',
+    hook: () => "AK vs QQ: 46% vs 54%. You're behind — but barely. This is a coin flip, not a disaster.",
+    body: "The most famous race in poker isn't as lopsided as it feels. JJ vs AK: 56/44. TT vs AK: 54/46. KK vs QQ: 82/18. The big pairs dominate each other, but big cards vs medium pairs is always close. If you're getting a big pot in with JJ vs AK, you're a slight favorite. That's a spot most players are terrified of — and shouldn't be.",
+  },
+  {
+    emoji: '🛡️',
+    headline: 'Protect Your Aces',
+    hook: () => "AA is 85% heads up. Against 8 callers? 31%. Pocket aces lose to the field more than they beat it.",
+    body: "Every extra caller chips away at your edge. One opponent: you win 85%. Two: 73%. Four: 50%. Eight: 31%. This is why you raise big preflop with aces — not to build the pot, but to reduce the number of opponents. Fewer players means each one needs to beat you individually. Let everyone limp in and the math turns against you.",
+  },
+  {
+    emoji: '💪',
+    headline: 'Even 7-2 Has Equity',
+    hook: () => "7-2 offsuit — poker's worst starting hand. It still wins 33% of the time against a random hand.",
+    body: "No hand is 0% equity. 72o vs AA: you win 13%. Against KK: 15%. Against QQ: 16%. What separates good starting hands from bad ones isn't zero vs one hundred — it's 45% vs 55%, compounded over thousands of decisions. The math adds up slowly. That's why discipline on starting hand selection matters more than any single hand.",
+  },
+  {
+    emoji: '🌊',
+    headline: 'Set vs Flush Draw',
+    hook: () => "You flopped a set. They're on a flush draw. You're winning — but you're not safe.",
+    body: "Top set vs a flush draw on the flop: you're 65%, they're 35%. An open-ended straight draw: 69/31. A gutshot: 73/27. Strong made hands are favorites, but draws hit often enough to matter. Price them out: a half-pot bet forces a flush draw to call with 28% equity into a 25% breakeven — a mistake they'll repeat forever if you keep making them pay.",
+  },
 ]
 
 interface TipModalProps {
