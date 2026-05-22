@@ -89,7 +89,7 @@ const TIPS: Tip[] = [
     emoji: '🎴',
     headline: 'Board Texture',
     hook: () => "K♠7♥2♣ and J♥T♥9♦ are both three-card flops. One is Fort Knox. One is a minefield.",
-    body: "Dry boards (no draws, no connecting cards) favor strong made hands — your top pair is probably still best on the river. Wet boards explode with possibilities: flush draws, straight draws, two-pair combos everywhere. Someone is chasing you down every street. Bet bigger to price out draws. Bet smaller to keep weaker hands in. Read the board before you bet.",
+    body: "Dry boards (no draws, no connecting cards) favor strong made hands — your top pair is probably still best on the river, so you can bet smaller to extract value from weaker hands that will call. Wet boards are different: flush draws, straight draws, two-pair combos everywhere. Someone is chasing you down every street. Bet bigger to make their draw expensive. Read the board before you size your bet.",
   },
   {
     emoji: '✂️',
@@ -101,19 +101,19 @@ const TIPS: Tip[] = [
     emoji: '⚡',
     headline: 'Expected Value',
     hook: () => "Every action at the table has a price tag. Some pay you. Some cost you. Only buy the positive ones.",
-    body: "EV is the average outcome of a decision made infinitely. Folding is always 0. Calling is +EV when your equity beats your pot odds. Raising is +EV when it earns more than calling — either by winning the pot immediately or by building it with strong equity. You won't win every hand. You will profit on every +EV decision over time. That's the whole game.",
+    body: "EV is the average outcome of a decision made infinitely. Folding is always 0. Calling is +EV when your equity exceeds the break-even percentage the pot demands. Raising is +EV when it earns more than calling — either by winning the pot immediately or by building it with strong equity. You won't win every hand. You will profit on every +EV decision over time. That's the whole game.",
   },
   {
     emoji: '🗂️',
     headline: 'Ranges, Not Hands',
     hook: () => "You have JJ. 'What if he has QQ?' is the wrong question. 'How often does he have QQ?' is the right one.",
-    body: "A UTG raiser doesn't have QQ — they have a range: AA, KK, QQ, JJ, TT, AK, AQ. Against that full distribution, your JJ has roughly 55% equity. QQ appears in only 6 of those ~50 combos. The other 44 combos you're ahead or flipping. You don't need to beat every hand in their range — you need to be profitable against the whole thing. That's range thinking.",
+    body: "A UTG raiser doesn't have QQ — they have a range: AA, KK, QQ, JJ, TT, AK, AQ. QQ appears in only 6 of those ~50 combos. The other 44 combos you're ahead or flipping. Against that full distribution, your JJ is close to a coin flip — AA, KK, and QQ drag the number down, but AK, AQ, and TT pull it back up. You don't need to beat every hand in their range — you need to be profitable against the whole thing. That's range thinking.",
   },
   {
     emoji: '🪤',
     headline: 'Reverse Implied Odds',
     hook: () => "Small pairs look cheap preflop. Against the wrong opponent, they're a trap you set for yourself.",
-    body: "Implied odds work in your favor when hitting your draw wins a big pot. Reverse implied odds work against you when you hit a weak version and pay off a stronger one. Hit bottom set against top set on a dry board? You're drawing nearly dead and building the pot yourself. Against a tight player who only bets monsters, the hand that 'almost' made it can cost you your whole stack.",
+    body: "Implied odds work in your favor when hitting your draw wins a big pot. Reverse implied odds work against you when you hit a weak version and pay off a stronger one. Hit bottom set against top set on a dry board? You're a big underdog (~33% to improve) and still building the pot. Against a tight player who only bets monsters, the hand you hit can cost you your whole stack — because you'll never believe they have better.",
   },
   {
     emoji: '🎲',
@@ -149,7 +149,7 @@ const TIPS: Tip[] = [
     emoji: '🔍',
     headline: 'Reading Bet Sizes',
     hook: () => "A min-bet and an overbet are both chips in the pot. They mean completely different things.",
-    body: "Tiny bet (20–30% pot): villain usually wants a call — often a blocker or thin value. Standard bet (50–75% pot): balanced, hard to read — could be value or bluff. Overbet (100%+): polarized — they either have the nuts or are bluffing with nothing; medium hands don't bet this size. Two streets of checks usually means weakness. Sudden aggression on the river after checking? The draw just got there, or they had it the whole time.",
+    body: "Tiny bet (20–30% pot): villain usually wants a call — betting small to control pot size while getting thin value, or to stop you from betting bigger. Standard bet (50–75% pot): balanced, hard to read — could be value or bluff. Overbet (100%+): polarized — they either have the nuts or are bluffing with nothing; medium hands don't bet this big. Two streets of checks usually means weakness. Sudden aggression on the river after checking? The draw just got there, or they had it the whole time.",
   },
   {
     emoji: '🤺',
@@ -185,7 +185,7 @@ const TIPS: Tip[] = [
     emoji: '🌊',
     headline: 'Set vs Flush Draw',
     hook: () => "You flopped a set. They're on a flush draw. You're winning — but you're not safe.",
-    body: "Top set vs a flush draw on the flop: you're 65%, they're 35%. An open-ended straight draw: 69/31. A gutshot: 73/27. Strong made hands are favorites, but draws hit often enough to matter. Price them out: a half-pot bet forces a flush draw to call with 28% equity into a 25% breakeven — a mistake they'll repeat forever if you keep making them pay.",
+    body: "Top set vs a flush draw on the flop: you're 65%, they're 35%. An open-ended straight draw: 69/31. A gutshot: 73/27. Strong made hands are favorites, but draws hit often enough to matter. A half-pot bet gives a flush draw 25% breakeven — but they have 35% equity, so calling is correct for them. To actually price them out, bet pot-sized or bigger. The larger the bet, the more expensive their chase — and the more mistakes they make.",
   },
 ]
 
