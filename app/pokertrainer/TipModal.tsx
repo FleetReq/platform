@@ -214,6 +214,21 @@ export function TipModal({ scenario, onDismiss }: TipModalProps) {
   const [typing, setTyping] = useState(true)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const touchStartX = useRef<number | null>(null)
+  const modalRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    modalRef.current?.focus()
+  }, [])
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); goTo(tipIdx - 1) }
+      if (e.key === 'ArrowRight') { e.preventDefault(); goTo(tipIdx + 1) }
+      if (e.key === 'Enter')      { e.preventDefault(); handleDismiss() }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [tipIdx])
 
   const tip = TIPS[tipIdx]
   const fullHook = tip.hook(tipIdx === 0 ? scenario : undefined)
@@ -268,7 +283,9 @@ export function TipModal({ scenario, onDismiss }: TipModalProps) {
         aria-label="Poker concept tip"
       >
         <div
-          className="w-full max-w-[480px] bg-[#13151f] border border-white/8 rounded-2xl shadow-2xl max-h-[85vh] overflow-y-auto"
+          ref={modalRef}
+          tabIndex={-1}
+          className="w-full max-w-[480px] lg:max-w-[640px] bg-[#13151f] border border-white/8 rounded-2xl shadow-2xl max-h-[85vh] overflow-y-auto outline-none"
           onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX }}
           onTouchEnd={(e) => {
             if (touchStartX.current === null) return

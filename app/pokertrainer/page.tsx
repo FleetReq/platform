@@ -881,7 +881,13 @@ async function fetchOneScenario(level: 1 | 2 | 3, idx: number): Promise<Scenario
 
 export default function PokerTrainer() {
   const [scenarios, setScenarios] = useState<Scenario[]>(shuffleStatic)
-  const [filterLevel, setFilterLevel] = useState<1 | 2 | 3>(1)
+  const [filterLevel, setFilterLevel] = useState<1 | 2 | 3>(() => {
+    try {
+      const saved = localStorage.getItem('poker-filter-level')
+      const n = saved ? parseInt(saved, 10) : 1
+      return (n === 1 || n === 2 || n === 3) ? n : 1
+    } catch { return 1 }
+  })
   const [sIdx, setSIdx] = useState(0)
   const [stepIdx, setStepIdx] = useState(0)
   const [results, setResults] = useState<(StepResult | undefined)[]>([])
@@ -1185,6 +1191,7 @@ export default function PokerTrainer() {
   function changeFilter(lvl: 1 | 2 | 3) {
     setSessionScenarioCount(STATIC_SCENARIOS.filter(s => s.level === lvl).length)
     setFilterLevel(lvl)
+    try { localStorage.setItem('poker-filter-level', String(lvl)) } catch {}
     resetSession()
   }
 
