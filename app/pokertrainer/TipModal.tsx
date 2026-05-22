@@ -154,8 +154,8 @@ const TIPS: Tip[] = [
   {
     emoji: '🤺',
     headline: 'AK vs KK — You\'re Not Dead',
-    hook: () => "You think they have KK and you're holding AK? You still win 30% of the time. Go for it.",
-    body: "Three aces remain in the deck, plus backdoor straight and flush equity. AK vs KK is 30/70 — not 0/100. Against AA it's 12%. Against QQ it's 46% — almost a coin flip. The math makes dominated spots far less hopeless than they feel. If the pot odds justify the call, the math says call.",
+    hook: () => "You're holding AK and they have KK. KK is the 70% favorite — but AK wins 30% of the time. Not dead.",
+    body: "KK is a 70% favorite — but AK still wins 30% of the time. Three aces in the deck give AK real equity, plus backdoor straight and flush chances. Against AA, AK wins 12%. Against QQ, AK wins 46% — almost a coin flip. Dominated doesn't mean dead. If the pot odds justify the call, the math says call.",
   },
   {
     emoji: '⛏️',
