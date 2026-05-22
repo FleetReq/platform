@@ -91,6 +91,36 @@ const TIPS: Tip[] = [
     hook: () => "K♠7♥2♣ and J♥T♥9♦ are both three-card flops. One is Fort Knox. One is a minefield.",
     body: "Dry boards (no draws, no connecting cards) favor strong made hands — your top pair is probably still best on the river. Wet boards explode with possibilities: flush draws, straight draws, two-pair combos everywhere. Someone is chasing you down every street. Bet bigger to price out draws. Bet smaller to keep weaker hands in. Read the board before you bet.",
   },
+  {
+    emoji: '✂️',
+    headline: 'Fold Equity',
+    hook: () => "Your draw doesn't just win by hitting. Sometimes it wins by making everyone else quit.",
+    body: "When you raise on a draw, two things can happen: villain folds and you win the pot right now, or villain calls and you still have outs to hit. Fold equity is the bonus value from those instant wins. A semi-bluff raise with nine flush outs is more profitable than a passive call precisely because it gives you two ways to win — fold equity stacked on top of draw equity.",
+  },
+  {
+    emoji: '⚡',
+    headline: 'Expected Value',
+    hook: () => "Every action at the table has a price tag. Some pay you. Some cost you. Only buy the positive ones.",
+    body: "EV is the average outcome of a decision made infinitely. Folding is always 0. Calling is +EV when your equity beats your pot odds. Raising is +EV when it earns more than calling — either by winning the pot immediately or by building it with strong equity. You won't win every hand. You will profit on every +EV decision over time. That's the whole game.",
+  },
+  {
+    emoji: '🗂️',
+    headline: 'Ranges, Not Hands',
+    hook: () => "You have JJ. 'What if he has QQ?' is the wrong question. 'How often does he have QQ?' is the right one.",
+    body: "A UTG raiser doesn't have QQ — they have a range: AA, KK, QQ, JJ, TT, AK, AQ. Against that full distribution, your JJ has roughly 55% equity. QQ appears in only 6 of those ~50 combos. The other 44 combos you're ahead or flipping. You don't need to beat every hand in their range — you need to be profitable against the whole thing. That's range thinking.",
+  },
+  {
+    emoji: '🪤',
+    headline: 'Reverse Implied Odds',
+    hook: () => "Small pairs look cheap preflop. Against the wrong opponent, they're a trap you set for yourself.",
+    body: "Implied odds work in your favor when hitting your draw wins a big pot. Reverse implied odds work against you when you hit a weak version and pay off a stronger one. Hit bottom set against top set on a dry board? You're drawing nearly dead and building the pot yourself. Against a tight player who only bets monsters, the hand that 'almost' made it can cost you your whole stack.",
+  },
+  {
+    emoji: '🎲',
+    headline: 'Bluff-to-Value Ratio',
+    hook: () => "Only bet strong hands? Good players fold every time. Always bluff? They always call. The answer is the right mix.",
+    body: "Every bet size has an optimal bluff frequency. Half-pot bet: bluff about 33% of the time. Pot-sized bet: about 50%. Too few bluffs and opponents profit by folding. Too many and they profit by calling everything down. A balanced range mixes value hands and bluffs in exact ratios that make your opponent indifferent — they can't exploit you either way.",
+  },
 ]
 
 interface TipModalProps {
