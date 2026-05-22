@@ -155,7 +155,7 @@ const TIPS: Tip[] = [
     emoji: '🤺',
     headline: 'AK vs KK — You\'re Not Dead',
     hook: () => "You're holding AK and they have KK. KK is the 70% favorite — but AK wins 30% of the time. Not dead.",
-    body: "KK is a 70% favorite — but AK still wins 30% of the time. Three aces in the deck give AK real equity, plus backdoor straight and flush chances. Against AA, AK wins 12%. Against QQ, AK wins 46% — almost a coin flip. Dominated doesn't mean dead. If the pot odds justify the call, the math says call.",
+    body: "These are preflop numbers — the probability of winning across every possible board runout. Once the flop is dealt, you switch tools: count your outs (three aces = 3 outs) and apply the Rule of 4/2. Flop misses everything? That's 3 outs × 4 = 12%. Against AA preflop, AK wins 12%. Against QQ, AK wins 46% — almost a coin flip. Dominated preflop doesn't mean dead — it just means use the math at every street.",
   },
   {
     emoji: '⛏️',
