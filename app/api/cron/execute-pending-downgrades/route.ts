@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { isVercelCron } from '@/lib/cron'
+import { isCronAuthorized, isVercelCron } from '@/lib/cron'
 import { createAdminClient } from '@/lib/supabase'
 import { PLAN_LIMITS } from '@/lib/constants'
 
@@ -8,11 +8,7 @@ export const dynamic = 'force-dynamic'
 // POST /api/cron/execute-pending-downgrades - Execute downgrades that have reached their effective date
 export async function POST(request: NextRequest) {
   try {
-    // Verify authorization (GitHub Actions or Vercel Cron)
-    const authHeader = request.headers.get('authorization')
-    const cronSecret = process.env.CRON_SECRET
-
-    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    if (!isCronAuthorized(request)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -159,15 +155,11 @@ export async function POST(request: NextRequest) {
 
 // GET /api/cron/execute-pending-downgrades - Check for pending downgrades ready to execute (read-only)
 export async function GET(request: NextRequest) {
-  // Vercel Cron only sends GET — run the real job (POST enforces CRON_SECRET)
+  // Vercel Cron only sends GET — run the real job (POST enforces auth)
   if (isVercelCron(request)) return POST(request)
 
   try {
-    // Verify authorization
-    const authHeader = request.headers.get('authorization')
-    const cronSecret = process.env.CRON_SECRET
-
-    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    if (!isCronAuthorized(request)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

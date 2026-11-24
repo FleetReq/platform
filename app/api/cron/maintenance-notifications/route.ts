@@ -1,6 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
-import { isVercelCron } from '@/lib/cron'
+import { isCronAuthorized, isVercelCron } from '@/lib/cron'
 import {
   MAINTENANCE_INTERVALS,
   MAINTENANCE_TYPE_LABELS,
@@ -15,7 +15,6 @@ import { buildUnsubscribeUrl } from '@/app/api/notifications/unsubscribe/route'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 const resendApiKey = process.env.RESEND_API_KEY || ''
-const cronSecret = process.env.CRON_SECRET || ''
 
 // ---------------------------------------------------------------------------
 // Types
@@ -62,16 +61,6 @@ type NotificationsDb = {
     Enums: Record<string, never>
     CompositeTypes: Record<string, never>
   }
-}
-
-// ---------------------------------------------------------------------------
-// Auth check
-// ---------------------------------------------------------------------------
-
-function isAuthorized(request: NextRequest): boolean {
-  if (!cronSecret) return false // no secret configured = deny (set CRON_SECRET in env)
-  const auth = request.headers.get('authorization')
-  return auth === `Bearer ${cronSecret}`
 }
 
 // ---------------------------------------------------------------------------
@@ -447,10 +436,10 @@ async function recordSentAlerts(
 // ---------------------------------------------------------------------------
 
 export async function GET(request: NextRequest) {
-  // Vercel Cron only sends GET — run the real job (POST enforces CRON_SECRET)
+  // Vercel Cron only sends GET — run the real job (POST enforces auth)
   if (isVercelCron(request)) return POST(request)
 
-  if (!isAuthorized(request)) {
+  if (!isCronAuthorized(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -482,7 +471,7 @@ export async function GET(request: NextRequest) {
 // ---------------------------------------------------------------------------
 
 export async function POST(request: NextRequest) {
-  if (!isAuthorized(request)) {
+  if (!isCronAuthorized(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
