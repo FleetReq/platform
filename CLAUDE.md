@@ -168,7 +168,7 @@ Next.js 16 (App Router, TypeScript) · Supabase PostgreSQL (RLS) · Supabase Aut
 | **Maintenance emails** (Resend digest) | Daily 08:00 UTC | `app/api/cron/maintenance-notifications/route.ts` |
 
 All require `SUPABASE_SERVICE_ROLE_KEY`. Emails also need `RESEND_API_KEY`. Auth: `CRON_SECRET`.
-**Keep-alive lessons (2026-11-24)**: old GitHub-Actions keep-alive never sent the `Authorization` header → every run 401'd before touching the DB. GitHub also auto-disables scheduled workflows after 60 days without repo commits, so GitHub crons die when the repo goes quiet. Vercel Cron sends `Bearer $CRON_SECRET` automatically and has no inactivity cutoff. Cron paths need the trailing slash (`trailingSlash: true`; Vercel Cron doesn't follow redirects).
+**Keep-alive lessons (2026-11-24)**: old GitHub-Actions keep-alive never reached the DB — Oct 2025–Feb 2026 it curled a no-slash URL → 308, and `curl -f` (no `-L`) treats 308 as success, so runs were green no-ops; after the slash fix, an auth check was added without the workflow header → 401. **Verify a cron end-to-end by checking the DB row changed, not the job status.** GitHub also auto-disables scheduled workflows after 60 days without repo commits, so GitHub crons die when the repo goes quiet. Vercel Cron sends `Bearer $CRON_SECRET` automatically and has no inactivity cutoff. Cron paths need the trailing slash (`trailingSlash: true`; Vercel Cron doesn't follow redirects).
 
 ---
 
