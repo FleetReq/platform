@@ -16,6 +16,7 @@
 8. [trips](#trips)
 9. [maintenance_notifications_sent](#maintenance_notifications_sent) (system table)
 10. [public_stats](#public_stats) (view)
+11. [keep_alive](#keep_alive) (system table)
 ---
 
 ## auth.users
@@ -494,6 +495,24 @@ SELECT * FROM public_stats
 
 **Columns (as used in code):**
 - Aggregate counts/metrics visible on the landing page (total users, vehicles, fill-ups, etc.)
+
+---
+
+## keep_alive
+
+**System table: daily write to prevent Supabase Free Plan auto-pause**
+
+```sql
+CREATE TABLE public.keep_alive (
+  id smallint PRIMARY KEY DEFAULT 1 CHECK (id = 1),  -- single row
+  last_ping_at timestamptz NOT NULL DEFAULT now(),
+  source text NOT NULL DEFAULT 'vercel-cron'
+)
+```
+
+**RLS:** Enabled with no policies — only the service role (bypasses RLS) can read/write.
+
+**Managed By:** Vercel Cron (`vercel.json`, daily 12:00 UTC) → `app/api/cron/keep-alive/route.ts` (upsert + select via `createAdminClient()`).
 
 
 ---

@@ -141,6 +141,7 @@ Next.js 16 (App Router, TypeScript) · Supabase PostgreSQL (RLS) · Supabase Aut
 | `cars` | Vehicles | `org_id` → `organizations.id`, `user_id` → `auth.users.id` |
 | `fill_ups` | Fuel records | `car_id` → `cars.id` |
 | `maintenance_records` | Maintenance | `car_id` → `cars.id` |
+| `keep_alive` | Daily keep-alive write (service role only) | — |
 **Access control**: Org-based via `org_members`. Roles: Owner / Editor / Viewer. RLS uses `user_org_ids()` helper functions.
 **Multi-org**: Users can belong to multiple orgs. Active org selected via `fleetreq-active-org` cookie. All API routes respect it.
 **Billing**: Lives on `organizations` table (stripe_customer_id, subscription_plan, etc). Each org has independent billing.
@@ -159,10 +160,12 @@ Next.js 16 (App Router, TypeScript) · Supabase PostgreSQL (RLS) · Supabase Aut
 
 | System | Schedule | Key Files |
 |--------|----------|-----------|
+| **Supabase keep-alive** | Daily 12:00 UTC (**Vercel Cron**, not GitHub) | `vercel.json`, `app/api/cron/keep-alive/route.ts` |
 | **Account cleanup** (GDPR deletion) | Daily midnight | `.github/workflows/cleanup-expired-accounts.yml`, `app/api/cron/cleanup-expired-accounts/route.ts` |
 | **Maintenance emails** (Resend digest) | Mondays 8AM UTC | `.github/workflows/maintenance-notifications.yml`, `app/api/cron/maintenance-notifications/route.ts` |
 
 All require `SUPABASE_SERVICE_ROLE_KEY`. Emails also need `RESEND_API_KEY`. Auth: `CRON_SECRET`.
+**Keep-alive lessons (2026-11-24)**: old GitHub-Actions keep-alive never sent the `Authorization` header → every run 401'd before touching the DB. GitHub also auto-disables scheduled workflows after 60 days without repo commits, so GitHub crons die when the repo goes quiet. Vercel Cron sends `Bearer $CRON_SECRET` automatically and has no inactivity cutoff. Cron paths need the trailing slash (`trailingSlash: true`; Vercel Cron doesn't follow redirects).
 
 ---
 
