@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase'
+import { isVercelCron } from '@/lib/cron'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,7 +19,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Missing Supabase credentials' }, { status: 500 })
   }
 
-  const source = request.headers.get('user-agent')?.includes('vercel-cron') ? 'vercel-cron' : 'manual'
+  const source = isVercelCron(request) ? 'vercel-cron' : 'manual'
 
   const { error: writeError } = await supabase
     .from('keep_alive')

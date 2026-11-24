@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { isVercelCron } from '@/lib/cron'
 import { createAdminClient } from '@/lib/supabase'
 import { STORAGE_BUCKET_RECEIPTS } from '@/lib/constants'
 
@@ -179,6 +180,9 @@ export async function POST(request: NextRequest) {
 
 // GET /api/cron/cleanup-expired-accounts - Check for accounts ready for deletion (read-only)
 export async function GET(request: NextRequest) {
+  // Vercel Cron only sends GET — run the real job (POST enforces CRON_SECRET)
+  if (isVercelCron(request)) return POST(request)
+
   try {
     // Verify authorization
     const authHeader = request.headers.get('authorization')

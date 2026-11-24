@@ -158,11 +158,14 @@ Next.js 16 (App Router, TypeScript) · Supabase PostgreSQL (RLS) · Supabase Aut
 
 ### Cron Systems
 
+**All crons run on Vercel Cron (`vercel.json`)** — GitHub workflows are `workflow_dispatch`-only (manual). Vercel Cron sends GET with `vercel-cron` UA → `isVercelCron()` (`lib/cron.ts`) makes GET run the real job; any other GET is a read-only preview, POST executes.
+
 | System | Schedule | Key Files |
 |--------|----------|-----------|
-| **Supabase keep-alive** | Daily 12:00 UTC (**Vercel Cron**, not GitHub) | `vercel.json`, `app/api/cron/keep-alive/route.ts` |
-| **Account cleanup** (GDPR deletion) | Daily midnight | `.github/workflows/cleanup-expired-accounts.yml`, `app/api/cron/cleanup-expired-accounts/route.ts` |
-| **Maintenance emails** (Resend digest) | Mondays 8AM UTC | `.github/workflows/maintenance-notifications.yml`, `app/api/cron/maintenance-notifications/route.ts` |
+| **Supabase keep-alive** | Daily 12:00 UTC | `vercel.json`, `app/api/cron/keep-alive/route.ts` |
+| **Account cleanup** (GDPR deletion) | Daily 00:00 UTC | `app/api/cron/cleanup-expired-accounts/route.ts` |
+| **Pending downgrades** | Daily 00:00 UTC | `app/api/cron/execute-pending-downgrades/route.ts` |
+| **Maintenance emails** (Resend digest) | Daily 08:00 UTC | `app/api/cron/maintenance-notifications/route.ts` |
 
 All require `SUPABASE_SERVICE_ROLE_KEY`. Emails also need `RESEND_API_KEY`. Auth: `CRON_SECRET`.
 **Keep-alive lessons (2026-11-24)**: old GitHub-Actions keep-alive never sent the `Authorization` header → every run 401'd before touching the DB. GitHub also auto-disables scheduled workflows after 60 days without repo commits, so GitHub crons die when the repo goes quiet. Vercel Cron sends `Bearer $CRON_SECRET` automatically and has no inactivity cutoff. Cron paths need the trailing slash (`trailingSlash: true`; Vercel Cron doesn't follow redirects).

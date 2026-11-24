@@ -1,5 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { isVercelCron } from '@/lib/cron'
 import {
   MAINTENANCE_INTERVALS,
   MAINTENANCE_TYPE_LABELS,
@@ -446,6 +447,9 @@ async function recordSentAlerts(
 // ---------------------------------------------------------------------------
 
 export async function GET(request: NextRequest) {
+  // Vercel Cron only sends GET — run the real job (POST enforces CRON_SECRET)
+  if (isVercelCron(request)) return POST(request)
+
   if (!isAuthorized(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }

@@ -1,10 +1,9 @@
 name: Maintenance Notifications
 
 on:
-  schedule:
-    # Daily at 8 AM UTC — only sends when items transition to warning/overdue
-    - cron: '0 8 * * *'
-  workflow_dispatch: # Manual trigger for testing
+  # Scheduled runs moved to Vercel Cron (vercel.json) — GitHub disables
+  # schedules after 60 days without commits. Kept for manual runs only.
+  workflow_dispatch:
 
 jobs:
   send-notifications:

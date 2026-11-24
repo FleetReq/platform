@@ -68,7 +68,7 @@ FleetReq helps you **stop guessing when maintenance is due** and **track every d
 
 ### **Hosting & DevOps**
 - **Vercel** - Auto-deployment from GitHub main branch
-- **GitHub Actions** - 4 automated cron workflows
+- **Vercel Cron** - 4 scheduled jobs (`vercel.json`)
 - **Security Headers** - CSP, HSTS, X-Frame-Options via vercel.json
 
 ---
@@ -201,7 +201,7 @@ fleetreq-platform/
 ├── supabase/
 │   ├── *.sql                        # Base schema setup scripts
 │   └── migrations/                  # 9 database migrations
-├── .github/workflows/               # 4 GitHub Actions cron jobs
+├── .github/workflows/               # Manual-trigger copies of cron jobs
 ├── __tests__/lib/                   # Automated tests (46 passing)
 ├── SCHEMA.md                        # Complete database schema reference
 ├── FUNCTIONS.md                     # Database triggers & functions
@@ -210,12 +210,16 @@ fleetreq-platform/
 
 ---
 
-## ⚙️ Automated Cron Jobs (GitHub Actions)
+## ⚙️ Automated Cron Jobs (Vercel Cron)
+
+Scheduled in `vercel.json`. Vercel sends `Authorization: Bearer $CRON_SECRET` automatically. GitHub workflows remain for manual runs only (GitHub disables schedules after 60 days without commits).
 
 | Workflow | Schedule | Endpoint | Purpose |
 |----------|----------|----------|---------|
 | **Cleanup Expired Accounts** | Daily 00:00 UTC | `/api/cron/cleanup-expired-accounts` | GDPR-compliant deletion of accounts past scheduled deletion date |
-| **Execute Pending Downgrades** | Daily | `/api/cron/execute-pending-downgrades` | Processes subscription downgrades when effective date is reached |
+| **Execute Pending Downgrades** | Daily 00:00 UTC | `/api/cron/execute-pending-downgrades` | Processes subscription downgrades when effective date is reached |
+| **Maintenance Notifications** | Daily 08:00 UTC | `/api/cron/maintenance-notifications` | Resend email digest for warning/overdue maintenance |
+| **Supabase Keep-Alive** | Daily 12:00 UTC | `/api/cron/keep-alive` | Writes to `keep_alive` table so the Free Plan project isn't paused |
 
 ---
 
