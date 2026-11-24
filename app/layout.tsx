@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+// Self-hosted via the official `geist` package (next/font/local) — no build-time
+// Google Fonts fetch, which broke Turbopack builds when Google changed its URL format.
+import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 import { ThemeProvider } from "./theme-provider";
 import { Navigation } from "./components/navigation";
@@ -8,15 +10,6 @@ import Analytics from "./components/Analytics";
 import InstallPrompt from "@/components/InstallPrompt";
 
 import { SITE_URL as siteUrl, PERSONAL_PRICE_USD, BUSINESS_PRICE_PER_VEHICLE_USD } from '@/lib/constants'
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-  display: 'swap',
-  weight: ['400', '500', '600', '700'],
-  preload: false,
-  adjustFontFallback: true,
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -128,7 +121,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} antialiased bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-white min-h-screen`}
+        className={`${GeistSans.variable} antialiased bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-white min-h-screen`}
       >
         <ThemeProvider defaultTheme="system" storageKey="fleetreq-theme">
           <Navigation />
